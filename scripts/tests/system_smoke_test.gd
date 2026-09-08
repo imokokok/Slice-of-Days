@@ -7,9 +7,10 @@ func _ready() -> void:
 	ScheduleSystem.load_schedule_data("res://data/npcs/demo_npcs.json")
 	_test_a_route()
 	_test_b_route()
+	_test_npc_survey_results()
 	_test_save_roundtrip()
 	if failures.is_empty():
-		print("SMOKE TEST PASS: A/B routes, schedules, travel and save/load")
+		print("SMOKE TEST PASS: A/B routes, schedules, survey results, travel and save/load")
 		get_tree().quit(0)
 	else:
 		for failure in failures:
@@ -49,6 +50,11 @@ func _test_save_roundtrip() -> void:
 	_check(GameState.current_minute == saved_minute, "Loaded time should match saved time")
 	_check(GameState.known_facts.has("smoke-test-fact"), "Loaded facts should match saved facts")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(test_path))
+
+
+func _test_npc_survey_results() -> void:
+	_check(ResourceLoader.exists(SceneRouter.NPC_SURVEY_RESULTS), "NPC survey results scene should exist")
+	_check(ScheduleSystem.residents.size() == 3, "NPC survey results should expose all resident records")
 
 
 func _check(condition: bool, message: String) -> void:

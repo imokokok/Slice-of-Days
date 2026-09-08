@@ -12,6 +12,7 @@ Godot 4.7.2 项目。当前版本完成了第一阶段垂直切片：玩家可�
 - 找到夏透明、对话并获得第 4 份居民确认的闭环目标。
 - A 的随身记忆 / B 的计划本。
 - 本地存档、读取和继续游戏。
+- 主菜单中的 NPC 调查问卷结果入口（访问验证码 `100`），结果页会读取当前 NPC 数据表。
 - 固定牌桌、对象—关系—对象推理、塔罗提示能力。
 - 原创低多边形剧场式界面：黑色留白、断裂建筑平面、琥珀与青色光区。
 - 自动截图入口和核心系统烟雾测试。
@@ -32,6 +33,7 @@ godot --headless --path /Users/imokokok/Documents/100game res://scenes/system_sm
 - 塔拉牌桌：`scenes/tarot_table.tscn`
 - 玩家状态：`scripts/core/game_state.gd`
 - NPC 日程：`data/npcs/demo_npcs.json`
+- NPC 调查问卷结果：`scenes/npc_survey_results.tscn`
 - 地点：`data/world/locations.json`
 - 牌桌案件：`data/tarot/demo_case.json`
 - 后续玩法模块登记：`data/gameplay/modules.json`

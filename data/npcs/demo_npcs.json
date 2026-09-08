@@ -1,0 +1,30 @@
+{
+  "residents": [
+    {
+      "id": "xia_touming",
+      "display_name": "夏透明",
+      "schedule": [
+        {"id": "morning_cafe", "days": [1, 2, 3, 4, 5, 6, 7], "start": 480, "end": 660, "location": "cafe", "activity": "整理占卜摊"},
+        {"id": "evening_park", "days": [1, 3, 5, 7], "start": 1080, "end": 1200, "location": "park", "activity": "散步"},
+        {"id": "night_stall", "days": [2, 4, 6], "start": 1140, "end": 1320, "location": "tarot_stall", "activity": "占卜"}
+      ]
+    },
+    {
+      "id": "mossner",
+      "display_name": "Mossner",
+      "schedule": [
+        {"id": "library_writing", "days": [1, 2, 4, 5], "start": 840, "end": 920, "location": "library", "activity": "构思剧本"},
+        {"id": "theatre_visit", "days": [3, 6], "start": 840, "end": 1080, "location": "theatre", "activity": "看排练"},
+        {"id": "coffee", "days": [1, 3, 5, 7], "start": 900, "end": 990, "location": "cafe", "activity": "喝咖啡"}
+      ]
+    },
+    {
+      "id": "abyssia",
+      "display_name": "Abyssia",
+      "schedule": [
+        {"id": "dorm_rest", "days": [1, 2, 3, 4, 5, 6, 7], "start": 600, "end": 960, "location": "dorm", "activity": "休息"},
+        {"id": "volleyball", "days": [1, 2, 3, 4, 5], "start": 1190, "end": 1280, "location": "court", "activity": "排球"}
+      ]
+    }
+  ]
+}

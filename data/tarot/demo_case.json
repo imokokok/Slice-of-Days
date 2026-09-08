@@ -1,0 +1,36 @@
+{
+  "case_id": "empty_envelope",
+  "title": "没有寄出的信",
+  "opening": "一个女人每天把空信封放在同一个桌角。第七天，收信人出现了。",
+  "objects": [
+    {"id": "woman", "label": "女人", "tone": "ember"},
+    {"id": "empty_envelope", "label": "空信封", "tone": "bone"},
+    {"id": "recipient", "label": "收信人", "tone": "cyan"},
+    {"id": "night_market", "label": "夜市", "tone": "indigo"}
+  ],
+  "relations": [
+    {"id": "knows", "label": "认识"},
+    {"id": "belongs_to", "label": "属于"},
+    {"id": "intentional", "label": "故意"},
+    {"id": "before", "label": "发生在之前"}
+  ],
+  "answers": {
+    "woman|knows|recipient": {
+      "response": "确认：她认识收信人。",
+      "fact": "女人与收信人过去认识。"
+    },
+    "empty_envelope|belongs_to|woman": {
+      "response": "否定：信封不是她自己的。",
+      "fact": "空信封原本属于另一位居民。"
+    },
+    "woman|intentional|empty_envelope": {
+      "response": "未知：还缺少能够说明动机的事实。",
+      "fact": ""
+    },
+    "night_market|before|recipient": {
+      "response": "确认：夜市先出现，收信人才到达。",
+      "fact": "收信人在夜市结束前不会出现。"
+    }
+  }
+}
+

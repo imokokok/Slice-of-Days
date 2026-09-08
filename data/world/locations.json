@@ -1,0 +1,11 @@
+{
+  "locations": [
+    {"id": "residence", "name": "临时住所", "subtitle": "一间只够放下一张床和七天计划的房间", "position": [156, 592]},
+    {"id": "library", "name": "公共图书馆", "subtitle": "档案、代写者和无人归还的借阅卡", "position": [356, 448]},
+    {"id": "cafe", "name": "咖啡馆", "subtitle": "白天的传闻在这里被反复加热", "position": [570, 554]},
+    {"id": "bus_stop", "name": "巴士站", "subtitle": "路线不多，错过一次就会改变一天", "position": [770, 405]},
+    {"id": "park", "name": "河岸公园", "subtitle": "傍晚以后，影子比人先到达", "position": [972, 520]},
+    {"id": "night_market", "name": "夜市", "subtitle": "食物、声音和误会组成的临时街区", "position": [1018, 340]},
+    {"id": "tarot_stall", "name": "塔拉牌摊", "subtitle": "把零散事实放上桌面，关系才会显形", "position": [1125, 555]}
+  ]
+}

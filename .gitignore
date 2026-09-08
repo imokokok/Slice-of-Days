@@ -1,0 +1,6 @@
+.godot/
+captures/
+*.tmp
+*.log
+*.png.import
+.DS_Store

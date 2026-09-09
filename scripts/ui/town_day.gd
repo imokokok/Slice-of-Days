@@ -1,12 +1,12 @@
 extends Control
 
-const PANEL := Color(0.025, 0.039, 0.052, 0.96)
-const PANEL_SOFT := Color(0.043, 0.061, 0.073, 0.95)
-const BONE := Color("d8d0bd")
-const MUTED := Color("819092")
-const AMBER := Color("d98a39")
-const CYAN := Color("58abb2")
-const LINE := Color("40515a")
+const PANEL := Color("fff8eb", 0.96)
+const PANEL_SOFT := Color("f1dfc7", 0.97)
+const BONE := Color("4a342b")
+const MUTED := Color("806b5c")
+const AMBER := Color("c85f43")
+const CYAN := Color("4f7d83")
+const LINE := Color("b88963")
 
 var locations: Dictionary = {}
 var selected_location := "residence"
@@ -57,7 +57,7 @@ func _load_locations() -> void:
 
 
 func _build_ui() -> void:
-	var header := _panel(self, Vector2.ZERO, Vector2(1600, 78), Color(0.012, 0.02, 0.027, 0.98), LINE.darkened(0.4))
+	var header := _panel(self, Vector2.ZERO, Vector2(1600, 78), Color("fff8eb", 0.97), LINE)
 	_label(header, "第七日之前", Vector2(28, 14), Vector2(240, 30), 22, BONE)
 	role_label = _label(header, "", Vector2(28, 44), Vector2(400, 21), 13, MUTED)
 	clock_label = _label(header, "", Vector2(980, 19), Vector2(150, 28), 18, BONE, HORIZONTAL_ALIGNMENT_RIGHT)
@@ -91,7 +91,7 @@ func _build_ui() -> void:
 	actions_box.add_theme_constant_override("separation", 9)
 	details.add_child(actions_box)
 
-	var bottom := _panel(self, Vector2(0, 686), Vector2(1600, 214), Color(0.015, 0.026, 0.035, 0.99), LINE.darkened(0.15))
+	var bottom := _panel(self, Vector2(0, 686), Vector2(1600, 214), Color("fff8eb", 0.98), LINE)
 	_label(bottom, "交通", Vector2(28, 18), Vector2(70, 23), 16, BONE)
 	var travel_options := [["步行", "walk"], ["公交", "bus"], ["打车", "taxi"], ["朋友顺路", "friend"]]
 	for index in travel_options.size():
@@ -112,7 +112,7 @@ func _build_ui() -> void:
 	notes.pressed.connect(_toggle_notebook)
 	_label(bottom, "目标：找到夏透明，并请她确认你确实认识这座城。", Vector2(1228, 111), Vector2(330, 55), 13, BONE.darkened(0.06))
 
-	notebook_panel = _panel(self, Vector2(820, 105), Vector2(370, 535), PANEL_SOFT, CYAN.darkened(0.25))
+	notebook_panel = _panel(self, Vector2(820, 105), Vector2(370, 535), PANEL_SOFT, CYAN)
 	notebook_panel.visible = false
 
 
@@ -338,7 +338,12 @@ func _panel(parent: Node, at: Vector2, panel_size: Vector2, color: Color, border
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
 	style.border_color = border
-	style.set_border_width_all(1)
+	style.set_border_width_all(2)
+	if panel_size.x < 1500:
+		style.set_corner_radius_all(16)
+		style.shadow_color = Color("704936", 0.18)
+		style.shadow_size = 10
+		style.shadow_offset = Vector2(0, 5)
 	panel.add_theme_stylebox_override("panel", style)
 	parent.add_child(panel)
 	return panel
@@ -368,30 +373,47 @@ func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2
 
 
 func _style_button(button: Button, kind: String) -> void:
+	var base := Color("fff9ed", 0.92)
 	var accent := LINE
-	var alpha := 0.22
+	var font_color := BONE
 	match kind:
+		"location":
+			base = Color("fff9ed", 0.91)
+			accent = LINE
 		"location_active", "primary":
+			base = AMBER
 			accent = AMBER
-			alpha = 0.30
+			font_color = Color("fff8e8")
 		"travel":
+			base = Color("dce8df", 0.96)
 			accent = CYAN
 		"action":
-			accent = Color("7d445c")
+			base = Color("f2d2c0", 0.97)
+			accent = AMBER
 		"quiet":
-			accent = LINE
-			alpha = 0.13
+			base = Color("f6e9d6", 0.92)
+			accent = Color(LINE, 0.75)
 	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color(accent, alpha)
-	normal.border_color = Color(accent, 0.78)
-	normal.set_border_width_all(1)
+	normal.bg_color = base
+	normal.border_color = accent
+	normal.set_border_width_all(2)
+	normal.set_corner_radius_all(10)
+	normal.shadow_color = Color("704936", 0.13)
+	normal.shadow_size = 4
+	normal.shadow_offset = Vector2(0, 2)
 	var hover: StyleBoxFlat = normal.duplicate()
-	hover.bg_color = Color(accent, min(alpha + 0.14, 0.7))
+	hover.bg_color = base.lightened(0.08)
+	hover.border_color = accent.lightened(0.08)
+	var pressed: StyleBoxFlat = normal.duplicate()
+	pressed.bg_color = base.darkened(0.08)
+	pressed.shadow_size = 1
 	button.add_theme_stylebox_override("normal", normal)
 	button.add_theme_stylebox_override("hover", hover)
-	button.add_theme_stylebox_override("pressed", hover)
+	button.add_theme_stylebox_override("pressed", pressed)
 	button.add_theme_stylebox_override("disabled", normal)
-	button.add_theme_color_override("font_color", BONE)
+	button.add_theme_color_override("font_color", font_color)
+	button.add_theme_color_override("font_hover_color", font_color)
+	button.add_theme_color_override("font_pressed_color", font_color)
 	button.add_theme_color_override("font_disabled_color", MUTED.darkened(0.25))
 
 

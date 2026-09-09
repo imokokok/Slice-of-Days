@@ -4,7 +4,7 @@ Godot 4.7.2 项目。当前版本完成了第一阶段垂直切片：玩家可�
 
 ## 已完成
 
-- A / B 双视角开局与差异化初始资金、情报。
+- 正式进入页面：继续游戏、开始新游戏、设置、制作人员和退出，并通过弹窗选择 A / B 双视角开局。
 - A 的连续时间和 B 的碎片时间限制。
 - 七个小镇地点、四种交通方式、时间与金钱消耗。
 - 数据驱动的 NPC 日程和“此刻在场”查询。
@@ -13,7 +13,7 @@ Godot 4.7.2 项目。当前版本完成了第一阶段垂直切片：玩家可�
 - A 的随身记忆 / B 的计划本。
 - 本地存档、读取和继续游戏。
 - 固定牌桌、对象—关系—对象推理、塔罗提示能力。
-- 原创低多边形剧场式界面：黑色留白、断裂建筑平面、琥珀与青色光区。
+- 统一的温暖手绘小镇界面：奶油纸纹、陶土屋顶、灰蓝与鼠尾草绿点缀，以及柔和的午后光。
 - 自动截图入口和核心系统烟雾测试。
 
 ## 运行与测试
@@ -23,7 +23,7 @@ godot --path /Users/imokokok/Documents/100game
 godot --headless --path /Users/imokokok/Documents/100game res://scenes/system_smoke_test.tscn
 ```
 
-主菜单选择 A 或 B。目标是根据线索在第 1 天傍晚到达河岸公园，找到夏透明并取得确认。
+在进入页面选择“开始新游戏”，再选择 A 或 B。目标是根据线索在第 1 天傍晚到达河岸公园，找到夏透明并取得确认。
 
 ## 主要内容入口
 
@@ -36,6 +36,7 @@ godot --headless --path /Users/imokokok/Documents/100game res://scenes/system_sm
 - 牌桌案件：`data/tarot/demo_case.json`
 - 后续玩法模块登记：`data/gameplay/modules.json`
 - 画风参考：`art/reference/`
+- 进入页面背景：`art/ui/title-screen-background.png`
 
 正式文本和美术进入项目后，应保持数据 ID 稳定，逐步替换展示文字、人物模型、场景模型、材质、动画和声音。
 

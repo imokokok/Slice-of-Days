@@ -2,16 +2,16 @@ extends Control
 
 const StageBackdrop = preload("res://scripts/ui/stage_backdrop.gd")
 
-const INK := Color("080b12")
-const PANEL := Color(0.035, 0.055, 0.073, 0.96)
-const PANEL_SOFT := Color(0.055, 0.078, 0.094, 0.94)
-const LINE := Color("40515a")
-const BONE := Color("d8d0bd")
-const MUTED := Color("8c9898")
-const AMBER := Color("d98a39")
-const CYAN := Color("58abb2")
-const EMBER := Color("a84236")
-const BURGUNDY := Color("6c2e3e")
+const INK := Color("4a342b")
+const PANEL := Color("fff8eb", 0.96)
+const PANEL_SOFT := Color("f1dfc7", 0.97)
+const LINE := Color("b88963")
+const BONE := Color("4a342b")
+const MUTED := Color("806b5c")
+const AMBER := Color("c85f43")
+const CYAN := Color("4f7d83")
+const EMBER := Color("b54f3a")
+const SAGE := Color("7d8f59")
 
 var case_data: Dictionary = {}
 var selected_subject := ""
@@ -57,10 +57,10 @@ func _build_scene() -> void:
 
 
 func _build_header() -> void:
-	var header := _make_panel(self, Vector2(0, 0), Vector2(1600, 78), Color(0.015, 0.022, 0.03, 0.98), LINE.darkened(0.35))
+	var header := _make_panel(self, Vector2(0, 0), Vector2(1600, 78), Color("fff8eb", 0.97), LINE)
 
 	var title := _make_label(header, "第七日之前", Vector2(28, 15), Vector2(310, 31), 22, BONE)
-	title.add_theme_color_override("font_shadow_color", Color.BLACK)
+	title.add_theme_color_override("font_shadow_color", Color("704936", 0.18))
 	title.add_theme_constant_override("shadow_offset_x", 2)
 	title.add_theme_constant_override("shadow_offset_y", 2)
 	_make_label(header, "牌桌推理 · 夏透明的占卜摊", Vector2(28, 43), Vector2(400, 22), 13, MUTED)
@@ -76,7 +76,7 @@ func _build_header() -> void:
 
 
 func _build_case_caption() -> void:
-	var caption := _make_panel(self, Vector2(35, 94), Vector2(480, 92), Color(0.02, 0.028, 0.038, 0.86), LINE.darkened(0.3))
+	var caption := _make_panel(self, Vector2(35, 94), Vector2(480, 92), Color("fff8eb", 0.94), LINE)
 	_make_label(caption, str(case_data.get("title", "牌桌事件")), Vector2(16, 11), Vector2(440, 28), 20, BONE)
 	var opening := _make_label(caption, str(case_data.get("opening", "")), Vector2(16, 42), Vector2(445, 43), 14, MUTED)
 	opening.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -96,7 +96,7 @@ func _build_table_cards() -> void:
 
 
 func _build_question_strip() -> void:
-	var strip := _make_panel(self, Vector2(310, 594), Vector2(850, 61), Color(0.025, 0.038, 0.05, 0.96), LINE)
+	var strip := _make_panel(self, Vector2(310, 594), Vector2(850, 61), Color("fff8eb", 0.97), LINE)
 	_make_label(strip, "组合问题", Vector2(13, 9), Vector2(100, 20), 13, MUTED)
 	subject_slot = _make_button(strip, "对象", Vector2(115, 10), Vector2(155, 40), "slot")
 	relation_slot = _make_button(strip, "关系", Vector2(278, 10), Vector2(170, 40), "slot")
@@ -124,7 +124,7 @@ func _build_side_panel() -> void:
 	result_label.scroll_active = false
 	result_label.add_theme_font_size_override("normal_font_size", 15)
 	result_label.add_theme_color_override("default_color", BONE)
-	result_label.text = "[color=#8c9898]把两张对象牌和一张关系牌放入问题槽。[/color]"
+	result_label.text = "[color=#806b5c]把两张对象牌和一张关系牌放入问题槽。[/color]"
 	side_panel.add_child(result_label)
 
 	_make_label(side_panel, "已知事实", Vector2(20, 201), Vector2(160, 25), 16, CYAN)
@@ -143,7 +143,7 @@ func _build_side_panel() -> void:
 
 
 func _build_bottom_drawer() -> void:
-	var drawer := _make_panel(self, Vector2(0, 675), Vector2(1600, 225), Color(0.018, 0.029, 0.039, 0.99), LINE.darkened(0.15))
+	var drawer := _make_panel(self, Vector2(0, 675), Vector2(1600, 225), Color("fff8eb", 0.98), LINE)
 	_make_label(drawer, "牌桌工具", Vector2(28, 17), Vector2(150, 27), 20, BONE)
 	_make_label(drawer, "选择一张对象牌，再选择关系牌和第二张对象牌。", Vector2(178, 21), Vector2(450, 20), 13, MUTED)
 
@@ -198,7 +198,7 @@ func _on_relation_pressed(id: String, label: String) -> void:
 
 func _ask_question() -> void:
 	if selected_subject.is_empty() or selected_relation.is_empty() or selected_object.is_empty():
-		result_label.text = "[color=#d98a39]问题还不完整。需要对象、关系和另一个对象。[/color]"
+		result_label.text = "[color=#c85f43]问题还不完整。需要对象、关系和另一个对象。[/color]"
 		return
 
 	GameState.spend_time(10)
@@ -206,25 +206,25 @@ func _ask_question() -> void:
 	var answers: Dictionary = case_data.get("answers", {})
 	if answers.has(key):
 		var answer: Dictionary = answers[key]
-		result_label.text = "[color=#d8d0bd]%s[/color]" % str(answer.get("response", "没有回应。"))
+		result_label.text = "[color=#4a342b]%s[/color]" % str(answer.get("response", "没有回应。"))
 		var fact := str(answer.get("fact", ""))
 		if not fact.is_empty():
 			GameState.add_fact(fact)
 	else:
-		result_label.text = "[color=#8c9898]这组牌没有形成有效线索。换一个关系再试。[/color]"
+		result_label.text = "[color=#806b5c]这组牌没有形成有效线索。换一个关系再试。[/color]"
 
 
 func _direct_reading() -> void:
 	if not GameState.spend_money(100):
-		result_label.text = "[color=#a84236]余额不足，无法直接占卜。[/color]"
+		result_label.text = "[color=#b54f3a]余额不足，无法直接占卜。[/color]"
 		return
 	GameState.spend_time(20)
-	result_label.text = "[color=#d98a39]牌面没有替你决定结果。它提醒你：空白也可能是一种被反复保存的内容。[/color]"
+	result_label.text = "[color=#c85f43]牌面没有替你决定结果。它提醒你：空白也可能是一种被反复保存的内容。[/color]"
 
 
 func _use_tarot_ability(name: String, description: String) -> void:
 	GameState.spend_time(5)
-	var message := "[color=#58abb2]%s[/color]\n%s。" % [name, description]
+	var message := "[color=#4f7d83]%s[/color]\n%s。" % [name, description]
 	match name:
 		"月亮":
 			message += " 目前没有对象被重复确认。"
@@ -281,7 +281,7 @@ func _reset_selection() -> void:
 	selected_relation = ""
 	selected_object = ""
 	selected_labels = {"subject": "对象", "relation": "关系", "object": "对象"}
-	result_label.text = "[color=#8c9898]把两张对象牌和一张关系牌放入问题槽。[/color]"
+	result_label.text = "[color=#806b5c]把两张对象牌和一张关系牌放入问题槽。[/color]"
 	_refresh_selection()
 
 
@@ -298,7 +298,12 @@ func _make_panel(parent: Node, at: Vector2, panel_size: Vector2, color: Color, b
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
 	style.border_color = border
-	style.set_border_width_all(1)
+	style.set_border_width_all(2)
+	if panel_size.x < 1500:
+		style.set_corner_radius_all(16)
+		style.shadow_color = Color("704936", 0.18)
+		style.shadow_size = 9
+		style.shadow_offset = Vector2(0, 4)
 	panel.add_theme_stylebox_override("panel", style)
 	parent.add_child(panel)
 	return panel
@@ -330,47 +335,50 @@ func _make_button(parent: Node, text_value: String, at: Vector2, button_size: Ve
 
 
 func _apply_button_style(button: Button, kind: String) -> void:
-	var base := PANEL_SOFT
+	var base := Color("fff9ed", 0.96)
 	var edge := LINE
 	var font_color := BONE
 	match kind:
 		"primary":
-			base = Color("1d5961")
-			edge = CYAN
+			base = AMBER
+			edge = AMBER.darkened(0.12)
+			font_color = Color("fff8e8")
 		"danger":
-			base = Color("51252c")
+			base = Color("f2cabc")
 			edge = EMBER
 		"object":
-			base = Color(0.08, 0.09, 0.12, 0.95)
-			edge = Color("665e55")
+			base = Color("fff9ed", 0.97)
+			edge = LINE
 		"object_active":
-			base = Color("6b3b25")
+			base = AMBER
 			edge = AMBER
+			font_color = Color("fff8e8")
 		"relation":
-			base = Color("122f38")
-			edge = Color("376f76")
-		"relation_active":
-			base = Color("285d63")
+			base = Color("dce8df")
 			edge = CYAN
+		"relation_active":
+			base = CYAN
+			edge = CYAN
+			font_color = Color("fff8e8")
 		"ability":
-			base = Color("282034")
-			edge = BURGUNDY.lightened(0.22)
+			base = Color("e2e8cf")
+			edge = SAGE
 		"slot":
-			base = Color("101820")
-			edge = Color("59676b")
+			base = Color("fff9ed")
+			edge = LINE
 		"quiet":
-			base = Color(0.03, 0.04, 0.05, 0.3)
-			edge = Color(0.2, 0.25, 0.27, 0.5)
+			base = Color("f6e9d6", 0.92)
+			edge = Color(LINE, 0.75)
 			font_color = MUTED
 
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = base
 	normal.border_color = edge
-	normal.set_border_width_all(1)
-	normal.corner_radius_top_left = 2
-	normal.corner_radius_top_right = 2
-	normal.corner_radius_bottom_left = 2
-	normal.corner_radius_bottom_right = 2
+	normal.set_border_width_all(2)
+	normal.set_corner_radius_all(10)
+	normal.shadow_color = Color("704936", 0.13)
+	normal.shadow_size = 4
+	normal.shadow_offset = Vector2(0, 2)
 
 	var hover := normal.duplicate()
 	hover.bg_color = base.lightened(0.12)
@@ -379,14 +387,15 @@ func _apply_button_style(button: Button, kind: String) -> void:
 	var pressed := normal.duplicate()
 	pressed.bg_color = base.darkened(0.12)
 	pressed.border_color = edge.lightened(0.28)
+	pressed.shadow_size = 1
 
 	button.add_theme_stylebox_override("normal", normal)
 	button.add_theme_stylebox_override("hover", hover)
 	button.add_theme_stylebox_override("pressed", pressed)
 	button.add_theme_stylebox_override("focus", hover)
 	button.add_theme_color_override("font_color", font_color)
-	button.add_theme_color_override("font_hover_color", BONE.lightened(0.12))
-	button.add_theme_color_override("font_pressed_color", BONE)
+	button.add_theme_color_override("font_hover_color", font_color)
+	button.add_theme_color_override("font_pressed_color", font_color)
 
 
 func _load_json(path: String) -> Dictionary:

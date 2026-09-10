@@ -1,14 +1,14 @@
 {
   "modules": [
-    {"id": "cooking", "name": "烹饪与公共食谱", "core_action": "组合食材并交换配方", "stage": "design_ready"},
-    {"id": "ghostwriting", "name": "代写与拼贴诗", "core_action": "从语句碎片组织作者声音", "stage": "design_ready"},
-    {"id": "tarot", "name": "塔拉牌关系推理", "core_action": "对象—关系—对象组合提问", "stage": "playable"},
-    {"id": "translation", "name": "误解与翻译", "core_action": "在不完整语义间做选择", "stage": "design_ready"},
-    {"id": "optical_illusion", "name": "三维视觉错觉", "core_action": "改变视角让空间关系成立", "stage": "design_ready"},
-    {"id": "sound_sampling", "name": "城市采样与音乐影像", "core_action": "收集声音并编排成段落", "stage": "design_ready"},
-    {"id": "chess", "name": "棋局", "core_action": "用局面表达人物关系", "stage": "design_ready"},
-    {"id": "contemplation", "name": "凝视与风景", "core_action": "用停留时间换取感知线索", "stage": "design_ready"},
-    {"id": "photography", "name": "摄影工作台", "core_action": "构图、显影并归档证据", "stage": "design_ready"},
+    {"id": "cooking", "name": "烹饪与公共食谱", "core_action": "组合食材并交换配方", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
+    {"id": "ghostwriting", "name": "代写与拼贴诗", "core_action": "从语句碎片组织作者声音", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
+    {"id": "tarot", "name": "Solmere 塔罗海龟汤", "core_action": "三选一读牌、意象提问、深读与交叉解读", "stage": "playable", "initially_unlocked": true, "scene_path": "res://scenes/tarot_table.tscn"},
+    {"id": "translation", "name": "误解与翻译", "core_action": "在不完整语义间做选择", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
+    {"id": "optical_illusion", "name": "三维视觉错觉", "core_action": "改变视角让空间关系成立", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
+    {"id": "sound_sampling", "name": "城市采样与音乐影像", "core_action": "收集声音并编排成段落", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
+    {"id": "chess", "name": "棋局", "core_action": "用局面表达人物关系", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
+    {"id": "contemplation", "name": "凝视与风景", "core_action": "用停留时间换取感知线索", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
+    {"id": "photography", "name": "摄影工作台", "core_action": "构图、显影并归档证据", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
     {"id": "archives", "name": "公共档案", "core_action": "交叉查询居民与城市记录", "stage": "prototype_hook"}
   ]
 }

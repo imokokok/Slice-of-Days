@@ -1,0 +1,260 @@
+{
+  "_note": "灰盒玩法数据。正式数值、文本和美术可以直接替换，不改变系统接口。",
+  "prototypes": [
+    {
+      "module_id": "cooking",
+      "title": "饭店时段与公共菜谱",
+      "description": "从现有材料里决定今天真正能做出的菜。名字、署名和照片会一起留进公共菜谱。",
+      "choices": [
+        {
+          "id": "improvise",
+          "label": "把零碎材料组合成新菜",
+          "detail": "花费90分钟，接受结果不完全可控。",
+          "cost": {"minutes": 90},
+          "result_text": "新菜被取名为《什么时候下班》，照片和署名一起进入公共菜谱。",
+          "results": {
+            "money": 30,
+            "artifacts": [
+              {"collection": "recipes", "shared": true, "data": {"id": "when_does_work_end", "title": "什么时候下班", "kind": "recipe"}}
+            ],
+            "journal_entries": [
+              {"id": "first_public_recipe", "kind": "work", "text": "一份临时做出的菜留进了公共菜谱。"}
+            ]
+          },
+          "results_by_role": {
+            "A": {
+              "encounters": ["restaurant_owner", "a_meng", "zhou_xiaoliu"],
+              "confirmations": {"restaurant_owner": "granted", "a_meng": "granted", "zhou_xiaoliu": "granted"}
+            },
+            "B": {
+              "encounters": ["restaurant_owner"],
+              "relationship_flags": {"restaurant_owner": ["认真核对过分成与时间"]}
+            }
+          }
+        },
+        {
+          "id": "careful_menu",
+          "label": "先核对成本再做一份稳定菜单",
+          "detail": "花费60分钟，收入更稳定。",
+          "cost": {"minutes": 60},
+          "result_text": "菜单很稳妥。店主记住了你把每一项成本都讲清楚的方式。",
+          "results": {"money": 42},
+          "results_by_role": {
+            "A": {"relationship_flags": {"restaurant_owner": ["完成过一次稳定菜单"]}},
+            "B": {
+              "encounters": ["restaurant_owner"],
+              "confirmations": {"restaurant_owner": "granted"}
+            }
+          }
+        }
+      ]
+    },
+    {
+      "module_id": "ghostwriting",
+      "title": "代写与拼贴诗",
+      "description": "先听委托人真正想说什么，再从句子碎片里组织出一封仍然属于对方的信。",
+      "choices": [
+        {
+          "id": "listen_then_cut",
+          "label": "先听完整，再裁切排列",
+          "detail": "花费120分钟，保留委托人的语气。",
+          "cost": {"minutes": 120},
+          "result_text": "短信用了三次修改才完成。委托人说，这次听起来终于像自己。",
+          "results": {
+            "money": 35,
+            "artifacts": [
+              {"collection": "letters", "shared": false, "data": {"id": "short_letter_day5", "title": "一封很短的信", "kind": "letter"}}
+            ]
+          },
+          "results_by_role": {
+            "A": {"confirmations": {"letter_client": "granted"}},
+            "B": {
+              "encounters": ["letter_client", "sunniva"],
+              "confirmations": {"letter_client": "granted", "sunniva": "granted"}
+            }
+          }
+        },
+        {
+          "id": "efficient_draft",
+          "label": "在限定时间内完成清楚的版本",
+          "detail": "花费60分钟，结果更直接。",
+          "cost": {"minutes": 60},
+          "result_text": "信写得清楚，但有一小段话仍然留在桌面上。",
+          "results": {"money": 22, "relationship_flags": {"letter_client": ["按时完成过代写"]}}
+        }
+      ]
+    },
+    {
+      "module_id": "translation",
+      "title": "消除误解",
+      "description": "两个人说的是同一个词，却在说完全不同的生活经验。选择先补全谁没有说出口的部分。",
+      "choices": [
+        {
+          "id": "hold_both_meanings",
+          "label": "把两边的意思都保留下来",
+          "detail": "花费45分钟，不替任何一边做总结。",
+          "cost": {"minutes": 45},
+          "result_text": "争论没有被漂亮地解决，但两个人都愿意再听一遍。",
+          "results": {
+            "encounters": ["jiu", "abyssia"],
+            "relationship_flags": {"jiu": ["被认真转译过"], "abyssia": ["被认真转译过"]},
+            "confirmations": {"jiu": "granted", "abyssia": "granted"}
+          }
+        },
+        {
+          "id": "choose_clarity",
+          "label": "先澄清最容易造成伤害的那句话",
+          "detail": "花费30分钟，另一部分留到以后。",
+          "cost": {"minutes": 30},
+          "result_text": "最尖锐的误会先被拆开了，剩下的话仍需要时间。",
+          "results": {"relationship_flags": {"jiu": ["帮助澄清过误会"]}}
+        }
+      ]
+    },
+    {
+      "module_id": "sound_sampling",
+      "title": "城市采样与编曲",
+      "description": "把雨声、公交刹车和街道里的停顿编排成一段可以交付的声音。",
+      "choices": [
+        {
+          "id": "planned_route",
+          "label": "按路线采样并完成短曲",
+          "detail": "花费90分钟，获得授权费。",
+          "cost": {"minutes": 90},
+          "result_text": "短曲被唱片店收下。雨声里那一下旧门轴声被单独保存了。",
+          "results": {
+            "money": 40,
+            "facts": ["采样的雨声里混进了一下不属于这里的旧门轴声。"],
+            "artifacts": [
+              {"collection": "tracks", "shared": false, "data": {"id": "rain_and_brakes", "title": "雨声与刹车", "kind": "track"}}
+            ]
+          },
+          "results_by_role": {
+            "B": {"encounters": ["a_meng"], "confirmations": {"a_meng": "granted"}}
+          }
+        },
+        {
+          "id": "wander_and_record",
+          "label": "边走边录，不先决定结构",
+          "detail": "花费60分钟，保留更多偶然声音。",
+          "cost": {"minutes": 60},
+          "result_text": "这段声音还不能交付，但里面有一小段很像旧列车。",
+          "results": {
+            "artifacts": [
+              {"collection": "samples", "shared": false, "data": {"id": "old_train_fragment", "title": "像旧列车的声音", "kind": "sample"}}
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "module_id": "chess",
+      "title": "一盘可以暂停的棋",
+      "description": "完整时间会在棋盘上变得非常具体。可以继续，也可以把局面保存到下一次。",
+      "choices": [
+        {
+          "id": "finish_game",
+          "label": "把完整时间留给这盘棋",
+          "detail": "花费120分钟。",
+          "cost": {"minutes": 120},
+          "result_text": "棋局结束时，对手说你下棋时比说话时放松。",
+          "results": {
+            "encounters": ["jian_zhaoxiang"],
+            "relationship_flags": {"jian_zhaoxiang": ["一起下完一盘棋"]},
+            "confirmations": {"jian_zhaoxiang": "granted"}
+          }
+        },
+        {
+          "id": "save_position",
+          "label": "保存局面，下次继续",
+          "detail": "花费30分钟。",
+          "cost": {"minutes": 30},
+          "result_text": "棋子停在原处。这个没有做完的约定被记了下来。",
+          "results": {
+            "appointments": [{"id": "resume_chess", "day": 5, "start": 1080, "location": "park", "label": "继续棋局"}]
+          }
+        }
+      ]
+    },
+    {
+      "module_id": "contemplation",
+      "title": "发呆与世界风景",
+      "description": "什么也不解决，只决定愿意把多少时间留在这里。",
+      "choices": [
+        {
+          "id": "watch_sunset",
+          "label": "坐到晚霞完全变暗",
+          "detail": "花费60分钟。",
+          "cost": {"minutes": 60},
+          "result_text": "墙上的余光比预想中停得更久。相册里多了一张不需要解释的照片。",
+          "results": {
+            "artifacts": [
+              {"collection": "photos", "shared": false, "data": {"id": "long_sunset", "title": "停得很久的晚霞", "kind": "photo"}}
+            ],
+            "journal_entries": [{"id": "long_sunset_note", "kind": "memory", "text": "今天的晚霞停得很久。"}]
+          }
+        },
+        {
+          "id": "short_pause",
+          "label": "只坐一会儿",
+          "detail": "花费20分钟。",
+          "cost": {"minutes": 20},
+          "result_text": "没有发生特别的事，但这二十分钟确实属于你。",
+          "results": {}
+        }
+      ]
+    },
+    {
+      "module_id": "photography",
+      "title": "摄影与相册",
+      "description": "选择取景范围。照片偶尔会比拍摄者多记住一点东西。",
+      "choices": [
+        {
+          "id": "photograph_reflection",
+          "label": "拍下玻璃里的反光",
+          "detail": "花费30分钟。",
+          "cost": {"minutes": 30},
+          "result_text": "照片里的栏杆有一瞬间像旧阳台，但重新打开时又恢复正常。",
+          "results": {
+            "facts": ["照片里短暂出现了不属于Solmere的旧空间。"],
+            "artifacts": [
+              {"collection": "photos", "shared": false, "data": {"id": "wrong_balcony", "title": "反光里的旧栏杆", "kind": "photo", "anomaly": true}}
+            ]
+          }
+        },
+        {
+          "id": "photograph_people",
+          "label": "拍下正在生活的人",
+          "detail": "花费20分钟。",
+          "cost": {"minutes": 20},
+          "result_text": "没有谁摆好姿势。照片留下的是大家各自忙着的事情。",
+          "results": {
+            "artifacts": [
+              {"collection": "photos", "shared": false, "data": {"id": "ordinary_town_life", "title": "没有摆好姿势的人", "kind": "photo"}}
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "module_id": "optical_illusion",
+      "title": "局部记录与空间错觉",
+      "description": "照片、手绘、文字和模型都漏掉了一部分。灰盒版只验证连接选择，不锁定最终2D或3D表现。",
+      "choices": [
+        {
+          "id": "preserve_contradiction",
+          "label": "保留两个互相矛盾的连接",
+          "detail": "花费60分钟。",
+          "cost": {"minutes": 60},
+          "result_text": "模型没有变得更正确，却开始能同时容纳两份记录。",
+          "results": {
+            "artifacts": [
+              {"collection": "models", "shared": false, "data": {"id": "contradictory_room", "title": "互相矛盾的房间", "kind": "model"}}
+            ],
+            "relationship_flags": {"stagehand": ["一起保留了矛盾的空间记录"]}
+          }
+        }
+      ]
+    }
+  ]
+}

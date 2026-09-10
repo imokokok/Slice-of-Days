@@ -1,0 +1,95 @@
+{
+  "cases": [
+    {
+      "id": "four_doors",
+      "title": "四扇门",
+      "eyebrow": "数字规律汤",
+      "opening": "五十人来到四扇没有区别的门前，必须分成四组。索尔跟过人数最多、最少和居中的组，全部失败。最后一次，她不再寻找‘该跟哪组’，却判断出了出口。她发现了什么？",
+      "question_examples": ["两组人数相等是开门条件吗？", "门的位置会影响结果吗？"],
+      "deck": ["emperor", "magician", "wheel", "temperance", "justice", "tower", "star"],
+      "opening_draw": ["emperor", "magician", "wheel"],
+      "solution": "四组人数中，恰好两组人数相同，且这个相同人数位于另外两个不同人数之间时，对应两扇门开启；门的位置不影响结果。",
+      "solution_groups": [
+        ["两组相同", "两组相等", "两组人数相同", "两组人数相等", "恰好两组"],
+        ["位于中间", "介于", "在另外两组之间", "位于另外两组之间", "中间值"],
+        ["门的位置无关", "位置不影响", "顺序无关", "位置没有影响"]
+      ],
+      "solution_required": 3,
+      "readings": [
+        {"id":"number_structure","card":"emperor","image":"square","match":["大小关系","数值结构","固定结构","人数规律"],"concepts":[["四组","人数","分组"],["结构","规律","关系","排序","大小"]],"required_concepts":2,"truth":true,"fact":"四组人数之间存在固定的数值结构。","critical":true},
+        {"id":"equal_pair","card":"temperance","image":"cups","match":["两组相等","两组相同","相等重要","相同人数","人数一样"],"concepts":[["两组","人数"],["相等","相同","一样","一致"]],"required_concepts":2,"truth":true,"fact":"恰好两组人数相等是开门规律的一部分。","critical":true},
+        {"id":"three_equal","card":"temperance","image":"cups","match":["三组相等","三组相同"],"concepts":[["三组","三个组"],["相等","相同","一样"]],"required_concepts":2,"truth":false,"fact":"规律要求恰好两组人数相等，不是三组。","critical":false},
+        {"id":"counterexample_exists","card":"tower","image":"lightning","match":["存在反例","有反例","可以推翻"],"concepts":[["反例","例外","推翻"]],"required_concepts":1,"truth":true,"fact":"‘只要两组相等就成功’存在反例。","critical":true},
+        {"id":"equality_sufficient","card":"tower","image":"lightning","match":["只要相等","相等就成功","相同就开门"],"concepts":[["相等","相同","一样"],["只要","一定","就成功","就开门","足够"]],"required_concepts":2,"truth":false,"fact":"只有两组相等还不够；8 / 8 / 14 / 20 会失败。","critical":true},
+        {"id":"middle_value","card":"emperor","image":"height","match":["位于中间","介于","大小之间","中间值"],"concepts":[["相等值","相同人数","相等的两组","两组"],["中间","介于","之间","一大一小"]],"required_concepts":2,"truth":true,"fact":"相等的组数必须介于另外两个不同人数之间。","critical":true},
+        {"id":"door_position_effect","card":"wheel","image":"turning","match":["门的位置","交换位置","位置影响","顺序影响","排列影响"],"concepts":[["门的位置","门的顺序","排列","换位置","交换位置"],["影响","改变","决定","有关"]],"required_concepts":2,"truth":false,"fact":"门的位置与排列顺序不影响结果。","critical":false},
+        {"id":"fixed_exit","card":"wheel","image":"positions","match":["固定出口","固定的门","某扇门一直"],"concepts":[["出口","开门","某扇门"],["固定","一直","永远"]],"required_concepts":2,"truth":false,"fact":"四扇门没有固定出口，开启结果由人数结构决定。","critical":false},
+        {"id":"largest_group","card":"emperor","image":"height","match":["人数最多","最大组","最多的一组"],"concepts":[["最多","最大","人数最多"],["成功","开门","出口"]],"required_concepts":2,"truth":false,"fact":"人数最多并不能单独决定出口。","critical":false},
+        {"id":"smallest_group","card":"emperor","image":"height","match":["人数最少","最小组","最少的一组"],"concepts":[["最少","最小","人数最少"],["成功","开门","出口"]],"required_concepts":2,"truth":false,"fact":"人数最少并不能单独决定出口。","critical":false},
+        {"id":"total_fifty","card":"temperance","image":"liquid","match":["必须五十人","总人数重要","一定要50人"],"concepts":[["五十","50","总人数"],["必须","重要","影响","固定"]],"required_concepts":2,"truth":false,"fact":"五十是本次参与人数，不是开门规律的核心；核心是四组之间的相对数值关系。","critical":false},
+        {"id":"can_adjust_groups","card":"magician","image":"tools","match":["改变人数","主动分组","可以调整","人为改变","重新分组"],"concepts":[["人数","分组","组别"],["改变","调整","重新分","主动"]],"required_concepts":2,"truth":true,"fact":"参与者可以主动调整四组人数来验证规律。","critical":true},
+        {"id":"conditions_together","card":"justice","image":"scales","match":["同时成立","两个条件","缺一不可"],"concepts":[["相等","相同"],["中间","介于"],["同时","都要","缺一不可","共同"]],"required_concepts":3,"truth":true,"fact":"成功需要‘两组相等’与‘相等值在中间’同时成立。","critical":true},
+        {"id":"success_example","card":"justice","image":"scales","match":["8/12/12/18","8 12 12 18"],"concepts":[["8/12/12/18","8121218"],["成功","开门","成立"]],"required_concepts":1,"negative_match":["失败","不开门","不能成功"],"truth":true,"fact":"8 / 12 / 12 / 18 满足条件，会成功。","critical":true},
+        {"id":"failure_example","card":"tower","image":"lightning","match":["8/8/14/20","8 8 14 20"],"concepts":[["8/8/14/20","881420"],["成功","开门","成立"]],"required_concepts":1,"negative_match":["失败","不开门","不能成功"],"truth":false,"fact":"8 / 8 / 14 / 20 的相等值位于最低端，会失败。","critical":true},
+        {"id":"next_direction","card":"star","image":"main_star","match":["下一步","查什么","方向","提示","从哪里开始"],"concepts":[["下一步","方向","提示","查什么","从哪里"]],"required_concepts":1,"truth":true,"allow_open":true,"fact":"下一步应比较四组人数，而不是门的位置。","critical":true}
+      ],
+      "cross_readings": [
+        {"id":"structure_and_equality","cards":["emperor","temperance"],"match":["相等和大小关系","相等值在中间","两个条件同时"],"concepts":[["相等","相同"],["中间","介于","大小"],["同时","都要","共同","条件"]],"required_concepts":3,"truth":true,"fact":"数值结构与相等条件必须同时满足。"},
+        {"id":"verify_counterexample","cards":["justice","tower"],"match":["反例能够验证","用反例排除","8/8/14/20"],"concepts":[["反例","8/8/14/20","881420"],["验证","排除","推翻"]],"required_concepts":2,"truth":true,"fact":"8 / 8 / 14 / 20 是排除‘只要相等’假设的关键反例。"}
+      ]
+    },
+    {
+      "id": "doorway_murder",
+      "title": "门外的目击者",
+      "eyebrow": "关系与视角汤",
+      "opening": "米拉死在家中。艾琳是报警人，也是米拉正在追求的人；罗文曾与米拉交往。阿德里安手里留着一封塞琳寄来的威胁信。门口有搏斗痕迹，垃圾桶里有沾血的水果刀。艾琳说她到门口看见尸体后立刻报警。谁杀了米拉？艾琳为什么最可疑？",
+      "question_examples": ["报警的人有没有进入过房间？", "米拉和塞琳以前是恋人吗？"],
+      "deck": ["lovers", "devil", "moon", "hanged_man", "chariot", "justice", "judgement", "high_priestess", "death"],
+      "opening_draw": ["chariot", "lovers", "justice"],
+      "solution": "塞琳无法接受与米拉的关系已经结束。她在艾琳到达前进入房间，因米拉拒绝复合而在门口杀死米拉，并躲在那里嫁祸艾琳。艾琳只从门外看见尸体，从未进入现场。",
+      "solution_groups": [
+        ["塞琳杀", "凶手是塞琳", "塞琳是凶手"],
+        ["关系结束", "拒绝复合", "嫉妒", "执念", "占有欲"],
+        ["艾琳到达前", "在艾琳之前", "提前进入", "先进入"],
+        ["艾琳没有进入", "艾琳没进入", "只在门外", "从门外看到"]
+      ],
+      "solution_required": 4,
+      "readings": [
+        {"id":"erin_entered","card":"chariot","image":"city","match":["艾琳进入","艾琳进过","报警人进入","进过米拉家","走进屋里"],"concepts":[["艾琳","报警人"],["进入","进过","走进","屋里","房间","现场","没进","没有进","未进"]],"required_concepts":2,"truth":false,"fact":"艾琳没有进入米拉家，只站在门外。","critical":false},
+        {"id":"selene_entered","card":"chariot","image":"city","match":["塞琳进入","塞琳进过","凶手进屋"],"concepts":[["塞琳"],["进入","进过","走进","屋里","房间","米拉家"]],"required_concepts":2,"truth":true,"fact":"塞琳在案发当晚进入过米拉家。","critical":true},
+        {"id":"erin_saw_body","card":"hanged_man","image":"view","match":["艾琳看到尸体","门外看见尸体","报警人看见"],"concepts":[["艾琳","报警人"],["看到尸体","看见尸体","发现尸体","目击"]],"required_concepts":2,"truth":true,"fact":"艾琳从门外就能看见尸体。","critical":true},
+        {"id":"erin_first_discovered","card":"moon","image":"animals","match":["第一个发现尸体","最先看到尸体"],"concepts":[["艾琳","报警人"],["第一个发现","最先发现","最先看到"]],"required_concepts":2,"truth":true,"fact":"艾琳确实是第一个发现尸体的人。","critical":true},
+        {"id":"erin_first_entered","card":"moon","image":"animals","match":["第一个进入现场","最先进入房间"],"concepts":[["艾琳","报警人"],["第一个进入","最先进入","首先进入"]],"required_concepts":2,"truth":false,"fact":"艾琳不是第一个进入现场的人，她根本没有进入房间。","critical":false},
+        {"id":"detective_first_entered","card":"judgement","image":"rising","match":["探长第一个进入","警探最先进入","阿洛进入现场"],"concepts":[["探长","警探","阿洛"],["第一个进入","最先进入","首先进入"]],"required_concepts":2,"truth":true,"fact":"第一个在案发后真正进入现场的是阿洛探长。","critical":true},
+        {"id":"mira_selene_relationship","card":"lovers","image":"pair","match":["米拉和塞琳","塞琳与米拉","私人关系","重要关系"],"concepts":[["米拉","死者"],["塞琳","写信人"],["关系","认识","来往","联系"]],"required_concepts":3,"truth":true,"fact":"米拉与塞琳曾有重要的私人关系。","critical":true},
+        {"id":"mira_selene_intimate","card":"lovers","image":"gaze","match":["亲密关系","情感关系","恋爱关系","曾经相爱","是恋人"],"concepts":[["米拉","死者"],["塞琳","写信人"],["恋人","亲密","恋爱","感情","相爱"]],"required_concepts":3,"truth":true,"fact":"米拉与塞琳曾经是恋人。","critical":true},
+        {"id":"relationship_ended","card":"lovers","image":"distance","match":["关系结束","已经分手","结束了吗","两人分开"],"concepts":[["米拉","塞琳","两人","她们"],["结束","分手","分开","终止"]],"required_concepts":2,"truth":true,"fact":"米拉与塞琳的关系在案发前已经结束。","critical":true},
+        {"id":"mira_pursued_erin","card":"lovers","image":"third","match":["米拉追求艾琳","喜欢艾琳","新的追求"],"concepts":[["米拉","死者"],["艾琳","报警人"],["追求","喜欢","爱上","新恋人"]],"required_concepts":3,"truth":true,"fact":"米拉在案发前开始追求艾琳。","critical":true},
+        {"id":"selene_obsession","card":"devil","image":"chains","match":["塞琳执念","仍有执念","无法放下","占有欲"],"concepts":[["塞琳","写信人"],["执念","放不下","占有欲","纠缠","不甘心"]],"required_concepts":2,"truth":true,"fact":"塞琳仍然无法放下与米拉的关系。","critical":true},
+        {"id":"jealous_motive","card":"devil","image":"fire","match":["塞琳嫉妒","因为吃醋","嫉妒艾琳"],"concepts":[["塞琳","写信人"],["嫉妒","吃醋","占有","不接受"],["艾琳","新恋人","追求别人"]],"required_concepts":2,"truth":true,"fact":"塞琳因米拉开始追求艾琳而产生强烈嫉妒。","critical":true},
+        {"id":"discovery_entry_confusion","card":"moon","image":"animals","match":["事实混淆","发现尸体和进入现场","两个不同事实"],"concepts":[["发现尸体","看到尸体"],["进入现场","进入房间"],["混淆","不是一回事","不同","区别"]],"required_concepts":3,"truth":true,"fact":"‘第一个发现尸体’与‘第一个进入现场’是两件事。","critical":true},
+        {"id":"erin_outside","card":"hanged_man","image":"view","match":["艾琳在门外","报警人站在门外","观察位置"],"concepts":[["艾琳","报警人"],["门外","外面","观察位置","站在门口"]],"required_concepts":2,"truth":true,"fact":"艾琳发现尸体时站在门外。","critical":true},
+        {"id":"selene_before_erin","card":"judgement","image":"past","match":["塞琳在艾琳之前","艾琳到达之前","先后顺序","塞琳先到"],"concepts":[["塞琳"],["艾琳","报警人"],["之前","先到","更早","到达前"]],"required_concepts":3,"truth":true,"fact":"塞琳在艾琳到达前已经进入米拉家。","critical":true},
+        {"id":"murder_before_erin","card":"judgement","image":"rising","match":["杀人发生在艾琳之前","死亡时间","艾琳到达前被杀","案发顺序"],"concepts":[["杀人","遇害","死亡","案发"],["艾琳","报警人"],["之前","到达前","更早"]],"required_concepts":3,"truth":true,"fact":"米拉在艾琳到达前已经遇害。","critical":true},
+        {"id":"threat_letter_author","card":"high_priestess","image":"scroll","match":["塞琳写威胁信","威胁信由塞琳","谁写的信"],"concepts":[["威胁信","那封信","信件"],["塞琳","写信人"],["写","寄","发出"]],"required_concepts":2,"truth":true,"fact":"阿德里安保存的威胁信由塞琳寄出。","critical":true},
+        {"id":"adrian_has_letter","card":"high_priestess","image":"scroll","match":["阿德里安有信","阿德里安保存","信在阿德里安手里"],"concepts":[["阿德里安"],["威胁信","信件","那封信"],["保存","拿着","手里","持有"]],"required_concepts":2,"truth":true,"fact":"阿德里安手中确实保存着塞琳寄出的威胁信。","critical":true},
+        {"id":"knife_weapon","card":"death","image":"fallen","match":["水果刀是凶器","刀杀死米拉","用刀行凶"],"concepts":[["水果刀","刀","利刃"],["凶器","杀死","行凶","死亡"]],"required_concepts":2,"truth":true,"fact":"水果刀是杀死米拉的凶器。","critical":true},
+        {"id":"selene_discarded_knife","card":"chariot","image":"vehicle","match":["塞琳扔掉水果刀","把刀扔进垃圾桶","凶手丢刀"],"concepts":[["塞琳","凶手"],["水果刀","刀","凶器"],["扔","丢","垃圾桶","转移"]],"required_concepts":3,"truth":true,"fact":"塞琳行凶后把水果刀扔进垃圾桶。","critical":true},
+        {"id":"selene_killer","card":"justice","image":"gaze","match":["塞琳是凶手","塞琳杀了米拉","凶手是塞琳"],"concepts":[["塞琳"],["凶手","杀了米拉","杀害","行凶"]],"required_concepts":2,"truth":true,"fact":"塞琳杀害了米拉。","critical":true},
+        {"id":"erin_killer","card":"justice","image":"sword","match":["艾琳是凶手","艾琳杀了米拉"],"concepts":[["艾琳","报警人"],["凶手","杀了米拉","杀害","行凶"]],"required_concepts":2,"truth":false,"fact":"艾琳不是凶手。","critical":false},
+        {"id":"rowan_killer","card":"justice","image":"sword","match":["罗文是凶手","罗文杀了米拉"],"concepts":[["罗文"],["凶手","杀了米拉","杀害","行凶"]],"required_concepts":2,"truth":false,"fact":"罗文不是凶手。","critical":false},
+        {"id":"adrian_killer","card":"justice","image":"sword","match":["阿德里安是凶手","阿德里安杀了米拉"],"concepts":[["阿德里安"],["凶手","杀了米拉","杀害","行凶"]],"required_concepts":2,"truth":false,"fact":"阿德里安不是凶手。","critical":false},
+        {"id":"framing_erin","card":"justice","image":"gaze","match":["嫁祸艾琳","故意让艾琳可疑","把嫌疑引向艾琳"],"concepts":[["塞琳","凶手"],["艾琳","报警人"],["嫁祸","栽赃","陷害","嫌疑"]],"required_concepts":2,"truth":true,"fact":"塞琳利用艾琳第一个发现尸体的事实，故意把嫌疑引向她。","critical":true},
+        {"id":"selene_waited_outside","card":"high_priestess","image":"veil","match":["塞琳躲在门口","凶手藏在门外","等待艾琳"],"concepts":[["塞琳","凶手"],["躲","藏","等待","埋伏"],["门口","门外","艾琳"]],"required_concepts":3,"truth":true,"fact":"塞琳行凶后躲在门口等待艾琳出现。","critical":true},
+        {"id":"fight_after_rejection","card":"judgement","image":"past","match":["拒绝后发生搏斗","搏斗发生在分手后","门口搏斗"],"concepts":[["搏斗","争执","冲突"],["拒绝","复合","关系"],["之后","后来","门口"]],"required_concepts":2,"truth":true,"fact":"门口搏斗发生在米拉拒绝塞琳复合之后。","critical":true},
+        {"id":"outward_door_decisive","card":"moon","image":"road","match":["大门向外开启重要","开门方向决定","门朝外开"],"concepts":[["大门","门"],["向外开","开启方向","开门方向"],["重要","决定","关键","影响"]],"required_concepts":2,"truth":false,"fact":"大门向外开启不是锁定凶手的决定性条件。","critical":false}
+      ],
+      "cross_readings": [
+        {"id":"relationship_obsession","cards":["lovers","devil"],"match":["执念来自这段关系","因为米拉喜欢艾琳","关系导致嫉妒"],"concepts":[["塞琳","她"],["执念","嫉妒","占有"],["关系","米拉","艾琳"]],"required_concepts":3,"truth":true,"fact":"塞琳的执念因米拉开始追求艾琳而加剧。"},
+        {"id":"viewpoint_misunderstanding","cards":["moon","hanged_man"],"match":["误解来自观察位置","门外看到但没有进入","位置造成误会"],"concepts":[["误解","混淆","误会"],["门外","观察位置","看到"],["进入","没进","没有进入"]],"required_concepts":2,"truth":true,"fact":"对艾琳的误解来自她发现尸体时所处的门外位置。"},
+        {"id":"entry_timeline","cards":["chariot","judgement"],"match":["进入顺序","塞琳先进入","行动时间"],"concepts":[["塞琳"],["艾琳"],["进入","到达","先后","顺序"]],"required_concepts":3,"truth":true,"fact":"塞琳先进入现场，艾琳随后到达但没有进去。"},
+        {"id":"breakup_and_death","cards":["lovers","death"],"match":["关系结束导致死亡","分手和死亡有关","拒绝复合导致杀人"],"concepts":[["关系结束","分手","拒绝复合"],["死亡","杀人","遇害"],["有关","导致","原因"]],"required_concepts":2,"truth":true,"fact":"关系结束与米拉被害之间存在直接因果。"}
+      ]
+    }
+  ]
+}

@@ -23,6 +23,21 @@
 - `cost`：分钟、金钱或关系代价。
 - `presentation`：对白、旁白、镜头、声音提示。
 - `results`：新增事实、关系变化、居民确认、后续事件。
+- `choices`：可选回应；每项可以有自己的时间、金钱、表现和结果。
+- `launch_module`：进入独立玩法工作台，例如 `cooking`、`translation` 或 `tarot`。
+
+事件结果目前支持：
+
+- `facts`、`completed_events` 和 `reveal_schedule_entries`。
+- `encounters`、`relationship_flags` 和 `confirmations`。
+- `journal_entries`、`appointments` 和 `artifacts`。
+- `unlock_modules` 和正向金钱变化。
+
+认可状态使用 `unknown`、`pending`、`granted`、`refused`、`withdrawn`，不要用一个公开好感度数字替代具体经历。
+
+## 灰盒玩法
+
+`data/gameplay/modules.json` 登记稳定玩法ID和场景入口；`data/gameplay/module_prototypes.json` 保存灰盒选择、成本与结果。正式美术和更复杂的交互可以替换工作台场景，但应继续通过同一结果结构写回关系、日记、作品和玩法状态。
 
 ## 美术资源
 

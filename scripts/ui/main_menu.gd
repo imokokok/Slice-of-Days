@@ -37,13 +37,12 @@ func _draw() -> void:
 
 
 func _build_menu() -> void:
-	var title := _make_label(self, "第七日\n之前", Vector2(86, 66), Vector2(390, 170), 62, PAPER)
+	var title := _make_label(self, "SOLMERE", Vector2(86, 78), Vector2(430, 110), 58, PAPER)
 	title.add_theme_color_override("font_shadow_color", Color(INK, 0.42))
 	title.add_theme_constant_override("shadow_offset_x", 3)
 	title.add_theme_constant_override("shadow_offset_y", 4)
-	title.add_theme_constant_override("line_spacing", -10)
 
-	var subtitle := _make_label(self, "BEFORE THE SEVENTH DAY", Vector2(92, 224), Vector2(360, 26), 15, Color(PAPER, 0.92))
+	var subtitle := _make_label(self, "THE TOWN BEFORE THE SEVENTH DAY", Vector2(92, 194), Vector2(430, 26), 15, Color(PAPER, 0.92))
 	subtitle.add_theme_color_override("font_shadow_color", Color(INK, 0.35))
 	subtitle.add_theme_constant_override("shadow_offset_x", 2)
 	subtitle.add_theme_constant_override("shadow_offset_y", 2)
@@ -109,11 +108,11 @@ func _show_overwrite_confirmation() -> void:
 
 func _show_role_selection() -> void:
 	_prepare_modal()
-	_make_label(modal_panel, "选择你的时间方式", Vector2(34, 28), Vector2(522, 42), 27, INK)
-	var body := _make_label(modal_panel, "同一座小镇，两种不同的抵达方式。", Vector2(34, 78), Vector2(522, 34), 16, MUTED)
+	_make_label(modal_panel, "选择最先体验的视角", Vector2(34, 28), Vector2(522, 42), 27, INK)
+	var body := _make_label(modal_panel, "之后会在两个人的平行七天之间切换。", Vector2(34, 78), Vector2(522, 34), 16, MUTED)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var a := _make_button(modal_panel, "A · 连续的一天", Vector2(54, 143), Vector2(226, 76), "primary")
-	var b := _make_button(modal_panel, "B · 碎片的一天", Vector2(310, 143), Vector2(226, 76), "teal")
+	var a := _make_button(modal_panel, "先从 A 开始", Vector2(54, 143), Vector2(226, 76), "primary")
+	var b := _make_button(modal_panel, "先从 B 开始", Vector2(310, 143), Vector2(226, 76), "teal")
 	var cancel := _make_button(modal_panel, "返回", Vector2(200, 254), Vector2(190, 46), "regular")
 	a.tooltip_text = "先行动，再从结果调整"
 	b.tooltip_text = "先确认时间、路线和费用"
@@ -138,7 +137,7 @@ func _show_settings() -> void:
 func _show_credits() -> void:
 	_prepare_modal()
 	_make_label(modal_panel, "制作人员", Vector2(34, 28), Vector2(522, 42), 27, INK)
-	_make_label(modal_panel, "WHAT 100 PEOPLE DO TO A GAME\n\n策划、叙事与开发：100game 创作团队\n美术方向：温暖海边小镇手绘风格", Vector2(34, 88), Vector2(522, 130), 16, MUTED)
+	_make_label(modal_panel, "SOLMERE\n\n策划、叙事与开发：Solmere 创作团队\n美术方向：温暖海边小镇手绘风格", Vector2(34, 88), Vector2(522, 130), 16, MUTED)
 	var close := _make_button(modal_panel, "返回", Vector2(200, 254), Vector2(190, 46), "primary")
 	close.pressed.connect(_hide_modal)
 
@@ -171,7 +170,7 @@ func _toggle_fullscreen() -> void:
 
 
 func _start_role(role: String) -> void:
-	GameState.begin_vertical_slice(role)
+	ChapterSystem.start_new_game(role)
 	SceneRouter.town_day()
 
 

@@ -1,0 +1,530 @@
+{
+  "_note": "依据故事大纲录入的七天灰盒事件。对白、数值和居民暂名仍可替换。",
+  "events": [
+    {
+      "id": "a_d1_print_help",
+      "choice_text": "帮前面的人传一下文件（20分钟）",
+      "priority": 10,
+      "conditions": {"roles": ["A"], "days": [1], "locations": ["print_shop"], "start": 540, "end": 780},
+      "cost": {"minutes": 20},
+      "presentation": {
+        "title": "打印店里的U盘",
+        "summary": "排在前面的人忘带了U盘，打印店的队伍停了下来。",
+        "lines": ["A把手机借给对方传文件。", "对方请她喝咖啡，事情就这样继续往另一个方向走。"],
+        "result": "一杯临时得到的咖啡，把接下来的路线带向了Mossner。"
+      },
+      "results": {
+        "completed_events": ["a_d1_print_help"],
+        "facts": ["打印店遇到的人说Mossner今天可能去咖啡馆。"],
+        "journal_entries": [{"id": "a_d1_borrowed_phone", "kind": "memory", "text": "手机借出去二十分钟，换来一杯没有计划的咖啡。"}]
+      }
+    },
+    {
+      "id": "a_d1_mossner_coffee",
+      "choice_text": "接受Mossner的彩排邀请（40分钟）",
+      "priority": 10,
+      "conditions": {"roles": ["A"], "days": [1], "locations": ["cafe"], "start": 660, "end": 900, "required_events": ["a_d1_print_help"], "resident_present": "mossner"},
+      "cost": {"minutes": 40},
+      "presentation": {
+        "title": "咖啡还没有喝完",
+        "summary": "Mossner问她，下午要不要一起去剧场看彩排。",
+        "lines": ["A原本没有把剧场写进今天。", "她说，好。"],
+        "result": "剧场彩排成为今天的新目的地。"
+      },
+      "results": {
+        "encounters": ["mossner"],
+        "relationship_flags": {"mossner": ["接受过临时邀请"]},
+        "appointments": [{"id": "a_d1_theatre_rehearsal", "day": 1, "start": 900, "location": "theatre", "label": "跟Mossner看彩排"}]
+      }
+    },
+    {
+      "id": "a_d1_theatre_rehearsal",
+      "choice_text": "一起看彩排并帮忙（90分钟）",
+      "priority": 10,
+      "conditions": {"roles": ["A"], "days": [1], "locations": ["theatre"], "start": 900, "end": 1140, "required_events": ["a_d1_mossner_coffee"]},
+      "cost": {"minutes": 90},
+      "presentation": {
+        "title": "没有写在计划里的彩排",
+        "summary": "彩排结束后，道具还没有收完。",
+        "lines": ["A留下来搭了把手。", "Mossner把她介绍给了剧场道具师。"],
+        "result": "两个人愿意确认，今天确实和A一起待过。"
+      },
+      "results": {
+        "encounters": ["mossner", "stagehand"],
+        "relationship_flags": {"mossner": ["一起看过彩排"], "stagehand": ["一起收过道具"]},
+        "confirmations": {"mossner": "granted", "stagehand": "granted"},
+        "journal_entries": [{"id": "a_d1_rehearsal", "kind": "encounter", "text": "第一天在剧场得到两份认可。"}],
+        "unlock_modules": ["photography"]
+      }
+    },
+    {
+      "id": "a_d1_evening_photo",
+      "choice_text": "拍下第一天的晚霞",
+      "priority": 20,
+      "conditions": {"roles": ["A"], "days": [1], "locations": ["park"], "start": 1080, "end": 1260, "required_events": ["a_d1_theatre_rehearsal"]},
+      "cost": {},
+      "presentation": {
+        "title": "相册里多出来的栏杆",
+        "summary": "浪花里闪过一个很像旧阳台栏杆的形状。",
+        "lines": ["它只出现了一瞬间。", "A没有认真追究。"],
+        "result": "摄影灰盒已经解锁。"
+      },
+      "results": {"unlock_modules": ["photography"]},
+      "launch_module": "photography"
+    },
+    {
+      "id": "b_d1_cafeteria_observe",
+      "choice_text": "确认周晓六的出现时间（40分钟）",
+      "priority": 10,
+      "conditions": {"roles": ["B"], "days": [1], "locations": ["cafeteria"], "start": 660, "end": 840},
+      "cost": {"minutes": 40},
+      "presentation": {
+        "title": "先确认，再搭话",
+        "summary": "周晓六在赶作业，只来得及抬头点一下。",
+        "lines": ["B没有把这次点头算成关系。", "她只把出现时间写进了本子。"],
+        "result": "周晓六的午间日程被记录下来。"
+      },
+      "results": {
+        "encounters": ["zhou_xiaoliu"],
+        "relationship_flags": {"zhou_xiaoliu": ["第一次只点过头"]},
+        "reveal_schedule_entries": ["zhou_cafeteria"],
+        "journal_entries": [{"id": "b_d1_zhou_schedule", "kind": "schedule", "text": "周晓六，学院食堂，中午。"}]
+      }
+    },
+    {
+      "id": "b_d1_library_wait",
+      "choice_text": "在能被看见的位置等九（60分钟）",
+      "priority": 10,
+      "conditions": {"roles": ["B"], "days": [1], "locations": ["library"], "start": 1080, "end": 1200, "resident_present": "jiu"},
+      "cost": {"minutes": 60},
+      "presentation": {
+        "title": "尚未说话",
+        "summary": "九确实在18点左右出现了。",
+        "lines": ["B坐在能被看见的位置看了一会儿书。", "她没有主动搭话。"],
+        "result": "本子里写下：九，图书馆，18:00左右。尚未说话。"
+      },
+      "results": {
+        "encounters": ["jiu"],
+        "relationship_flags": {"jiu": ["在图书馆见过但尚未交谈"]},
+        "reveal_schedule_entries": ["jiu_library_evening"],
+        "journal_entries": [{"id": "b_d1_jiu_schedule", "kind": "schedule", "text": "九，图书馆，18:00左右。尚未说话。"}]
+      }
+    },
+    {
+      "id": "b_d1_notebook_anomaly",
+      "choice_text": "整理第一天的计划本（20分钟）",
+      "priority": 20,
+      "conditions": {"roles": ["B"], "days": [1], "locations": ["residence"], "start": 1080, "end": 1260, "required_events": ["b_d1_cafeteria_observe"]},
+      "cost": {"minutes": 20},
+      "presentation": {
+        "title": "空白页上的旧门牌",
+        "summary": "翻页时，空白处浮现出旧合租房门牌号的笔迹。",
+        "lines": ["B眨了一下眼。", "字迹消失，她继续写第二天的计划。"],
+        "result": "这段异常只进入B的私人记录。"
+      },
+      "results": {
+        "facts": ["计划本空白处曾短暂出现旧合租房门牌号。"],
+        "journal_entries": [{"id": "b_d1_old_address", "kind": "anomaly", "text": "空白处出现过旧门牌号，随后消失。"}]
+      }
+    },
+    {
+      "id": "a_d2_restaurant_shift",
+      "choice_text": "答应帮忙照看饭店时段",
+      "priority": 10,
+      "conditions": {"roles": ["A"], "days": [2], "locations": ["night_market"], "start": 660, "end": 1080},
+      "cost": {},
+      "presentation": {
+        "title": "原本只是来买材料",
+        "summary": "旁边的人在问谁能帮忙看一下店。",
+        "lines": ["A说，我可以。", "一个下午就这样被重新命名。"],
+        "result": "饭店工作台已经打开。"
+      },
+      "results": {"unlock_modules": ["cooking"]},
+      "launch_module": "cooking"
+    },
+    {
+      "id": "a_d2_park_music",
+      "choice_text": "和阿锰在公园坐一会儿",
+      "priority": 20,
+      "conditions": {"roles": ["A"], "days": [2], "locations": ["park"], "start": 1080, "end": 1260, "resident_present": "a_meng"},
+      "cost": {},
+      "presentation": {
+        "title": "竹笛和停下来的时间",
+        "summary": "阿锰没有要求A做什么，只是继续吹了一段。",
+        "result": "发呆与风景玩法已经打开。"
+      },
+      "results": {"encounters": ["a_meng"], "unlock_modules": ["contemplation"]},
+      "launch_module": "contemplation"
+    },
+    {
+      "id": "b_d2_tarot_deduction",
+      "choice_text": "用一局推理换免费占卜",
+      "priority": 10,
+      "conditions": {"roles": ["B"], "days": [2], "locations": ["tarot_stall"], "start": 1140, "end": 1260, "resident_present": "xia_touming"},
+      "cost": {},
+      "presentation": {
+        "title": "钱和时间被放到同一张桌上",
+        "summary": "可以支付100元，也可以先完成一局关系推理。",
+        "lines": ["B选择先问清楚。"],
+        "result": "牌桌已经准备好。"
+      },
+      "results": {"unlock_modules": ["tarot"]},
+      "launch_module": "tarot"
+    },
+    {
+      "id": "b_d2_careful_questions",
+      "choice_text": "把问题问得再清楚一点（40分钟）",
+      "priority": 20,
+      "conditions": {"roles": ["B"], "days": [2], "locations": ["cafeteria"], "start": 660, "end": 960},
+      "cost": {"minutes": 40},
+      "presentation": {
+        "title": "不是每次确认都需要长谈",
+        "summary": "B先说明自己为什么来，也说明不会耽误太久。",
+        "result": "周晓六和Mossner愿意确认，她确实认真来过。"
+      },
+      "results": {
+        "encounters": ["zhou_xiaoliu", "mossner"],
+        "relationship_flags": {"zhou_xiaoliu": ["把问题问得很清楚"], "mossner": ["认真确认过日程"]},
+        "confirmations": {"zhou_xiaoliu": "granted", "mossner": "granted"}
+      }
+    },
+    {
+      "id": "b_d2_chess_start",
+      "choice_text": "把一段完整时间留给棋局",
+      "priority": 30,
+      "conditions": {"roles": ["B"], "days": [2], "locations": ["park"], "start": 1080, "end": 1260, "resident_present": "jian_zhaoxiang"},
+      "cost": {},
+      "presentation": {
+        "title": "可以暂停的棋",
+        "summary": "B愿意让一段完整时间不服务于路线优化。",
+        "result": "棋局工作台已经打开。"
+      },
+      "results": {"unlock_modules": ["chess"]},
+      "launch_module": "chess"
+    },
+    {
+      "id": "a_d3_social_chain",
+      "choice_text": "跟着临时关系链走下去（90分钟）",
+      "priority": 10,
+      "conditions": {"roles": ["A"], "days": [3], "locations": ["park"], "start": 900, "end": 1140},
+      "cost": {"minutes": 90},
+      "presentation": {
+        "title": "屋檐、乙游和一只需要散步的狗",
+        "summary": "一件事不断把A带向下一件事。",
+        "lines": ["石泳琪让她看屏幕。", "巫巫把狗绳临时交给她。", "见沼香骑车经过时停了一会儿。"],
+        "result": "三个人记住了A是怎样进入这一天的。"
+      },
+      "results": {
+        "encounters": ["shi_yongqi", "wu_wu", "jian_zhaoxiang"],
+        "relationship_flags": {
+          "shi_yongqi": ["一起在屋檐下等雨"],
+          "wu_wu": ["帮忙遛过狗"],
+          "jian_zhaoxiang": ["在临时路线里停下来聊过"]
+        },
+        "confirmations": {"shi_yongqi": "granted", "wu_wu": "granted", "jian_zhaoxiang": "granted"}
+      }
+    },
+    {
+      "id": "b_d3_work_interruption",
+      "choice_text": "接起临时工作电话",
+      "priority": 10,
+      "conditions": {"roles": ["B"], "days": [3], "locations": ["residence"], "start": 540, "end": 960},
+      "cost": {"minutes": 30},
+      "presentation": {
+        "title": "完整时间被切碎了",
+        "summary": "原本计划好的路线因为一个工作电话失效。",
+        "lines": ["B很快处理完问题。", "处理完以后，原来的窗口也已经过去。"],
+        "result": "今天的计划多了一条被划掉的路线。"
+      },
+      "results": {
+        "journal_entries": [{"id": "b_d3_interrupted_route", "kind": "schedule", "text": "原计划见沼香。因工作电话取消。"}]
+      }
+    },
+    {
+      "id": "b_d3_help_market",
+      "choice_text": "用碎片时间帮一次忙（30分钟）",
+      "priority": 20,
+      "conditions": {"roles": ["B"], "days": [3], "locations": ["night_market"], "start": 840, "end": 1080},
+      "cost": {"minutes": 30},
+      "presentation": {
+        "title": "做得到，于是又接下了",
+        "summary": "饭店店主需要有人核对一张临时清单。",
+        "result": "店主记住了B处理混乱时仍然很清楚。"
+      },
+      "results": {
+        "encounters": ["restaurant_owner"],
+        "relationship_flags": {"restaurant_owner": ["帮忙核对过临时清单"]},
+        "confirmations": {"restaurant_owner": "granted"}
+      }
+    },
+    {
+      "id": "b_d3_sound_session",
+      "choice_text": "整理雨声与公交刹车声",
+      "priority": 30,
+      "conditions": {"roles": ["B"], "days": [3], "locations": ["cafe"], "start": 1080, "end": 1260},
+      "cost": {},
+      "presentation": {
+        "title": "一段可以交付的声音",
+        "summary": "采样已经足够，剩下的是决定哪些声音进入结构。",
+        "result": "城市采样工作台已经打开。"
+      },
+      "results": {"unlock_modules": ["sound_sampling"]},
+      "launch_module": "sound_sampling"
+    },
+    {
+      "id": "a_d4_confirmation_withdrawn",
+      "choice_text": "听完一次临时改口（30分钟）",
+      "priority": 10,
+      "conditions": {"roles": ["A"], "days": [4], "locations": ["cafe"], "start": 540, "end": 1080},
+      "cost": {"minutes": 30},
+      "presentation": {
+        "title": "你大概不太记得我",
+        "summary": "一位之前愿意认可她的人改变了主意。",
+        "lines": ["A提出改天请对方吃饭。", "对方只说，下次再说吧。"],
+        "result": "Mossner的认可被暂时撤回。"
+      },
+      "results": {
+        "confirmations": {"mossner": "withdrawn"},
+        "relationship_flags": {"mossner": ["曾觉得A聊天时心不在焉"]},
+        "journal_entries": [{"id": "a_d4_withdrawn", "kind": "relationship", "text": "认可不是已经装进口袋里的东西。"}]
+      }
+    },
+    {
+      "id": "a_d4_listen_to_xia",
+      "choice_text": "不急着解释，先听夏透明说完（40分钟）",
+      "priority": 20,
+      "conditions": {"roles": ["A"], "days": [4], "locations": ["tarot_stall"], "start": 1140, "end": 1260, "resident_present": "xia_touming", "required_events": ["a_d4_confirmation_withdrawn"]},
+      "cost": {"minutes": 40},
+      "presentation": {
+        "title": "认可开始有了重量",
+        "summary": "夏透明没有替任何人解释，只问A还记不记得前几天听过的话。",
+        "result": "夏透明愿意确认A确实在这里认真生活过。"
+      },
+      "results": {
+        "encounters": ["xia_touming"],
+        "relationship_flags": {"xia_touming": ["在受挫以后仍然认真听完"]},
+        "confirmations": {"xia_touming": "granted"}
+      }
+    },
+    {
+      "id": "b_d4_missed_window",
+      "choice_text": "确认那个已经错过的窗口",
+      "priority": 10,
+      "conditions": {"roles": ["B"], "days": [4], "locations": ["library"], "start": 840, "end": 1080},
+      "cost": {"minutes": 20},
+      "presentation": {
+        "title": "今日确认加零",
+        "summary": "关键人物没有出现，计划好的时间块失去用途。",
+        "lines": ["B取消了原本留给棋的时间。", "本子上写下：今日确认+0。"],
+        "result": "这次错过被记录，但不会自动补偿。"
+      },
+      "results": {
+        "journal_entries": [{"id": "b_d4_zero_confirmation", "kind": "schedule", "text": "今日确认+0。"}],
+        "facts": ["完整的计划也可能因为别人的日程而失效。"]
+      }
+    },
+    {
+      "id": "b_d4_salvage_rehearsal",
+      "choice_text": "赶去处理另一处道具窗口（60分钟）",
+      "priority": 20,
+      "conditions": {"roles": ["B"], "days": [4], "locations": ["theatre"], "start": 1080, "end": 1260, "required_events": ["b_d4_missed_window"]},
+      "cost": {"minutes": 60},
+      "presentation": {
+        "title": "计划之外的善后",
+        "summary": "剧场道具师正需要一个能把清单重新排好的人。",
+        "result": "道具师愿意确认B确实在这里帮过忙。"
+      },
+      "results": {
+        "encounters": ["stagehand"],
+        "relationship_flags": {"stagehand": ["在混乱中重新排好道具"]},
+        "confirmations": {"stagehand": "granted"}
+      }
+    },
+    {
+      "id": "a_d5_library_rescue",
+      "choice_text": "留下来帮Mossner搬道具（60分钟）",
+      "priority": 10,
+      "conditions": {"roles": ["A"], "days": [5], "locations": ["library"], "start": 780, "end": 1080},
+      "cost": {"minutes": 60},
+      "presentation": {
+        "title": "一次没有计划的相遇",
+        "summary": "Mossner需要把几件道具带回剧场。",
+        "lines": ["搬运途中又遇见了两个人。", "其中一位主动问，要不要现在把认可写下来。"],
+        "result": "Sunniva与代写委托人愿意给出认可。"
+      },
+      "results": {
+        "encounters": ["sunniva", "letter_client"],
+        "relationship_flags": {"sunniva": ["在图书馆认真帮过忙"], "letter_client": ["搬道具时聊过一会儿"]},
+        "confirmations": {"sunniva": "granted", "letter_client": "granted"}
+      }
+    },
+    {
+      "id": "a_d5_translation",
+      "choice_text": "帮两个人补全没有说出口的意思",
+      "priority": 20,
+      "conditions": {"roles": ["A"], "days": [5], "locations": ["night_market"], "start": 900, "end": 1200, "required_events": ["a_d5_library_rescue"]},
+      "cost": {},
+      "presentation": {
+        "title": "同一个词里的两种生活",
+        "summary": "争论的词是“家”。真正冲突的却不是字面意思。",
+        "result": "消除误解工作台已经打开。"
+      },
+      "results": {"unlock_modules": ["translation"]},
+      "launch_module": "translation"
+    },
+    {
+      "id": "b_d5_ghostwriting",
+      "choice_text": "接下这封很短的信",
+      "priority": 10,
+      "conditions": {"roles": ["B"], "days": [5], "locations": ["library"], "start": 780, "end": 1080, "resident_present": "letter_client"},
+      "cost": {},
+      "presentation": {
+        "title": "先听清楚再动手",
+        "summary": "委托人知道信要很短，却还不知道最重要的那句话是什么。",
+        "result": "代写工作台已经打开。"
+      },
+      "results": {"unlock_modules": ["ghostwriting"]},
+      "launch_module": "ghostwriting"
+    },
+    {
+      "id": "b_d5_resume_chess",
+      "choice_text": "把之前暂停的棋下完",
+      "priority": 20,
+      "conditions": {"roles": ["B"], "days": [5], "locations": ["park"], "start": 1080, "end": 1260, "resident_present": "jian_zhaoxiang"},
+      "cost": {},
+      "presentation": {
+        "title": "终于没有被取消的完整时间",
+        "summary": "棋局还停在上一次离开的位置。",
+        "result": "棋局工作台已经打开。"
+      },
+      "results": {"unlock_modules": ["chess"]},
+      "launch_module": "chess"
+    },
+    {
+      "id": "a_d6_last_full_block",
+      "choice_text": "决定最后一块完整时间留给谁",
+      "priority": 10,
+      "conditions": {"roles": ["A"], "days": [6], "locations": ["park"], "start": 1080, "end": 1260},
+      "cost": {},
+      "presentation": {
+        "title": "最后的完整时间",
+        "summary": "一边是稳定的认可机会，一边是临时去看星星的邀请。",
+        "lines": ["两件事都需要完整的两小时。"],
+        "result": "这个选择已经留下后果。"
+      },
+      "choices": [
+        {
+          "id": "watch_stars",
+          "label": "去看星星",
+          "cost": {"minutes": 120},
+          "presentation": {"result": "对方没有提认可，只把热茶分给A一点。她没有后悔。"},
+          "results": {
+            "artifacts": [{"collection": "photos", "shared": false, "data": {"id": "only_night_sky", "title": "只有夜空", "kind": "photo"}}],
+            "journal_entries": [{"id": "a_d6_stars", "kind": "choice", "text": "少了一次稳妥机会，但没有后悔。"}]
+          }
+        },
+        {
+          "id": "secure_confirmation",
+          "label": "赴约完成认可",
+          "cost": {"minutes": 120},
+          "presentation": {"result": "流程很顺利。A拿到了一份认可，也看见自己又把关系做成了项目。"},
+          "results": {"confirmations": {"mossner": "granted"}}
+        }
+      ]
+    },
+    {
+      "id": "b_d6_key_meeting",
+      "choice_text": "完成计算过很多次的会面（90分钟）",
+      "priority": 10,
+      "conditions": {"roles": ["B"], "days": [6], "locations": ["library"], "start": 1080, "end": 1260, "resident_present": "jiu"},
+      "cost": {"minutes": 90},
+      "presentation": {
+        "title": "最后一段被认真保留下来的时间",
+        "summary": "过程和计划一样顺利。",
+        "result": "九愿意给出认可。"
+      },
+      "results": {
+        "relationship_flags": {"jiu": ["完成过一次不被打断的会面"]},
+        "confirmations": {"jiu": "granted"}
+      }
+    },
+    {
+      "id": "b_d6_boundary_choice",
+      "choice_text": "回应一个临时追加的请求",
+      "priority": 20,
+      "conditions": {"roles": ["B"], "days": [6], "locations": ["park"], "start": 1080, "end": 1260},
+      "cost": {},
+      "presentation": {
+        "title": "做得到，和要不要接",
+        "summary": "又有人说，交给你最放心。",
+        "result": "B第一次把自己的意愿也放进了判断里。"
+      },
+      "choices": [
+        {
+          "id": "decline_kindly",
+          "label": "说明自己今天不接",
+          "cost": {"minutes": 30},
+          "presentation": {"result": "请求被转给了别人。事情仍然完成了，世界没有因此停下。"},
+          "results": {
+            "encounters": ["wu_wu", "shi_yongqi"],
+            "relationship_flags": {"wu_wu": ["听见B清楚地拒绝过"], "shi_yongqi": ["没有把可靠当成无限使用"]},
+            "confirmations": {"wu_wu": "granted", "shi_yongqi": "granted"},
+            "journal_entries": [{"id": "b_d6_decline", "kind": "choice", "text": "做得到，不等于必须我来做。"}]
+          }
+        },
+        {
+          "id": "accept_again",
+          "label": "像以前一样接下来",
+          "cost": {"minutes": 60},
+          "presentation": {"result": "事情被处理得很好。B也又一次错过了旁边那盘棋。"},
+          "results": {"relationship_flags": {"wu_wu": ["见过B再次接下善后"]}}
+        }
+      ]
+    },
+    {
+      "id": "a_d7_last_sunset",
+      "choice_text": "把最后一个傍晚留给自己",
+      "priority": 10,
+      "conditions": {"roles": ["A"], "days": [7], "locations": ["park"], "start": 1080, "end": 1260},
+      "cost": {},
+      "presentation": {
+        "title": "最后一个傍晚",
+        "summary": "A把剩下的半瓶水递给路过的一只狗。",
+        "lines": ["相册里的旧空间不再出现。", "她给父母发了一句：我在这里待了七天。"],
+        "result": "最后一张晚霞照片进入相册。"
+      },
+      "results": {"unlock_modules": ["contemplation"]},
+      "launch_module": "contemplation"
+    },
+    {
+      "id": "b_d7_last_note",
+      "choice_text": "在最后一页写下今天的晚霞",
+      "priority": 10,
+      "conditions": {"roles": ["B"], "days": [7], "locations": ["residence"], "start": 1080, "end": 1260},
+      "cost": {"minutes": 20},
+      "presentation": {
+        "title": "今天晚霞很好",
+        "summary": "旧地址和旧通知单的笔迹都没有再出现。",
+        "lines": ["本子里只剩下B亲手写过的日程和认可。", "她把拉链拉得很慢。"],
+        "result": "本子的最后一页完成了。"
+      },
+      "results": {
+        "journal_entries": [{"id": "b_d7_last_sunset", "kind": "memory", "text": "今天晚霞很好。"}]
+      }
+    },
+    {
+      "id": "optional_optical_illusion",
+      "choice_text": "比较几份互相矛盾的空间记录",
+      "priority": 80,
+      "conditions": {"days": [3, 4, 5, 6], "locations": ["theatre"], "start": 840, "end": 1140},
+      "cost": {},
+      "presentation": {
+        "title": "每一份记录都漏掉了一部分",
+        "summary": "照片、手绘、文字和模型描述着同一个空间。",
+        "result": "空间错觉灰盒已经打开。"
+      },
+      "results": {"unlock_modules": ["optical_illusion"]},
+      "launch_module": "optical_illusion"
+    }
+  ]
+}

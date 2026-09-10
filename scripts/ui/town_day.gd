@@ -25,20 +25,40 @@ var message_label: Label
 var timeline_label: Label
 var actions_box: VBoxContainer
 var notebook_panel: Panel
+var event_overlay: ColorRect
+var event_panel: Panel
 
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
+	var capture_event_id := ""
 	if args.has("--capture-town-a"):
 		GameState.begin_vertical_slice("A")
 	elif args.has("--capture-town-b"):
 		GameState.begin_vertical_slice("B")
+	else:
+		for arg in args:
+			if arg.begins_with("--capture-event="):
+				capture_event_id = arg.trim_prefix("--capture-event=")
+				var event: Dictionary = EventSystem.events.get(capture_event_id, {})
+				var conditions: Dictionary = event.get("conditions", {})
+				var roles: Array = conditions.get("roles", ["A"])
+				var days: Array = conditions.get("days", [1])
+				var event_locations: Array = conditions.get("locations", ["residence"])
+				GameState.begin_new_game(str(roles[0]) if not roles.is_empty() else "A")
+				GameState.current_day = int(days[0]) if not days.is_empty() else 1
+				GameState.current_minute = int(conditions.get("start", 540))
+				GameState.current_location = str(event_locations[0]) if not event_locations.is_empty() else "residence"
+				GameState.commit_active_role_state()
+				break
 	_load_locations()
 	selected_location = GameState.current_location
 	backdrop = $Backdrop
 	_build_ui()
 	GameState.state_changed.connect(_refresh)
 	_refresh()
+	if not capture_event_id.is_empty():
+		_open_event.call_deferred(capture_event_id)
 	if args.has("--capture-town-a") or args.has("--capture-town-b"):
 		_capture.call_deferred("town-%s.png" % GameState.current_role.to_lower())
 
@@ -71,6 +91,8 @@ func _build_ui() -> void:
 	_label(self, "小镇路线 / 选择目的地", Vector2(35, 100), Vector2(500, 25), 15, MUTED)
 	for id in locations:
 		var row: Dictionary = locations[id]
+		if not bool(row.get("map_visible", true)):
+			continue
 		var point := _point_for(row)
 		var button := _button(self, str(row.get("name", id)), point - Vector2(75, 24), Vector2(150, 48), "location")
 		button.pressed.connect(_select_location.bind(id))
@@ -102,18 +124,23 @@ func _build_ui() -> void:
 	var wait20 := _button(bottom, "停留 20 分钟", Vector2(625, 52), Vector2(150, 43), "quiet")
 	var wait60 := _button(bottom, "等待 1 小时", Vector2(786, 52), Vector2(150, 43), "quiet")
 	var next := _button(bottom, "下个空闲段", Vector2(947, 52), Vector2(150, 43), "quiet")
+	var finish := _button(bottom, "结束本段", Vector2(1107, 52), Vector2(110, 43), "quiet")
 	wait20.pressed.connect(_wait.bind(20))
 	wait60.pressed.connect(_wait.bind(60))
 	next.pressed.connect(_next_free_block)
+	finish.pressed.connect(_finish_chapter)
 	timeline_label = _label(bottom, "", Vector2(625, 111), Vector2(500, 72), 13, MUTED)
 	timeline_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var notes_text := "打开随身记忆" if GameState.current_role == "A" else "打开计划本"
 	var notes := _button(bottom, notes_text, Vector2(1228, 48), Vector2(330, 48), "primary")
-	notes.pressed.connect(_toggle_notebook)
-	_label(bottom, "目标：找到夏透明，并请她确认你确实认识这座城。", Vector2(1228, 111), Vector2(330, 55), 13, BONE.darkened(0.06))
+	notes.pressed.connect(SceneRouter.journal)
+	var chapter_goal := str(GameState.schedule_for(GameState.current_role, GameState.current_day).get("goal", "七天内获得12位居民认可。"))
+	var goal := _label(bottom, "本段：%s" % chapter_goal, Vector2(1228, 111), Vector2(330, 55), 13, BONE.darkened(0.06))
+	goal.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 
 	notebook_panel = _panel(self, Vector2(820, 105), Vector2(370, 535), PANEL_SOFT, CYAN)
 	notebook_panel.visible = false
+	_build_event_modal()
 
 
 func _select_location(id: String) -> void:
@@ -173,24 +200,83 @@ func _render_actions(current_people: Array[String]) -> void:
 	if selected_location != GameState.current_location:
 		_add_action("先抵达这里，才能互动", Callable(), true)
 		return
-	if current_people.has("xia_touming"):
-		_add_action("与夏透明谈谈（20分钟）", _talk_to_xia)
-	if current_people.has("mossner") and not GameState.has_event("mossner_clue"):
-		_add_action("询问 Mossner（10分钟）", _talk_to_mossner)
-	match GameState.current_location:
-		"library":
-			if not GameState.has_event("library_archive"):
-				_add_action("查阅居民活动册（20分钟）", _inspect_library)
-		"cafe":
-			if not GameState.has_event("cafe_rumor"):
-				_add_action("听吧台传闻（20分钟）", _hear_cafe_rumor)
-		"night_market":
-			if GameState.current_role == "A" and not GameState.has_event("dinner_invite"):
-				_add_action("接受陌生人的拼桌（20分钟）", _accept_dinner)
-		"tarot_stall":
-			_add_action("坐到塔拉牌桌前", SceneRouter.tarot_table)
+	for event in EventSystem.available_events():
+		var event_id := str(event.get("id", ""))
+		var choice_text := str(event.get("choice_text", event_id))
+		_add_action(choice_text, _open_event.bind(event_id))
+	if GameState.current_location == "tarot_stall":
+		_add_action("坐到 Solmere 塔罗牌桌前", SceneRouter.tarot_table)
 	if actions_box.get_child_count() == 0:
 		_add_action("观察周围（20分钟）", _observe)
+
+
+func _resolve_event(event_id: String, choice_id: String = "") -> void:
+	var result := EventSystem.trigger(event_id, choice_id)
+	status_message = str(result.get("message", ""))
+	if bool(result.get("ok", false)):
+		SaveManager.save_game()
+		event_overlay.visible = false
+		var launch_module := str(result.get("launch_module", ""))
+		if not launch_module.is_empty():
+			SceneRouter.gameplay_module(launch_module, event_id)
+			return
+	_refresh()
+
+
+func _build_event_modal() -> void:
+	event_overlay = ColorRect.new()
+	event_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	event_overlay.color = Color(BONE, 0.42)
+	event_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(event_overlay)
+	event_panel = _panel(event_overlay, Vector2(430, 150), Vector2(740, 580), PANEL, LINE)
+	event_overlay.visible = false
+
+
+func _open_event(event_id: String) -> void:
+	if not EventSystem.events.has(event_id):
+		return
+	for child in event_panel.get_children():
+		event_panel.remove_child(child)
+		child.queue_free()
+	var event: Dictionary = EventSystem.events[event_id]
+	var presentation: Dictionary = event.get("presentation", {})
+	_label(event_panel, str(presentation.get("title", event.get("choice_text", "事件"))), Vector2(32, 25), Vector2(676, 42), 26, BONE)
+	var summary := _label(event_panel, str(presentation.get("summary", "")), Vector2(32, 80), Vector2(676, 64), 16, MUTED)
+	summary.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+	var lines_text := ""
+	for line in presentation.get("lines", []):
+		lines_text += "%s\n\n" % str(line)
+	var lines := _label(event_panel, lines_text, Vector2(32, 155), Vector2(676, 150), 15, BONE.darkened(0.05))
+	lines.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+	var cost: Dictionary = event.get("cost", {})
+	var cost_text := "基础花费：%d分钟 · %d元" % [int(cost.get("minutes", 0)), int(cost.get("money", 0))]
+	_label(event_panel, cost_text, Vector2(32, 320), Vector2(676, 25), 13, CYAN)
+	var choices: Array = event.get("choices", [])
+	if choices.is_empty():
+		var confirm := _button(event_panel, "进入这段经历", Vector2(32, 375), Vector2(320, 52), "primary")
+		confirm.pressed.connect(_resolve_event.bind(event_id, ""))
+	else:
+		for index in choices.size():
+			var choice: Dictionary = choices[index]
+			var button := _button(
+				event_panel,
+				str(choice.get("label", "选择")),
+				Vector2(32 + index * 340, 375),
+				Vector2(320, 52),
+				"action"
+			)
+			button.tooltip_text = str(choice.get("detail", ""))
+			button.pressed.connect(_resolve_event.bind(event_id, str(choice.get("id", ""))))
+	var cancel := _button(event_panel, "暂时离开", Vector2(520, 500), Vector2(188, 44), "quiet")
+	cancel.pressed.connect(func() -> void: event_overlay.visible = false)
+	event_overlay.visible = true
+
+
+func _finish_chapter() -> void:
+	GameState.commit_active_role_state()
+	SaveManager.save_game()
+	SceneRouter.chapter_transition()
 
 
 func _talk_to_xia() -> void:
@@ -278,18 +364,24 @@ func _render_notebook() -> void:
 	var facts := ""
 	for fact in GameState.known_facts:
 		facts += "• %s\n\n" % fact
-	var fact_text := _label(notebook_panel, facts if not facts.is_empty() else "尚无记录。", Vector2(20, 92), Vector2(330, 285), 13, BONE.darkened(0.05))
+	var fact_text := _label(notebook_panel, facts if not facts.is_empty() else "尚无记录。", Vector2(20, 92), Vector2(330, 220), 13, BONE.darkened(0.05))
 	fact_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var relation_summary := "遇见 %d 位居民 · 获得 %d 份认可 · 留下 %d 条个人记录" % [
+		GameState.encountered_residents.size(),
+		GameState.confirmed_residents.size(),
+		GameState.journal_entries.size(),
+	]
+	_label(notebook_panel, "关系与经历", Vector2(20, 325), Vector2(180, 23), 14, CYAN)
+	var relation_text := _label(notebook_panel, relation_summary, Vector2(20, 352), Vector2(330, 42), 13, BONE.darkened(0.05))
+	relation_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label(notebook_panel, "今日可行动时间", Vector2(20, 400), Vector2(180, 23), 14, CYAN)
 	_label(notebook_panel, _block_text(), Vector2(20, 430), Vector2(330, 75), 13, MUTED)
 
 
 func _render_timeline() -> void:
 	var remaining := GameState.current_block_remaining()
-	if GameState.current_role == "A":
-		timeline_label.text = "连续时段 14:00—21:00\n当前时段剩余：%d 分钟" % remaining
-	else:
-		timeline_label.text = "碎片时段：%s\n当前时段剩余：%d 分钟" % [_block_text(), remaining]
+	var mode := "连续时间" if GameState.current_role == "A" else "碎片时间"
+	timeline_label.text = "%s：%s\n当前时段剩余：%d 分钟" % [mode, _block_text(), remaining]
 
 
 func _block_text() -> String:

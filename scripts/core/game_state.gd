@@ -2,44 +2,172 @@ extends Node
 
 signal state_changed
 signal message_posted(message: String)
+signal role_changed(role: String)
 
-const DAY_END_MINUTE := 24 * 60
+const SAVE_VERSION := 2
+const CALENDAR_PATH := "res://data/story/calendar.json"
 
-var current_day := 1
-var current_minute := 13 * 60 + 45
-var money := 180
-var residency_confirmations := 3
 var current_role := "A"
+var current_day := 1
+var current_minute := 9 * 60
+var money := 180
+var residency_confirmations := 0
 var current_location := "residence"
+
 var completed_events: Array[String] = []
 var confirmed_residents: Array[String] = []
 var encountered_residents: Array[String] = []
-var known_facts: Array[String] = [
-	"女人带来了一只空信封。",
-	"收信人每晚都会经过夜市。",
-]
+var known_facts: Array[String] = []
+var relationships: Dictionary = {}
+var journal_entries: Array[Dictionary] = []
+var artifacts: Dictionary = {}
+var appointments: Array[Dictionary] = []
+var known_schedule_entries: Array[String] = []
+var module_states: Dictionary = {}
 
-const ROLE_STARTS := {
-	"A": {
-		"money": 180,
-		"blocks": [[840, 1260]],
-		"facts": ["夏透明经常在咖啡馆和公园出现。"],
-	},
-	"B": {
-		"money": 45,
-		"blocks": [[840, 870], [920, 960], [1030, 1080], [1140, 1260]],
-		"facts": ["夏透明在第1天18:00后可能去公园。", "Mossner下午会在图书馆。"],
-	},
-}
+var role_states: Dictionary = {}
+var shared_state: Dictionary = {}
+var calendar_data: Dictionary = {}
+
+
+func _ready() -> void:
+	calendar_data = _load_json(CALENDAR_PATH)
+	if role_states.is_empty():
+		_initialize_new_state("A")
+
+
+func begin_new_game(start_role: String = "A") -> void:
+	_initialize_new_state(start_role)
+	state_changed.emit()
+
+
+# Kept as a compatibility entry point for first-stage capture tools.
+func begin_vertical_slice(role: String) -> void:
+	begin_new_game(role)
+
+
+func _initialize_new_state(start_role: String) -> void:
+	role_states = {
+		"A": _default_role_state("A"),
+		"B": _default_role_state("B"),
+	}
+	shared_state = {
+		"chapter_index": 0,
+		"chapter_start_role": start_role if role_states.has(start_role) else "A",
+		"completed_chapters": [],
+		"completed_transitions": [],
+		"world_artifacts": {},
+		"game_complete": false,
+	}
+	_load_role_state(str(shared_state.chapter_start_role))
+
+
+func _default_role_state(role: String) -> Dictionary:
+	var schedule := schedule_for(role, 1)
+	return {
+		"day": 1,
+		"minute": int(schedule.get("start", 9 * 60)),
+		"money": int(schedule.get("starting_money", 180 if role == "A" else 45)),
+		"location": "residence",
+		"completed_events": [],
+		"confirmed_residents": [],
+		"encountered_residents": [],
+		"known_facts": schedule.get("opening_facts", []).duplicate(true),
+		"relationships": {},
+		"journal_entries": [],
+		"artifacts": {},
+		"appointments": [],
+		"known_schedule_entries": [],
+		"module_states": {},
+	}
+
+
+func commit_active_role_state() -> void:
+	if current_role.is_empty():
+		return
+	role_states[current_role] = {
+		"day": current_day,
+		"minute": current_minute,
+		"money": money,
+		"location": current_location,
+		"completed_events": completed_events.duplicate(),
+		"confirmed_residents": confirmed_residents.duplicate(),
+		"encountered_residents": encountered_residents.duplicate(),
+		"known_facts": known_facts.duplicate(),
+		"relationships": relationships.duplicate(true),
+		"journal_entries": journal_entries.duplicate(true),
+		"artifacts": artifacts.duplicate(true),
+		"appointments": appointments.duplicate(true),
+		"known_schedule_entries": known_schedule_entries.duplicate(),
+		"module_states": module_states.duplicate(true),
+	}
+
+
+func switch_to_role(role: String, day := -1, reset_to_schedule_start := false) -> bool:
+	if not role_states.has(role):
+		return false
+	commit_active_role_state()
+	_load_role_state(role)
+	if day > 0:
+		current_day = day
+	if reset_to_schedule_start:
+		var schedule := schedule_for(role, current_day)
+		current_minute = int(schedule.get("start", 9 * 60))
+		current_location = "residence"
+		for fact in schedule.get("opening_facts", []):
+			add_fact(str(fact), false)
+	commit_active_role_state()
+	role_changed.emit(current_role)
+	state_changed.emit()
+	return true
+
+
+func _load_role_state(role: String) -> void:
+	current_role = role
+	var data: Dictionary = role_states.get(role, _default_role_state(role))
+	current_day = int(data.get("day", 1))
+	current_minute = int(data.get("minute", 9 * 60))
+	money = int(data.get("money", 180 if role == "A" else 45))
+	current_location = str(data.get("location", "residence"))
+	completed_events.assign(data.get("completed_events", []))
+	confirmed_residents.assign(data.get("confirmed_residents", []))
+	encountered_residents.assign(data.get("encountered_residents", []))
+	known_facts.assign(data.get("known_facts", []))
+	relationships = data.get("relationships", {}).duplicate(true)
+	journal_entries.assign(data.get("journal_entries", []))
+	artifacts = data.get("artifacts", {}).duplicate(true)
+	appointments.assign(data.get("appointments", []))
+	known_schedule_entries.assign(data.get("known_schedule_entries", []))
+	module_states = data.get("module_states", {}).duplicate(true)
+	residency_confirmations = confirmed_residents.size()
+
+
+func schedule_for(role: String, day: int) -> Dictionary:
+	var defaults: Dictionary = calendar_data.get("default_role_schedules", {})
+	var result: Dictionary = defaults.get(role, {
+		"start": 540,
+		"blocks": [[540, 1260]],
+		"starting_money": 180 if role == "A" else 45,
+	}).duplicate(true)
+	for override in calendar_data.get("day_overrides", []):
+		if int(override.get("day", 0)) != day:
+			continue
+		var roles: Dictionary = override.get("roles", {})
+		var role_override: Dictionary = roles.get(role, {})
+		for key in role_override:
+			result[key] = role_override[key]
+	return result
+
+
+func active_time_blocks() -> Array:
+	return schedule_for(current_role, current_day).get("blocks", [])
 
 
 func spend_time(minutes: int) -> bool:
 	if minutes <= 0:
 		return true
-	current_minute += minutes
-	while current_minute >= DAY_END_MINUTE:
-		current_minute -= DAY_END_MINUTE
-		current_day += 1
+	current_minute = min(current_minute + minutes, 24 * 60 - 1)
+	commit_active_role_state()
 	state_changed.emit()
 	return true
 
@@ -51,16 +179,14 @@ func use_free_time(minutes: int) -> bool:
 
 
 func can_fit_now(minutes: int) -> bool:
+	if minutes < 0:
+		return false
 	for block in active_time_blocks():
 		var start := int(block[0])
 		var end := int(block[1])
 		if current_minute >= start and current_minute + minutes <= end:
 			return true
 	return false
-
-
-func active_time_blocks() -> Array:
-	return ROLE_STARTS.get(current_role, ROLE_STARTS["A"]).get("blocks", [])
 
 
 func current_block_remaining() -> int:
@@ -74,6 +200,7 @@ func advance_to_next_free_block() -> bool:
 	for block in active_time_blocks():
 		if current_minute < int(block[0]):
 			current_minute = int(block[0])
+			commit_active_role_state()
 			state_changed.emit()
 			return true
 	return false
@@ -83,55 +210,119 @@ func spend_money(amount: int) -> bool:
 	if amount < 0 or money < amount:
 		return false
 	money -= amount
+	commit_active_role_state()
 	state_changed.emit()
 	return true
 
 
-func add_fact(fact: String) -> void:
-	if fact.is_empty() or known_facts.has(fact):
+func earn_money(amount: int) -> void:
+	if amount <= 0:
 		return
-	known_facts.append(fact)
+	money += amount
+	commit_active_role_state()
 	state_changed.emit()
 
 
+func add_fact(fact: String, notify := true) -> void:
+	if fact.is_empty() or known_facts.has(fact):
+		return
+	known_facts.append(fact)
+	commit_active_role_state()
+	if notify:
+		state_changed.emit()
+
+
 func add_confirmation(resident_id: String) -> void:
-	if confirmed_residents.has(resident_id):
+	if resident_id.is_empty() or confirmed_residents.has(resident_id):
 		return
 	confirmed_residents.append(resident_id)
-	residency_confirmations += 1
+	residency_confirmations = confirmed_residents.size()
+	commit_active_role_state()
+	state_changed.emit()
+
+
+func remove_confirmation(resident_id: String) -> void:
+	confirmed_residents.erase(resident_id)
+	residency_confirmations = confirmed_residents.size()
+	commit_active_role_state()
 	state_changed.emit()
 
 
 func mark_event(event_id: String) -> void:
-	if not completed_events.has(event_id):
-		completed_events.append(event_id)
-		state_changed.emit()
+	if event_id.is_empty() or completed_events.has(event_id):
+		return
+	completed_events.append(event_id)
+	commit_active_role_state()
+	state_changed.emit()
 
 
 func has_event(event_id: String) -> bool:
 	return completed_events.has(event_id)
 
 
+func unmark_event(event_id: String) -> void:
+	if not completed_events.has(event_id):
+		return
+	completed_events.erase(event_id)
+	commit_active_role_state()
+	state_changed.emit()
+
+
 func meet_resident(resident_id: String) -> void:
-	if not encountered_residents.has(resident_id):
-		encountered_residents.append(resident_id)
-		state_changed.emit()
+	if resident_id.is_empty() or encountered_residents.has(resident_id):
+		return
+	encountered_residents.append(resident_id)
+	commit_active_role_state()
+	state_changed.emit()
 
 
-func begin_vertical_slice(role: String) -> void:
-	current_role = role if ROLE_STARTS.has(role) else "A"
-	current_day = 1
-	current_minute = 14 * 60
-	var role_data: Dictionary = ROLE_STARTS[current_role]
-	money = int(role_data.get("money", 180))
-	current_location = "residence"
-	residency_confirmations = 3
-	completed_events.clear()
-	confirmed_residents.clear()
-	encountered_residents.clear()
-	known_facts.clear()
-	for fact in role_data.get("facts", []):
-		known_facts.append(str(fact))
+func add_journal_entry(entry: Dictionary) -> void:
+	var entry_id := str(entry.get("id", ""))
+	for existing in journal_entries:
+		if not entry_id.is_empty() and str(existing.get("id", "")) == entry_id:
+			return
+	var stored := entry.duplicate(true)
+	stored["day"] = int(stored.get("day", current_day))
+	stored["role"] = str(stored.get("role", current_role))
+	journal_entries.append(stored)
+	commit_active_role_state()
+	state_changed.emit()
+
+
+func add_artifact(collection: String, artifact: Dictionary, shared := false) -> void:
+	if collection.is_empty():
+		return
+	var target: Dictionary = shared_state.get("world_artifacts", {}) if shared else artifacts
+	var rows: Array = target.get(collection, [])
+	var artifact_id := str(artifact.get("id", ""))
+	for existing in rows:
+		if not artifact_id.is_empty() and str(existing.get("id", "")) == artifact_id:
+			return
+	rows.append(artifact.duplicate(true))
+	target[collection] = rows
+	if shared:
+		shared_state["world_artifacts"] = target
+	else:
+		artifacts = target
+	commit_active_role_state()
+	state_changed.emit()
+
+
+func add_appointment(appointment: Dictionary) -> void:
+	var appointment_id := str(appointment.get("id", ""))
+	for existing in appointments:
+		if not appointment_id.is_empty() and str(existing.get("id", "")) == appointment_id:
+			return
+	appointments.append(appointment.duplicate(true))
+	commit_active_role_state()
+	state_changed.emit()
+
+
+func reveal_schedule_entry(activity_id: String) -> void:
+	if activity_id.is_empty() or known_schedule_entries.has(activity_id):
+		return
+	known_schedule_entries.append(activity_id)
+	commit_active_role_state()
 	state_changed.emit()
 
 
@@ -140,41 +331,54 @@ func clock_text() -> String:
 
 
 func reset_demo() -> void:
-	current_day = 1
-	current_minute = 13 * 60 + 45
-	money = 180
-	residency_confirmations = 3
-	known_facts = ["女人带来了一只空信封。", "收信人每晚都会经过夜市。"]
-	completed_events.clear()
-	confirmed_residents.clear()
-	encountered_residents.clear()
-	state_changed.emit()
+	begin_new_game("A")
 
 
 func to_save_data() -> Dictionary:
+	commit_active_role_state()
 	return {
+		"save_version": SAVE_VERSION,
 		"current_role": current_role,
-		"current_day": current_day,
-		"current_minute": current_minute,
-		"money": money,
-		"current_location": current_location,
-		"residency_confirmations": residency_confirmations,
-		"completed_events": completed_events,
-		"confirmed_residents": confirmed_residents,
-		"encountered_residents": encountered_residents,
-		"known_facts": known_facts,
+		"role_states": role_states.duplicate(true),
+		"shared_state": shared_state.duplicate(true),
 	}
 
 
 func load_save_data(data: Dictionary) -> void:
-	current_role = str(data.get("current_role", "A"))
+	if data.has("role_states"):
+		role_states = data.get("role_states", {}).duplicate(true)
+		shared_state = data.get("shared_state", {}).duplicate(true)
+		for role in ["A", "B"]:
+			if not role_states.has(role):
+				role_states[role] = _default_role_state(role)
+		_load_role_state(str(data.get("current_role", "A")))
+	else:
+		_migrate_legacy_save(data)
+	commit_active_role_state()
+	state_changed.emit()
+
+
+func _migrate_legacy_save(data: Dictionary) -> void:
+	var role := str(data.get("current_role", "A"))
+	_initialize_new_state(role)
 	current_day = int(data.get("current_day", 1))
-	current_minute = int(data.get("current_minute", 840))
-	money = int(data.get("money", 180))
+	current_minute = int(data.get("current_minute", 540))
+	money = int(data.get("money", money))
 	current_location = str(data.get("current_location", "residence"))
-	residency_confirmations = int(data.get("residency_confirmations", 3))
 	completed_events.assign(data.get("completed_events", []))
 	confirmed_residents.assign(data.get("confirmed_residents", []))
 	encountered_residents.assign(data.get("encountered_residents", []))
 	known_facts.assign(data.get("known_facts", []))
-	state_changed.emit()
+	residency_confirmations = confirmed_residents.size()
+
+
+func _load_json(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		push_warning("Data file not found: %s" % path)
+		return {}
+	var file := FileAccess.open(path, FileAccess.READ)
+	var parsed = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_error("Invalid JSON data: %s" % path)
+		return {}
+	return parsed

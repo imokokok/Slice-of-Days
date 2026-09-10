@@ -1,0 +1,26 @@
+{
+  "edges": [
+    {"from": "town_entrance", "to": "residence", "walk_minutes": 10},
+    {"from": "town_entrance", "to": "print_shop", "walk_minutes": 8},
+    {"from": "residence", "to": "library", "walk_minutes": 15},
+    {"from": "residence", "to": "cafe", "walk_minutes": 14},
+    {"from": "print_shop", "to": "cafe", "walk_minutes": 8},
+    {"from": "print_shop", "to": "library", "walk_minutes": 9},
+    {"from": "library", "to": "cafeteria", "walk_minutes": 10},
+    {"from": "cafeteria", "to": "theatre", "walk_minutes": 12},
+    {"from": "cafe", "to": "theatre", "walk_minutes": 11},
+    {"from": "cafe", "to": "bus_stop", "walk_minutes": 8},
+    {"from": "bus_stop", "to": "park", "walk_minutes": 14},
+    {"from": "park", "to": "night_market", "walk_minutes": 9},
+    {"from": "night_market", "to": "tarot_stall", "walk_minutes": 6},
+    {"from": "cafeteria", "to": "dorm", "walk_minutes": 8},
+    {"from": "dorm", "to": "court", "walk_minutes": 7},
+    {"from": "theatre", "to": "record_store", "walk_minutes": 12},
+    {"from": "record_store", "to": "old_station", "walk_minutes": 10},
+    {"from": "old_station", "to": "port", "walk_minutes": 13},
+    {"from": "port", "to": "night_market", "walk_minutes": 12},
+    {"from": "theatre", "to": "studio", "walk_minutes": 10},
+    {"from": "studio", "to": "handcraft_shop", "walk_minutes": 11},
+    {"from": "handcraft_shop", "to": "library", "walk_minutes": 12}
+  ]
+}

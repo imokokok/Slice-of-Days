@@ -1,11 +1,22 @@
 {
   "locations": [
-    {"id": "residence", "name": "临时住所", "subtitle": "一间只够放下一张床和七天计划的房间", "position": [156, 592]},
-    {"id": "library", "name": "公共图书馆", "subtitle": "档案、代写者和无人归还的借阅卡", "position": [356, 448]},
-    {"id": "cafe", "name": "咖啡馆", "subtitle": "白天的传闻在这里被反复加热", "position": [570, 554]},
-    {"id": "bus_stop", "name": "巴士站", "subtitle": "路线不多，错过一次就会改变一天", "position": [770, 405]},
-    {"id": "park", "name": "河岸公园", "subtitle": "傍晚以后，影子比人先到达", "position": [972, 520]},
-    {"id": "night_market", "name": "夜市", "subtitle": "食物、声音和误会组成的临时街区", "position": [1018, 340]},
-    {"id": "tarot_stall", "name": "塔拉牌摊", "subtitle": "把零散事实放上桌面，关系才会显形", "position": [1125, 555]}
+    {"id": "town_entrance", "name": "小镇入口", "subtitle": "两个人在不同的时刻拍下几乎一样的照片", "position": [115, 230], "map_visible": true},
+    {"id": "print_shop", "name": "打印店", "subtitle": "文件、海报和临时借用的手机在这里经过", "position": [340, 265], "map_visible": true},
+    {"id": "cafeteria", "name": "学院食堂", "subtitle": "课程表与赶时间的午饭在这里重叠", "position": [600, 235], "map_visible": true},
+    {"id": "theatre", "name": "剧场", "subtitle": "排练、道具和临时帮忙总比演出先发生", "position": [850, 230], "map_visible": true},
+    {"id": "residence", "name": "临时住所", "subtitle": "一间只够放下一张床和七天计划的房间", "position": [150, 575], "map_visible": true},
+    {"id": "library", "name": "公共图书馆", "subtitle": "档案、代写者和无人归还的借阅卡", "position": [350, 430], "map_visible": true},
+    {"id": "cafe", "name": "咖啡馆", "subtitle": "白天的传闻在这里被反复加热", "position": [565, 545], "map_visible": true},
+    {"id": "bus_stop", "name": "巴士站", "subtitle": "路线不多，错过一次就会改变一天", "position": [755, 405], "map_visible": true},
+    {"id": "park", "name": "河岸公园", "subtitle": "傍晚以后，影子比人先到达", "position": [960, 515], "map_visible": true},
+    {"id": "night_market", "name": "夜市", "subtitle": "食物、声音和误会组成的临时街区", "position": [1030, 335], "map_visible": true},
+    {"id": "tarot_stall", "name": "塔拉牌摊", "subtitle": "把零散事实放上桌面，关系才会显形", "position": [1110, 580], "map_visible": true},
+    {"id": "dorm", "name": "学院宿舍", "subtitle": "居民生活区，暂不作为公开地图节点", "position": [0, 0], "map_visible": false},
+    {"id": "court", "name": "球场", "subtitle": "训练和比赛使用的公共场地", "position": [0, 0], "map_visible": false},
+    {"id": "record_store", "name": "唱片店", "subtitle": "声音采样、授权和棋局都可能在这里停留", "position": [0, 0], "map_visible": false},
+    {"id": "old_station", "name": "旧车站", "subtitle": "铁路改线以后仍保留着一点旧时间", "position": [0, 0], "map_visible": false},
+    {"id": "port", "name": "港口", "subtitle": "旧货栈和新工作室挤在同一片海风里", "position": [0, 0], "map_visible": false},
+    {"id": "studio", "name": "摄影棚", "subtitle": "传媒项目把镇上的人不断重新聚到一起", "position": [0, 0], "map_visible": false},
+    {"id": "handcraft_shop", "name": "手作店", "subtitle": "纸张、裁切工具和没有写完的句子", "position": [0, 0], "map_visible": false}
   ]
 }

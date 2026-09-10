@@ -40,6 +40,7 @@ func _ready() -> void:
 	_check(bool(solved_doors.get("success", false)), "complete four doors solution should pass")
 	var incomplete_doors := engine.evaluate_solution(doors, "只要两组人数相同就会开门。")
 	_check(not bool(incomplete_doors.get("success", false)), "incomplete four doors solution should fail")
+	_check((incomplete_doors.get("missing", []) as Array).has("相等值与其余两组的大小关系"), "solution feedback should use authored non-spoiler hints")
 
 	var murder := engine.case_at(1)
 	_check(not str(murder.get("opening", "")).contains("女1"), "case copy should use names instead of numbered women")

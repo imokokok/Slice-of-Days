@@ -60,12 +60,15 @@ func validate_question(question: String) -> Dictionary:
 func evaluate_solution(case_data: Dictionary, answer: String) -> Dictionary:
 	var matched := 0
 	var missing: Array[String] = []
-	for raw_group in case_data.get("solution_groups", []):
+	var groups: Array = case_data.get("solution_groups", [])
+	var hints: Array = case_data.get("solution_hints", [])
+	for index in groups.size():
+		var raw_group = groups[index]
 		var group: Array = raw_group
 		if _matches_any(answer, group):
 			matched += 1
 		else:
-			missing.append(_group_hint(group))
+			missing.append(str(hints[index]) if index < hints.size() else _group_hint(group))
 	var required := int(case_data.get("solution_required", case_data.get("solution_groups", []).size()))
 	return {
 		"success": matched >= required,
@@ -80,8 +83,11 @@ func draw_three(case_data: Dictionary, confirmed: Dictionary, miss_streak: int, 
 	var result: Array[String] = []
 	if miss_streak >= 2:
 		for raw_rule in case_data.get("readings", []):
-			var focus_id := str((raw_rule as Dictionary).get("card", ""))
-			if not focus_id.is_empty() and not confirmed.has(focus_id) and pool.has(focus_id):
+			var rule: Dictionary = raw_rule
+			var focus_id := str(rule.get("card", ""))
+			var focus_image := str(rule.get("image", ""))
+			var lit_images: Array = (confirmed.get(focus_id, {}) as Dictionary).get("images", [])
+			if not focus_id.is_empty() and not lit_images.has(focus_image) and pool.has(focus_id):
 				result.append(focus_id)
 				pool.erase(focus_id)
 				break

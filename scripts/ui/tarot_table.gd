@@ -248,6 +248,9 @@ func _build_record_panel() -> void:
 func _build_world_overlay() -> void:
 	world_overlay = ColorRect.new()
 	world_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# Selected cards temporarily use a positive z-index for their lift animation.
+	# Keep the modal above the entire table so those cards cannot pierce it.
+	world_overlay.z_index = 100
 	world_overlay.color = Color(INK, 0.62)
 	world_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(world_overlay)

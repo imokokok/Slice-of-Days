@@ -11,6 +11,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 
 	_check(table.choosing_cards, "a new round should begin with a face-down three-card deal")
+	_check(table.world_overlay.z_index > 2, "the World modal should render above lifted tarot cards")
 	_check(table.draw_pile.size() == 3, "each round should prepare exactly three cards")
 	_check(table.current_draw.is_empty(), "cards should not be drawn before the player clicks them")
 	_check(not table.question_edit.editable and table.ask_button.disabled, "questions should wait until the three cards are revealed")

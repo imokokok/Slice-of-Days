@@ -110,6 +110,10 @@ func _validate_events(rows: Array, location_ids: Array[String], resident_ids: Ar
 	for event in rows:
 		var event_id := str(event.get("id", ""))
 		var presentation: Dictionary = event.get("presentation", {})
+		var module_echo: Dictionary = presentation.get("module_echo", {})
+		var echo_module_id := str(module_echo.get("module_id", ""))
+		if not echo_module_id.is_empty() and not module_ids.has(echo_module_id):
+			failures.append("event %s echoes missing module %s" % [event_id, echo_module_id])
 		for line in presentation.get("lines", []):
 			if line is Dictionary:
 				if str(line.get("text", "")).is_empty():

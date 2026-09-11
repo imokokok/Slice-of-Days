@@ -114,6 +114,14 @@ func state_for(module_id: String) -> Dictionary:
 	return ensure_state(module_id).duplicate(true)
 
 
+func latest_outcome(module_id: String) -> Dictionary:
+	var state: Dictionary = GameState.module_states.get(module_id, {})
+	var outcomes: Array = state.get("outcomes", [])
+	if outcomes.is_empty():
+		return {}
+	return (outcomes[-1] as Dictionary).duplicate(true)
+
+
 func begin_session(module_id: String, source_event_id := "") -> bool:
 	if not unlock(module_id) or not start(module_id):
 		return false
@@ -198,7 +206,13 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 			break
 	if selected.is_empty():
 		return {"ok": false, "message": "找不到这个玩法选择。"}
-	var interaction_check := choice_interaction_check(module_id, choice_id, interaction_record)
+	var stored_interaction := interaction_record.duplicate(true)
+	if not stored_interaction.has("selected_labels"):
+		var selected_labels: Array[String] = []
+		for token_id_value in stored_interaction.get("selected_tokens", []):
+			selected_labels.append(_prototype_token_label(prototype, str(token_id_value)))
+		stored_interaction["selected_labels"] = selected_labels
+	var interaction_check := choice_interaction_check(module_id, choice_id, stored_interaction)
 	if not bool(interaction_check.get("ok", false)):
 		return interaction_check
 	var cost: Dictionary = selected.get("cost", {})
@@ -218,7 +232,7 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 		"choice_id": choice_id,
 		"label": str(selected.get("label", choice_id)),
 		"source_event_id": str(GameState.shared_state.get("pending_module", {}).get("source_event_id", "")),
-		"interaction": interaction_record.duplicate(true),
+		"interaction": stored_interaction,
 	}
 	complete(module_id, outcome)
 	GameState.shared_state.erase("pending_module")
@@ -229,6 +243,13 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 		"module_id": module_id,
 		"outcome": outcome,
 	}
+
+
+func _prototype_token_label(prototype: Dictionary, token_id: String) -> String:
+	for token in prototype.get("interaction", {}).get("tokens", []):
+		if str(token.get("id", "")) == token_id:
+			return str(token.get("label", token_id))
+	return token_id
 
 
 func complete_external(module_id: String, outcome: Dictionary, results: Dictionary = {}) -> bool:

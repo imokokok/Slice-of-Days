@@ -46,7 +46,7 @@
       "draft": false,
       "schedule": [
         {"id": "sunniva_handcraft", "days": [1, 2, 4, 5], "start": 600, "end": 900, "location": "handcraft_shop", "activity": "整理纸张"},
-        {"id": "sunniva_library", "days": [3, 5, 7], "start": 900, "end": 1080, "location": "library", "activity": "找旧杂志"},
+        {"id": "sunniva_library", "days": [3, 5, 7], "start": 900, "end": 1140, "location": "library", "activity": "找旧杂志"},
         {"id": "sunniva_station_binding", "days": [6], "start": 900, "end": 1080, "location": "old_station", "activity": "替旧时刻表重新装订"}
       ]
     },
@@ -109,7 +109,7 @@
       "display_name": "代写委托人",
       "draft": false,
       "schedule": [
-        {"id": "client_library", "days": [4, 5, 6], "start": 780, "end": 1080, "location": "library", "activity": "等一封信写完"},
+        {"id": "client_library", "days": [4, 5, 6], "start": 780, "end": 1140, "location": "library", "activity": "等一封信写完"},
         {"id": "client_park", "days": [7], "start": 1020, "end": 1200, "location": "park", "activity": "散步"}
       ]
     },

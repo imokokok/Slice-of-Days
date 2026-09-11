@@ -90,6 +90,7 @@ func _ready() -> void:
 				GameState.current_minute = int(conditions.get("start", 540))
 				GameState.current_location = str(event_locations[0]) if not event_locations.is_empty() else "residence"
 				GameState.commit_active_role_state()
+				_seed_capture_module_echo(event)
 				break
 	_load_locations()
 	selected_location = GameState.current_location
@@ -109,6 +110,34 @@ func _ready() -> void:
 		_capture.call_deferred("town-%s.png" % GameState.current_role.to_lower())
 	elif capture_event_id.is_empty() and capture_opening.is_empty() and not capture_appointment and not ChapterSystem.has_seen_opening():
 		_show_day_opening.call_deferred()
+
+
+func _seed_capture_module_echo(event: Dictionary) -> void:
+	var module_echo: Dictionary = event.get("presentation", {}).get("module_echo", {})
+	var module_id := str(module_echo.get("module_id", ""))
+	if module_id.is_empty():
+		return
+	var prototype := GameplayModuleSystem.prototype_for(module_id)
+	var interaction: Dictionary = prototype.get("interaction", {})
+	var selected_tokens: Array[String] = []
+	var selected_labels: Array[String] = []
+	var count := int(interaction.get("min_select", 3))
+	for token in interaction.get("tokens", []):
+		if selected_tokens.size() >= count:
+			break
+		selected_tokens.append(str(token.get("id", "")))
+		selected_labels.append(str(token.get("label", "")))
+	GameplayModuleSystem.unlock(module_id)
+	GameplayModuleSystem.complete(module_id, {
+		"choice_id": "capture",
+		"label": "截图示例",
+		"source_event_id": "capture",
+		"interaction": {
+			"mode": str(interaction.get("mode", "toggle")),
+			"selected_tokens": selected_tokens,
+			"selected_labels": selected_labels,
+		},
+	})
 
 
 func _load_locations() -> void:
@@ -549,7 +578,7 @@ func _open_event(event_id: String) -> void:
 		event_panel.remove_child(child)
 		child.queue_free()
 	var event: Dictionary = EventSystem.events[event_id]
-	var presentation: Dictionary = event.get("presentation", {})
+	var presentation := EventSystem.resolved_presentation(event)
 	var beats: Array = presentation.get("beats", [])
 	if not beats.is_empty():
 		_open_staged_event(event_id, event, presentation, beats)

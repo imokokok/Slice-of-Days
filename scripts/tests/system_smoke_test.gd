@@ -221,6 +221,26 @@ func _test_gameplay_module_state() -> void:
 		{"mode": "ordered", "selected_tokens": ["rain_awning", "bus_brake", "distant_flute"]}
 	)
 	_check(bool(allowed_delivery.get("ok", false)), "Authorized and traceable sound samples should allow delivery")
+	_check(GameplayModuleSystem.unlock("ghostwriting"), "Ghostwriting should unlock for its echo test")
+	_check(GameplayModuleSystem.begin_session("ghostwriting", "smoke_echo"), "Ghostwriting session should begin")
+	var letter_result := GameplayModuleSystem.complete_choice(
+		"listen_then_cut",
+		{"mode": "ordered", "selected_tokens": ["still_here", "door_light", "no_reply"]}
+	)
+	_check(bool(letter_result.get("ok", false)), "Ghostwriting should complete for its echo test")
+	var echo_presentation := EventSystem.resolved_presentation({
+		"presentation": {
+			"module_echo": {"module_id": "ghostwriting"},
+			"beats": [{"text": "{selected_1} / {selected_2} / {selected_3}"}],
+		}
+	})
+	var echo_beats: Array = echo_presentation.get("beats", [])
+	_check(not echo_beats.is_empty(), "A module echo presentation should keep its staged beats")
+	if not echo_beats.is_empty():
+		_check(
+			str(echo_beats[0].get("text", "")) == "我还在这里 / 门下面一直有光 / 不用马上回复",
+			"A follow-up scene should resolve the exact selected workbench sentences"
+		)
 
 
 func _test_save_roundtrip() -> void:

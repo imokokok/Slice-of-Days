@@ -152,6 +152,50 @@ func can_pay_cost_data(cost: Dictionary) -> Dictionary:
 	return {"ok": true, "reason": ""}
 
 
+func resolved_presentation(event: Dictionary) -> Dictionary:
+	var presentation: Dictionary = event.get("presentation", {}).duplicate(true)
+	var module_echo: Dictionary = presentation.get("module_echo", {})
+	var module_id := str(module_echo.get("module_id", ""))
+	if module_id.is_empty():
+		return presentation
+	var outcome := GameplayModuleSystem.latest_outcome(module_id)
+	if outcome.is_empty():
+		return presentation
+	var interaction: Dictionary = outcome.get("interaction", {})
+	var raw_labels: Array = interaction.get("selected_labels", [])
+	var labels: Array[String] = []
+	for raw_label in raw_labels:
+		labels.append(str(raw_label))
+	var replacements := {
+		"{module_choice}": str(outcome.get("label", outcome.get("choice_id", ""))),
+		"{selected_joined}": " / ".join(labels),
+	}
+	var slot_count := maxi(3, labels.size())
+	for index in slot_count:
+		replacements["{selected_%d}" % (index + 1)] = labels[index] if index < labels.size() else "（留白）"
+	var resolved: Variant = _replace_presentation_placeholders(presentation, replacements)
+	return resolved as Dictionary
+
+
+func _replace_presentation_placeholders(value: Variant, replacements: Dictionary) -> Variant:
+	if typeof(value) == TYPE_STRING:
+		var text_value := str(value)
+		for placeholder in replacements:
+			text_value = text_value.replace(str(placeholder), str(replacements[placeholder]))
+		return text_value
+	if typeof(value) == TYPE_ARRAY:
+		var array_result: Array = []
+		for child in value:
+			array_result.append(_replace_presentation_placeholders(child, replacements))
+		return array_result
+	if typeof(value) == TYPE_DICTIONARY:
+		var dictionary_result: Dictionary = {}
+		for key in value:
+			dictionary_result[key] = _replace_presentation_placeholders(value[key], replacements)
+		return dictionary_result
+	return value
+
+
 func trigger(event_id: String, choice_id: String = "") -> Dictionary:
 	if not events.has(event_id):
 		return {"ok": false, "message": "找不到这个事件。"}
@@ -178,16 +222,18 @@ func trigger(event_id: String, choice_id: String = "") -> Dictionary:
 		GameState.record_choice(event_id, str(choice.get("id", "")), str(choice.get("label", "")))
 	if not bool(event.get("repeatable", false)):
 		GameState.mark_event(event_id)
-	var presentation: Dictionary = event.get("presentation", {})
+	var presentation := resolved_presentation(event)
 	var choice_presentation: Dictionary = choice.get("presentation", {})
 	var launch_module := str(choice.get("launch_module", event.get("launch_module", "")))
+	var presented_event := event.duplicate(true)
+	presented_event["presentation"] = presentation
 	var result := {
 		"ok": true,
 		"message": str(choice_presentation.get(
 			"result",
 			presentation.get("result", presentation.get("summary", "事件已经发生。"))
 		)),
-		"event": event,
+		"event": presented_event,
 		"choice": choice,
 		"launch_module": launch_module,
 	}

@@ -99,7 +99,9 @@ func _simulate_b_route() -> void:
 
 	_context(5, 840, "library")
 	_module_event("b_d5_ghostwriting", "ghostwriting", "listen_then_cut")
-	_context(5, 1080, "park")
+	_context(5, 1080, "library")
+	_choice_event("b_d5_letter_revision_listen", "preserve_client_voice")
+	_context(5, 1100, "park")
 	_module_event("b_d5_resume_chess", "chess", "finish_game")
 
 	_context(6, 1080, "library")

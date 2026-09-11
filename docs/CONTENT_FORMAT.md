@@ -77,6 +77,14 @@
 
 `text` 是必填正文，`speaker` 与 `direction` 可省略。界面会逐拍显示这些内容，在最后一拍之后才展示事件选择或执行结算。正式文本可以逐场增加 `beats`；没有该字段的事件仍沿用原来的整页事件卡。
 
+后续场景需要复述玩家在玩法工作台选择的内容时，可以在 `presentation` 增加：
+
+```json
+"module_echo": {"module_id": "ghostwriting"}
+```
+
+随后在标题、摘要、节拍或结果文本中使用 `{selected_1}`、`{selected_2}`、`{selected_3}`、`{selected_joined}` 与 `{module_choice}`。事件打开时会从该角色最近一次模块结果读取真实标签并替换；模块系统会在结算时自动保存标签，因此测试或其他界面直接调用玩法也不会丢失回响内容。
+
 预约至少填写稳定 `id`、`day`、`start`、`end`、`location` 和 `label`。承接预约的事件应与预约使用同一 ID，并在条件里填写同一个 `required_appointment`。系统自动维护 `scheduled`、`active`、`completed`、`missed`，内容数据不要手动跳过这些状态。
 
 ## 灰盒玩法

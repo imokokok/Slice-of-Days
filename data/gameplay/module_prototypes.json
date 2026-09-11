@@ -81,11 +81,18 @@
       "module_id": "ghostwriting",
       "title": "代写与拼贴诗",
       "description": "先听委托人真正想说什么，再从句子碎片里组织出一封仍然属于对方的信。",
+      "background_path": "res://art/locations/library/library_letter_revision_v01.png",
       "interaction": {
         "prompt": "按你认为接近委托人口吻的顺序，挑出三块句子。它们不需要把意思说满。",
         "mode": "ordered",
         "min_select": 3,
         "max_select": 3,
+        "progress_steps": [
+          "委托人：先别替我写得像一封信。先听我实际会说什么。",
+          "第一块句子放下以后，他没有点头，只把它按自己的语气读了一遍。",
+          "第二块句子接上时，Sunniva把被删掉的纸条留在桌边，没有扔掉。",
+          "三块句子已经排好。它们表达了他的意思，是否像他的声音还要经过一次删改。"
+        ],
         "tokens": [
           {"id": "still_here", "label": "我还在这里", "detail": "最直接的事实"},
           {"id": "door_light", "label": "门下面一直有光", "detail": "没有解释是谁留下的"},
@@ -100,18 +107,17 @@
           "label": "先听完整，再裁切排列",
           "detail": "花费120分钟，保留委托人的语气。",
           "cost": {"minutes": 120},
-          "result_text": "短信用了三次修改才完成。委托人说，这次听起来终于像自己。",
+          "result_text": "初稿已经排好。委托人把三个句子读了一遍，请B在下一段完整时间里再删一次。",
           "results": {
             "money": 35,
-            "artifacts": [
-              {"collection": "letters", "shared": false, "data": {"id": "short_letter_day5", "title": "一封很短的信", "kind": "letter"}}
-            ]
+            "facts": ["代写选择：先听完整，再裁切排列。"],
+            "journal_entries": [{"id": "b_d5_letter_draft", "kind": "work", "text": "三个句子组成了初稿，还需要委托人亲自删改。"}]
           },
           "results_by_role": {
             "A": {"confirmations": {"letter_client": "granted"}},
             "B": {
               "encounters": ["letter_client", "sunniva"],
-              "confirmations": {"letter_client": "granted", "sunniva": "granted"}
+              "relationship_flags": {"letter_client": ["先听完整再组成初稿"], "sunniva": ["一起保留了被删下的纸条"]}
             }
           }
         },
@@ -120,8 +126,13 @@
           "label": "在限定时间内完成清楚的版本",
           "detail": "花费60分钟，结果更直接。",
           "cost": {"minutes": 60},
-          "result_text": "信写得清楚，但有一小段话仍然留在桌面上。",
-          "results": {"money": 22, "relationship_flags": {"letter_client": ["按时完成过代写"]}}
+          "result_text": "信按时写完，也比委托人自己会说的话更清楚。他请B先不要装进信封。",
+          "results": {
+            "money": 22,
+            "facts": ["代写选择：在限定时间内完成清楚版本。"],
+            "encounters": ["letter_client"],
+            "relationship_flags": {"letter_client": ["按时完成过一版过于清楚的代写"]}
+          }
         }
       ]
     },

@@ -836,10 +836,98 @@
       "presentation": {
         "title": "先听清楚再动手",
         "summary": "委托人知道信要很短，却还不知道最重要的那句话是什么。",
+        "image_path": "res://art/locations/library/library_letter_revision_v01.png",
+        "location_cue": "公共图书馆 · 靠窗写字桌",
+        "beats": [
+          {"speaker": "画面", "text": "桌上有六张写坏的纸。每一张都比上一张更像一封完整的信，也更不像委托人会说的话。", "direction": "Sunniva在旁边整理裁下来的纸边，没有把任何一句话直接扔进废纸篓。"},
+          {"speaker": "代写委托人", "text": "不要写得太好。太好的话，对方一看就知道不是我。", "direction": "他知道字数、收信地址和不能出现的称呼，却仍说不出最重要的那一句。"},
+          {"speaker": "B", "text": "我先不写完整句。你说到哪里，我就把能留下的部分裁下来。", "direction": "工作台会保存玩家实际选择的三块句子与排列顺序。"},
+          {"speaker": "Sunniva", "text": "删掉的也先放在桌上。有时候那才是他真正说过的话。", "direction": "初稿不是结算；选中的句子会在稍后的删改场景里被重新读出来。"}
+        ],
         "result": "代写工作台已经打开。"
       },
-      "results": {"unlock_modules": ["ghostwriting"]},
+      "results": {
+        "unlock_modules": ["ghostwriting"],
+        "encounters": ["letter_client", "sunniva"],
+        "relationship_flags": {"letter_client": ["先说明了哪些话不像自己"], "sunniva": ["一起保留了删下来的纸条"]}
+      },
       "launch_module": "ghostwriting"
+    },
+    {
+      "id": "b_d5_letter_revision_listen",
+      "choice_text": "带着初稿回来删最后一次（20分钟）",
+      "priority": 12,
+      "conditions": {"roles": ["B"], "days": [5], "locations": ["library"], "start": 1080, "end": 1140, "required_events": ["b_d5_ghostwriting"], "required_facts": ["代写选择：先听完整，再裁切排列。"], "resident_present": "letter_client"},
+      "cost": {"minutes": 20},
+      "presentation": {
+        "title": "意思是他的，顺序还像B",
+        "summary": "工作台上选择的三块句子回到同一张桌面，等待委托人亲自删改。",
+        "image_path": "res://art/locations/library/library_letter_revision_v01.png",
+        "location_cue": "公共图书馆 · 第三次修改",
+        "module_echo": {"module_id": "ghostwriting"},
+        "beats": [
+          {"speaker": "B", "text": "现在的顺序是：“{selected_1}”——“{selected_2}”——“{selected_3}”。", "direction": "这三句来自玩家刚才真实选择的句子卡，不是预设范例。"},
+          {"speaker": "代写委托人", "text": "意思都对。可它们接得太好了，像你已经替我想明白了。", "direction": "他说到第二句时停下来，把两张纸条之间拉开一段距离。"},
+          {"speaker": "Sunniva", "text": "纸条不用每一边都接齐。留一道缝，读的人才知道这里原本停过。", "direction": "窗边的光正好落在那道空隙里。"},
+          {"speaker": "B", "text": "那封信可以不更完整，只更像你。", "direction": "最后的选择决定这是一份替别人说话的成品，还是一封仍属于委托人的信。"}
+        ],
+        "result": "最终删改已经记录。"
+      },
+      "results": {"encounters": ["letter_client", "sunniva"]},
+      "choices": [
+        {
+          "id": "preserve_client_voice",
+          "label": "删掉连接句，把他的停顿留回去",
+          "detail": "牺牲完整和漂亮，让信仍然像委托人本人。",
+          "results": {
+            "relationship_flags": {"letter_client": ["B把过于完整的连接删掉了"], "sunniva": ["一起保留了信里的空隙"]},
+            "confirmations": {"letter_client": "granted", "sunniva": "granted"},
+            "artifacts": [{"collection": "letters", "shared": false, "data": {"id": "short_letter_day5", "title": "留下停顿的短信", "kind": "letter"}}],
+            "journal_entries": [{"id": "b_d5_preserved_voice", "kind": "choice", "text": "句子的意思没有变，但我删掉了替他想明白的部分。"}]
+          },
+          "presentation": {"result": "信短了一点，也重新变得像委托人会说的话。两份认可来自这次删改，而不是按时交稿。"}
+        },
+        {
+          "id": "keep_polished_clarity",
+          "label": "保留清楚完整的版本",
+          "detail": "内容准确、便于理解，但说话人的犹疑被整理掉了。",
+          "results": {
+            "relationship_flags": {"letter_client": ["收到一封意思正确却不像自己的信"], "sunniva": ["看见B选择了整齐的成稿"]},
+            "confirmations": {"letter_client": "refused", "sunniva": "pending"},
+            "artifacts": [{"collection": "letters", "shared": false, "data": {"id": "clear_letter_day5", "title": "过于清楚的短信", "kind": "letter"}}],
+            "journal_entries": [{"id": "b_d5_kept_clarity", "kind": "choice", "text": "这封信没有错误，但委托人没有说它像自己。"}]
+          },
+          "presentation": {"result": "信可以寄出，委托人却没有在认可表上签名；准确完成和被真正听见成为两件事。"}
+        }
+      ]
+    },
+    {
+      "id": "b_d5_letter_revision_efficient",
+      "choice_text": "让委托人读完按时完成的版本（20分钟）",
+      "priority": 12,
+      "conditions": {"roles": ["B"], "days": [5], "locations": ["library"], "start": 900, "end": 960, "required_events": ["b_d5_ghostwriting"], "required_facts": ["代写选择：在限定时间内完成清楚版本。"], "resident_present": "letter_client"},
+      "cost": {"minutes": 20},
+      "presentation": {
+        "title": "一封没有错误的信",
+        "summary": "它按时、清楚，也顺利使用了玩家选择的三块句子。",
+        "image_path": "res://art/locations/library/library_letter_revision_v01.png",
+        "location_cue": "公共图书馆 · 按时完成的版本",
+        "module_echo": {"module_id": "ghostwriting"},
+        "beats": [
+          {"speaker": "B", "text": "成稿是：“{selected_1}”——“{selected_2}”——“{selected_3}”。", "direction": "顺序与工作台记录完全一致。"},
+          {"speaker": "代写委托人", "text": "我想说的确实是这些。可我不会这样一次说清楚。", "direction": "他没有要求退款，也没有把纸撕掉。"},
+          {"speaker": "B", "text": "我可以再改。", "direction": "当前碎片时间足够修改格式，却不够重新听完整。"},
+          {"speaker": "代写委托人", "text": "先放在这里吧。让我想想哪一句需要变回难说出口的样子。", "direction": "委托完成了，认可保持待定。"}
+        ],
+        "result": "清楚版本被保留为草稿，委托人的认可仍在考虑。"
+      },
+      "results": {
+        "encounters": ["letter_client"],
+        "relationship_flags": {"letter_client": ["请B以后再把清楚版本改回自己的语气"]},
+        "confirmations": {"letter_client": "pending"},
+        "artifacts": [{"collection": "letters", "shared": false, "data": {"id": "efficient_letter_day5", "title": "没有错误的信", "kind": "letter_draft"}}],
+        "journal_entries": [{"id": "b_d5_efficient_pending", "kind": "relationship", "text": "委托按时完成，认可仍在考虑。"}]
+      }
     },
     {
       "id": "b_d5_resume_chess",

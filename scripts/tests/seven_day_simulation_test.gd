@@ -34,6 +34,7 @@ func _simulate_a_route() -> void:
 
 	_context(2, 660, "night_market")
 	_module_event("a_d2_restaurant_shift", "cooking", "improvise")
+	_event("a_d2_restaurant_close")
 
 	_context(3, 900, "park")
 	_event("a_d3_social_chain")

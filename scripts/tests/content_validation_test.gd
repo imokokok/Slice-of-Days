@@ -185,6 +185,9 @@ func _validate_prototypes(rows: Array, module_ids: Array[String], resident_ids: 
 		if seen.has(module_id):
 			failures.append("prototype is duplicated for module %s" % module_id)
 		seen.append(module_id)
+		var background_path := str(prototype.get("background_path", ""))
+		if not background_path.is_empty() and not ResourceLoader.exists(background_path):
+			failures.append("prototype %s references missing background %s" % [module_id, background_path])
 		_validate_module_interaction(module_id, prototype.get("interaction", {}))
 		for choice in prototype.get("choices", []):
 			var label := "%s/%s" % [module_id, str(choice.get("id", ""))]
@@ -215,6 +218,13 @@ func _validate_module_interaction(module_id: String, interaction: Dictionary) ->
 			token_ids.append(token_id)
 		if str(token.get("label", "")).is_empty() or str(token.get("detail", "")).is_empty():
 			failures.append("prototype %s token %s needs label and detail" % [module_id, token_id])
+	var progress_steps: Array = interaction.get("progress_steps", [])
+	if not progress_steps.is_empty():
+		if progress_steps.size() < maximum + 1:
+			failures.append("prototype %s needs one progress step for each selection count" % module_id)
+		for step in progress_steps:
+			if str(step).is_empty():
+				failures.append("prototype %s has an empty progress step" % module_id)
 
 
 func _validate_module_coverage(modules: Array, prototypes: Array) -> void:

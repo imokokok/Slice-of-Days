@@ -15,6 +15,7 @@ func _ready() -> void:
 	_test_appointment_lifecycle()
 	_test_choice_history()
 	_test_gameplay_module_state()
+	_test_ui_scenes_load()
 	_test_chapter_progression()
 	_test_save_roundtrip()
 	if failures.is_empty():
@@ -76,6 +77,13 @@ func _test_core_resident_profiles() -> void:
 	var a_line := ResidentProfileSystem.ambient_line("jiu", "A", 0)
 	var b_line := ResidentProfileSystem.ambient_line("jiu", "B", 0)
 	_check(not a_line.is_empty() and not b_line.is_empty() and a_line != b_line, "A and B should receive distinct ambient lines from a core resident")
+
+
+func _test_ui_scenes_load() -> void:
+	var town_scene = load("res://scenes/town_day.tscn")
+	var workbench_scene = load("res://scenes/module_workbench.tscn")
+	_check(town_scene is PackedScene, "The town UI scene and its script should parse")
+	_check(workbench_scene is PackedScene, "The module workbench scene and its script should parse")
 
 
 func _test_event_and_relationship() -> void:

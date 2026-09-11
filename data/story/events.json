@@ -202,11 +202,44 @@
       "presentation": {
         "title": "原本只是来买材料",
         "summary": "旁边的人在问谁能帮忙看一下店。",
-        "lines": ["A说，我可以。", "一个下午就这样被重新命名。"],
+        "image_path": "res://art/locations/night_market/night_market_restaurant_shift_v01.png",
+        "location_cue": "夜市小饭店",
+        "beats": [
+          {"speaker": "画面", "text": "A原本只打算买一袋柠檬。走到饭店门口时，店主正用肩膀顶着快要滑下来的订单夹。", "direction": "锅里有东西在响。三只空碗堵住出餐口，熟番茄已经裂开。"},
+          {"speaker": "饭店店主", "text": "会做饭吗？不会也行。先告诉我，你能留下多久。", "direction": "他没有把求助说成一个轻松的人情。"},
+          {"speaker": "A", "text": "这个下午可以。你先说哪里最缺人。", "direction": "她把柠檬放到台面，不再区分它们是自己的材料还是店里的剩料。"},
+          {"speaker": "饭店店主", "text": "先看今天剩下什么，再决定能做什么。菜名最后才需要。", "direction": "工作台会记录玩家挑选的材料顺序，劳动还会继续到最后一张桌子收完。"}
+        ],
         "result": "饭店工作台已经打开。"
       },
       "results": {"unlock_modules": ["cooking"]},
       "launch_module": "cooking"
+    },
+    {
+      "id": "a_d2_restaurant_close",
+      "choice_text": "把最后的台面收完（20分钟）",
+      "priority": 12,
+      "conditions": {"roles": ["A"], "days": [2], "locations": ["night_market"], "start": 720, "end": 1140, "required_events": ["a_d2_restaurant_shift"]},
+      "cost": {"minutes": 20},
+      "presentation": {
+        "title": "认可写在收台以后",
+        "summary": "菜已经端出去了，工作却还没有结束。",
+        "image_path": "res://art/locations/night_market/night_market_restaurant_shift_v01.png",
+        "location_cue": "夜市小饭店 · 收台",
+        "beats": [
+          {"speaker": "画面", "text": "最后一张桌子吃完时，新菜的名字已经有人记住。台面上仍有番茄汁、面包屑和一摞没有归位的碗。", "direction": "玩家在工作台做出的结果留在公共菜谱里；眼前留下的是不能被菜名代替的收尾。"},
+          {"speaker": "饭店店主", "text": "客人记得味道。我记得谁在关火以后还擦了台面。", "direction": "他把一块拧干的布推到A面前，自己端起更重的那摞碗。"},
+          {"speaker": "A", "text": "署名写谁？", "direction": "她问的是菜谱，不是认可表。"},
+          {"speaker": "饭店店主", "text": "先写今天在这里干活的人。至于那张确认表——把笔给我。", "direction": "认可来自一起完成的时段，而不只是玩家选出了哪三样材料。"}
+        ],
+        "result": "店主在收台以后写下认可；共同劳动也被记进A的关系记录。"
+      },
+      "results": {
+        "encounters": ["restaurant_owner"],
+        "relationship_flags": {"restaurant_owner": ["在关火以后一起收完台面"]},
+        "confirmations": {"restaurant_owner": "granted"},
+        "journal_entries": [{"id": "a_d2_after_close", "kind": "relationship", "text": "店主在最后一张桌子收完以后签了认可。"}]
+      }
     },
     {
       "id": "a_d2_park_music",

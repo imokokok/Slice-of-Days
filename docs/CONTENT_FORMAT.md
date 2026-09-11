@@ -89,6 +89,7 @@
 - `mode`：`ordered` 表示选择顺序有意义，`toggle` 表示只记录保留了哪些项目。
 - `min_select` 与 `max_select`：结算按钮解锁前需要选择的数量。
 - `tokens`：可操作的材料、句子、声音、观察点或记录；每项使用稳定 `id`、展示 `label` 和说明 `detail`。
+- `progress_steps`：可选；按已选择数量显示的过程反馈。若最多选择三项，应提供从零项到三项共四句反馈。
 - `icon_path`：可选的正式美术图标路径。
 
 玩法根节点可以使用可选的 `background_path` 替换工作台背景。操作结果会把玩家选中的 token ID 一并写入玩法 outcome，方便后续对白、作品名称、音轨或构图引用。

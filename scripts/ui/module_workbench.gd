@@ -152,7 +152,13 @@ func _update_interaction_state() -> void:
 		for button in choice_buttons:
 			button.disabled = not ready
 		clear_button.disabled = selected_tokens.is_empty()
-		result_label.text = "准备完成，可以选择一种结果。" if ready else "还需要选择%d项。" % max(0, minimum - selected_tokens.size())
+		var progress_steps: Array = interaction.get("progress_steps", [])
+		if progress_steps.is_empty():
+			result_label.text = "准备完成，可以选择一种结果。" if ready else "还需要选择%d项。" % max(0, minimum - selected_tokens.size())
+		else:
+			var progress_index: int = mini(selected_tokens.size(), progress_steps.size() - 1)
+			var progress_text := str(progress_steps[progress_index])
+			result_label.text = "%s\n材料已准备，可以决定怎样完成。" % progress_text if ready else "%s\n还需要选择%d项。" % [progress_text, max(0, minimum - selected_tokens.size())]
 		result_label.add_theme_color_override("font_color", INK if ready else MUTED)
 
 

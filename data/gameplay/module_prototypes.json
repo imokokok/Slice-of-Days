@@ -5,11 +5,18 @@
       "module_id": "cooking",
       "title": "饭店时段与公共菜谱",
       "description": "从现有材料里决定今天真正能做出的菜。名字、署名和照片会一起留进公共菜谱。",
+      "background_path": "res://art/locations/night_market/night_market_restaurant_shift_v01.png",
       "interaction": {
         "prompt": "先从临时厨房挑出三样今天真的用得上的材料。选择顺序会留在本次记录里。",
         "mode": "ordered",
         "min_select": 3,
         "max_select": 3,
+        "progress_steps": [
+          "店主：先看剩料，不要先想菜名。",
+          "你接住第一样材料；店主把出餐口空出一小块。",
+          "第二样材料上台时，旁边的人把积压的碗送回后场。",
+          "三样材料都在手边。有人报桌号，有人看火，你可以决定这份菜怎样完成。"
+        ],
         "tokens": [
           {"id": "lemon", "label": "一袋柠檬", "detail": "明亮，也很容易盖过别的味道"},
           {"id": "bread", "label": "昨天的面包", "detail": "需要被重新处理"},
@@ -24,7 +31,7 @@
           "label": "把零碎材料组合成新菜",
           "detail": "花费90分钟，接受结果不完全可控。",
           "cost": {"minutes": 90},
-          "result_text": "新菜被取名为《什么时候下班》，照片和署名一起进入公共菜谱。",
+          "result_text": "新菜被取名为《什么时候下班》。店主把菜谱的空白署名栏推过来：先出完最后一桌，再写名字。",
           "results": {
             "money": 30,
             "artifacts": [
@@ -37,6 +44,11 @@
           "results_by_role": {
             "A": {
               "encounters": ["restaurant_owner", "a_meng", "zhou_xiaoliu"],
+              "relationship_flags": {
+                "restaurant_owner": ["在忙乱的饭店时段可靠补位"],
+                "a_meng": ["一起把积压的碗送回后场"],
+                "zhou_xiaoliu": ["记得她只剩十分钟，先出了她的那份"]
+              },
               "confirmations": {"restaurant_owner": "granted", "a_meng": "granted", "zhou_xiaoliu": "granted"}
             },
             "B": {
@@ -50,10 +62,13 @@
           "label": "先核对成本再做一份稳定菜单",
           "detail": "花费60分钟，收入更稳定。",
           "cost": {"minutes": 60},
-          "result_text": "菜单很稳妥。店主记住了你把每一项成本都讲清楚的方式。",
+          "result_text": "菜单很稳妥。店主没有立刻谈认可，只把收台用的布推过来：还有最后一张桌子。",
           "results": {"money": 42},
           "results_by_role": {
-            "A": {"relationship_flags": {"restaurant_owner": ["完成过一次稳定菜单"]}},
+            "A": {
+              "encounters": ["restaurant_owner"],
+              "relationship_flags": {"restaurant_owner": ["完成过一次稳定菜单"]}
+            },
             "B": {
               "encounters": ["restaurant_owner"],
               "confirmations": {"restaurant_owner": "granted"}

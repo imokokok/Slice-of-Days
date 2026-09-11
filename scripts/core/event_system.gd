@@ -39,6 +39,52 @@ func available_events() -> Array[Dictionary]:
 	return result
 
 
+func day_leads() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for event_id in events:
+		var event: Dictionary = events[event_id]
+		if not bool(event.get("repeatable", false)) and GameState.has_event(event_id):
+			continue
+		var conditions: Dictionary = event.get("conditions", {})
+		var roles: Array = conditions.get("roles", [])
+		if not roles.is_empty() and not roles.has(GameState.current_role):
+			continue
+		var days: Array = conditions.get("days", [])
+		var matches_day := days.is_empty()
+		for day in days:
+			if int(day) == GameState.current_day:
+				matches_day = true
+				break
+		if not matches_day:
+			continue
+		var prerequisites_met := true
+		for required in conditions.get("required_events", []):
+			if not GameState.has_event(str(required)):
+				prerequisites_met = false
+		for forbidden in conditions.get("forbidden_events", []):
+			if GameState.has_event(str(forbidden)):
+				prerequisites_met = false
+		for fact in conditions.get("required_facts", []):
+			if not GameState.known_facts.has(str(fact)):
+				prerequisites_met = false
+		var required_appointment := str(conditions.get("required_appointment", ""))
+		if not required_appointment.is_empty() and not ["scheduled", "active"].has(GameState.appointment_status(required_appointment)):
+			prerequisites_met = false
+		if not prerequisites_met:
+			continue
+		var lead := event.duplicate(true)
+		lead["window_passed"] = GameState.current_minute >= int(conditions.get("end", 1440))
+		result.append(lead)
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var a_conditions: Dictionary = a.get("conditions", {})
+		var b_conditions: Dictionary = b.get("conditions", {})
+		var a_key := int(a_conditions.get("start", 0)) * 100 + int(a.get("priority", 100))
+		var b_key := int(b_conditions.get("start", 0)) * 100 + int(b.get("priority", 100))
+		return a_key < b_key
+	)
+	return result
+
+
 func is_available(event: Dictionary) -> bool:
 	return bool(availability(event).get("ok", false))
 
@@ -75,6 +121,11 @@ func availability(event: Dictionary) -> Dictionary:
 	for fact in conditions.get("required_facts", []):
 		if not GameState.known_facts.has(str(fact)):
 			return {"ok": false, "reason": "还缺少必要信息。"}
+	var required_appointment := str(conditions.get("required_appointment", ""))
+	if not required_appointment.is_empty():
+		var appointment_state := GameState.appointment_status(required_appointment)
+		if not ["scheduled", "active"].has(appointment_state):
+			return {"ok": false, "reason": "这次预约没有生效，或者已经错过。"}
 	var resident_id := str(conditions.get("resident_present", ""))
 	if not resident_id.is_empty():
 		var present := ScheduleSystem.residents_at(
@@ -123,6 +174,8 @@ func trigger(event_id: String, choice_id: String = "") -> Dictionary:
 		GameState.use_free_time(minutes)
 	apply_results(event_id, event.get("results", {}))
 	apply_results(event_id, choice.get("results", {}))
+	if not choice.is_empty():
+		GameState.record_choice(event_id, str(choice.get("id", "")), str(choice.get("label", "")))
 	if not bool(event.get("repeatable", false)):
 		GameState.mark_event(event_id)
 	var presentation: Dictionary = event.get("presentation", {})

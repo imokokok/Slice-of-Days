@@ -86,7 +86,7 @@ func _simulate_b_route() -> void:
 	_event("b_d3_work_interruption")
 	_context(3, 840, "night_market")
 	_event("b_d3_help_market")
-	_context(3, 1080, "cafe")
+	_context(3, 840, "record_store")
 	_module_event("b_d3_sound_session", "sound_sampling", "planned_route")
 
 	_context(4, 840, "library")
@@ -136,7 +136,18 @@ func _module_event(event_id: String, expected_module_id: String, choice_id: Stri
 	if module_id.is_empty():
 		return
 	_check(GameplayModuleSystem.begin_session(module_id, event_id), "Module %s should begin" % module_id)
-	var completion := GameplayModuleSystem.complete_choice(choice_id)
+	var prototype := GameplayModuleSystem.prototype_for(module_id)
+	var interaction: Dictionary = prototype.get("interaction", {})
+	var selected_tokens: Array[String] = []
+	var minimum := int(interaction.get("min_select", 0))
+	for token in interaction.get("tokens", []):
+		if selected_tokens.size() >= minimum:
+			break
+		selected_tokens.append(str(token.get("id", "")))
+	var completion := GameplayModuleSystem.complete_choice(
+		choice_id,
+		{"mode": str(interaction.get("mode", "toggle")), "selected_tokens": selected_tokens}
+	)
 	_check(bool(completion.get("ok", false)), "Module %s choice %s failed: %s" % [module_id, choice_id, str(completion.get("message", ""))])
 
 

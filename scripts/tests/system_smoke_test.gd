@@ -10,11 +10,14 @@ func _ready() -> void:
 	_test_calendar_and_role_isolation()
 	_test_schedule_and_route()
 	_test_event_and_relationship()
+	_test_draft_confirmation_request()
+	_test_appointment_lifecycle()
+	_test_choice_history()
 	_test_gameplay_module_state()
 	_test_chapter_progression()
 	_test_save_roundtrip()
 	if failures.is_empty():
-		print("SMOKE TEST PASS: dual-role state, calendar, routes, events, relationships, gameplay modules, chapters and save/load")
+		print("SMOKE TEST PASS: dual-role state, calendar, routes, events, appointments, relationships, gameplay modules, chapters and save/load")
 		get_tree().quit(0)
 	else:
 		for failure in failures:
@@ -42,6 +45,13 @@ func _test_calendar_and_role_isolation() -> void:
 
 func _test_schedule_and_route() -> void:
 	ChapterSystem.start_new_game("A")
+	_check(ScheduleSystem.residents.size() == 100, "The graybox roster should expand to 100 stable residents")
+	_check(not ScheduleSystem.activity_at("town_resident_033", 1, 780).is_empty(), "A generated resident should expose a real schedule")
+	var found_day_lead := false
+	for lead in EventSystem.day_leads():
+		if str(lead.get("id", "")) == "a_d1_print_help":
+			found_day_lead = true
+	_check(found_day_lead, "The journal lead query should expose an eligible day event without requiring the current location")
 	GameState.current_minute = 1080
 	GameState.current_location = "park"
 	GameState.commit_active_role_state()
@@ -49,6 +59,8 @@ func _test_schedule_and_route() -> void:
 		ScheduleSystem.residents_at("park", 1, 1080).has("xia_touming"),
 		"Xia should be present in the park on day 1 at 18:00"
 	)
+	var known_activity := ScheduleSystem.activity_by_id("zhou_cafeteria")
+	_check(str(known_activity.get("resident_name", "")) == "周晓六", "Known schedules should resolve to readable resident data")
 	GameState.current_location = "residence"
 	GameState.current_minute = 540
 	GameState.commit_active_role_state()
@@ -79,13 +91,75 @@ func _test_event_and_relationship() -> void:
 	)
 
 
+func _test_draft_confirmation_request() -> void:
+	ChapterSystem.start_new_game("A")
+	RelationshipSystem.record_encounter("recordist", "smoke_first")
+	var early := RelationshipSystem.request_confirmation("recordist")
+	_check(str(early.get("status", "")) == "refused", "Asking a draft resident after one encounter should be refused")
+	for index in 3:
+		RelationshipSystem.record_encounter("recordist", "smoke_more_%d" % index)
+	var repaired := RelationshipSystem.request_confirmation("recordist")
+	_check(str(repaired.get("status", "")) == "granted", "A refused draft resident should allow repair after enough real encounters")
+	_check(GameState.confirmed_residents.has("recordist"), "A repaired draft relationship should grant confirmation")
+
+
+func _test_choice_history() -> void:
+	ChapterSystem.start_new_game("A")
+	GameState.current_day = 6
+	GameState.current_minute = 1080
+	GameState.current_location = "park"
+	GameState.commit_active_role_state()
+	var result := EventSystem.trigger("a_d6_last_full_block", "watch_stars")
+	_check(bool(result.get("ok", false)), "A branching event should trigger")
+	_check(GameState.has_choice("a_d6_last_full_block/watch_stars"), "A branching event should persist its selected choice")
+	_check(GameState.choice_history.size() == 1, "A non-repeatable branching event should record one choice")
+
+
+func _test_appointment_lifecycle() -> void:
+	ChapterSystem.start_new_game("A")
+	GameState.add_appointment({
+		"id": "smoke_meeting",
+		"day": 1,
+		"start": 600,
+		"end": 660,
+		"location": "studio",
+		"label": "Smoke meeting",
+	})
+	_check(GameState.appointment_status("smoke_meeting") == "scheduled", "A future appointment should begin scheduled")
+	GameState.current_minute = 610
+	GameState.refresh_appointments()
+	_check(GameState.appointment_status("smoke_meeting") == "active", "An appointment should become active inside its window")
+	GameState.mark_event("smoke_meeting")
+	_check(GameState.appointment_status("smoke_meeting") == "completed", "Completing the matching event should complete its appointment")
+	GameState.add_appointment({
+		"id": "smoke_missed",
+		"day": 1,
+		"start": 620,
+		"end": 630,
+		"location": "port",
+		"label": "Missed smoke meeting",
+	})
+	GameState.current_minute = 640
+	GameState.refresh_appointments()
+	_check(GameState.appointment_status("smoke_missed") == "missed", "Passing an appointment end should mark it missed")
+	var missed_logged := false
+	for entry in GameState.journal_entries:
+		if str(entry.get("id", "")) == "missed_smoke_missed":
+			missed_logged = true
+	_check(missed_logged, "A missed appointment should leave one journal record")
+
+
 func _test_chapter_progression() -> void:
 	ChapterSystem.start_new_game("A")
 	var first := ChapterSystem.current_chapter()
 	_check(str(first.get("role", "")) == "A", "The first chapter should use the selected starting role")
+	_check(not ChapterSystem.has_seen_opening(), "A new chapter opening should begin unseen")
+	ChapterSystem.mark_opening_seen()
+	_check(ChapterSystem.has_seen_opening(), "The current chapter opening should persist as seen")
 	var next := ChapterSystem.advance_chapter()
 	_check(bool(next.get("ok", false)), "Advancing the first chapter should succeed")
 	_check(GameState.current_role == "B" and GameState.current_day == 1, "The second chapter should switch to B on day 1")
+	_check(not ChapterSystem.has_seen_opening(), "The next role should have its own unseen opening")
 	ChapterSystem.advance_chapter()
 	_check(GameState.current_role == "A" and GameState.current_day == 2, "The third chapter should begin A's day 2")
 
@@ -102,14 +176,32 @@ func _test_gameplay_module_state() -> void:
 		bool(GameplayModuleSystem.state_for("tarot").get("completed", false)),
 		"Gameplay completion should be stored in the active role state"
 	)
+	_check(GameplayModuleSystem.unlock("cooking"), "Cooking should unlock for its workbench test")
+	_check(GameplayModuleSystem.begin_session("cooking", "smoke"), "Cooking session should begin")
+	var cooking_result := GameplayModuleSystem.complete_choice(
+		"improvise",
+		{"mode": "ordered", "selected_tokens": ["lemon", "bread", "tomato"]}
+	)
+	_check(bool(cooking_result.get("ok", false)), "Cooking interaction should complete from its data")
+	var outcomes: Array = GameplayModuleSystem.state_for("cooking").get("outcomes", [])
+	_check(not outcomes.is_empty(), "Cooking should store an outcome")
+	if not outcomes.is_empty():
+		var interaction: Dictionary = outcomes[-1].get("interaction", {})
+		_check(
+			interaction.get("selected_tokens", []) == ["lemon", "bread", "tomato"],
+			"The selected workbench tokens should survive in the gameplay outcome"
+		)
 
 
 func _test_save_roundtrip() -> void:
 	ChapterSystem.start_new_game("A")
 	GameState.add_fact("smoke-test-fact")
+	GameState.record_choice("smoke-event", "smoke-choice", "Smoke choice")
 	GameState.switch_to_role("B")
 	GameState.add_fact("smoke-test-b-fact")
 	var test_path := "user://smoke_test_save.json"
+	_check(SaveManager.path_for_slot(1) == SaveManager.SAVE_PATH, "Slot 1 should preserve the existing save path")
+	_check(SaveManager.path_for_slot(3).ends_with("solmere_save_3.json"), "Additional save slots should use separate files")
 	_check(SaveManager.save_game(test_path), "Save should succeed")
 	GameState.begin_new_game("A")
 	_check(SaveManager.load_game(test_path), "Load should succeed")
@@ -117,6 +209,7 @@ func _test_save_roundtrip() -> void:
 	_check(GameState.known_facts.has("smoke-test-b-fact"), "B's facts should survive save/load")
 	GameState.switch_to_role("A")
 	_check(GameState.known_facts.has("smoke-test-fact"), "A's facts should survive save/load")
+	_check(GameState.has_choice("smoke-event/smoke-choice"), "A's key choices should survive save/load")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(test_path))
 
 

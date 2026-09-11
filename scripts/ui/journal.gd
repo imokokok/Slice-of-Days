@@ -1,5 +1,6 @@
 extends Control
 
+const LOCATIONS_PATH := "res://data/world/locations.json"
 const PAPER := Color("fff8eb")
 const PAPER_SOFT := Color("f1dfc7")
 const INK := Color("4a342b")
@@ -8,8 +9,11 @@ const TERRACOTTA := Color("c85f43")
 const TEAL := Color("4f7d83")
 const LINE := Color("b88963")
 
+var location_names: Dictionary = {}
+
 
 func _ready() -> void:
+	_load_location_names()
 	_build_ui()
 
 
@@ -22,7 +26,8 @@ func _draw() -> void:
 func _build_ui() -> void:
 	var title := "A的随身记忆与相册" if GameState.current_role == "A" else "B的计划本"
 	_label(self, title, Vector2(45, 24), Vector2(600, 46), 30, INK)
-	_label(self, "第 %d 天 · %s · %d元 · 认可 %d/12" % [GameState.current_day, GameState.clock_text(), GameState.money, GameState.residency_confirmations], Vector2(48, 70), Vector2(700, 28), 15, MUTED)
+	var job_title := CharacterSystem.job_title(GameState.current_role)
+	_label(self, "%s · 第 %d 天 · %s · %d元 · 认可 %d/12" % [job_title, GameState.current_day, GameState.clock_text(), GameState.money, GameState.residency_confirmations], Vector2(48, 70), Vector2(850, 28), 15, MUTED)
 	var back := _button(self, "返回小镇", Vector2(1380, 28), Vector2(170, 44), TERRACOTTA)
 	back.pressed.connect(SceneRouter.town_day)
 
@@ -61,6 +66,13 @@ func _relationship_text() -> String:
 
 func _memory_text() -> String:
 	var lines: Array[String] = []
+	if not GameState.choice_history.is_empty():
+		lines.append("关键选择")
+		for choice in GameState.choice_history:
+			lines.append("• 第%d天 · %s" % [
+				int(choice.get("day", GameState.current_day)),
+				str(choice.get("label", choice.get("choice_id", "未命名选择"))),
+			])
 	for entry in GameState.journal_entries:
 		lines.append("第%d天  %s" % [int(entry.get("day", GameState.current_day)), str(entry.get("text", ""))])
 	for collection in GameState.artifacts:
@@ -80,19 +92,62 @@ func _memory_text() -> String:
 func _planning_text() -> String:
 	var goal := str(GameState.schedule_for(GameState.current_role, GameState.current_day).get("goal", ""))
 	var lines: Array[String] = ["本段目标\n%s\n\n今日可行动时间\n%s" % [goal, _block_text()]]
+	var leads := EventSystem.day_leads()
+	if not leads.is_empty():
+		lines.append("\n今日可追踪机会")
+		for lead in leads:
+			var conditions: Dictionary = lead.get("conditions", {})
+			var lead_locations: Array = conditions.get("locations", [])
+			var location_id := str(lead_locations[0]) if not lead_locations.is_empty() else ""
+			var status := "已过时间窗" if bool(lead.get("window_passed", false)) else "尚可前往"
+			lines.append("• %s—%s · %s\n  %s（%s）" % [
+				_minute_text(int(conditions.get("start", 0))),
+				_minute_text(int(conditions.get("end", 1440))),
+				_location_name(location_id),
+				str(lead.get("choice_text", lead.get("id", "未命名机会"))),
+				status,
+			])
 	if not GameState.appointments.is_empty():
 		lines.append("\n预约")
 		for appointment in GameState.appointments:
-			lines.append("• 第%d天 %s  %s" % [
+			lines.append("• [%s] 第%d天 %s—%s\n  %s · %s" % [
+				_appointment_status_text(str(appointment.get("status", "scheduled"))),
 				int(appointment.get("day", GameState.current_day)),
 				_minute_text(int(appointment.get("start", 0))),
+				_minute_text(int(appointment.get("end", int(appointment.get("start", 0)) + 120))),
 				str(appointment.get("label", "未命名预约")),
+				_location_name(str(appointment.get("location", ""))),
 			])
 	if not GameState.known_schedule_entries.is_empty():
 		lines.append("\n已确认的居民日程")
 		for activity_id in GameState.known_schedule_entries:
-			lines.append("• %s" % activity_id)
+			var activity := ScheduleSystem.activity_by_id(str(activity_id))
+			if activity.is_empty():
+				lines.append("• %s" % activity_id)
+				continue
+			lines.append("• %s · %s—%s\n  %s · %s" % [
+				str(activity.get("resident_name", activity_id)),
+				_minute_text(int(activity.get("start", 0))),
+				_minute_text(int(activity.get("end", 0))),
+				str(activity.get("activity", "日常活动")),
+				_location_name(str(activity.get("location", ""))),
+			])
 	return "\n".join(lines)
+
+
+func _load_location_names() -> void:
+	if not FileAccess.file_exists(LOCATIONS_PATH):
+		return
+	var file := FileAccess.open(LOCATIONS_PATH, FileAccess.READ)
+	var parsed = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return
+	for location in parsed.get("locations", []):
+		location_names[str(location.get("id", ""))] = str(location.get("name", ""))
+
+
+func _location_name(location_id: String) -> String:
+	return str(location_names.get(location_id, location_id if not location_id.is_empty() else "未知地点"))
 
 
 func _block_text() -> String:
@@ -113,6 +168,15 @@ func _confirmation_text(status: String) -> String:
 		"granted": "已经认可",
 		"refused": "拒绝认可",
 		"withdrawn": "撤回认可",
+	}.get(status, status)
+
+
+func _appointment_status_text(status: String) -> String:
+	return {
+		"scheduled": "待赴约",
+		"active": "可赴约",
+		"completed": "已完成",
+		"missed": "已错过",
 	}.get(status, status)
 
 

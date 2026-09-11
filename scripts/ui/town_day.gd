@@ -1,5 +1,7 @@
 extends Control
 
+const OPENINGS_PATH := "res://data/story/day_openings.json"
+const OPENING_BACKGROUND := preload("res://art/reference/town-direction-warm-v2.png")
 const PANEL := Color("fff8eb", 0.96)
 const PANEL_SOFT := Color("f1dfc7", 0.97)
 const BONE := Color("4a342b")
@@ -11,6 +13,7 @@ const LINE := Color("b88963")
 var locations: Dictionary = {}
 var selected_location := "residence"
 var location_buttons: Dictionary = {}
+var district_buttons: Dictionary = {}
 var status_message := "选择地点，再决定用什么方式抵达。"
 
 var backdrop: Control
@@ -27,17 +30,44 @@ var actions_box: VBoxContainer
 var notebook_panel: Panel
 var event_overlay: ColorRect
 var event_panel: Panel
+var opening_overlay: ColorRect
 
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	var capture_event_id := ""
-	if args.has("--capture-town-a"):
+	var capture_opening := ""
+	var capture_appointment := args.has("--capture-appointment")
+	if capture_appointment:
+		ChapterSystem.start_new_game("A")
+		GameState.current_day = 5
+		GameState.current_minute = 840
+		GameState.current_location = "studio"
+		GameState.add_appointment({
+			"id": "shared_d5_studio_blocking",
+			"day": 5,
+			"start": 840,
+			"end": 1020,
+			"location": "studio",
+			"label": "去摄影棚看分镜走位",
+		})
+		GameState.commit_active_role_state()
+	elif args.has("--capture-town-a"):
 		GameState.begin_vertical_slice("A")
 	elif args.has("--capture-town-b"):
 		GameState.begin_vertical_slice("B")
 	else:
 		for arg in args:
+			if arg.begins_with("--capture-opening="):
+				capture_opening = arg.trim_prefix("--capture-opening=")
+				var opening_parts := capture_opening.split(":")
+				var opening_role := str(opening_parts[0]).to_upper()
+				GameState.begin_new_game(opening_role)
+				GameState.current_day = int(opening_parts[1]) if opening_parts.size() > 1 else 1
+				GameState.current_minute = int(GameState.schedule_for(opening_role, GameState.current_day).get("start", 540))
+				GameState.current_location = "residence"
+				GameState.commit_active_role_state()
+				break
 			if arg.begins_with("--capture-event="):
 				capture_event_id = arg.trim_prefix("--capture-event=")
 				var event: Dictionary = EventSystem.events.get(capture_event_id, {})
@@ -57,10 +87,18 @@ func _ready() -> void:
 	_build_ui()
 	GameState.state_changed.connect(_refresh)
 	_refresh()
-	if not capture_event_id.is_empty():
+	if not capture_opening.is_empty():
+		_show_day_opening.call_deferred()
+		_capture.call_deferred("day-opening-%s.png" % capture_opening.replace(":", "-"))
+	elif not capture_event_id.is_empty():
 		_open_event.call_deferred(capture_event_id)
+		_capture.call_deferred("event-%s.png" % capture_event_id)
+	elif capture_appointment:
+		_capture.call_deferred("town-appointment.png")
 	if args.has("--capture-town-a") or args.has("--capture-town-b"):
 		_capture.call_deferred("town-%s.png" % GameState.current_role.to_lower())
+	elif capture_event_id.is_empty() and capture_opening.is_empty() and not capture_appointment and not ChapterSystem.has_seen_opening():
+		_show_day_opening.call_deferred()
 
 
 func _load_locations() -> void:
@@ -86,7 +124,7 @@ func _build_ui() -> void:
 	var save := _button(header, "保存", Vector2(1460, 16), Vector2(58, 34), "quiet")
 	var menu := _button(header, "菜单", Vector2(1524, 16), Vector2(58, 34), "quiet")
 	save.pressed.connect(_save_game)
-	menu.pressed.connect(SceneRouter.main_menu)
+	menu.pressed.connect(_return_to_menu)
 
 	_label(self, "小镇路线 / 选择目的地", Vector2(35, 100), Vector2(500, 25), 15, MUTED)
 	for id in locations:
@@ -97,6 +135,24 @@ func _build_ui() -> void:
 		var button := _button(self, str(row.get("name", id)), point - Vector2(75, 24), Vector2(150, 48), "location")
 		button.pressed.connect(_select_location.bind(id))
 		location_buttons[id] = button
+
+	_label(self, "街区里的地点", Vector2(34, 602), Vector2(180, 22), 13, CYAN)
+	var district_index := 0
+	for id in locations:
+		var row: Dictionary = locations[id]
+		if not bool(row.get("district_visible", false)):
+			continue
+		var district_button := _button(
+			self,
+			str(row.get("name", id)),
+			Vector2(34 + district_index * 164, 630),
+			Vector2(150, 40),
+			"district"
+		)
+		district_button.tooltip_text = str(row.get("subtitle", ""))
+		district_button.pressed.connect(_select_location.bind(id))
+		district_buttons[id] = district_button
+		district_index += 1
 
 	var details := _panel(self, Vector2(1215, 96), Vector2(350, 566), PANEL, LINE)
 	_label(details, "地点", Vector2(20, 17), Vector2(80, 20), 13, CYAN)
@@ -163,18 +219,32 @@ func _travel(method: String) -> void:
 func _wait(minutes: int) -> void:
 	if GameState.use_free_time(minutes):
 		status_message = "时间经过了 %d 分钟。小镇里的人也继续移动。" % minutes
+		SaveManager.save_game()
 	else:
 		status_message = "当前空闲时间块不足。可以跳到下个空闲段。"
 	_refresh()
 
 
 func _next_free_block() -> void:
-	status_message = "翻到下一段可行动时间。" if GameState.advance_to_next_free_block() else "今天已经没有下一段空闲时间。"
+	var advanced := GameState.advance_to_next_free_block()
+	status_message = "翻到下一段可行动时间。" if advanced else "今天已经没有下一段空闲时间。"
+	if advanced:
+		SaveManager.save_game()
 	_refresh()
 
 
 func _refresh() -> void:
-	role_label.text = "%s视角 · %s" % [GameState.current_role, "连续时间" if GameState.current_role == "A" else "碎片时间"]
+	var appointment_changes := GameState.refresh_appointments()
+	for appointment in appointment_changes:
+		if str(appointment.get("status", "")) == "missed":
+			status_message = "错过预约：%s。它已经写进计划记录，时间不会自动退回。" % str(appointment.get("label", "未命名预约"))
+	var job_title := CharacterSystem.job_title(GameState.current_role)
+	role_label.text = "存档 %d · %s视角%s · %s" % [
+		SaveManager.active_slot,
+		GameState.current_role,
+		" · %s" % job_title if not job_title.is_empty() else "",
+		"连续时间" if GameState.current_role == "A" else "碎片时间",
+	]
 	clock_label.text = "第 %d 天  %s" % [GameState.current_day, GameState.clock_text()]
 	money_label.text = "%d 元" % GameState.money
 	confirmation_label.text = "确认 %d / 12" % GameState.residency_confirmations
@@ -186,7 +256,11 @@ func _refresh() -> void:
 	resident_label.text = "当前位置：%s\n此刻在场：%s" % [_location_name(GameState.current_location), _resident_names(current_people)]
 	backdrop.set_points(_point_for(locations.get(GameState.current_location, {})), _point_for(selected))
 	for id in location_buttons:
+		location_buttons[id].text = _location_button_text(id)
 		_style_button(location_buttons[id], "location_active" if id == selected_location else "location")
+	for id in district_buttons:
+		district_buttons[id].text = _location_button_text(id)
+		_style_button(district_buttons[id], "district_active" if id == selected_location else "district")
 	_render_actions(current_people)
 	_render_timeline()
 	if notebook_panel.visible:
@@ -206,21 +280,130 @@ func _render_actions(current_people: Array[String]) -> void:
 		_add_action(choice_text, _open_event.bind(event_id))
 	if GameState.current_location == "tarot_stall":
 		_add_action("坐到 Solmere 塔罗牌桌前", SceneRouter.tarot_table)
+	for resident_id in current_people:
+		if actions_box.get_child_count() >= 4:
+			break
+		var request_id := _confirmation_request_event_id(resident_id)
+		var request_preview := RelationshipSystem.confirmation_request_preview(resident_id)
+		if bool(request_preview.get("available", false)) and not GameState.has_event(request_id):
+			_add_action(str(request_preview.get("label", "请求居民认可（10分钟）")), _request_confirmation.bind(resident_id))
+			if actions_box.get_child_count() >= 4:
+				break
+		var ambient_event_id := _ambient_event_id(resident_id)
+		if GameState.has_event(ambient_event_id):
+			continue
+		var resident: Dictionary = ScheduleSystem.residents.get(resident_id, {})
+		_add_action("和%s聊几句（20分钟）" % str(resident.get("display_name", resident_id)), _ambient_talk.bind(resident_id))
 	if actions_box.get_child_count() == 0:
 		_add_action("观察周围（20分钟）", _observe)
 
 
+func _ambient_talk(resident_id: String) -> void:
+	if not _spend_action_time(20):
+		return
+	var activity := ScheduleSystem.activity_at(resident_id, GameState.current_day, GameState.current_minute - 20)
+	var resident: Dictionary = ScheduleSystem.residents.get(resident_id, {})
+	var name := str(resident.get("display_name", resident_id))
+	var activity_text := str(activity.get("activity", "今天的日常"))
+	var memory := "在%s聊过%s" % [_location_name(GameState.current_location), activity_text]
+	var event_id := _ambient_event_id(resident_id)
+	RelationshipSystem.record_encounter(resident_id, event_id, [memory])
+	GameState.mark_event(event_id)
+	status_message = "%s说起%s。没有人因此立刻给出认可，但这次相处被记住了。" % [name, activity_text]
+	SaveManager.save_game()
+	_refresh()
+
+
+func _ambient_event_id(resident_id: String) -> String:
+	return "ambient_d%d_%s_%s" % [GameState.current_day, GameState.current_role.to_lower(), resident_id]
+
+
+func _confirmation_request_event_id(resident_id: String) -> String:
+	return "confirmation_request_d%d_%s_%s" % [GameState.current_day, GameState.current_role.to_lower(), resident_id]
+
+
+func _request_confirmation(resident_id: String) -> void:
+	if not _spend_action_time(10):
+		return
+	var result := RelationshipSystem.request_confirmation(resident_id)
+	status_message = str(result.get("message", "这次请求已经被记录。"))
+	GameState.mark_event(_confirmation_request_event_id(resident_id))
+	GameState.add_journal_entry({
+		"id": _confirmation_request_event_id(resident_id),
+		"kind": "confirmation_request",
+		"text": status_message,
+	})
+	SaveManager.save_game()
+	_refresh()
+
+
 func _resolve_event(event_id: String, choice_id: String = "") -> void:
+	var before := {
+		"minute": GameState.current_minute,
+		"money": GameState.money,
+		"confirmations": GameState.residency_confirmations,
+	}
 	var result := EventSystem.trigger(event_id, choice_id)
 	status_message = str(result.get("message", ""))
 	if bool(result.get("ok", false)):
 		SaveManager.save_game()
-		event_overlay.visible = false
 		var launch_module := str(result.get("launch_module", ""))
 		if not launch_module.is_empty():
+			event_overlay.visible = false
 			SceneRouter.gameplay_module(launch_module, event_id)
 			return
+		_show_event_result(result, before)
+	else:
+		event_overlay.visible = false
 	_refresh()
+
+
+func _show_event_result(result: Dictionary, before: Dictionary) -> void:
+	for child in event_panel.get_children():
+		event_panel.remove_child(child)
+		child.queue_free()
+	var event: Dictionary = result.get("event", {})
+	var presentation: Dictionary = event.get("presentation", {})
+	_label(event_panel, "这段经历已经发生", Vector2(32, 25), Vector2(676, 25), 14, CYAN)
+	_label(event_panel, str(presentation.get("title", "留下的结果")), Vector2(32, 58), Vector2(676, 42), 26, BONE)
+	var message := _label(event_panel, str(result.get("message", "这次经历已经被记录。")), Vector2(32, 116), Vector2(676, 100), 17, BONE.darkened(0.05))
+	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var consequence := _event_consequence_text(result, before)
+	var consequence_panel := _panel(event_panel, Vector2(32, 238), Vector2(676, 174), Color("f1dfc7", 0.82), CYAN)
+	_label(consequence_panel, "留下的变化", Vector2(20, 16), Vector2(260, 26), 16, CYAN)
+	var consequence_label := _label(consequence_panel, consequence, Vector2(20, 52), Vector2(636, 98), 14, BONE)
+	consequence_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var close := _button(event_panel, "继续今天", Vector2(488, 478), Vector2(220, 50), "primary")
+	close.pressed.connect(func() -> void: event_overlay.visible = false)
+	event_overlay.visible = true
+
+
+func _event_consequence_text(result: Dictionary, before: Dictionary) -> String:
+	var pieces: Array[String] = []
+	var minutes := GameState.current_minute - int(before.get("minute", GameState.current_minute))
+	var money_delta := GameState.money - int(before.get("money", GameState.money))
+	var confirmation_delta := GameState.residency_confirmations - int(before.get("confirmations", GameState.residency_confirmations))
+	if minutes > 0:
+		pieces.append("时间经过 %d 分钟" % minutes)
+	if money_delta != 0:
+		pieces.append("金钱 %s%d 元" % ["+" if money_delta > 0 else "", money_delta])
+	if confirmation_delta != 0:
+		pieces.append("居民认可 %s%d" % ["+" if confirmation_delta > 0 else "", confirmation_delta])
+	var event: Dictionary = result.get("event", {})
+	var choice: Dictionary = result.get("choice", {})
+	var combined_results: Array[Dictionary] = [event.get("results", {}), choice.get("results", {})]
+	var residents: Array[String] = []
+	for result_data in combined_results:
+		for resident_id in result_data.get("encounters", []):
+			var resident: Dictionary = ScheduleSystem.residents.get(str(resident_id), {})
+			var name := str(resident.get("display_name", resident_id))
+			if not residents.has(name):
+				residents.append(name)
+	if not residents.is_empty():
+		pieces.append("这段经历涉及：%s" % "、".join(residents))
+	if pieces.is_empty():
+		pieces.append("没有新增数值；这段经历仍已写进当前角色的记录。")
+	return "\n\n".join(pieces)
 
 
 func _build_event_modal() -> void:
@@ -233,6 +416,92 @@ func _build_event_modal() -> void:
 	event_overlay.visible = false
 
 
+func _show_day_opening() -> void:
+	var opening := _opening_for(GameState.current_day, GameState.current_role)
+	if opening.is_empty():
+		ChapterSystem.mark_opening_seen()
+		return
+	opening_overlay = ColorRect.new()
+	opening_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	opening_overlay.color = Color(BONE, 0.52)
+	opening_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(opening_overlay)
+	var card := _panel(opening_overlay, Vector2(250, 125), Vector2(1100, 650), Color("fff8eb", 0.98), LINE)
+	var role_color := AMBER if GameState.current_role == "A" else CYAN
+	_label(card, "第 %d 天 · %s" % [GameState.current_day, str(opening.get("theme", "小镇生活"))], Vector2(36, 28), Vector2(700, 28), 15, role_color)
+	var title := _label(card, str(opening.get("title", "走进今天")), Vector2(34, 62), Vector2(1000, 50), 30, BONE)
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	var image := TextureRect.new()
+	image.position = Vector2(36, 130)
+	image.size = Vector2(390, 360)
+	image.texture = _opening_texture(opening)
+	image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	image.modulate = Color(1, 1, 1, 0.92)
+	image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(image)
+	var wash := ColorRect.new()
+	wash.position = image.position
+	wash.size = image.size
+	wash.color = Color(role_color, 0.13)
+	wash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(wash)
+	_label(card, GameState.current_role, Vector2(56, 145), Vector2(55, 50), 34, Color("fff8eb"))
+
+	var body := _label(card, str(opening.get("body", "")), Vector2(465, 130), Vector2(590, 100), 17, BONE.darkened(0.04))
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_label(card, "今天的重点", Vector2(465, 252), Vector2(220, 26), 15, CYAN)
+	var focus := _label(card, str(opening.get("focus", "")), Vector2(465, 286), Vector2(590, 88), 16, BONE)
+	focus.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_label(card, "留下的一句话", Vector2(465, 394), Vector2(220, 26), 15, role_color)
+	var memory := _label(card, str(opening.get("memory", "")), Vector2(465, 428), Vector2(590, 75), 16, MUTED)
+	memory.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	var rule_text := "七天结束前，需要十二位居民愿意确认：她确实在这里生活过。" if GameState.current_day == 1 else "小镇照常运转。没有人会固定站在原地等待。"
+	var rule := _label(card, rule_text, Vector2(36, 520), Vector2(740, 46), 14, MUTED)
+	rule.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var enter := _button(card, "走进今天", Vector2(820, 548), Vector2(235, 52), "primary")
+	enter.pressed.connect(_dismiss_day_opening)
+
+
+func _dismiss_day_opening() -> void:
+	ChapterSystem.mark_opening_seen()
+	SaveManager.save_game()
+	if opening_overlay != null:
+		opening_overlay.queue_free()
+		opening_overlay = null
+
+
+func _opening_for(day: int, role: String) -> Dictionary:
+	if not FileAccess.file_exists(OPENINGS_PATH):
+		return {}
+	var file := FileAccess.open(OPENINGS_PATH, FileAccess.READ)
+	var parsed = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return {}
+	for row in parsed.get("days", []):
+		if int(row.get("day", 0)) == day:
+			var result: Dictionary = row.get(role, {}).duplicate(true)
+			result["theme"] = str(row.get("theme", ""))
+			return result
+	return {}
+
+
+func _opening_texture(opening: Dictionary) -> Texture2D:
+	var path := str(opening.get("image_path", ""))
+	if not path.is_empty() and ResourceLoader.exists(path):
+		var loaded = load(path)
+		if loaded is Texture2D:
+			return loaded
+	var portrait_path := CharacterSystem.portrait_path(GameState.current_role)
+	if not portrait_path.is_empty() and ResourceLoader.exists(portrait_path):
+		var portrait = load(portrait_path)
+		if portrait is Texture2D:
+			return portrait
+	return OPENING_BACKGROUND
+
+
 func _open_event(event_id: String) -> void:
 	if not EventSystem.events.has(event_id):
 		return
@@ -241,12 +510,22 @@ func _open_event(event_id: String) -> void:
 		child.queue_free()
 	var event: Dictionary = EventSystem.events[event_id]
 	var presentation: Dictionary = event.get("presentation", {})
+	var image_path := str(presentation.get("image_path", ""))
+	if not image_path.is_empty() and ResourceLoader.exists(image_path):
+		var loaded_image = load(image_path)
+		if loaded_image is Texture2D:
+			var event_image := TextureRect.new()
+			event_image.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			event_image.texture = loaded_image
+			event_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			event_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+			event_image.modulate = Color(1, 1, 1, 0.14)
+			event_image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			event_panel.add_child(event_image)
 	_label(event_panel, str(presentation.get("title", event.get("choice_text", "事件"))), Vector2(32, 25), Vector2(676, 42), 26, BONE)
 	var summary := _label(event_panel, str(presentation.get("summary", "")), Vector2(32, 80), Vector2(676, 64), 16, MUTED)
 	summary.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-	var lines_text := ""
-	for line in presentation.get("lines", []):
-		lines_text += "%s\n\n" % str(line)
+	var lines_text := _presentation_lines_text(presentation.get("lines", []))
 	var lines := _label(event_panel, lines_text, Vector2(32, 155), Vector2(676, 150), 15, BONE.darkened(0.05))
 	lines.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 	var cost: Dictionary = event.get("cost", {})
@@ -271,6 +550,19 @@ func _open_event(event_id: String) -> void:
 	var cancel := _button(event_panel, "暂时离开", Vector2(520, 500), Vector2(188, 44), "quiet")
 	cancel.pressed.connect(func() -> void: event_overlay.visible = false)
 	event_overlay.visible = true
+
+
+func _presentation_lines_text(raw_lines: Array) -> String:
+	var formatted: Array[String] = []
+	for raw_line in raw_lines:
+		if raw_line is Dictionary:
+			var line: Dictionary = raw_line
+			var speaker := str(line.get("speaker", ""))
+			var text_value := str(line.get("text", ""))
+			formatted.append("%s：%s" % [speaker, text_value] if not speaker.is_empty() else text_value)
+		else:
+			formatted.append(str(raw_line))
+	return "\n\n".join(formatted)
 
 
 func _finish_chapter() -> void:
@@ -331,6 +623,7 @@ func _accept_dinner() -> void:
 func _observe() -> void:
 	if _spend_action_time(20):
 		status_message = "灯光移动了，但没有人专门为你停下。"
+		SaveManager.save_game()
 		_refresh()
 
 
@@ -346,6 +639,11 @@ func _save_game() -> void:
 	SaveManager.save_game()
 	status_message = "进度已保存。"
 	_refresh()
+
+
+func _return_to_menu() -> void:
+	SaveManager.save_game()
+	SceneRouter.main_menu()
 
 
 func _toggle_notebook() -> void:
@@ -381,7 +679,33 @@ func _render_notebook() -> void:
 func _render_timeline() -> void:
 	var remaining := GameState.current_block_remaining()
 	var mode := "连续时间" if GameState.current_role == "A" else "碎片时间"
-	timeline_label.text = "%s：%s\n当前时段剩余：%d 分钟" % [mode, _block_text(), remaining]
+	var appointment_text := _next_appointment_text()
+	timeline_label.text = "%s：%s\n当前时段剩余：%d 分钟%s" % [mode, _block_text(), remaining, appointment_text]
+
+
+func _next_appointment_text() -> String:
+	var appointment := GameState.next_relevant_appointment()
+	if appointment.is_empty():
+		return ""
+	var status := str(appointment.get("status", "scheduled"))
+	var prefix := "现在可赴约" if status == "active" else "下个预约"
+	return "\n%s：第%d天 %s · %s · %s" % [
+		prefix,
+		int(appointment.get("day", GameState.current_day)),
+		_minute_text(int(appointment.get("start", 0))),
+		_location_name(str(appointment.get("location", ""))),
+		str(appointment.get("label", "未命名预约")),
+	]
+
+
+func _location_button_text(location_id: String) -> String:
+	var name := _location_name(location_id)
+	for appointment in GameState.appointments_for_day():
+		if str(appointment.get("location", "")) != location_id:
+			continue
+		if ["scheduled", "active"].has(str(appointment.get("status", "scheduled"))):
+			return "%s · 预约" % name
+	return name
 
 
 func _block_text() -> String:
@@ -403,10 +727,11 @@ func _resident_names(ids: Array[String]) -> String:
 	if ids.is_empty():
 		return "无人可见"
 	var names: Array[String] = []
-	for id in ids:
+	for id in ids.slice(0, 2):
 		var row: Dictionary = ScheduleSystem.residents.get(id, {})
 		names.append(str(row.get("display_name", id)))
-	return "、".join(names)
+	var remaining := ids.size() - names.size()
+	return "%s 等%d人" % ["、".join(names), ids.size()] if remaining > 0 else "、".join(names)
 
 
 func _location_name(id: String) -> String:
@@ -475,6 +800,13 @@ func _style_button(button: Button, kind: String) -> void:
 		"location_active", "primary":
 			base = AMBER
 			accent = AMBER
+			font_color = Color("fff8e8")
+		"district":
+			base = Color("e9e1cc", 0.96)
+			accent = CYAN
+		"district_active":
+			base = CYAN
+			accent = CYAN.darkened(0.12)
 			font_color = Color("fff8e8")
 		"travel":
 			base = Color("dce8df", 0.96)

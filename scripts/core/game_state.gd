@@ -4,7 +4,7 @@ signal state_changed
 signal message_posted(message: String)
 signal role_changed(role: String)
 
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 const CALENDAR_PATH := "res://data/story/calendar.json"
 
 var current_role := "A"
@@ -24,6 +24,7 @@ var artifacts: Dictionary = {}
 var appointments: Array[Dictionary] = []
 var known_schedule_entries: Array[String] = []
 var module_states: Dictionary = {}
+var choice_history: Array[Dictionary] = []
 
 var role_states: Dictionary = {}
 var shared_state: Dictionary = {}
@@ -56,6 +57,7 @@ func _initialize_new_state(start_role: String) -> void:
 		"chapter_start_role": start_role if role_states.has(start_role) else "A",
 		"completed_chapters": [],
 		"completed_transitions": [],
+		"seen_openings": [],
 		"world_artifacts": {},
 		"game_complete": false,
 	}
@@ -79,6 +81,7 @@ func _default_role_state(role: String) -> Dictionary:
 		"appointments": [],
 		"known_schedule_entries": [],
 		"module_states": {},
+		"choice_history": [],
 	}
 
 
@@ -100,6 +103,7 @@ func commit_active_role_state() -> void:
 		"appointments": appointments.duplicate(true),
 		"known_schedule_entries": known_schedule_entries.duplicate(),
 		"module_states": module_states.duplicate(true),
+		"choice_history": choice_history.duplicate(true),
 	}
 
 
@@ -116,6 +120,7 @@ func switch_to_role(role: String, day := -1, reset_to_schedule_start := false) -
 		current_location = "residence"
 		for fact in schedule.get("opening_facts", []):
 			add_fact(str(fact), false)
+	refresh_appointments()
 	commit_active_role_state()
 	role_changed.emit(current_role)
 	state_changed.emit()
@@ -139,6 +144,7 @@ func _load_role_state(role: String) -> void:
 	appointments.assign(data.get("appointments", []))
 	known_schedule_entries.assign(data.get("known_schedule_entries", []))
 	module_states = data.get("module_states", {}).duplicate(true)
+	choice_history.assign(data.get("choice_history", []))
 	residency_confirmations = confirmed_residents.size()
 
 
@@ -167,6 +173,7 @@ func spend_time(minutes: int) -> bool:
 	if minutes <= 0:
 		return true
 	current_minute = min(current_minute + minutes, 24 * 60 - 1)
+	refresh_appointments()
 	commit_active_role_state()
 	state_changed.emit()
 	return true
@@ -200,6 +207,7 @@ func advance_to_next_free_block() -> bool:
 	for block in active_time_blocks():
 		if current_minute < int(block[0]):
 			current_minute = int(block[0])
+			refresh_appointments()
 			commit_active_role_state()
 			state_changed.emit()
 			return true
@@ -252,6 +260,7 @@ func mark_event(event_id: String) -> void:
 	if event_id.is_empty() or completed_events.has(event_id):
 		return
 	completed_events.append(event_id)
+	refresh_appointments()
 	commit_active_role_state()
 	state_changed.emit()
 
@@ -313,9 +322,97 @@ func add_appointment(appointment: Dictionary) -> void:
 	for existing in appointments:
 		if not appointment_id.is_empty() and str(existing.get("id", "")) == appointment_id:
 			return
-	appointments.append(appointment.duplicate(true))
+	var stored := appointment.duplicate(true)
+	stored["day"] = int(stored.get("day", current_day))
+	stored["start"] = int(stored.get("start", current_minute))
+	stored["end"] = int(stored.get("end", int(stored.start) + 120))
+	stored["status"] = str(stored.get("status", "scheduled"))
+	stored["created_day"] = current_day
+	stored["created_role"] = current_role
+	appointments.append(stored)
+	refresh_appointments()
 	commit_active_role_state()
 	state_changed.emit()
+
+
+func appointment_by_id(appointment_id: String) -> Dictionary:
+	for appointment in appointments:
+		if str(appointment.get("id", "")) == appointment_id:
+			return appointment
+	return {}
+
+
+func appointment_status(appointment_id: String) -> String:
+	return str(appointment_by_id(appointment_id).get("status", "missing"))
+
+
+func appointments_for_day(day := -1) -> Array[Dictionary]:
+	var target_day := current_day if day < 0 else day
+	var result: Array[Dictionary] = []
+	for appointment in appointments:
+		if int(appointment.get("day", 0)) == target_day:
+			result.append(appointment)
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("start", 0)) < int(b.get("start", 0))
+	)
+	return result
+
+
+func next_relevant_appointment() -> Dictionary:
+	refresh_appointments()
+	var candidates: Array[Dictionary] = []
+	for appointment in appointments:
+		if ["scheduled", "active"].has(str(appointment.get("status", "scheduled"))):
+			candidates.append(appointment)
+	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var a_key := int(a.get("day", 0)) * 1440 + int(a.get("start", 0))
+		var b_key := int(b.get("day", 0)) * 1440 + int(b.get("start", 0))
+		return a_key < b_key
+	)
+	return candidates[0] if not candidates.is_empty() else {}
+
+
+func refresh_appointments() -> Array[Dictionary]:
+	var changed: Array[Dictionary] = []
+	for index in appointments.size():
+		var appointment: Dictionary = appointments[index]
+		var previous := str(appointment.get("status", "scheduled"))
+		var appointment_id := str(appointment.get("id", ""))
+		var day := int(appointment.get("day", current_day))
+		var start := int(appointment.get("start", 0))
+		var end := int(appointment.get("end", start + 120))
+		var status := previous
+		if completed_events.has(appointment_id):
+			status = "completed"
+		elif current_day > day or (current_day == day and current_minute >= end):
+			status = "missed"
+		elif current_day == day and current_minute >= start:
+			status = "active"
+		else:
+			status = "scheduled"
+		if status == previous:
+			continue
+		appointment["status"] = status
+		appointments[index] = appointment
+		changed.append(appointment)
+		if status == "missed":
+			_add_missed_appointment_journal(appointment)
+	return changed
+
+
+func _add_missed_appointment_journal(appointment: Dictionary) -> void:
+	var appointment_id := str(appointment.get("id", "appointment"))
+	var entry_id := "missed_%s" % appointment_id
+	for entry in journal_entries:
+		if str(entry.get("id", "")) == entry_id:
+			return
+	journal_entries.append({
+		"id": entry_id,
+		"kind": "missed_appointment",
+		"text": "错过预约：%s。时间没有自动退回。" % str(appointment.get("label", appointment_id)),
+		"day": current_day,
+		"role": current_role,
+	})
 
 
 func reveal_schedule_entry(activity_id: String) -> void:
@@ -324,6 +421,32 @@ func reveal_schedule_entry(activity_id: String) -> void:
 	known_schedule_entries.append(activity_id)
 	commit_active_role_state()
 	state_changed.emit()
+
+
+func record_choice(event_id: String, choice_id: String, label := "") -> void:
+	if event_id.is_empty() or choice_id.is_empty():
+		return
+	var key := "%s/%s" % [event_id, choice_id]
+	for choice in choice_history:
+		if str(choice.get("key", "")) == key:
+			return
+	choice_history.append({
+		"key": key,
+		"event_id": event_id,
+		"choice_id": choice_id,
+		"label": label,
+		"day": current_day,
+		"role": current_role,
+	})
+	commit_active_role_state()
+	state_changed.emit()
+
+
+func has_choice(key: String) -> bool:
+	for choice in choice_history:
+		if str(choice.get("key", "")) == key:
+			return true
+	return false
 
 
 func clock_text() -> String:

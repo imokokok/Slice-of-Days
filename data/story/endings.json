@@ -1,0 +1,41 @@
+{
+  "_note": "结局文案只陈述已经发生的结果与留下的物件，不替角色概括人生。image_path 可在终稿美术到位后补入。",
+  "variants": {
+    "both_passed": {
+      "title": "两个人都被小镇记住了",
+      "subtitle": "十二份认可分别落在两张纸上。它们不是同一段生活，但都确实发生过。",
+      "closing": "两张几乎一样的晚霞照片慢慢重叠。"
+    },
+    "a_passed": {
+      "title": "一张表格通过了审核",
+      "subtitle": "A留下，B收起没有填满的确认页。第二天的海风仍从同一条街穿过去。",
+      "closing": "两张晚霞照片没有完全重合，其中一张先被收进了行李。"
+    },
+    "b_passed": {
+      "title": "一册计划本通过了审核",
+      "subtitle": "B留下，A把没有集齐的名字夹在相册最后。小镇没有替任何人补签。",
+      "closing": "相同的晚霞被保存在两个不同的去处。"
+    },
+    "neither_passed": {
+      "title": "七天已经结束",
+      "subtitle": "两张确认页都没有填满。发生过的会面、工作和停顿并没有因此消失。",
+      "closing": "离开以前，她们各自拍下了同一片晚霞。"
+    }
+  },
+  "role_outcomes": {
+    "A": {
+      "passed": "相册、临时邀请和几次没有安排的停留，最终足够让十二个人写下名字。",
+      "failed": "相册里留下了路线之外的东西，但愿意在确认页上写名的人还不够十二个。"
+    },
+    "B": {
+      "passed": "计划本里的时间块、改动和清楚说出的边界，最终换来十二份有效确认。",
+      "failed": "计划本准确记录了错过与完成，但确认页仍有空白。"
+    }
+  },
+  "echoes": [
+    {"choice_key": "a_d6_last_full_block/watch_stars", "text": "相册里还有一张没有任何人的夜空。"},
+    {"choice_key": "b_d6_boundary_choice/decline_kindly", "text": "计划本里保留着一句：做得到，不等于必须我来做。"},
+    {"journal_id": "missed_shared_d5_studio_blocking", "text": "摄影棚那一页被划掉了，没有被改写成另一场补偿。"},
+    {"artifact_id": "port_roomtone", "text": "港口货栈的底噪同时出现在两个人的公共记录里。"}
+  ]
+}

@@ -147,7 +147,7 @@ func prototype_for(module_id: String) -> Dictionary:
 	return prototypes.get(module_id, {}).duplicate(true)
 
 
-func complete_choice(choice_id: String) -> Dictionary:
+func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> Dictionary:
 	var module_id := pending_module_id()
 	if module_id.is_empty() or not prototypes.has(module_id):
 		return {"ok": false, "message": "没有正在进行的玩法。"}
@@ -176,6 +176,7 @@ func complete_choice(choice_id: String) -> Dictionary:
 		"choice_id": choice_id,
 		"label": str(selected.get("label", choice_id)),
 		"source_event_id": str(GameState.shared_state.get("pending_module", {}).get("source_event_id", "")),
+		"interaction": interaction_record.duplicate(true),
 	}
 	complete(module_id, outcome)
 	GameState.shared_state.erase("pending_module")

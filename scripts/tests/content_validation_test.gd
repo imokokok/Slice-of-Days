@@ -8,21 +8,34 @@ func _ready() -> void:
 	var routes := _load_json("res://data/world/travel_routes.json")
 	var residents := _load_json("res://data/npcs/demo_npcs.json")
 	var events := _load_json("res://data/story/events.json")
+	var openings := _load_json("res://data/story/day_openings.json")
+	var transitions := _load_json("res://data/story/transitions.json")
+	var endings := _load_json("res://data/story/endings.json")
+	var characters := _load_json("res://data/story/characters.json")
 	var modules := _load_json("res://data/gameplay/modules.json")
 	var prototypes := _load_json("res://data/gameplay/module_prototypes.json")
 	var arcana := _load_json("res://data/tarot/major_arcana.json")
 	var tarot_cases := _load_json("res://data/tarot/cases.json")
 	var location_ids := _unique_ids(locations.get("locations", []), "location")
-	var resident_ids := _unique_ids(residents.get("residents", []), "resident")
+	var resident_rows := ScheduleSystem.expand_resident_rows(residents)
+	var resident_ids := _unique_ids(resident_rows, "resident")
 	var event_ids := _unique_ids(events.get("events", []), "event")
 	var module_ids := _unique_ids(modules.get("modules", []), "module")
-	_validate_schedules(residents.get("residents", []), location_ids)
+	_validate_schedules(resident_rows, location_ids)
+	if resident_rows.size() != 100:
+		failures.append("the graybox roster should expand to exactly 100 residents, got %d" % resident_rows.size())
 	_validate_routes(routes.get("edges", []), location_ids)
 	_validate_events(events.get("events", []), location_ids, resident_ids, event_ids, module_ids)
+	_validate_appointments(events.get("events", []), location_ids, event_ids)
+	_validate_day_openings(openings)
+	_validate_transitions(transitions)
+	_validate_endings(endings)
+	_validate_characters(characters)
 	_validate_prototypes(prototypes.get("prototypes", []), module_ids, resident_ids)
+	_validate_module_coverage(modules.get("modules", []), prototypes.get("prototypes", []))
 	_validate_tarot(arcana.get("cards", []), tarot_cases.get("cases", []))
 	if failures.is_empty():
-		print("CONTENT VALIDATION PASS: world data, story data, gameplay modules and tarot cases")
+		print("CONTENT VALIDATION PASS: world data, character profiles, day openings, story events, appointments, chapter transitions, endings, gameplay modules and tarot cases")
 		get_tree().quit(0)
 	else:
 		for failure in failures:
@@ -46,6 +59,11 @@ func _unique_ids(rows: Array, kind: String) -> Array[String]:
 func _validate_schedules(rows: Array, location_ids: Array[String]) -> void:
 	var activity_ids: Array[String] = []
 	for resident in rows:
+		var resident_id := str(resident.get("id", ""))
+		if str(resident.get("display_name", "")).is_empty():
+			failures.append("resident %s needs a display name" % resident_id)
+		if typeof(resident.get("draft", false)) != TYPE_BOOL:
+			failures.append("resident %s draft marker should be a boolean" % resident_id)
 		for activity in resident.get("schedule", []):
 			var activity_id := str(activity.get("id", ""))
 			if activity_ids.has(activity_id):
@@ -69,6 +87,12 @@ func _validate_routes(edges: Array, location_ids: Array[String]) -> void:
 func _validate_events(rows: Array, location_ids: Array[String], resident_ids: Array[String], event_ids: Array[String], module_ids: Array[String]) -> void:
 	for event in rows:
 		var event_id := str(event.get("id", ""))
+		for line in event.get("presentation", {}).get("lines", []):
+			if line is Dictionary:
+				if str(line.get("text", "")).is_empty():
+					failures.append("event %s has a dialogue line without text" % event_id)
+			elif str(line).is_empty():
+				failures.append("event %s has an empty presentation line" % event_id)
 		var conditions: Dictionary = event.get("conditions", {})
 		for location_id in conditions.get("locations", []):
 			if not location_ids.has(str(location_id)):
@@ -83,8 +107,41 @@ func _validate_events(rows: Array, location_ids: Array[String], resident_ids: Ar
 		if not launch_module.is_empty() and not module_ids.has(launch_module):
 			failures.append("event %s launches missing module %s" % [event_id, launch_module])
 		_validate_results(event_id, event.get("results", {}), resident_ids, module_ids)
+		var choice_ids: Array[String] = []
 		for choice in event.get("choices", []):
+			var choice_id := str(choice.get("id", ""))
+			if choice_id.is_empty() or choice_ids.has(choice_id):
+				failures.append("event %s has an empty or duplicated choice id: %s" % [event_id, choice_id])
+			else:
+				choice_ids.append(choice_id)
 			_validate_results("%s/%s" % [event_id, str(choice.get("id", ""))], choice.get("results", {}), resident_ids, module_ids)
+
+
+func _validate_appointments(rows: Array, location_ids: Array[String], event_ids: Array[String]) -> void:
+	var appointment_ids: Array[String] = []
+	for event in rows:
+		var result_sets: Array[Dictionary] = [event.get("results", {})]
+		for choice in event.get("choices", []):
+			result_sets.append(choice.get("results", {}))
+		for results in result_sets:
+			for appointment in results.get("appointments", []):
+				var appointment_id := str(appointment.get("id", ""))
+				if appointment_id.is_empty() or appointment_ids.has(appointment_id):
+					failures.append("appointment has an empty or duplicated id: %s" % appointment_id)
+				else:
+					appointment_ids.append(appointment_id)
+				if not location_ids.has(str(appointment.get("location", ""))):
+					failures.append("appointment %s references a missing location" % appointment_id)
+				if int(appointment.get("day", 0)) < 1:
+					failures.append("appointment %s needs a valid day" % appointment_id)
+				if int(appointment.get("end", int(appointment.get("start", 0)) + 120)) <= int(appointment.get("start", 0)):
+					failures.append("appointment %s has an invalid time window" % appointment_id)
+	for event in rows:
+		var required := str(event.get("conditions", {}).get("required_appointment", ""))
+		if not required.is_empty() and not appointment_ids.has(required):
+			failures.append("event %s requires missing appointment %s" % [str(event.get("id", "")), required])
+		if not required.is_empty() and str(event.get("id", "")) != required:
+			failures.append("appointment event %s should share the appointment id %s" % [str(event.get("id", "")), required])
 
 
 func _validate_prototypes(rows: Array, module_ids: Array[String], resident_ids: Array[String]) -> void:
@@ -96,11 +153,45 @@ func _validate_prototypes(rows: Array, module_ids: Array[String], resident_ids: 
 		if seen.has(module_id):
 			failures.append("prototype is duplicated for module %s" % module_id)
 		seen.append(module_id)
+		_validate_module_interaction(module_id, prototype.get("interaction", {}))
 		for choice in prototype.get("choices", []):
 			var label := "%s/%s" % [module_id, str(choice.get("id", ""))]
 			_validate_results(label, choice.get("results", {}), resident_ids, module_ids)
 			for role in choice.get("results_by_role", {}):
 				_validate_results(label + "/" + str(role), choice.get("results_by_role", {})[role], resident_ids, module_ids)
+
+
+func _validate_module_interaction(module_id: String, interaction: Dictionary) -> void:
+	if interaction.is_empty():
+		failures.append("prototype %s is missing its interaction board" % module_id)
+		return
+	if str(interaction.get("prompt", "")).is_empty():
+		failures.append("prototype %s interaction needs a prompt" % module_id)
+	if not ["ordered", "toggle"].has(str(interaction.get("mode", ""))):
+		failures.append("prototype %s interaction uses an unsupported mode" % module_id)
+	var minimum := int(interaction.get("min_select", 0))
+	var maximum := int(interaction.get("max_select", 0))
+	var tokens: Array = interaction.get("tokens", [])
+	if minimum <= 0 or maximum < minimum or maximum > tokens.size():
+		failures.append("prototype %s interaction has invalid selection limits" % module_id)
+	var token_ids: Array[String] = []
+	for token in tokens:
+		var token_id := str(token.get("id", ""))
+		if token_id.is_empty() or token_ids.has(token_id):
+			failures.append("prototype %s has an empty or duplicated interaction token" % module_id)
+		else:
+			token_ids.append(token_id)
+		if str(token.get("label", "")).is_empty() or str(token.get("detail", "")).is_empty():
+			failures.append("prototype %s token %s needs label and detail" % [module_id, token_id])
+
+
+func _validate_module_coverage(modules: Array, prototypes: Array) -> void:
+	var prototype_ids: Array[String] = []
+	for prototype in prototypes:
+		prototype_ids.append(str(prototype.get("module_id", "")))
+	for module in modules:
+		if str(module.get("stage", "")) == "graybox" and not prototype_ids.has(str(module.get("id", ""))):
+			failures.append("graybox module %s needs a playable prototype" % str(module.get("id", "")))
 
 
 func _validate_results(label: String, results: Dictionary, resident_ids: Array[String], module_ids: Array[String]) -> void:
@@ -116,6 +207,98 @@ func _validate_results(label: String, results: Dictionary, resident_ids: Array[S
 	for module_id in results.get("unlock_modules", []):
 		if not module_ids.has(str(module_id)):
 			failures.append("%s unlocks missing module %s" % [label, str(module_id)])
+
+
+func _validate_transitions(data: Dictionary) -> void:
+	var days: Array = data.get("days", [])
+	if days.size() != 7:
+		failures.append("transition data should define exactly seven days")
+	var seen_days: Array[int] = []
+	for row in days:
+		var day := int(row.get("day", 0))
+		if day < 1 or day > 7 or seen_days.has(day):
+			failures.append("transition data has an invalid or duplicated day: %d" % day)
+		else:
+			seen_days.append(day)
+		for kind in ["same_day", "next_day"]:
+			_validate_transition_beat("day %d/%s" % [day, kind], row.get(kind, {}))
+	_validate_transition_beat("final", data.get("final", {}))
+
+
+func _validate_day_openings(data: Dictionary) -> void:
+	var days: Array = data.get("days", [])
+	if days.size() != 7:
+		failures.append("day openings should define exactly seven days")
+	var seen_days: Array[int] = []
+	for row in days:
+		var day := int(row.get("day", 0))
+		if day < 1 or day > 7 or seen_days.has(day):
+			failures.append("day openings have an invalid or duplicated day: %d" % day)
+		else:
+			seen_days.append(day)
+		if str(row.get("theme", "")).is_empty():
+			failures.append("day opening %d needs a theme" % day)
+		for role in ["A", "B"]:
+			var opening: Dictionary = row.get(role, {})
+			for field in ["title", "body", "focus", "memory"]:
+				if str(opening.get(field, "")).is_empty():
+					failures.append("day opening %d/%s is missing %s" % [day, role, field])
+
+
+func _validate_transition_beat(label: String, beat: Dictionary) -> void:
+	for field in ["eyebrow", "title", "body", "instruction", "completion", "motion", "motif"]:
+		if str(beat.get(field, "")).is_empty():
+			failures.append("transition %s is missing %s" % [label, field])
+	if not ["horizontal", "vertical", "diagonal", "insert"].has(str(beat.get("motion", ""))):
+		failures.append("transition %s uses an unsupported motion" % label)
+	var roles: Dictionary = beat.get("roles", {})
+	for role in ["A", "B"]:
+		var role_data: Dictionary = roles.get(role, {})
+		for field in ["label", "caption", "tint"]:
+			if str(role_data.get(field, "")).is_empty():
+				failures.append("transition %s/%s is missing %s" % [label, role, field])
+
+
+func _validate_endings(data: Dictionary) -> void:
+	var variants: Dictionary = data.get("variants", {})
+	for variant_id in ["both_passed", "a_passed", "b_passed", "neither_passed"]:
+		var variant: Dictionary = variants.get(variant_id, {})
+		for field in ["title", "subtitle", "closing"]:
+			if str(variant.get(field, "")).is_empty():
+				failures.append("ending %s is missing %s" % [variant_id, field])
+	var role_outcomes: Dictionary = data.get("role_outcomes", {})
+	for role in ["A", "B"]:
+		for status in ["passed", "failed"]:
+			if str(role_outcomes.get(role, {}).get(status, "")).is_empty():
+				failures.append("ending role outcome %s/%s is missing" % [role, status])
+
+
+func _validate_characters(data: Dictionary) -> void:
+	var rows: Array = data.get("characters", [])
+	if rows.size() != 2:
+		failures.append("character data should define exactly A and B")
+	var seen_roles: Array[String] = []
+	for raw_row in rows:
+		var row: Dictionary = raw_row
+		var role := str(row.get("role", ""))
+		if not ["A", "B"].has(role) or seen_roles.has(role):
+			failures.append("character data has an invalid or duplicated role: %s" % role)
+		else:
+			seen_roles.append(role)
+		if int(row.get("age", 0)) != 25:
+			failures.append("character %s should preserve the outline age of 25" % role)
+		for field in ["job_title", "job_title_zh", "background", "ambition", "inner_tension", "reason_for_solmere", "work_habit", "life_habit", "visual_direction"]:
+			if str(row.get(field, "")).is_empty():
+				failures.append("character %s is missing %s" % [role, field])
+		if (row.get("memory_motifs", []) as Array).is_empty():
+			failures.append("character %s needs at least one memory motif" % role)
+	for role in ["A", "B"]:
+		if not seen_roles.has(role):
+			failures.append("character data is missing role %s" % role)
+	var shared: Dictionary = data.get("shared_direction", {})
+	for field in ["common_ground", "contrast", "magic_rule"]:
+		if str(shared.get(field, "")).is_empty():
+			failures.append("shared character direction is missing %s" % field)
 
 
 func _validate_tarot(cards: Array, cases: Array) -> void:

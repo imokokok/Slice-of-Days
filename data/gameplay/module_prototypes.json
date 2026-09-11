@@ -5,6 +5,19 @@
       "module_id": "cooking",
       "title": "饭店时段与公共菜谱",
       "description": "从现有材料里决定今天真正能做出的菜。名字、署名和照片会一起留进公共菜谱。",
+      "interaction": {
+        "prompt": "先从临时厨房挑出三样今天真的用得上的材料。选择顺序会留在本次记录里。",
+        "mode": "ordered",
+        "min_select": 3,
+        "max_select": 3,
+        "tokens": [
+          {"id": "lemon", "label": "一袋柠檬", "detail": "明亮，也很容易盖过别的味道"},
+          {"id": "bread", "label": "昨天的面包", "detail": "需要被重新处理"},
+          {"id": "tomato", "label": "熟透的番茄", "detail": "今天不用就会坏"},
+          {"id": "herbs", "label": "窗台香草", "detail": "量不多，但足够改变方向"},
+          {"id": "cheese", "label": "剩下的奶酪", "detail": "成本已经算进昨天"}
+        ]
+      },
       "choices": [
         {
           "id": "improvise",
@@ -53,6 +66,19 @@
       "module_id": "ghostwriting",
       "title": "代写与拼贴诗",
       "description": "先听委托人真正想说什么，再从句子碎片里组织出一封仍然属于对方的信。",
+      "interaction": {
+        "prompt": "按你认为接近委托人口吻的顺序，挑出三块句子。它们不需要把意思说满。",
+        "mode": "ordered",
+        "min_select": 3,
+        "max_select": 3,
+        "tokens": [
+          {"id": "still_here", "label": "我还在这里", "detail": "最直接的事实"},
+          {"id": "door_light", "label": "门下面一直有光", "detail": "没有解释是谁留下的"},
+          {"id": "not_sorry", "label": "不是为了道歉", "detail": "先划清信的边界"},
+          {"id": "remember_rain", "label": "我记得那天的雨", "detail": "把共同经历放回句子里"},
+          {"id": "no_reply", "label": "不用马上回复", "detail": "给收信人留出时间"}
+        ]
+      },
       "choices": [
         {
           "id": "listen_then_cut",
@@ -88,6 +114,18 @@
       "module_id": "translation",
       "title": "消除误解",
       "description": "两个人说的是同一个词，却在说完全不同的生活经验。选择先补全谁没有说出口的部分。",
+      "interaction": {
+        "prompt": "先保留至少两种没有说出口的意思，再决定怎样回应。",
+        "mode": "toggle",
+        "min_select": 2,
+        "max_select": 4,
+        "tokens": [
+          {"id": "home_safe", "label": "家是不用解释的地方", "detail": "有人把家理解成安全"},
+          {"id": "home_duty", "label": "家是必须回去的责任", "detail": "有人把家理解成义务"},
+          {"id": "meat_treat", "label": "肉代表难得的一顿好饭", "detail": "稀缺让词带上庆祝"},
+          {"id": "meat_burden", "label": "肉代表处理不完的负担", "detail": "经验让同一个词变重"}
+        ]
+      },
       "choices": [
         {
           "id": "hold_both_meanings",
@@ -115,6 +153,19 @@
       "module_id": "sound_sampling",
       "title": "城市采样与编曲",
       "description": "把雨声、公交刹车和街道里的停顿编排成一段可以交付的声音。",
+      "interaction": {
+        "prompt": "把三段声音排成一条短轨。最先选择的声音会成为开头。",
+        "mode": "ordered",
+        "min_select": 3,
+        "max_select": 3,
+        "tokens": [
+          {"id": "rain_awning", "label": "雨落遮阳棚", "detail": "连续、轻而密"},
+          {"id": "bus_brake", "label": "公交刹车", "detail": "短促的金属摩擦"},
+          {"id": "cafe_cups", "label": "咖啡杯碰桌", "detail": "很小的节拍"},
+          {"id": "old_hinge", "label": "不属于这里的门轴", "detail": "只出现过一次"},
+          {"id": "distant_flute", "label": "远处的竹笛", "detail": "像从街道另一头经过"}
+        ]
+      },
       "choices": [
         {
           "id": "planned_route",
@@ -151,6 +202,18 @@
       "module_id": "chess",
       "title": "一盘可以暂停的棋",
       "description": "完整时间会在棋盘上变得非常具体。可以继续，也可以把局面保存到下一次。",
+      "interaction": {
+        "prompt": "先读两处局面。这里没有倒计时，但每一步仍然占用完整时间。",
+        "mode": "toggle",
+        "min_select": 2,
+        "max_select": 2,
+        "tokens": [
+          {"id": "open_file", "label": "打开的中路", "detail": "继续会让局面更快变清楚"},
+          {"id": "quiet_corner", "label": "安静的角落", "detail": "一枚棋子还没有被使用"},
+          {"id": "opponent_pause", "label": "对手的停顿", "detail": "她刚才没有立刻落子"},
+          {"id": "saved_position", "label": "可以保存的位置", "detail": "现在离开，下次仍能继续"}
+        ]
+      },
       "choices": [
         {
           "id": "finish_game",
@@ -180,6 +243,18 @@
       "module_id": "contemplation",
       "title": "发呆与世界风景",
       "description": "什么也不解决，只决定愿意把多少时间留在这里。",
+      "interaction": {
+        "prompt": "选择两件愿意注意的小事。观察不会提供最优解。",
+        "mode": "toggle",
+        "min_select": 2,
+        "max_select": 3,
+        "tokens": [
+          {"id": "warm_wall", "label": "晒热的石墙", "detail": "余光停在上面"},
+          {"id": "dog_water", "label": "喝水的狗", "detail": "喝完以后自己走开"},
+          {"id": "lemon_bag", "label": "一袋柠檬", "detail": "有人提着它拐进窄巷"},
+          {"id": "far_window", "label": "很远的一扇窗", "detail": "像世界另一个地方"}
+        ]
+      },
       "choices": [
         {
           "id": "watch_sunset",
@@ -208,6 +283,18 @@
       "module_id": "photography",
       "title": "摄影与相册",
       "description": "选择取景范围。照片偶尔会比拍摄者多记住一点东西。",
+      "interaction": {
+        "prompt": "先决定画面里保留什么。被排除在取景框外的东西不会消失。",
+        "mode": "toggle",
+        "min_select": 2,
+        "max_select": 3,
+        "tokens": [
+          {"id": "reflection", "label": "玻璃反光", "detail": "可能多出不属于这里的空间"},
+          {"id": "people", "label": "没有摆姿势的人", "detail": "大家仍在做自己的事"},
+          {"id": "sea_edge", "label": "海与墙的边缘", "detail": "最亮的地方容易失去细节"},
+          {"id": "empty_chair", "label": "一把空椅子", "detail": "有人刚刚离开"}
+        ]
+      },
       "choices": [
         {
           "id": "photograph_reflection",
@@ -240,6 +327,18 @@
       "module_id": "optical_illusion",
       "title": "局部记录与空间错觉",
       "description": "照片、手绘、文字和模型都漏掉了一部分。灰盒版只验证连接选择，不锁定最终2D或3D表现。",
+      "interaction": {
+        "prompt": "挑出两份互相矛盾却都要保留的记录。正式美术以后可直接替换成可旋转模型。",
+        "mode": "toggle",
+        "min_select": 2,
+        "max_select": 2,
+        "tokens": [
+          {"id": "photo_door", "label": "照片里的门向海边开", "detail": "门框右侧有强光"},
+          {"id": "map_door", "label": "地图里的门通向走廊", "detail": "走廊不应该看见海"},
+          {"id": "note_stairs", "label": "文字说楼梯向下", "detail": "记录者当时站在二层"},
+          {"id": "model_stairs", "label": "模型让楼梯向上", "detail": "只有这样屋顶才连接"}
+        ]
+      },
       "choices": [
         {
           "id": "preserve_contradiction",

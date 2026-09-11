@@ -36,6 +36,7 @@
       "draft": false,
       "schedule": [
         {"id": "jiu_library_evening", "days": [1, 2, 4, 5, 6], "start": 1080, "end": 1200, "location": "library", "activity": "看书"},
+        {"id": "jiu_cafe_day3", "days": [3], "start": 840, "end": 960, "location": "cafe", "activity": "在饮料店门口短暂停留"},
         {"id": "jiu_park", "days": [3, 7], "start": 1020, "end": 1140, "location": "park", "activity": "散步"}
       ]
     },
@@ -45,7 +46,8 @@
       "draft": false,
       "schedule": [
         {"id": "sunniva_handcraft", "days": [1, 2, 4, 5], "start": 600, "end": 900, "location": "handcraft_shop", "activity": "整理纸张"},
-        {"id": "sunniva_library", "days": [3, 5, 7], "start": 900, "end": 1080, "location": "library", "activity": "找旧杂志"}
+        {"id": "sunniva_library", "days": [3, 5, 7], "start": 900, "end": 1080, "location": "library", "activity": "找旧杂志"},
+        {"id": "sunniva_station_binding", "days": [6], "start": 900, "end": 1080, "location": "old_station", "activity": "替旧时刻表重新装订"}
       ]
     },
     {
@@ -112,6 +114,180 @@
       ]
     },
     {
+      "id": "recordist",
+      "display_name": "唱片店声音师",
+      "draft": true,
+      "schedule": [
+        {"id": "recordist_store_edit", "days": [1, 3, 5], "start": 840, "end": 1080, "location": "record_store", "activity": "戴着耳机剪声音"},
+        {"id": "recordist_market_listen", "days": [2, 4, 6], "start": 1080, "end": 1200, "location": "night_market", "activity": "记录摊位收声"},
+        {"id": "recordist_port_roomtone", "days": [7], "start": 960, "end": 1140, "location": "port", "activity": "收一段货栈空房的底噪"}
+      ]
+    },
+    {
+      "id": "film_student",
+      "display_name": "抱着分镜本的学生",
+      "draft": true,
+      "schedule": [
+        {"id": "student_library_boards", "days": [1, 2, 4], "start": 900, "end": 1080, "location": "library", "activity": "修改分镜"},
+        {"id": "student_theatre_watch", "days": [3, 7], "start": 840, "end": 1020, "location": "theatre", "activity": "看灯光排练"},
+        {"id": "student_studio_blocking", "days": [5, 6], "start": 840, "end": 1020, "location": "studio", "activity": "按分镜试走位"}
+      ]
+    },
+    {
+      "id": "cafe_editor",
+      "display_name": "总在导出文件的剪辑师",
+      "draft": true,
+      "schedule": [
+        {"id": "editor_cafe_export", "days": [1, 2, 3, 5, 6], "start": 660, "end": 900, "location": "cafe", "activity": "等待文件导出"},
+        {"id": "editor_park_break", "days": [4, 7], "start": 1020, "end": 1140, "location": "park", "activity": "让眼睛休息"}
+      ]
+    },
+    {
+      "id": "location_scout",
+      "display_name": "拿着旧照片的勘景师",
+      "draft": true,
+      "schedule": [
+        {"id": "scout_entrance_compare", "days": [1, 4], "start": 600, "end": 780, "location": "town_entrance", "activity": "对照旧照片"},
+        {"id": "scout_park_light", "days": [2, 5], "start": 960, "end": 1140, "location": "park", "activity": "记录傍晚光线"},
+        {"id": "scout_station_lines", "days": [3, 6], "start": 900, "end": 1080, "location": "old_station", "activity": "核对停用站台的消失点"},
+        {"id": "scout_port_light", "days": [7], "start": 960, "end": 1140, "location": "port", "activity": "记录海面反光"}
+      ]
+    },
+    {
+      "id": "prop_painter",
+      "display_name": "手上总有颜料的道具画师",
+      "draft": true,
+      "schedule": [
+        {"id": "painter_theatre_props", "days": [1, 3, 5, 6], "start": 720, "end": 960, "location": "theatre", "activity": "给旧道具补色"},
+        {"id": "painter_market_dinner", "days": [2, 4, 7], "start": 1080, "end": 1200, "location": "night_market", "activity": "等颜料晾干时吃饭"}
+      ]
+    },
+    {
+      "id": "print_apprentice",
+      "display_name": "打印店学徒",
+      "draft": true,
+      "schedule": [
+        {"id": "apprentice_print_shift", "days": [1, 2, 3, 4, 5, 6], "start": 540, "end": 900, "location": "print_shop", "activity": "装订海报和剧本"},
+        {"id": "apprentice_library_fonts", "days": [2, 5], "start": 960, "end": 1080, "location": "library", "activity": "找旧字体样本"}
+      ]
+    },
+    {
+      "id": "production_runner",
+      "display_name": "总在替剧组跑腿的人",
+      "draft": true,
+      "schedule": [
+        {"id": "runner_bus_pickup", "days": [1, 3, 4, 6], "start": 780, "end": 960, "location": "bus_stop", "activity": "等一箱迟到的设备"},
+        {"id": "runner_cafeteria_list", "days": [2, 5, 7], "start": 690, "end": 810, "location": "cafeteria", "activity": "核对今天的餐单"}
+      ]
+    },
+    {
+      "id": "harbor_clerk",
+      "display_name": "港口登记员",
+      "draft": true,
+      "schedule": [
+        {"id": "harbor_clerk_manifest", "days": [1, 2, 4, 6], "start": 780, "end": 960, "location": "port", "activity": "核对旧货栈出入记录"},
+        {"id": "harbor_clerk_market", "days": [3, 5, 7], "start": 1080, "end": 1200, "location": "night_market", "activity": "替值夜的人带晚饭"}
+      ]
+    },
+    {
+      "id": "station_caretaker",
+      "display_name": "旧站看守",
+      "draft": true,
+      "schedule": [
+        {"id": "caretaker_station_round", "days": [1, 3, 4, 6, 7], "start": 840, "end": 1080, "location": "old_station", "activity": "检查封住的候车室"},
+        {"id": "caretaker_cafe_keys", "days": [2, 5], "start": 660, "end": 780, "location": "cafe", "activity": "把备用钥匙放在桌边"}
+      ]
+    },
+    {
+      "id": "studio_gaffer",
+      "display_name": "摄影棚灯光助理",
+      "draft": true,
+      "schedule": [
+        {"id": "gaffer_studio_rig", "days": [1, 2, 3, 5, 6], "start": 720, "end": 1020, "location": "studio", "activity": "重新标记灯架位置"},
+        {"id": "gaffer_bus_cases", "days": [4, 7], "start": 840, "end": 960, "location": "bus_stop", "activity": "等装灯具的车"}
+      ]
+    },
+    {
+      "id": "costume_mender",
+      "display_name": "服装修补师",
+      "draft": true,
+      "schedule": [
+        {"id": "mender_handcraft_thread", "days": [1, 2, 4, 6], "start": 600, "end": 840, "location": "handcraft_shop", "activity": "挑选和旧布接近的线"},
+        {"id": "mender_theatre_fitting", "days": [3, 5, 7], "start": 900, "end": 1080, "location": "theatre", "activity": "在彩排之间补衣角"}
+      ]
+    },
+    {
+      "id": "radio_host",
+      "display_name": "夜间电台主持",
+      "draft": true,
+      "schedule": [
+        {"id": "radio_store_records", "days": [1, 3, 5, 7], "start": 960, "end": 1140, "location": "record_store", "activity": "挑今晚要播的唱片"},
+        {"id": "radio_cafe_notes", "days": [2, 4, 6], "start": 720, "end": 900, "location": "cafe", "activity": "删掉太像结论的开场白"}
+      ]
+    },
+    {
+      "id": "late_bus_driver",
+      "display_name": "末班车司机",
+      "draft": true,
+      "schedule": [
+        {"id": "driver_bus_break", "days": [1, 2, 3, 4, 5, 6, 7], "start": 1080, "end": 1200, "location": "bus_stop", "activity": "在末班车前喝完保温杯里的水"}
+      ]
+    },
+    {
+      "id": "archive_volunteer",
+      "display_name": "地方档案志愿者",
+      "draft": true,
+      "schedule": [
+        {"id": "volunteer_library_labels", "days": [1, 2, 4, 5, 7], "start": 780, "end": 1020, "location": "library", "activity": "给没有日期的照片补标签"},
+        {"id": "volunteer_station_dates", "days": [3, 6], "start": 900, "end": 1080, "location": "old_station", "activity": "抄录褪色的时刻表"}
+      ]
+    },
+    {
+      "id": "market_baker",
+      "display_name": "夜市面包师",
+      "draft": true,
+      "schedule": [
+        {"id": "baker_market_tray", "days": [1, 2, 3, 5, 6, 7], "start": 900, "end": 1200, "location": "night_market", "activity": "等最后一盘面包出炉"},
+        {"id": "baker_cafeteria_flour", "days": [4], "start": 690, "end": 810, "location": "cafeteria", "activity": "借一袋临时不够的面粉"}
+      ]
+    },
+    {
+      "id": "park_gardener",
+      "display_name": "河岸园丁",
+      "draft": true,
+      "schedule": [
+        {"id": "gardener_park_edges", "days": [1, 2, 4, 6, 7], "start": 900, "end": 1080, "location": "park", "activity": "修掉挡住长椅的枝叶"},
+        {"id": "gardener_port_cuttings", "days": [3, 5], "start": 780, "end": 900, "location": "port", "activity": "给货栈窗边换耐风的盆栽"}
+      ]
+    },
+    {
+      "id": "camera_keeper",
+      "display_name": "器材租借管理员",
+      "draft": true,
+      "schedule": [
+        {"id": "keeper_studio_inventory", "days": [1, 3, 5, 7], "start": 780, "end": 1020, "location": "studio", "activity": "核对镜头和电池编号"},
+        {"id": "keeper_print_forms", "days": [2, 4, 6], "start": 600, "end": 780, "location": "print_shop", "activity": "打印新的器材借用单"}
+      ]
+    },
+    {
+      "id": "dock_sketcher",
+      "display_name": "港口写生学生",
+      "draft": true,
+      "schedule": [
+        {"id": "sketcher_port_cranes", "days": [2, 4, 6, 7], "start": 900, "end": 1080, "location": "port", "activity": "画始终没有停在同一角度的吊臂"},
+        {"id": "sketcher_library_weather", "days": [1, 3, 5], "start": 780, "end": 900, "location": "library", "activity": "查过去一周的潮汐和天气"}
+      ]
+    },
+    {
+      "id": "delivery_cyclist",
+      "display_name": "海边送货员",
+      "draft": true,
+      "schedule": [
+        {"id": "cyclist_entrance_sort", "days": [1, 3, 5, 7], "start": 600, "end": 780, "location": "town_entrance", "activity": "按街区重新捆好包裹"},
+        {"id": "cyclist_market_returns", "days": [2, 4, 6], "start": 960, "end": 1140, "location": "night_market", "activity": "收回空周转箱"}
+      ]
+    },
+    {
       "id": "abyssia",
       "display_name": "Abyssia",
       "draft": true,
@@ -120,5 +296,68 @@
         {"id": "abyssia_volleyball", "days": [1, 2, 3, 4, 5], "start": 1190, "end": 1280, "location": "court", "activity": "排球"}
       ]
     }
-  ]
+  ],
+  "generated_roster": {
+    "_note": "第33至100号为可替换的灰盒居民。编号会进入存档，正式命名时保留生成ID。",
+    "id_prefix": "town_resident",
+    "start_index": 33,
+    "display_names": [
+      "码头绳结师", "港口报关学徒", "修船木匠", "潮汐记录员", "渔网修补人", "冷库值班员", "货栈钥匙保管人", "海图复印员", "小艇维修员", "海风观测员", "港口清洁员", "早班装卸协调员",
+      "场记助理", "灯具搬运员", "服装助理", "群演联络员", "化妆镜管理员", "摄影棚保洁员", "道具登记员", "电池充电员", "收音杆助理", "置景木工", "通告单校对员", "片场餐食协调员",
+      "站台钟表修理人", "旧票收藏者", "候车室清扫员", "铁路模型爱好者", "失物招领看守", "旧站摄影者", "时刻表研究者", "信号灯维修人",
+      "字幕校对员", "独立制片人", "纪录片剪辑员", "声音版权助理", "配音学员", "海报排版师", "新闻摄影记者", "播客制作人", "动画清稿员", "短片导演", "场景概念画师", "媒体档案员",
+      "花店临时店员", "书店夜班店员", "咖啡豆烘焙师", "公园长椅修理人", "巴士调度员", "社区公告管理员", "夜市餐具回收员", "图书归还车整理员", "打印耗材送货员", "海边民宿管家", "自行车修理师", "雨棚修补人",
+      "纪录片专业新生", "舞台管理学生", "声音设计学生", "创意写作学生", "摄影测光学生", "美术史交换生", "翻译社成员", "排球队替补", "学生记者", "社团财务", "电影放映志愿者", "毕业展策展助理"
+    ],
+    "schedule_patterns": [
+      [
+        {"days": [1, 3, 5, 7], "start": 780, "end": 960, "location": "port", "activity": "在港口处理上午的工作"},
+        {"days": [2, 4, 6], "start": 1080, "end": 1200, "location": "night_market", "activity": "在夜市结束一天"}
+      ],
+      [
+        {"days": [1, 2, 4, 6], "start": 720, "end": 900, "location": "studio", "activity": "准备今天的拍摄"},
+        {"days": [3, 5, 7], "start": 900, "end": 1080, "location": "theatre", "activity": "帮忙处理排练现场"}
+      ],
+      [
+        {"days": [1, 3, 4, 6], "start": 840, "end": 1020, "location": "old_station", "activity": "整理旧站留下的物件"},
+        {"days": [2, 5, 7], "start": 660, "end": 780, "location": "cafe", "activity": "在窗边休息"}
+      ],
+      [
+        {"days": [1, 2, 5, 7], "start": 780, "end": 960, "location": "library", "activity": "查找项目资料"},
+        {"days": [3, 4, 6], "start": 960, "end": 1140, "location": "record_store", "activity": "整理声音和版权记录"}
+      ],
+      [
+        {"days": [1, 3, 5], "start": 600, "end": 780, "location": "print_shop", "activity": "处理今天第一批文件"},
+        {"days": [2, 4, 6, 7], "start": 900, "end": 1080, "location": "handcraft_shop", "activity": "修补纸张与小道具"}
+      ],
+      [
+        {"days": [1, 2, 4, 7], "start": 690, "end": 810, "location": "cafeteria", "activity": "边吃饭边核对清单"},
+        {"days": [3, 5, 6], "start": 1080, "end": 1200, "location": "park", "activity": "沿河岸走一段路"}
+      ],
+      [
+        {"days": [1, 3, 5, 7], "start": 780, "end": 960, "location": "bus_stop", "activity": "等设备或下一班车"},
+        {"days": [2, 4, 6], "start": 960, "end": 1140, "location": "town_entrance", "activity": "接收送到镇上的物品"}
+      ],
+      [
+        {"days": [1, 2, 3, 5], "start": 840, "end": 1020, "location": "theatre", "activity": "记录舞台上的变动"},
+        {"days": [4, 6, 7], "start": 1080, "end": 1200, "location": "cafe", "activity": "整理一天的备注"}
+      ],
+      [
+        {"days": [1, 4, 6], "start": 780, "end": 960, "location": "handcraft_shop", "activity": "挑选修补材料"},
+        {"days": [2, 3, 5, 7], "start": 960, "end": 1140, "location": "night_market", "activity": "在摊位之间帮忙"}
+      ],
+      [
+        {"days": [1, 3, 5, 7], "start": 900, "end": 1080, "location": "park", "activity": "记录河岸光线"},
+        {"days": [2, 4, 6], "start": 780, "end": 900, "location": "library", "activity": "整理照片或笔记"}
+      ],
+      [
+        {"days": [1, 2, 4, 6], "start": 840, "end": 1020, "location": "record_store", "activity": "试听并登记素材"},
+        {"days": [3, 5, 7], "start": 1020, "end": 1200, "location": "port", "activity": "收集海边环境记录"}
+      ],
+      [
+        {"days": [1, 3, 6], "start": 600, "end": 780, "location": "town_entrance", "activity": "开始今天的跑腿路线"},
+        {"days": [2, 4, 5, 7], "start": 900, "end": 1080, "location": "studio", "activity": "把物品送到摄影棚"}
+      ]
+    ]
+  }
 }

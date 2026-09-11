@@ -1,5 +1,17 @@
 # 内容录入格式
 
+## 主角设定
+
+`data/story/characters.json` 保存 A/B 的稳定人物骨架。`role` 不可修改；正式角色姓名确定前继续使用 A/B。当前界面会读取 `job_title_zh`，其余字段供剧情、美术和后续对白统一口径：
+
+- `background`、`ambition`、`inner_tension`、`reason_for_solmere`：角色经历与行动动机。
+- `work_habit`、`life_habit`：事件选择的行为边界。
+- `visual_direction`：服装、随身物与体态方向，不等同于最终设计稿。
+- `memory_motifs`：允许反复出现的私人记忆意象。
+- `portrait_path`：正式立绘路径；留空时界面继续使用占位表现。
+
+具体对白无需写进人物表，应继续按场景写入事件的 `presentation`，这样可以单场替换和校对。
+
 ## 居民
 
 每位居民至少需要：稳定 ID、展示名、七日日程、所在地点、活动描述。日程允许留白；留白表示玩家无法在公共地点遇见该居民。
@@ -19,7 +31,7 @@
 建议每个事件稿件使用以下字段：
 
 - `id`：不可重复的稳定标识。
-- `conditions`：日期、时间、地点、视角、已知事实、前置事件。
+- `conditions`：日期、时间、地点、视角、已知事实、前置事件；预约事件可填写 `required_appointment`。
 - `cost`：分钟、金钱或关系代价。
 - `presentation`：对白、旁白、镜头、声音提示。
 - `results`：新增事实、关系变化、居民确认、后续事件。
@@ -35,9 +47,29 @@
 
 认可状态使用 `unknown`、`pending`、`granted`、`refused`、`withdrawn`，不要用一个公开好感度数字替代具体经历。
 
+`draft: true` 表示居民可以使用通用认可请求流程；主要角色或需要严格叙事控制的居民应使用 `draft: false`，并通过专属事件改变认可。不要为了让主要角色快速可用而临时改成草稿居民。
+
+大量灰盒居民可以放进 `generated_roster`：`start_index` 与 `id_prefix` 共同生成稳定 ID，`display_names` 决定展示名，`schedule_patterns` 按顺序循环分配日程。当前第 33—100 号居民采用这种方式。正式替换某位居民时必须保留其 `town_resident_XXX` ID，否则旧存档里的关系记录将失去对应对象。
+
+带 `choices` 的事件完成后，系统会按 `事件ID/选择ID` 把选择写入当前角色的 `choice_history`。结局回声和后续条件可以读取这个稳定键，因此发布后不要随意改动已使用的选择 ID。
+
+`presentation.lines` 兼容纯字符串旁白，也支持对白对象：`{"speaker": "角色名", "text": "对白"}`。无说话人的叙述只填写 `text`。`presentation.image_path` 可挂载该场景的正式插图，并以低透明度作为事件卡背景。这样正式文本和美术都可以逐场替换，不需要修改事件弹窗代码。
+
+预约至少填写稳定 `id`、`day`、`start`、`end`、`location` 和 `label`。承接预约的事件应与预约使用同一 ID，并在条件里填写同一个 `required_appointment`。系统自动维护 `scheduled`、`active`、`completed`、`missed`，内容数据不要手动跳过这些状态。
+
 ## 灰盒玩法
 
 `data/gameplay/modules.json` 登记稳定玩法ID和场景入口；`data/gameplay/module_prototypes.json` 保存灰盒选择、成本与结果。正式美术和更复杂的交互可以替换工作台场景，但应继续通过同一结果结构写回关系、日记、作品和玩法状态。
+
+每个灰盒玩法还需要一个 `interaction`：
+
+- `prompt`：进入桌面后要完成的具体操作说明。
+- `mode`：`ordered` 表示选择顺序有意义，`toggle` 表示只记录保留了哪些项目。
+- `min_select` 与 `max_select`：结算按钮解锁前需要选择的数量。
+- `tokens`：可操作的材料、句子、声音、观察点或记录；每项使用稳定 `id`、展示 `label` 和说明 `detail`。
+- `icon_path`：可选的正式美术图标路径。
+
+玩法根节点可以使用可选的 `background_path` 替换工作台背景。操作结果会把玩家选中的 token ID 一并写入玩法 outcome，方便后续对白、作品名称、音轨或构图引用。
 
 ## 美术资源
 

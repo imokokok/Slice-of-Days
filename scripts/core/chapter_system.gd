@@ -11,6 +11,7 @@ func start_new_game(start_role: String = "A") -> void:
 	GameState.shared_state["chapter_start_role"] = start_role if ["A", "B"].has(start_role) else "A"
 	GameState.shared_state["completed_chapters"] = []
 	GameState.shared_state["completed_transitions"] = []
+	GameState.shared_state["seen_openings"] = []
 	GameState.shared_state["game_complete"] = false
 	var chapter := current_chapter()
 	GameState.switch_to_role(str(chapter.get("role", start_role)), int(chapter.get("day", 1)), true)
@@ -94,6 +95,27 @@ func mark_transition_complete(transition_id: String) -> void:
 		GameState.commit_active_role_state()
 
 
+func opening_id() -> String:
+	var chapter := current_chapter()
+	return str(chapter.get("id", ""))
+
+
+func has_seen_opening(chapter_id := "") -> bool:
+	var target := chapter_id if not chapter_id.is_empty() else opening_id()
+	return GameState.shared_state.get("seen_openings", []).has(target)
+
+
+func mark_opening_seen(chapter_id := "") -> void:
+	var target := chapter_id if not chapter_id.is_empty() else opening_id()
+	if target.is_empty():
+		return
+	var seen: Array = GameState.shared_state.get("seen_openings", [])
+	if not seen.has(target):
+		seen.append(target)
+		GameState.shared_state["seen_openings"] = seen
+		GameState.commit_active_role_state()
+
+
 func residency_audit(role: String) -> Dictionary:
 	GameState.commit_active_role_state()
 	var state: Dictionary = GameState.role_states.get(role, {})
@@ -117,6 +139,7 @@ func residency_audit(role: String) -> Dictionary:
 		"pending": pending,
 		"completed_events": state.get("completed_events", []).size(),
 		"journal_entries": state.get("journal_entries", []).size(),
+		"choices": state.get("choice_history", []).size(),
 	}
 
 

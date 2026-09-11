@@ -13,6 +13,7 @@ const LINE := Color("b88963")
 
 var modal_overlay: ColorRect
 var modal_panel: Panel
+var pending_slot := 1
 
 
 func _ready() -> void:
@@ -22,6 +23,12 @@ func _ready() -> void:
 	if args.has("--capture-menu-role"):
 		_show_role_selection()
 		_capture.call_deferred("main-menu-role.png")
+	elif args.has("--capture-menu-slots"):
+		_show_slot_selection("new")
+		_capture.call_deferred("main-menu-slots.png")
+	elif args.has("--capture-menu-settings"):
+		_show_settings()
+		_capture.call_deferred("main-menu-settings.png")
 	elif args.has("--capture-menu"):
 		_capture.call_deferred("main-menu.png")
 
@@ -53,14 +60,14 @@ func _build_menu() -> void:
 	var credits := _make_button(self, "制作人员", Vector2(92, 508), Vector2(260, 52), "regular")
 	var quit := _make_button(self, "退出", Vector2(92, 574), Vector2(260, 52), "regular")
 
-	continue_button.disabled = not SaveManager.has_save()
-	continue_button.pressed.connect(_continue_game)
+	continue_button.disabled = not SaveManager.has_any_save()
+	continue_button.pressed.connect(_show_slot_selection.bind("continue"))
 	new_game.pressed.connect(_on_new_game_pressed)
 	settings.pressed.connect(_show_settings)
 	credits.pressed.connect(_show_credits)
 	quit.pressed.connect(_show_quit_confirmation)
 
-	var hint := "还没有保存的旅程" if continue_button.disabled else "上次的旅程正在等你"
+	var hint := "还没有保存的旅程" if continue_button.disabled else "已有旅程正在等你"
 	_make_label(self, hint, Vector2(94, 646), Vector2(300, 24), 13, Color(PAPER, 0.92))
 	_make_label(self, "七天 · 两种时间 · 一座慢慢认识你的海边小镇", Vector2(92, 814), Vector2(520, 28), 14, Color(PAPER, 0.90))
 
@@ -73,8 +80,8 @@ func _build_modal_shell() -> void:
 	add_child(modal_overlay)
 
 	modal_panel = Panel.new()
-	modal_panel.position = Vector2(505, 275)
-	modal_panel.size = Vector2(590, 350)
+	modal_panel.position = Vector2(505, 210)
+	modal_panel.size = Vector2(590, 480)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(PAPER, 0.96)
 	style.border_color = Color(LINE, 0.92)
@@ -89,7 +96,52 @@ func _build_modal_shell() -> void:
 
 
 func _on_new_game_pressed() -> void:
-	if SaveManager.has_save():
+	_show_slot_selection("new")
+
+
+func _show_slot_selection(mode: String) -> void:
+	_prepare_modal()
+	var is_continue := mode == "continue"
+	_make_label(modal_panel, "选择要继续的旅程" if is_continue else "选择新旅程的存档位", Vector2(34, 24), Vector2(522, 40), 25, INK)
+	for slot_index in range(1, SaveManager.SLOT_COUNT + 1):
+		var summary := SaveManager.slot_summary(slot_index)
+		var button := _make_button(
+			modal_panel,
+			_slot_summary_text(summary),
+			Vector2(34, 76 + (slot_index - 1) * 92),
+			Vector2(522, 74),
+			"teal" if bool(summary.get("exists", false)) else "regular"
+		)
+		button.disabled = is_continue and not bool(summary.get("exists", false))
+		if not button.disabled:
+			if is_continue:
+				button.pressed.connect(_continue_game.bind(slot_index))
+			else:
+				button.pressed.connect(_select_new_game_slot.bind(slot_index))
+	var close := _make_button(modal_panel, "返回", Vector2(200, 382), Vector2(190, 46), "regular")
+	close.pressed.connect(_hide_modal)
+
+
+func _slot_summary_text(summary: Dictionary) -> String:
+	var slot := int(summary.get("slot", 1))
+	if not bool(summary.get("exists", false)):
+		return "存档 %d\n空白旅程" % slot
+	var minute := int(summary.get("minute", 540))
+	return "存档 %d  ·  第%d天 %02d:%02d  ·  %s视角\nA认可 %d/12  ·  B认可 %d/12" % [
+		slot,
+		int(summary.get("day", 1)),
+		minute / 60,
+		minute % 60,
+		str(summary.get("role", "A")),
+		int(summary.get("a_confirmed", 0)),
+		int(summary.get("b_confirmed", 0)),
+	]
+
+
+func _select_new_game_slot(slot: int) -> void:
+	pending_slot = slot
+	SaveManager.set_active_slot(slot)
+	if SaveManager.has_slot(slot):
 		_show_overwrite_confirmation()
 	else:
 		_show_role_selection()
@@ -98,7 +150,7 @@ func _on_new_game_pressed() -> void:
 func _show_overwrite_confirmation() -> void:
 	_prepare_modal()
 	_make_label(modal_panel, "开启新的旅程？", Vector2(34, 30), Vector2(522, 42), 27, INK)
-	var body := _make_label(modal_panel, "开始新游戏后，之后的自动保存会覆盖现有进度。\n你确定要继续吗？", Vector2(34, 91), Vector2(522, 82), 17, MUTED)
+	var body := _make_label(modal_panel, "存档 %d 已有旅程。开始新游戏后，自动保存会覆盖这个存档位。\n你确定要继续吗？" % pending_slot, Vector2(34, 91), Vector2(522, 82), 17, MUTED)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var yes := _make_button(modal_panel, "继续", Vector2(92, 224), Vector2(190, 52), "primary")
 	var no := _make_button(modal_panel, "取消", Vector2(308, 224), Vector2(190, 52), "regular")
@@ -125,12 +177,31 @@ func _show_settings() -> void:
 	_prepare_modal()
 	_make_label(modal_panel, "设置", Vector2(34, 28), Vector2(522, 42), 27, INK)
 	_make_label(modal_panel, "显示模式", Vector2(34, 92), Vector2(160, 30), 16, MUTED)
-	var fullscreen := DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
-	var display_text := "切换为窗口模式" if fullscreen else "切换为全屏模式"
-	var display_button := _make_button(modal_panel, display_text, Vector2(210, 82), Vector2(300, 52), "teal")
+	var display_text := "切换为窗口模式" if SettingsSystem.fullscreen() else "切换为全屏模式"
+	var display_button := _make_button(modal_panel, display_text, Vector2(210, 78), Vector2(300, 48), "teal")
 	display_button.pressed.connect(_toggle_fullscreen)
-	_make_label(modal_panel, "声音与语言选项将在后续版本加入。", Vector2(34, 164), Vector2(522, 32), 15, MUTED)
-	var close := _make_button(modal_panel, "完成", Vector2(200, 254), Vector2(190, 46), "primary")
+	_make_label(modal_panel, "主音量", Vector2(34, 159), Vector2(160, 30), 16, MUTED)
+	var volume := HSlider.new()
+	volume.position = Vector2(210, 150)
+	volume.size = Vector2(300, 38)
+	volume.min_value = 0
+	volume.max_value = 100
+	volume.step = 5
+	volume.value = SettingsSystem.master_volume()
+	modal_panel.add_child(volume)
+	var volume_value := _make_label(modal_panel, "%d%%" % SettingsSystem.master_volume(), Vector2(500, 159), Vector2(54, 28), 14, MUTED)
+	volume.value_changed.connect(func(value: float) -> void:
+		SettingsSystem.set_master_volume(value)
+		volume_value.text = "%d%%" % int(value)
+	)
+
+	_make_label(modal_panel, "减少动态效果", Vector2(34, 226), Vector2(160, 30), 16, MUTED)
+	var motion_text := "已开启" if SettingsSystem.reduced_motion() else "未开启"
+	var motion := _make_button(modal_panel, motion_text, Vector2(210, 212), Vector2(300, 48), "regular")
+	motion.pressed.connect(_toggle_reduced_motion)
+	var hint := _make_label(modal_panel, "减少章节转场中的画面位移；不会跳过任何内容。", Vector2(34, 286), Vector2(522, 54), 14, MUTED)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var close := _make_button(modal_panel, "完成", Vector2(200, 388), Vector2(190, 46), "primary")
 	close.pressed.connect(_hide_modal)
 
 
@@ -164,18 +235,24 @@ func _hide_modal() -> void:
 
 
 func _toggle_fullscreen() -> void:
-	var fullscreen := DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
-	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if fullscreen else DisplayServer.WINDOW_MODE_FULLSCREEN)
+	SettingsSystem.set_fullscreen(not SettingsSystem.fullscreen())
+	_show_settings()
+
+
+func _toggle_reduced_motion() -> void:
+	SettingsSystem.set_reduced_motion(not SettingsSystem.reduced_motion())
 	_show_settings()
 
 
 func _start_role(role: String) -> void:
+	SaveManager.set_active_slot(pending_slot)
 	ChapterSystem.start_new_game(role)
+	SaveManager.save_game()
 	SceneRouter.town_day()
 
 
-func _continue_game() -> void:
-	if SaveManager.load_game():
+func _continue_game(slot: int) -> void:
+	if SaveManager.load_slot(slot):
 		SceneRouter.town_day()
 
 

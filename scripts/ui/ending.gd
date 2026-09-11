@@ -1,6 +1,7 @@
 extends Control
 
 const BACKGROUND := preload("res://art/ui/title-screen-background.png")
+const EndingEchoResolverScript := preload("res://scripts/core/ending_echo_resolver.gd")
 const ENDINGS_PATH := "res://data/story/endings.json"
 const PAPER := Color("fff8eb")
 const INK := Color("4a342b")
@@ -45,12 +46,24 @@ func _build_ui() -> void:
 	_result_panel(Vector2(170, 225), a, role_outcomes.get("A", {}))
 	_result_panel(Vector2(830, 225), b, role_outcomes.get("B", {}))
 	var closing := str(variant.get("closing", "两张几乎一样的晚霞照片慢慢重叠。"))
-	var closing_label := _label(self, closing, Vector2(310, 642), Vector2(980, 38), 20, INK)
+	var memory_panel := Panel.new()
+	memory_panel.position = Vector2(270, 600)
+	memory_panel.size = Vector2(1060, 210)
+	var memory_style := StyleBoxFlat.new()
+	memory_style.bg_color = Color(PAPER, 0.78)
+	memory_style.border_color = Color(LINE, 0.5)
+	memory_style.set_border_width_all(1)
+	memory_style.set_corner_radius_all(16)
+	memory_panel.add_theme_stylebox_override("panel", memory_style)
+	add_child(memory_panel)
+	var closing_label := _label(memory_panel, closing, Vector2(40, 18), Vector2(980, 38), 20, INK)
 	closing_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var echo_label := _label(self, _echo_text(ending_data), Vector2(310, 688), Vector2(980, 48), 15, MUTED)
+	var echo_title := _label(memory_panel, "七日留下的回声", Vector2(40, 66), Vector2(980, 28), 15, TERRACOTTA)
+	echo_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var echo_label := _label(memory_panel, _echo_text(ending_data), Vector2(40, 96), Vector2(980, 108), 14, MUTED)
 	echo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	echo_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var menu := _button(self, "返回主菜单", Vector2(690, 770), Vector2(220, 52), TERRACOTTA)
+	var menu := _button(self, "返回主菜单", Vector2(690, 818), Vector2(220, 52), TERRACOTTA)
 	menu.pressed.connect(SceneRouter.main_menu)
 
 
@@ -96,40 +109,8 @@ func _variant_id(a: Dictionary, b: Dictionary) -> String:
 
 
 func _echo_text(ending_data: Dictionary) -> String:
-	var pieces: Array[String] = []
-	for echo in ending_data.get("echoes", []):
-		var journal_id := str(echo.get("journal_id", ""))
-		var choice_key := str(echo.get("choice_key", ""))
-		var artifact_id := str(echo.get("artifact_id", ""))
-		if (not journal_id.is_empty() and _any_role_has_journal(journal_id)) or (not choice_key.is_empty() and _any_role_has_choice(choice_key)) or (not artifact_id.is_empty() and _world_has_artifact(artifact_id)):
-			pieces.append(str(echo.get("text", "")))
-	return "  ".join(pieces.slice(0, 2)) if not pieces.is_empty() else "结果只记录发生过的事，不替她们总结这七天。"
-
-
-func _any_role_has_journal(journal_id: String) -> bool:
-	GameState.commit_active_role_state()
-	for role in ["A", "B"]:
-		for entry in GameState.role_states.get(role, {}).get("journal_entries", []):
-			if str(entry.get("id", "")) == journal_id:
-				return true
-	return false
-
-
-func _any_role_has_choice(choice_key: String) -> bool:
-	GameState.commit_active_role_state()
-	for role in ["A", "B"]:
-		for choice in GameState.role_states.get(role, {}).get("choice_history", []):
-			if str(choice.get("key", "")) == choice_key:
-				return true
-	return false
-
-
-func _world_has_artifact(artifact_id: String) -> bool:
-	for collection in GameState.shared_state.get("world_artifacts", {}):
-		for artifact in GameState.shared_state.get("world_artifacts", {})[collection]:
-			if str(artifact.get("id", "")) == artifact_id:
-				return true
-	return false
+	var resolver = EndingEchoResolverScript.new()
+	return resolver.display_text(ending_data)
 
 
 func _load_json(path: String) -> Dictionary:
@@ -144,12 +125,30 @@ func _prepare_capture_state() -> void:
 	if not _capture_requested():
 		return
 	ChapterSystem.start_new_game("A")
+	GameplayModuleSystem.load_module_data("res://data/gameplay/modules.json")
 	var resident_ids: Array = ScheduleSystem.residents.keys()
 	for role in ["A", "B"]:
 		GameState.switch_to_role(role)
 		for index in min(12, resident_ids.size()):
 			GameState.add_confirmation(str(resident_ids[index]))
 	GameState.switch_to_role("A")
+	_seed_capture_module("cooking", "improvise", "把零碎材料组合成新菜", ["一袋柠檬", "昨天的面包", "熟透的番茄"])
+	GameState.record_choice("a_d4_confirmation_withdrawn", "ask_what_was_missed", "你愿意再告诉我一次，我漏掉了哪句话吗？")
+	GameState.switch_to_role("B")
+	_seed_capture_module("sound_sampling", "planned_route", "按路线采样并完成短曲", ["雨落遮阳棚", "公交刹车", "公园里的声音"])
+	_seed_capture_module("ghostwriting", "listen_then_cut", "先听完整，再裁切排列", ["我还在这里", "门下面一直有光", "不用马上回复"])
+	GameState.record_choice("b_d5_letter_revision_listen", "preserve_client_voice", "删掉连接句，把他的停顿留回去")
+	GameState.record_choice("b_d4_missed_window", "record_the_absence", "把没有出现也写进日程")
+	GameState.switch_to_role("A")
+
+
+func _seed_capture_module(module_id: String, choice_id: String, label: String, selected_labels: Array[String]) -> void:
+	GameplayModuleSystem.unlock(module_id)
+	GameplayModuleSystem.complete(module_id, {
+		"choice_id": choice_id,
+		"label": label,
+		"interaction": {"selected_labels": selected_labels},
+	})
 
 
 func _capture_requested() -> bool:

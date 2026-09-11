@@ -32,12 +32,143 @@
       "failed": "计划本准确记录了错过与完成，但确认页仍有空白。"
     }
   },
+  "max_echoes": 5,
+  "one_per_category": true,
+  "fallback_echo": "结果只记录发生过的事，不替她们总结这七天。",
   "echoes": [
-    {"choice_key": "a_d6_last_full_block/watch_stars", "text": "相册里还有一张没有任何人的夜空。"},
-    {"choice_key": "b_d6_boundary_choice/decline_kindly", "text": "计划本里保留着一句：做得到，不等于必须我来做。"},
-    {"choice_key": "a_d4_confirmation_withdrawn/ask_what_was_missed", "text": "有一句第一次没有听见的话，后来被重新说了一遍。"},
-    {"choice_key": "b_d4_missed_window/record_the_absence", "text": "本子里写着：未出现。不是未完成。"},
-    {"journal_id": "missed_shared_d5_studio_blocking", "text": "摄影棚那一页被划掉了，没有被改写成另一场补偿。"},
-    {"artifact_id": "port_roomtone", "text": "港口货栈的底噪同时出现在两个人的公共记录里。"}
+    {
+      "id": "cooking_improvise",
+      "category": "cooking",
+      "priority": 100,
+      "role": "A",
+      "module_id": "cooking",
+      "module_choice_id": "improvise",
+      "text": "公共菜谱的页角还写着：{selected_joined}。菜名是《什么时候下班》。"
+    },
+    {
+      "id": "cooking_careful_menu",
+      "category": "cooking",
+      "priority": 100,
+      "role": "A",
+      "module_id": "cooking",
+      "module_choice_id": "careful_menu",
+      "text": "饭店留下了一份由{selected_joined}组成的稳定菜单；收台的布仍搭在出餐口。"
+    },
+    {
+      "id": "sound_delivery",
+      "category": "sound",
+      "priority": 95,
+      "role": "B",
+      "module_id": "sound_sampling",
+      "module_choice_id": "planned_route",
+      "text": "唱片店收下了由{selected_joined}组成的短轨；来源和授权标记没有从声音上被剪掉。"
+    },
+    {
+      "id": "sound_private_sample",
+      "category": "sound",
+      "priority": 95,
+      "role": "B",
+      "module_id": "sound_sampling",
+      "module_choice_id": "wander_and_record",
+      "text": "{selected_joined}仍是一段不能交付的私人采样，其中有一下很像旧列车。"
+    },
+    {
+      "id": "letter_preserved_voice",
+      "category": "letter",
+      "priority": 90,
+      "role": "B",
+      "choice_key": "b_d5_letter_revision_listen/preserve_client_voice",
+      "module_id": "ghostwriting",
+      "module_choice_id": "listen_then_cut",
+      "text": "没有寄出的初稿仍按这个顺序折着：“{selected_1}”——“{selected_2}”——“{selected_3}”。"
+    },
+    {
+      "id": "letter_polished_clarity",
+      "category": "letter",
+      "priority": 90,
+      "role": "B",
+      "choice_key": "b_d5_letter_revision_listen/keep_polished_clarity",
+      "module_id": "ghostwriting",
+      "module_choice_id": "listen_then_cut",
+      "text": "那封准确却不像委托人的信仍从三句开始：“{selected_1}”——“{selected_2}”——“{selected_3}”。"
+    },
+    {
+      "id": "letter_efficient_draft",
+      "category": "letter",
+      "priority": 90,
+      "role": "B",
+      "module_id": "ghostwriting",
+      "module_choice_id": "efficient_draft",
+      "text": "写得过于清楚的初稿还没有封口；它从{selected_joined}开始。"
+    },
+    {
+      "id": "missed_appointment",
+      "category": "schedule",
+      "priority": 85,
+      "journal_kind": "missed_appointment",
+      "text": "计划本没有填平空白，只保留了一行：{journal_text}"
+    },
+    {
+      "id": "recorded_absence",
+      "category": "schedule",
+      "priority": 84,
+      "role": "B",
+      "choice_key": "b_d4_missed_window/record_the_absence",
+      "text": "本子里写着：未出现。不是未完成。"
+    },
+    {
+      "id": "waited_eleven_minutes",
+      "category": "schedule",
+      "priority": 84,
+      "role": "B",
+      "choice_key": "b_d4_missed_window/wait_the_extra_eleven",
+      "text": "旧车站多出来的十一分钟没有带来任何人，但仍被算进了这七天。"
+    },
+    {
+      "id": "asked_again",
+      "category": "relationship_repair",
+      "priority": 80,
+      "role": "A",
+      "choice_key": "a_d4_confirmation_withdrawn/ask_what_was_missed",
+      "text": "有一句第一次没有听见的话，后来被重新说了一遍。"
+    },
+    {
+      "id": "offered_another_meeting",
+      "category": "relationship_repair",
+      "priority": 80,
+      "role": "A",
+      "choice_key": "a_d4_confirmation_withdrawn/offer_dinner",
+      "text": "认可被收回以后，A先给那段关系安排了一个不确定的下次。"
+    },
+    {
+      "id": "watched_stars",
+      "category": "a_last_block",
+      "priority": 60,
+      "role": "A",
+      "choice_key": "a_d6_last_full_block/watch_stars",
+      "text": "相册里还有一张没有任何人的夜空。"
+    },
+    {
+      "id": "declined_kindly",
+      "category": "b_boundary",
+      "priority": 60,
+      "role": "B",
+      "choice_key": "b_d6_boundary_choice/decline_kindly",
+      "text": "计划本里保留着一句：做得到，不等于必须我来做。"
+    },
+    {
+      "id": "missed_studio",
+      "category": "schedule",
+      "priority": 55,
+      "journal_id": "missed_shared_d5_studio_blocking",
+      "text": "摄影棚那一页被划掉了，没有被改写成另一场补偿。"
+    },
+    {
+      "id": "shared_port_roomtone",
+      "category": "public_work",
+      "priority": 50,
+      "artifact_id": "port_roomtone",
+      "text": "港口货栈的底噪同时出现在两个人的公共记录里。"
+    }
   ]
 }

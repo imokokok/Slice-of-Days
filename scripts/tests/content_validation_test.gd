@@ -31,7 +31,7 @@ func _ready() -> void:
 	_validate_appointments(events.get("events", []), location_ids, event_ids)
 	_validate_day_openings(openings)
 	_validate_transitions(transitions)
-	_validate_endings(endings)
+	_validate_endings(endings, module_ids, prototypes.get("prototypes", []))
 	_validate_characters(characters)
 	_validate_prototypes(prototypes.get("prototypes", []), module_ids, resident_ids)
 	_validate_module_coverage(modules.get("modules", []), prototypes.get("prototypes", []))
@@ -323,7 +323,7 @@ func _validate_transition_beat(label: String, beat: Dictionary) -> void:
 				failures.append("transition %s/%s is missing %s" % [label, role, field])
 
 
-func _validate_endings(data: Dictionary) -> void:
+func _validate_endings(data: Dictionary, module_ids: Array[String], prototypes: Array) -> void:
 	var variants: Dictionary = data.get("variants", {})
 	for variant_id in ["both_passed", "a_passed", "b_passed", "neither_passed"]:
 		var variant: Dictionary = variants.get(variant_id, {})
@@ -335,6 +335,46 @@ func _validate_endings(data: Dictionary) -> void:
 		for status in ["passed", "failed"]:
 			if str(role_outcomes.get(role, {}).get(status, "")).is_empty():
 				failures.append("ending role outcome %s/%s is missing" % [role, status])
+	if int(data.get("max_echoes", 0)) < 1 or int(data.get("max_echoes", 0)) > 6:
+		failures.append("ending max_echoes should be between 1 and 6")
+	if str(data.get("fallback_echo", "")).is_empty():
+		failures.append("ending fallback_echo is missing")
+	var prototype_choice_ids: Dictionary = {}
+	for prototype in prototypes:
+		var choice_ids: Array[String] = []
+		for choice in prototype.get("choices", []):
+			choice_ids.append(str(choice.get("id", "")))
+		prototype_choice_ids[str(prototype.get("module_id", ""))] = choice_ids
+	var echo_ids: Array[String] = []
+	for echo in data.get("echoes", []):
+		var echo_id := str(echo.get("id", ""))
+		if echo_id.is_empty() or echo_ids.has(echo_id):
+			failures.append("ending echo has an empty or duplicated id: %s" % echo_id)
+		else:
+			echo_ids.append(echo_id)
+		if str(echo.get("category", "")).is_empty():
+			failures.append("ending echo %s is missing its category" % echo_id)
+		var text := str(echo.get("text", ""))
+		if text.is_empty():
+			failures.append("ending echo %s is missing text" % echo_id)
+		var role := str(echo.get("role", ""))
+		if not role.is_empty() and not ["A", "B"].has(role):
+			failures.append("ending echo %s uses invalid role %s" % [echo_id, role])
+		var module_id := str(echo.get("module_id", ""))
+		var module_choice_id := str(echo.get("module_choice_id", ""))
+		if not module_id.is_empty() and not module_ids.has(module_id):
+			failures.append("ending echo %s references missing module %s" % [echo_id, module_id])
+		if not module_choice_id.is_empty() and module_id.is_empty():
+			failures.append("ending echo %s has a module choice without a module" % echo_id)
+		elif not module_choice_id.is_empty() and not (prototype_choice_ids.get(module_id, []) as Array).has(module_choice_id):
+			failures.append("ending echo %s references missing module choice %s/%s" % [echo_id, module_id, module_choice_id])
+		var has_condition := not module_id.is_empty() or not str(echo.get("choice_key", "")).is_empty() or not str(echo.get("journal_id", "")).is_empty() or not str(echo.get("journal_kind", "")).is_empty() or not str(echo.get("artifact_id", "")).is_empty()
+		if not has_condition:
+			failures.append("ending echo %s needs at least one state condition" % echo_id)
+		if (text.contains("{selected_") or text.contains("{module_choice}")) and module_id.is_empty():
+			failures.append("ending echo %s uses module placeholders without a module" % echo_id)
+		if text.contains("{journal_text}") and str(echo.get("journal_id", "")).is_empty() and str(echo.get("journal_kind", "")).is_empty():
+			failures.append("ending echo %s uses journal_text without a journal condition" % echo_id)
 
 
 func _validate_characters(data: Dictionary) -> void:

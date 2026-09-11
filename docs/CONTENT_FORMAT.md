@@ -104,6 +104,18 @@
 
 玩法结果还可以使用 `required_tokens` 与 `forbidden_tokens` 限制某种结算。例如可交付音轨可以禁止未授权人声；被禁止的组合会让对应结果按钮不可用，核心系统也会再次校验，不能通过绕过界面直接结算。`constraint_note` 用于说明不可用原因。
 
+## 结局回声
+
+`data/story/endings.json` 的 `echoes` 会从 A/B 各自存档匹配已经发生的经历。每条回声需要稳定 `id`、`category`、`priority`、正文 `text`，以及至少一种条件：
+
+- `choice_key`：匹配 `事件ID/选择ID`。
+- `journal_id` 或 `journal_kind`：匹配具体日记或某类日记。
+- `artifact_id`：同时查询角色私人物件与公共作品。
+- `module_id` 与可选的 `module_choice_id`：读取某个玩法最近一次结果。
+- `role`：可选；限制只查询 A 或 B。省略时依次查询两人。
+
+玩法回声正文支持 `{selected_1}`、`{selected_2}`、`{selected_3}`、`{selected_joined}` 和 `{module_choice}`；日记与作品还可以使用 `{journal_text}` 和 `{artifact_title}`。多个条件写在同一条回声时必须同时满足。`one_per_category` 会防止同类记录挤占结局页，`max_echoes` 控制最多显示数量。
+
 ## 美术资源
 
 推荐命名：`角色或地点_用途_版本`，例如 `xia_touming_portrait_v01.png`。人物、地点和 UI 分开存放；源文件与导出文件不要混在同一目录。

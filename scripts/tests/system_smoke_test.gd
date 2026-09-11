@@ -1,5 +1,7 @@
 extends Node
 
+const EndingEchoResolverScript := preload("res://scripts/core/ending_echo_resolver.gd")
+
 var failures: Array[String] = []
 
 
@@ -15,6 +17,7 @@ func _ready() -> void:
 	_test_appointment_lifecycle()
 	_test_choice_history()
 	_test_gameplay_module_state()
+	_test_ending_echo_resolver()
 	_test_ui_scenes_load()
 	_test_chapter_progression()
 	_test_save_roundtrip()
@@ -82,8 +85,10 @@ func _test_core_resident_profiles() -> void:
 func _test_ui_scenes_load() -> void:
 	var town_scene = load("res://scenes/town_day.tscn")
 	var workbench_scene = load("res://scenes/module_workbench.tscn")
+	var ending_scene = load("res://scenes/ending.tscn")
 	_check(town_scene is PackedScene, "The town UI scene and its script should parse")
 	_check(workbench_scene is PackedScene, "The module workbench scene and its script should parse")
+	_check(ending_scene is PackedScene, "The ending UI scene and its dynamic echo resolver should parse")
 
 
 func _test_event_and_relationship() -> void:
@@ -241,6 +246,38 @@ func _test_gameplay_module_state() -> void:
 			str(echo_beats[0].get("text", "")) == "我还在这里 / 门下面一直有光 / 不用马上回复",
 			"A follow-up scene should resolve the exact selected workbench sentences"
 		)
+
+
+func _test_ending_echo_resolver() -> void:
+	ChapterSystem.start_new_game("A")
+	_store_echo_outcome("cooking", "improvise", "把零碎材料组合成新菜", ["一袋柠檬", "昨天的面包", "熟透的番茄"])
+	GameState.record_choice("a_d4_confirmation_withdrawn", "ask_what_was_missed", "再告诉我一次")
+	GameState.switch_to_role("B")
+	_store_echo_outcome("sound_sampling", "planned_route", "按路线采样并完成短曲", ["雨落遮阳棚", "公交刹车", "公园里的声音"])
+	_store_echo_outcome("ghostwriting", "listen_then_cut", "先听完整，再裁切排列", ["我还在这里", "门下面一直有光", "不用马上回复"])
+	GameState.record_choice("b_d5_letter_revision_listen", "preserve_client_voice", "保留委托人的声音")
+	GameState.record_choice("b_d4_missed_window", "record_the_absence", "记录没有出现")
+	var file := FileAccess.open("res://data/story/endings.json", FileAccess.READ)
+	var ending_data: Dictionary = JSON.parse_string(file.get_as_text())
+	var resolver = EndingEchoResolverScript.new()
+	var echoes: Array[Dictionary] = resolver.resolve(ending_data)
+	_check(echoes.size() == 5, "The ending should select five distinct high-priority memory categories")
+	var ending_text := resolver.display_text(ending_data)
+	_check(ending_text.contains("一袋柠檬、昨天的面包、熟透的番茄"), "The ending should replay A's actual cooking materials")
+	_check(ending_text.contains("雨落遮阳棚、公交刹车、公园里的声音"), "The ending should replay B's authorized sound sequence")
+	_check(ending_text.contains("“我还在这里”——“门下面一直有光”——“不用马上回复”"), "The ending should replay B's exact letter sentence order")
+	_check(ending_text.contains("未出现。不是未完成。"), "The ending should preserve the missed schedule as an absence")
+	_check(ending_text.contains("后来被重新说了一遍"), "The ending should preserve the relationship repair")
+	_check(not ending_text.contains("{selected_"), "Resolved ending copy should not expose data placeholders")
+
+
+func _store_echo_outcome(module_id: String, choice_id: String, label: String, selected_labels: Array[String]) -> void:
+	_check(GameplayModuleSystem.unlock(module_id), "Ending echo test should unlock %s" % module_id)
+	_check(GameplayModuleSystem.complete(module_id, {
+		"choice_id": choice_id,
+		"label": label,
+		"interaction": {"selected_labels": selected_labels},
+	}), "Ending echo test should store %s" % module_id)
 
 
 func _test_save_roundtrip() -> void:

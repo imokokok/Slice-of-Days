@@ -10,6 +10,7 @@ func _ready() -> void:
 	GameplayModuleSystem.load_module_data("res://data/gameplay/modules.json")
 	GameplayModuleSystem.load_prototype_data("res://data/gameplay/module_prototypes.json")
 	_simulate_a_route()
+	_simulate_a_day_four_without_first_day_rehearsal()
 	_simulate_b_route()
 	if failures.is_empty():
 		print("SEVEN DAY SIMULATION PASS: both A and B have a data-valid route to 12 confirmations")
@@ -23,7 +24,7 @@ func _ready() -> void:
 func _simulate_a_route() -> void:
 	ChapterSystem.start_new_game("A")
 	_context(1, 540, "print_shop")
-	_event("a_d1_print_help")
+	_choice_event("a_d1_print_help", "lend_phone")
 	_context(1, 700, "cafe")
 	_event("a_d1_mossner_coffee")
 	_context(1, 900, "theatre")
@@ -38,7 +39,7 @@ func _simulate_a_route() -> void:
 	_event("a_d3_social_chain")
 
 	_context(4, 600, "cafe")
-	_event("a_d4_confirmation_withdrawn")
+	_choice_event("a_d4_confirmation_withdrawn", "ask_what_was_missed")
 	_context(4, 1140, "tarot_stall")
 	_event("a_d4_listen_to_xia")
 
@@ -57,7 +58,7 @@ func _simulate_a_route() -> void:
 func _simulate_b_route() -> void:
 	ChapterSystem.start_new_game("B")
 	_context(1, 660, "cafeteria")
-	_event("b_d1_cafeteria_observe")
+	_choice_event("b_d1_cafeteria_observe", "record_boundary")
 	_context(1, 1080, "library")
 	_event("b_d1_library_wait")
 	_context(1, 1200, "residence")
@@ -89,8 +90,8 @@ func _simulate_b_route() -> void:
 	_context(3, 840, "record_store")
 	_module_event("b_d3_sound_session", "sound_sampling", "planned_route")
 
-	_context(4, 840, "library")
-	_event("b_d4_missed_window")
+	_context(4, 840, "old_station")
+	_choice_event("b_d4_missed_window", "record_the_absence")
 	_context(4, 1080, "theatre")
 	_event("b_d4_salvage_rehearsal")
 
@@ -109,6 +110,15 @@ func _simulate_b_route() -> void:
 
 	var audit := ChapterSystem.residency_audit("B")
 	_check(bool(audit.get("passed", false)), "B route should reach 12 confirmations, got %d" % int(audit.get("confirmed", 0)))
+
+
+func _simulate_a_day_four_without_first_day_rehearsal() -> void:
+	ChapterSystem.start_new_game("A")
+	_context(4, 600, "cafe")
+	_choice_event("a_d4_no_shared_memory", "accept_the_blank")
+	_check(GameState.has_event("a_d4_confirmation_withdrawn"), "The alternate day-four scene should unlock the shared downstream beat")
+	_context(4, 1140, "tarot_stall")
+	_check(EventSystem.is_available(EventSystem.events.get("a_d4_listen_to_xia", {})), "A should still reach the evening day-four scene after missing the first-day rehearsal")
 
 
 func _context(day: int, minute: int, location: String) -> void:

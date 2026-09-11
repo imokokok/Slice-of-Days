@@ -35,6 +35,8 @@
   "echoes": [
     {"choice_key": "a_d6_last_full_block/watch_stars", "text": "相册里还有一张没有任何人的夜空。"},
     {"choice_key": "b_d6_boundary_choice/decline_kindly", "text": "计划本里保留着一句：做得到，不等于必须我来做。"},
+    {"choice_key": "a_d4_confirmation_withdrawn/ask_what_was_missed", "text": "有一句第一次没有听见的话，后来被重新说了一遍。"},
+    {"choice_key": "b_d4_missed_window/record_the_absence", "text": "本子里写着：未出现。不是未完成。"},
     {"journal_id": "missed_shared_d5_studio_blocking", "text": "摄影棚那一页被划掉了，没有被改写成另一场补偿。"},
     {"artifact_id": "port_roomtone", "text": "港口货栈的底噪同时出现在两个人的公共记录里。"}
   ]

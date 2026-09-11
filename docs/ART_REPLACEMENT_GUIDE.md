@@ -48,6 +48,10 @@
 
 插图会以低透明度铺在事件卡内，继续保留标题、对白、花费和选择按钮。若最终希望采用立绘对话框，可继续复用同一资源字段，只替换该显示组件。
 
+包含 `presentation.beats` 的舞台式事件会把同一张图放在左侧主画框中，建议主体不要贴近右边缘，并为人物对白保留安静区域。当前示例资源为 `art/locations/old_station/old_station_long_evening_v01.png` 与 `art/locations/print_shop/print_shop_morning_v01.png`。
+
+十二名核心居民的视觉母题保存在 `data/npcs/core_residents.json` 的 `recurring_image`。这是概念设计提示，不绑定具体文件路径；正式立绘确定后可以增加 `portrait_path` 或场景专用表情路径，继续保留居民 ID。
+
 ### 生活玩法工作台
 
 配置文件为 `data/gameplay/module_prototypes.json`。玩法根节点可以添加：

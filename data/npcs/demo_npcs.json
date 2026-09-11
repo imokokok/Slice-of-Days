@@ -90,7 +90,7 @@
     {
       "id": "restaurant_owner",
       "display_name": "饭店店主",
-      "draft": true,
+      "draft": false,
       "schedule": [
         {"id": "owner_market_shift", "days": [2, 3, 4, 5, 6, 7], "start": 660, "end": 1260, "location": "night_market", "activity": "照看饭店"}
       ]
@@ -98,7 +98,7 @@
     {
       "id": "stagehand",
       "display_name": "剧场道具师",
-      "draft": true,
+      "draft": false,
       "schedule": [
         {"id": "stagehand_rehearsal", "days": [1, 3, 5, 6], "start": 840, "end": 1140, "location": "theatre", "activity": "准备道具"},
         {"id": "stagehand_break", "days": [2, 4, 7], "start": 1080, "end": 1200, "location": "cafe", "activity": "休息"}
@@ -107,7 +107,7 @@
     {
       "id": "letter_client",
       "display_name": "代写委托人",
-      "draft": true,
+      "draft": false,
       "schedule": [
         {"id": "client_library", "days": [4, 5, 6], "start": 780, "end": 1080, "location": "library", "activity": "等一封信写完"},
         {"id": "client_park", "days": [7], "start": 1020, "end": 1200, "location": "park", "activity": "散步"}

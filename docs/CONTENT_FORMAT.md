@@ -26,6 +26,17 @@
 }
 ```
 
+十二名主要居民的叙事骨架独立存放在 `data/npcs/core_residents.json`，用同一个居民 ID 与日程关联。可替换字段包括：
+
+- `town_role`、`public_face`、`private_pressure`：身份、外在状态与隐藏压力。
+- `recognition_basis`、`refusal_basis`：专属认可和拒绝场景的写作依据，不是公开数值条件。
+- `voice`：正式对白的语气约束。
+- `role_lens.A` / `role_lens.B`：同一居民如何分别理解两位主角。
+- `recurring_image`：立绘、道具和环境叙事可以反复使用的视觉母题。
+- `ambient_lines.A` / `ambient_lines.B`：公共地点短交流的可替换占位台词。
+
+界面只按稳定 ID 查询这些资料，因此更换名字、职业、台词或人物美术不需要修改事件条件与存档。核心居民使用专属事件决定认可，日程里的 `draft` 应保持为 `false`。
+
 ## 剧情事件
 
 建议每个事件稿件使用以下字段：
@@ -54,6 +65,17 @@
 带 `choices` 的事件完成后，系统会按 `事件ID/选择ID` 把选择写入当前角色的 `choice_history`。结局回声和后续条件可以读取这个稳定键，因此发布后不要随意改动已使用的选择 ID。
 
 `presentation.lines` 兼容纯字符串旁白，也支持对白对象：`{"speaker": "角色名", "text": "对白"}`。无说话人的叙述只填写 `text`。`presentation.image_path` 可挂载该场景的正式插图，并以低透明度作为事件卡背景。这样正式文本和美术都可以逐场替换，不需要修改事件弹窗代码。
+
+需要以舞台式节奏逐句展开的主要事件，可以增加 `presentation.beats`：
+
+```json
+"beats": [
+  {"direction": "站台上没有列车。", "text": "她提前六分钟抵达。"},
+  {"speaker": "旧站看守", "text": "要把多出来的十一分钟也等完吗？", "direction": "分针停在原处。"}
+]
+```
+
+`text` 是必填正文，`speaker` 与 `direction` 可省略。界面会逐拍显示这些内容，在最后一拍之后才展示事件选择或执行结算。正式文本可以逐场增加 `beats`；没有该字段的事件仍沿用原来的整页事件卡。
 
 预约至少填写稳定 `id`、`day`、`start`、`end`、`location` 和 `label`。承接预约的事件应与预约使用同一 ID，并在条件里填写同一个 `required_appointment`。系统自动维护 `scheduled`、`active`、`completed`、`missed`，内容数据不要手动跳过这些状态。
 

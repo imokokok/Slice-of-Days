@@ -10,14 +10,37 @@
       "presentation": {
         "title": "打印店里的U盘",
         "summary": "排在前面的人忘带了U盘，打印店的队伍停了下来。",
-        "lines": ["A把手机借给对方传文件。", "对方请她喝咖啡，事情就这样继续往另一个方向走。"],
+        "image_path": "res://art/locations/print_shop/print_shop_morning_v01.png",
+        "beats": [
+          {"speaker": "画面", "text": "打印机停在一声短促的蜂鸣后。柜台前的人翻了第三遍口袋。", "direction": "上午的海光从拱门照进来。队伍没有抱怨，只是一起停住。"},
+          {"speaker": "陌生人", "text": "文件在手机里。这里的机器……好像只认U盘。", "direction": "他把手机举起来，又很快放下，像是不愿让求助显得太正式。"},
+          {"speaker": "打印店学徒", "text": "也可以发到店里的电脑。就是网络今天有点慢。", "direction": "柜台边放着一只被忘在这里很久的旧U盘。"},
+          {"speaker": "A", "text": "我可以帮忙。", "direction": "这不是计划中的第一件事。正因为如此，它开始像是第一天真正发生的事。"}
+        ],
         "result": "一杯临时得到的咖啡，把接下来的路线带向了Mossner。"
       },
       "results": {
         "completed_events": ["a_d1_print_help"],
+        "encounters": ["print_apprentice"],
         "facts": ["打印店遇到的人说Mossner今天可能去咖啡馆。"],
         "journal_entries": [{"id": "a_d1_borrowed_phone", "kind": "memory", "text": "手机借出去二十分钟，换来一杯没有计划的咖啡。"}]
-      }
+      },
+      "choices": [
+        {
+          "id": "lend_phone",
+          "label": "把手机借给他传文件",
+          "detail": "直接、信任陌生人，也把自己的东西暂时交出控制。",
+          "results": {"relationship_flags": {"print_apprentice": ["看见A把手机借给陌生人"]}},
+          "presentation": {"result": "文件传完以后，对方用一杯咖啡答谢。A的路线因此拐向了Mossner所在的咖啡馆。"}
+        },
+        {
+          "id": "use_shop_computer",
+          "label": "陪他用店里的电脑慢慢传",
+          "detail": "不交出私人设备，但愿意留下来把麻烦处理完。",
+          "results": {"relationship_flags": {"print_apprentice": ["看见A留下来等文件传完"]}},
+          "presentation": {"result": "进度条走得很慢。传完时，对方提出请A喝咖啡，下一段路因此有了方向。"}
+        }
+      ]
     },
     {
       "id": "a_d1_mossner_coffee",
@@ -28,9 +51,10 @@
       "presentation": {
         "title": "咖啡还没有喝完",
         "summary": "Mossner问她，下午要不要一起去剧场看彩排。",
-        "lines": [
-          {"speaker": "Mossner", "text": "下午去看彩排吗？可能还缺一个帮忙收道具的人。"},
-          {"speaker": "A", "text": "好。我原本没把剧场写进今天。"}
+        "beats": [
+          {"speaker": "画面", "text": "答谢的咖啡还没凉，Mossner先在空纸巾上画了一扇舞台侧门。", "direction": "他没有问A为什么来Solmere，也没有先谈那份认可。"},
+          {"speaker": "Mossner", "text": "下午去看彩排吗？可能还缺一个帮忙收道具的人。", "direction": "邀请听起来像是刚刚才想到，也可能已经等了很久。"},
+          {"speaker": "A", "text": "好。我原本没把剧场写进今天。", "direction": "她把纸巾折起来。它现在比地图上的剧场图标更像一个地址。"}
         ],
         "result": "剧场彩排成为今天的新目的地。"
       },
@@ -49,7 +73,12 @@
       "presentation": {
         "title": "没有写在计划里的彩排",
         "summary": "彩排结束后，道具还没有收完。",
-        "lines": ["A留下来搭了把手。", "Mossner把她介绍给了剧场道具师。"],
+        "beats": [
+          {"speaker": "画面", "text": "台上的最后一句台词说完，没有掌声。工作灯先亮了。", "direction": "演员从侧门离开，舞台上剩下一轮纸月亮、三把椅子和卷起一半的海。"},
+          {"speaker": "剧场道具师", "text": "表上写九点结束，是演员结束。我们的结束另算。", "direction": "道具师把纸月亮翻过来。背面能看见四处颜色不同的修补。"},
+          {"speaker": "A", "text": "那我从哪一件开始？", "direction": "她没有确认这算不算获得认可的机会。"},
+          {"speaker": "Mossner", "text": "先记住它们回去的位置。故事每晚都可能变，道具最好别迷路。", "direction": "最后一把椅子归位时，剧场里只剩工作灯。"}
+        ],
         "result": "两个人愿意确认，今天确实和A一起待过。"
       },
       "results": {
@@ -69,7 +98,11 @@
       "presentation": {
         "title": "相册里多出来的栏杆",
         "summary": "浪花里闪过一个很像旧阳台栏杆的形状。",
-        "lines": ["它只出现了一瞬间。", "A没有认真追究。"],
+        "beats": [
+          {"speaker": "画面", "text": "太阳沉到栏杆以下时，海面把剧场工作灯的颜色还了回来。", "direction": "A举起相机。这一次，取景框里没有需要被证明的人。"},
+          {"speaker": "A", "text": "只拍光就好。", "direction": "快门按下前，浪花里闪过旧合租房阳台的铁栏杆。"},
+          {"speaker": "画面", "text": "它只出现了一瞬间。照片里留下的，却像比眼睛看见的多一点。", "direction": "摄影灰盒会让玩家亲手决定画面保留什么。"}
+        ],
         "result": "摄影灰盒已经解锁。"
       },
       "results": {"unlock_modules": ["photography"]},
@@ -84,7 +117,11 @@
       "presentation": {
         "title": "先确认，再搭话",
         "summary": "周晓六在赶作业，只来得及抬头点一下。",
-        "lines": ["B没有把这次点头算成关系。", "她只把出现时间写进了本子。"],
+        "beats": [
+          {"speaker": "画面", "text": "11:31，周晓六端着饭坐到靠插座的位置，电脑没有合上。", "direction": "B在计划本上画了一条短线：出现时间已确认。"},
+          {"speaker": "周晓六", "text": "你是在等这个位置吗？我还有十分钟。", "direction": "她说话时仍盯着导出进度，没有把礼貌误当成空闲。"},
+          {"speaker": "B", "text": "不是。我只是想确认你通常什么时候在这里。", "direction": "周晓六抬头，点了一下。这个点头可以有不止一种记录方式。"}
+        ],
         "result": "周晓六的午间日程被记录下来。"
       },
       "results": {
@@ -92,7 +129,23 @@
         "relationship_flags": {"zhou_xiaoliu": ["第一次只点过头"]},
         "reveal_schedule_entries": ["zhou_cafeteria"],
         "journal_entries": [{"id": "b_d1_zhou_schedule", "kind": "schedule", "text": "周晓六，学院食堂，中午。"}]
-      }
+      },
+      "choices": [
+        {
+          "id": "record_exact_time",
+          "label": "写下：11:31，靠插座的位置",
+          "detail": "优先保存可验证的信息，不替对方解释。",
+          "results": {"relationship_flags": {"zhou_xiaoliu": ["B只记录了准确时间"]}},
+          "presentation": {"result": "计划本得到一条可靠日程，但这次点头仍然只是一点开始。"}
+        },
+        {
+          "id": "record_boundary",
+          "label": "写下：点头不等于有空",
+          "detail": "把对方的边界也视为重要信息。",
+          "results": {"relationship_flags": {"zhou_xiaoliu": ["B记下了点头不等于许可"]}},
+          "presentation": {"result": "计划本记下的不只是时间，还有这次相遇不能被夸大的边界。"}
+        }
+      ]
     },
     {
       "id": "b_d1_library_wait",
@@ -103,7 +156,12 @@
       "presentation": {
         "title": "尚未说话",
         "summary": "九确实在18点左右出现了。",
-        "lines": ["B坐在能被看见的位置看了一会儿书。", "她没有主动搭话。"],
+        "beats": [
+          {"speaker": "画面", "text": "18:07，九把书放在窗边那张不会晃的桌子上。", "direction": "计划本里的预测与现实相差七分钟。没有任何警报响起。"},
+          {"speaker": "B", "text": "九，图书馆，18:00左右。", "direction": "B坐到对面两排、能够被看见的位置，把本子翻成普通的空白页。"},
+          {"speaker": "九", "text": "……", "direction": "九抬眼看过一次。没有招呼，也没有拒绝。"},
+          {"speaker": "画面", "text": "一个小时以后，B写下：尚未说话。", "direction": "不是每次正确抵达都必须立刻变成关系。"}
+        ],
         "result": "本子里写下：九，图书馆，18:00左右。尚未说话。"
       },
       "results": {
@@ -122,7 +180,12 @@
       "presentation": {
         "title": "空白页上的旧门牌",
         "summary": "翻页时，空白处浮现出旧合租房门牌号的笔迹。",
-        "lines": ["B眨了一下眼。", "字迹消失，她继续写第二天的计划。"],
+        "beats": [
+          {"speaker": "画面", "text": "回到住处，B把两条已确认日程誊到第二天的页边。", "direction": "纸面整齐。两次相遇都没有被写成比实际更多的东西。"},
+          {"speaker": "画面", "text": "翻页时，空白处先出现了一道压痕，随后变成旧合租房的门牌号。", "direction": "那不是B此刻使用的笔迹，却和记忆里一模一样。"},
+          {"speaker": "B", "text": "没有来源。无法复现。先保留。", "direction": "她眨眼以后字迹消失，只剩纸纤维里很浅的凹痕。"},
+          {"speaker": "画面", "text": "B继续写第二天的计划。她没有划掉那块空白。", "direction": "异常进入私人记录；另一位主角暂时不会知道。"}
+        ],
         "result": "这段异常只进入B的私人记录。"
       },
       "results": {
@@ -386,11 +449,18 @@
       "id": "a_d4_confirmation_withdrawn",
       "choice_text": "听完一次临时改口（30分钟）",
       "priority": 10,
-      "conditions": {"roles": ["A"], "days": [4], "locations": ["cafe"], "start": 540, "end": 1080},
+      "conditions": {"roles": ["A"], "days": [4], "locations": ["cafe"], "start": 540, "end": 1080, "required_events": ["a_d1_theatre_rehearsal"]},
       "cost": {"minutes": 30},
       "presentation": {
         "title": "你大概不太记得我",
         "summary": "一位之前愿意认可她的人改变了主意。",
+        "location_cue": "咖啡馆靠窗的第二张桌",
+        "beats": [
+          {"direction": "咖啡已经凉了。Mossner把确认表折回原来的折痕。", "text": "她先把纸收起来，没有立刻看A。"},
+          {"speaker": "Mossner", "text": "你那天一直在看手机。后来我说了什么？", "direction": "窗外有人拖着一只空道具箱经过，轮子在石路上响了很久。"},
+          {"speaker": "A", "text": "我记得你说彩排以后还要收东西。", "direction": "她记得事情的顺序，却想不起Mossner当时说那句话的语气。"},
+          {"speaker": "Mossner", "text": "你记得路线。可我不确定你记不记得我。", "direction": "确认表没有被撕掉，只是被放回桌子的另一边。"}
+        ],
         "lines": [
           {"speaker": "Mossner", "text": "你那天一直在看手机。你大概不太记得我说过什么。"},
           {"speaker": "A", "text": "那我改天请你吃饭，我们再聊一次？"},
@@ -398,10 +468,74 @@
         ],
         "result": "Mossner的认可被暂时撤回。"
       },
+      "choices": [
+        {
+          "id": "offer_dinner",
+          "label": "那我改天请你吃饭，我们再聊一次？",
+          "detail": "A试着给这段关系安排一次可以补救的以后。",
+          "presentation": {"result": "Mossner只说：下次再说吧。认可被收回，但那张表没有被扔掉。"},
+          "results": {
+            "relationship_flags": {"mossner": ["A先提出用下一次见面补救"]},
+            "journal_entries": [{"id": "a_d4_offered_dinner", "kind": "choice", "text": "我先给刚才的失败安排了一个以后。"}]
+          }
+        },
+        {
+          "id": "ask_what_was_missed",
+          "label": "你愿意再告诉我一次，我漏掉了哪句话吗？",
+          "detail": "A不保证立刻修好，只先承认自己没有听见。",
+          "presentation": {"result": "Mossner没有把认可放回来，但重新说了一遍那天没有被听见的话。"},
+          "results": {
+            "relationship_flags": {"mossner": ["A承认自己漏听并重新问过"]},
+            "facts": ["Mossner那天说，剧场熄灯以后，她常常不想立刻回家。"],
+            "journal_entries": [{"id": "a_d4_asked_again", "kind": "choice", "text": "有些话可以再问一次，但不能假装第一次已经听见。"}]
+          }
+        }
+      ],
       "results": {
         "confirmations": {"mossner": "withdrawn"},
         "relationship_flags": {"mossner": ["曾觉得A聊天时心不在焉"]},
         "journal_entries": [{"id": "a_d4_withdrawn", "kind": "relationship", "text": "认可不是已经装进口袋里的东西。"}]
+      }
+    },
+    {
+      "id": "a_d4_no_shared_memory",
+      "choice_text": "问Mossner是否还记得第一天（30分钟）",
+      "priority": 10,
+      "conditions": {"roles": ["A"], "days": [4], "locations": ["cafe"], "start": 540, "end": 1080, "forbidden_events": ["a_d1_theatre_rehearsal"]},
+      "cost": {"minutes": 30},
+      "presentation": {
+        "title": "我们没有一起待到彩排结束",
+        "summary": "没有发生的共同经历，不会因为A现在需要它就自动补上。",
+        "location_cue": "咖啡馆靠窗的第二张桌",
+        "beats": [
+          {"direction": "Mossner认出了A，也记得第一天那杯没有喝完的咖啡。", "text": "她们确实见过。"},
+          {"speaker": "A", "text": "我后来是不是错过了什么？", "direction": "A把确认表留在包里，没有先拿出来。"},
+          {"speaker": "Mossner", "text": "彩排，道具，还有我们收完东西以后说的那些话。", "direction": "这些内容没有等待A重新回到原来的下午。"},
+          {"speaker": "Mossner", "text": "我知道你来过。但那还不是我愿意签下名字的那种认识。", "direction": "这不是撤回，只是一处从来没有被填上的空白。"}
+        ],
+        "result": "Mossner没有给出认可。第一天错过的经历仍然保持缺席。"
+      },
+      "choices": [
+        {
+          "id": "ask_for_another_time",
+          "label": "那我们可以从今天重新认识吗？",
+          "detail": "不要求第一天被补写，只询问以后是否还有时间。",
+          "presentation": {"result": "Mossner说，可以。但不是为了让今天立刻多出一个名字。"},
+          "results": {"relationship_flags": {"mossner": ["A请求从第四天重新认识"]}}
+        },
+        {
+          "id": "accept_the_blank",
+          "label": "好，我不把没发生的事算进去",
+          "detail": "让确认页继续空着。",
+          "presentation": {"result": "A收起表格。Mossner把凉咖啡推远了一点。"},
+          "results": {"journal_entries": [{"id": "a_d4_accepted_blank", "kind": "choice", "text": "见过不等于认识。没有发生的事也不需要补成发生过。"}]}
+        }
+      ],
+      "results": {
+        "completed_events": ["a_d4_confirmation_withdrawn"],
+        "encounters": ["mossner"],
+        "relationship_flags": {"mossner": ["记得第一天没有一起待到彩排结束"]},
+        "journal_entries": [{"id": "a_d4_unfilled", "kind": "relationship", "text": "不是每一处空白都曾经属于我。"}]
       }
     },
     {
@@ -439,20 +573,94 @@
       }
     },
     {
+      "id": "a_d4_station_clock",
+      "choice_text": "去旧车站等一段没有安排的时间（40分钟）",
+      "priority": 16,
+      "conditions": {"roles": ["A"], "days": [4], "locations": ["old_station"], "start": 900, "end": 1140, "resident_present": "station_caretaker", "required_events": ["a_d4_confirmation_withdrawn"]},
+      "cost": {"minutes": 40},
+      "presentation": {
+        "title": "时钟退回了十一分钟",
+        "summary": "旧铁路早已改线，站台上的钟仍替没有抵达的人保留一点时间。",
+        "location_cue": "旧车站停用站台",
+        "image_path": "res://art/locations/old_station/old_station_long_evening_v01.png",
+        "beats": [
+          {"direction": "铁轨在花草中结束。幕布、月亮和一张纸做的太阳堆在防雨布下面。", "text": "A本来没有把旧车站写进今天。"},
+          {"speaker": "旧站看守", "text": "你也在等没来的人？", "direction": "他说“也”的时候，站台上只有他们两个。"},
+          {"speaker": "A", "text": "我可能是在等一句已经说完的话。", "direction": "看守没有追问。他抬头看了一眼钟。"},
+          {"direction": "分针从十七分退回六分。海面、影子和远处的人都没有跟着倒退。", "text": "小镇多给了她十一分钟，但没有告诉她应该拿来做什么。"}
+        ],
+        "result": "A在旧站留下了一段没有拿去补救任何事情的时间。"
+      },
+      "choices": [
+        {
+          "id": "name_the_wait",
+          "label": "我是在等一句已经说完的话",
+          "detail": "让这段等待拥有一个不够准确的名字。",
+          "presentation": {"result": "看守点点头，像这是一种常见的候车理由。"},
+          "results": {"journal_entries": [{"id": "a_d4_station_named_wait", "kind": "anomaly", "text": "旧站多出来十一分钟。我把它叫作等一句已经说完的话。"}]}
+        },
+        {
+          "id": "leave_it_unnamed",
+          "label": "我只是走到了这里",
+          "detail": "不替偶然抵达安排意义。",
+          "presentation": {"result": "看守说，那也算一种到站。"},
+          "results": {"relationship_flags": {"station_caretaker": ["一起看过没有用途的十一分钟"]}}
+        }
+      ],
+      "results": {
+        "encounters": ["station_caretaker"],
+        "facts": ["旧车站的时钟曾单独退回十一分钟。"],
+        "relationship_flags": {"station_caretaker": ["第四天在停用站台见过A"]}
+      }
+    },
+    {
       "id": "b_d4_missed_window",
       "choice_text": "确认那个已经错过的窗口",
       "priority": 10,
-      "conditions": {"roles": ["B"], "days": [4], "locations": ["library"], "start": 840, "end": 1080},
+      "conditions": {"roles": ["B"], "days": [4], "locations": ["old_station"], "start": 840, "end": 960, "resident_present": "station_caretaker"},
       "cost": {"minutes": 20},
       "presentation": {
         "title": "今日确认加零",
-        "summary": "关键人物没有出现，计划好的时间块失去用途。",
+        "summary": "关键人物没有出现，计划好的完整时间块变成了一座空站台。",
+        "location_cue": "旧车站停用站台",
+        "image_path": "res://art/locations/old_station/old_station_long_evening_v01.png",
+        "beats": [
+          {"direction": "B提前六分钟抵达。她核对站名、日期和约定的长椅。", "text": "每一项都对。"},
+          {"direction": "约定时间过去。看守把一块没有列车的时刻表擦了一遍。", "text": "那个人没有出现。"},
+          {"speaker": "旧站看守", "text": "这边的钟有时会退回十一分钟。要把那十一分钟也等完吗？", "direction": "B看见分针停在原处，像还没有决定往哪边走。"},
+          {"direction": "本子上的下一项原本是一盘棋。剧场又在这时发来一条临时消息。", "text": "空出来的不是时间，而是三件事争用的同一段时间。"}
+        ],
         "lines": ["B取消了原本留给棋的时间。", "本子上写下：今日确认+0。"],
         "result": "这次错过被记录，但不会自动补偿。"
       },
+      "choices": [
+        {
+          "id": "wait_the_extra_eleven",
+          "label": "把多出来的十一分钟也等完",
+          "detail": "计划没有要求她这样做。",
+          "cost": {"minutes": 10},
+          "presentation": {"result": "十一分钟以后仍然没有人来。看守却记住了她没有立刻把等待改成别的用途。"},
+          "results": {
+            "relationship_flags": {"station_caretaker": ["陪B等完时钟退回的十一分钟"]},
+            "journal_entries": [{"id": "b_d4_waited_eleven", "kind": "choice", "text": "多等十一分钟。结果仍为零。十一分钟仍然发生过。"}]
+          }
+        },
+        {
+          "id": "record_the_absence",
+          "label": "把没有出现也写进日程",
+          "detail": "接受准确记录并不能修复今天。",
+          "presentation": {"result": "B在名字后面写下：未出现。她没有把空白算成自己的错误。"},
+          "results": {
+            "facts": ["第四天，B第一次把别人的缺席与自己的失误分开记录。"],
+            "journal_entries": [{"id": "b_d4_recorded_absence", "kind": "choice", "text": "未出现。不是未完成。"}]
+          }
+        }
+      ],
       "results": {
+        "encounters": ["station_caretaker"],
+        "relationship_flags": {"station_caretaker": ["第四天在停用站台见过B"]},
         "journal_entries": [{"id": "b_d4_zero_confirmation", "kind": "schedule", "text": "今日确认+0。"}],
-        "facts": ["完整的计划也可能因为别人的日程而失效。"]
+        "facts": ["完整的计划也可能因为别人的日程而失效。", "旧车站的时钟会替没有抵达的人退回十一分钟。"]
       }
     },
     {
@@ -577,6 +785,13 @@
       "presentation": {
         "title": "最后的完整时间",
         "summary": "一边是稳定的认可机会，一边是临时去看星星的邀请。",
+        "location_cue": "河岸公园最后一张还晒得到太阳的长椅",
+        "beats": [
+          {"direction": "手机上有两条消息。两条路线都需要完整的两小时。", "text": "时间第一次看起来像一件不能同时分给两个人的东西。"},
+          {"speaker": "Mossner", "text": "今天来剧场的话，我可以把那张确认重新写上。", "direction": "这是一条稳定、清楚、来得及完成的路线。"},
+          {"speaker": "阿锰", "text": "山上今晚应该看得到星星。没有别的事，你要不要来？", "direction": "消息后面没有地址，也没有提认可。"},
+          {"speaker": "A", "text": "我已经知道怎样把今天做对了。", "direction": "她把这句话读了一遍，仍然没有按下回复。"}
+        ],
         "lines": ["两件事都需要完整的两小时。"],
         "result": "这个选择已经留下后果。"
       },
@@ -625,6 +840,13 @@
       "presentation": {
         "title": "做得到，和要不要接",
         "summary": "又有人说，交给你最放心。",
+        "location_cue": "河岸公园棋桌旁",
+        "beats": [
+          {"direction": "棋盘摆在树影里。B刚刚走到空着的椅子旁，手机又响了一次。", "text": "消息来自一个她今天没有排进去的项目。"},
+          {"speaker": "临时请求的人", "text": "你处理得最快，还是交给你吧。", "direction": "对方已经把文件发了过来，像回答也已经一起发来了。"},
+          {"speaker": "见沼香", "text": "你先接电话。我可以继续等。", "direction": "这句话听起来体贴，也因此更难拒绝。"},
+          {"speaker": "B", "text": "我确实做得到。", "direction": "她第一次没有让这句话自动变成“所以我来做”。"}
+        ],
         "lines": [
           {"speaker": "临时请求的人", "text": "你处理得最快，还是交给你吧。"},
           {"speaker": "B", "text": "做得到，和今天要不要接，是两件事。"}
@@ -682,6 +904,13 @@
       "presentation": {
         "title": "最后一个傍晚",
         "summary": "A把剩下的半瓶水递给路过的一只狗。",
+        "location_cue": "学院下面的河岸公园",
+        "beats": [
+          {"direction": "审核已经结束。A没有立刻回临时住处收行李。", "text": "晚霞停在石墙上，比任何一张照片都慢。"},
+          {"direction": "一只狗从长椅旁经过。她把剩下的半瓶水倒进瓶盖。", "text": "狗喝完以后走开，没有回头。"},
+          {"speaker": "A", "text": "我在这里待了七天。", "direction": "消息发给父母。她没有补充审核结果。"},
+          {"direction": "相机仍然对着海。旧阳台、书房和过去的片尾名单都没有出现。", "text": "这一次，照片里只有此刻。"}
+        ],
         "lines": ["相册里的旧空间不再出现。", "她给父母发了一句：我在这里待了七天。"],
         "result": "最后一张晚霞照片进入相册。"
       },
@@ -697,6 +926,13 @@
       "presentation": {
         "title": "今天晚霞很好",
         "summary": "旧地址和旧通知单的笔迹都没有再出现。",
+        "location_cue": "临时住所最后一页",
+        "beats": [
+          {"direction": "审核结束以后，B把七天的本子从第一页翻到最后。", "text": "被改过、划掉和重新安排的时间都还在。"},
+          {"direction": "她停在曾经浮出旧地址的空白处。纸页没有发生任何事。", "text": "旧门牌、通知单和应急抽屉都没有再出现。"},
+          {"speaker": "B", "text": "今天晚霞很好。", "direction": "这句话没有时间、地点、费用，也不属于任何待办事项。"},
+          {"direction": "她合上本子，把它放进包里。", "text": "拉链拉得很慢。外面的光又停留了一会儿。"}
+        ],
         "lines": [
           {"speaker": "B", "text": "今天晚霞很好。"},
           {"text": "本子里只剩下她亲手写过的日程和认可。她把拉链拉得很慢。"}

@@ -19,6 +19,7 @@ config/features=PackedStringArray("4.7")
 CharacterSystem="*res://scripts/core/character_system.gd"
 GameState="*res://scripts/core/game_state.gd"
 ScheduleSystem="*res://scripts/core/schedule_system.gd"
+ResidentProfileSystem="*res://scripts/core/resident_profile_system.gd"
 TravelSystem="*res://scripts/core/travel_system.gd"
 RelationshipSystem="*res://scripts/core/relationship_system.gd"
 EventSystem="*res://scripts/core/event_system.gd"

@@ -26,11 +26,21 @@ var location_subtitle: Label
 var resident_label: Label
 var message_label: Label
 var timeline_label: Label
+var onboarding_label: Label
 var actions_box: VBoxContainer
 var notebook_panel: Panel
 var event_overlay: ColorRect
 var event_panel: Panel
 var opening_overlay: ColorRect
+var staged_event_id := ""
+var staged_event_data: Dictionary = {}
+var staged_event_index := 0
+var staged_speaker_label: Label
+var staged_line_label: Label
+var staged_direction_label: Label
+var staged_progress_label: Label
+var staged_advance_button: Button
+var staged_choices_box: VBoxContainer
 
 
 func _ready() -> void:
@@ -176,6 +186,9 @@ func _build_ui() -> void:
 		var item: Array = travel_options[index]
 		var travel_button := _button(bottom, str(item[0]), Vector2(28 + index * 142, 52), Vector2(128, 43), "travel")
 		travel_button.pressed.connect(_travel.bind(str(item[1])))
+	_label(bottom, "当前引导", Vector2(28, 111), Vector2(100, 23), 14, CYAN)
+	onboarding_label = _label(bottom, "", Vector2(28, 140), Vector2(550, 52), 13, MUTED)
+	onboarding_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label(bottom, "时间", Vector2(625, 18), Vector2(70, 23), 16, BONE)
 	var wait20 := _button(bottom, "停留 20 分钟", Vector2(625, 52), Vector2(150, 43), "quiet")
 	var wait60 := _button(bottom, "等待 1 小时", Vector2(786, 52), Vector2(150, 43), "quiet")
@@ -252,6 +265,7 @@ func _refresh() -> void:
 	location_title.text = str(selected.get("name", "未知地点"))
 	location_subtitle.text = str(selected.get("subtitle", ""))
 	message_label.text = status_message
+	onboarding_label.text = _onboarding_text()
 	var current_people := ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
 	resident_label.text = "当前位置：%s\n此刻在场：%s" % [_location_name(GameState.current_location), _resident_names(current_people)]
 	backdrop.set_points(_point_for(locations.get(GameState.current_location, {})), _point_for(selected))
@@ -265,6 +279,28 @@ func _refresh() -> void:
 	_render_timeline()
 	if notebook_panel.visible:
 		_render_notebook()
+
+
+func _onboarding_text() -> String:
+	if GameState.current_day != 1:
+		return "地图负责抵达，计划本负责记住；认可来自共同经历，不来自一次点击。"
+	if GameState.current_role == "A":
+		if not GameState.has_event("a_d1_print_help"):
+			return "① 标记“打印店” → 选择交通 → 抵达后打开橙色经历。一次偶遇会产生下一条线索。"
+		if not GameState.has_event("a_d1_mossner_coffee"):
+			return "② 线索指向咖啡馆。居民会按自己的日程移动，抵达时间也算选择。"
+		if not GameState.has_event("a_d1_theatre_rehearsal"):
+			return "③ 彩排已写入预约。前往剧场；共同收尾会形成关系与认可。"
+		if not GameState.has_event("a_d1_evening_photo"):
+			return "④ 傍晚去公园拍照。小游戏里的构图选择也会留进个人记录。"
+		return "第一天的偶遇链已经闭合：线索 → 邀请 → 预约 → 共同经历 → 私人作品。"
+	if not GameState.has_event("b_d1_cafeteria_observe"):
+		return "① 标记“学院食堂”并选择交通。B先确认日程，也会记录对方的边界。"
+	if not GameState.has_event("b_d1_library_wait"):
+		return "② 18:00前后去图书馆。准确抵达不保证关系立刻发生。"
+	if not GameState.has_event("b_d1_notebook_anomaly"):
+		return "③ 回到住处整理计划本。已知日程、关系和异常会分别保存。"
+	return "第一天的观察链已经闭合：时间窗 → 日程 → 边界 → 未完成关系 → 私人异常。"
 
 
 func _render_actions(current_people: Array[String]) -> void:
@@ -309,7 +345,11 @@ func _ambient_talk(resident_id: String) -> void:
 	var event_id := _ambient_event_id(resident_id)
 	RelationshipSystem.record_encounter(resident_id, event_id, [memory])
 	GameState.mark_event(event_id)
-	status_message = "%s说起%s。没有人因此立刻给出认可，但这次相处被记住了。" % [name, activity_text]
+	var profile_line := ResidentProfileSystem.ambient_line(resident_id, GameState.current_role, GameState.current_day + int(GameState.relationships.get(resident_id, {}).get("encounters", 0)))
+	if profile_line.is_empty():
+		status_message = "%s说起%s。没有人因此立刻给出认可，但这次相处被记住了。" % [name, activity_text]
+	else:
+		status_message = "%s：“%s”\n这次谈话发生在%s，没有人因此立刻给出认可。" % [name, profile_line, activity_text]
 	SaveManager.save_game()
 	_refresh()
 
@@ -510,6 +550,12 @@ func _open_event(event_id: String) -> void:
 		child.queue_free()
 	var event: Dictionary = EventSystem.events[event_id]
 	var presentation: Dictionary = event.get("presentation", {})
+	var beats: Array = presentation.get("beats", [])
+	if not beats.is_empty():
+		_open_staged_event(event_id, event, presentation, beats)
+		return
+	event_panel.position = Vector2(430, 150)
+	event_panel.size = Vector2(740, 580)
 	var image_path := str(presentation.get("image_path", ""))
 	if not image_path.is_empty() and ResourceLoader.exists(image_path):
 		var loaded_image = load(image_path)
@@ -550,6 +596,109 @@ func _open_event(event_id: String) -> void:
 	var cancel := _button(event_panel, "暂时离开", Vector2(520, 500), Vector2(188, 44), "quiet")
 	cancel.pressed.connect(func() -> void: event_overlay.visible = false)
 	event_overlay.visible = true
+
+
+func _open_staged_event(event_id: String, event: Dictionary, presentation: Dictionary, beats: Array) -> void:
+	staged_event_id = event_id
+	staged_event_data = event
+	staged_event_index = 0
+	event_panel.position = Vector2(180, 100)
+	event_panel.size = Vector2(1240, 700)
+
+	var image := TextureRect.new()
+	image.position = Vector2(28, 82)
+	image.size = Vector2(548, 460)
+	image.texture = _event_texture(presentation)
+	image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	image.modulate = Color(1, 1, 1, 0.94)
+	image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	event_panel.add_child(image)
+	var image_wash := ColorRect.new()
+	image_wash.position = image.position
+	image_wash.size = image.size
+	image_wash.color = Color(AMBER if GameState.current_role == "A" else CYAN, 0.09)
+	image_wash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	event_panel.add_child(image_wash)
+
+	var location_text := str(presentation.get("location_cue", _location_name(GameState.current_location)))
+	_label(event_panel, "%s · 第%d天 %s" % [location_text, GameState.current_day, GameState.clock_text()], Vector2(32, 22), Vector2(760, 24), 14, CYAN)
+	_label(event_panel, str(presentation.get("title", event.get("choice_text", "一段经历"))), Vector2(30, 47), Vector2(1120, 42), 27, BONE)
+
+	staged_speaker_label = _label(event_panel, "", Vector2(620, 112), Vector2(550, 34), 17, AMBER if GameState.current_role == "A" else CYAN)
+	staged_line_label = _label(event_panel, "", Vector2(620, 154), Vector2(550, 188), 24, BONE.darkened(0.04))
+	staged_line_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	staged_line_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	staged_direction_label = _label(event_panel, "", Vector2(620, 365), Vector2(550, 88), 15, MUTED)
+	staged_direction_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	staged_progress_label = _label(event_panel, "", Vector2(620, 470), Vector2(550, 24), 13, MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
+
+	var cost: Dictionary = event.get("cost", {})
+	_label(event_panel, "这段经历会经过 %d 分钟%s" % [
+		int(cost.get("minutes", 0)),
+		"，花费 %d 元" % int(cost.get("money", 0)) if int(cost.get("money", 0)) > 0 else "",
+	], Vector2(32, 574), Vector2(548, 30), 13, CYAN)
+	var summary := _label(event_panel, str(presentation.get("summary", "")), Vector2(32, 610), Vector2(548, 56), 14, MUTED)
+	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	staged_choices_box = VBoxContainer.new()
+	staged_choices_box.position = Vector2(620, 510)
+	staged_choices_box.size = Vector2(550, 132)
+	staged_choices_box.add_theme_constant_override("separation", 10)
+	event_panel.add_child(staged_choices_box)
+	staged_advance_button = _button(event_panel, "让这一刻继续", Vector2(820, 530), Vector2(350, 52), "primary")
+	staged_advance_button.pressed.connect(_advance_staged_event.bind(beats))
+	var cancel := _button(event_panel, "暂时离开", Vector2(1012, 638), Vector2(158, 38), "quiet")
+	cancel.pressed.connect(func() -> void: event_overlay.visible = false)
+	_show_staged_beat(beats)
+	event_overlay.visible = true
+
+
+func _show_staged_beat(beats: Array) -> void:
+	if beats.is_empty() or staged_event_index < 0 or staged_event_index >= beats.size():
+		return
+	var beat: Dictionary = beats[staged_event_index]
+	var speaker := str(beat.get("speaker", ""))
+	staged_speaker_label.text = speaker if not speaker.is_empty() else "画面"
+	staged_line_label.text = str(beat.get("text", ""))
+	staged_direction_label.text = str(beat.get("direction", ""))
+	staged_progress_label.text = "%02d / %02d" % [staged_event_index + 1, beats.size()]
+	staged_advance_button.text = "听完，再决定" if staged_event_index == beats.size() - 1 and not staged_event_data.get("choices", []).is_empty() else "让这一刻继续"
+
+
+func _advance_staged_event(beats: Array) -> void:
+	if staged_event_index < beats.size() - 1:
+		staged_event_index += 1
+		_show_staged_beat(beats)
+		return
+	var choices: Array = staged_event_data.get("choices", [])
+	if choices.is_empty():
+		_resolve_event(staged_event_id)
+		return
+	_show_staged_choices(choices)
+
+
+func _show_staged_choices(choices: Array) -> void:
+	staged_advance_button.visible = false
+	staged_direction_label.text = "这不是一道正确答案。它只决定她怎样留下这一刻。"
+	for child in staged_choices_box.get_children():
+		staged_choices_box.remove_child(child)
+		child.queue_free()
+	for raw_choice in choices:
+		var choice: Dictionary = raw_choice
+		var button := _button(staged_choices_box, str(choice.get("label", "选择")), Vector2.ZERO, Vector2(550, 50), "action")
+		button.custom_minimum_size = Vector2(550, 50)
+		button.tooltip_text = str(choice.get("detail", ""))
+		button.pressed.connect(_resolve_event.bind(staged_event_id, str(choice.get("id", ""))))
+
+
+func _event_texture(presentation: Dictionary) -> Texture2D:
+	var image_path := str(presentation.get("image_path", ""))
+	if not image_path.is_empty() and ResourceLoader.exists(image_path):
+		var loaded = load(image_path)
+		if loaded is Texture2D:
+			return loaded
+	return OPENING_BACKGROUND
 
 
 func _presentation_lines_text(raw_lines: Array) -> String:

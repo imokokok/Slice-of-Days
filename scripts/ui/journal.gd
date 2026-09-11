@@ -55,10 +55,18 @@ func _relationship_text() -> String:
 		var state: Dictionary = GameState.relationships[resident_id]
 		var status := _confirmation_text(str(state.get("confirmation", "unknown")))
 		var flags: Array = state.get("flags", [])
-		lines.append("%s  ·  %s\n相遇%d次%s" % [
+		var town_role := ResidentProfileSystem.town_role(str(resident_id))
+		var lens := ResidentProfileSystem.role_lens(str(resident_id), GameState.current_role)
+		var profile_text := ""
+		if not town_role.is_empty():
+			profile_text += "\n%s" % town_role
+		if not lens.is_empty():
+			profile_text += "\n%s" % lens
+		lines.append("%s  ·  %s\n相遇%d次%s%s" % [
 			str(resident.get("display_name", resident_id)),
 			status,
 			int(state.get("encounters", 0)),
+			profile_text,
 			"\n" + "、".join(flags) if not flags.is_empty() else "",
 		])
 	return "\n\n".join(lines)

@@ -123,6 +123,7 @@ func residency_audit(role: String) -> Dictionary:
 	var relationships: Dictionary = state.get("relationships", {})
 	var refused := 0
 	var pending := 0
+	var withdrawn := 0
 	for resident_id in relationships:
 		var relationship: Dictionary = relationships[resident_id]
 		match str(relationship.get("confirmation", "unknown")):
@@ -130,6 +131,8 @@ func residency_audit(role: String) -> Dictionary:
 				refused += 1
 			"pending":
 				pending += 1
+			"withdrawn":
+				withdrawn += 1
 	return {
 		"role": role,
 		"confirmed": confirmations.size(),
@@ -137,6 +140,7 @@ func residency_audit(role: String) -> Dictionary:
 		"passed": confirmations.size() >= 12,
 		"refused": refused,
 		"pending": pending,
+		"withdrawn": withdrawn,
 		"completed_events": state.get("completed_events", []).size(),
 		"journal_entries": state.get("journal_entries", []).size(),
 		"choices": state.get("choice_history", []).size(),

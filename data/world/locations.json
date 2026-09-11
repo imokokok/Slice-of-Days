@@ -14,7 +14,7 @@
     {"id": "dorm", "name": "学院宿舍", "subtitle": "居民生活区，暂不作为公开地图节点", "position": [0, 0], "map_visible": false},
     {"id": "court", "name": "球场", "subtitle": "训练和比赛使用的公共场地", "position": [0, 0], "map_visible": false},
     {"id": "record_store", "name": "唱片店", "subtitle": "声音采样、授权和棋局都可能在这里停留", "position": [870, 330], "map_visible": false, "district_visible": true},
-    {"id": "old_station", "name": "旧车站", "subtitle": "铁路改线以后仍保留着一点旧时间", "position": [980, 245], "map_visible": false, "district_visible": true},
+    {"id": "old_station", "name": "旧车站", "subtitle": "铁路改线以后仍替没有抵达的人保留一点旧时间", "position": [980, 245], "map_visible": false, "district_visible": true, "background_path": "res://art/locations/old_station/old_station_long_evening_v01.png"},
     {"id": "port", "name": "港口", "subtitle": "旧货栈和新工作室挤在同一片海风里", "position": [1110, 300], "map_visible": false, "district_visible": true},
     {"id": "studio", "name": "摄影棚", "subtitle": "传媒项目把镇上的人不断重新聚到一起", "position": [705, 330], "map_visible": false, "district_visible": true},
     {"id": "handcraft_shop", "name": "手作店", "subtitle": "纸张、裁切工具和没有写完的句子", "position": [470, 390], "map_visible": false, "district_visible": true}

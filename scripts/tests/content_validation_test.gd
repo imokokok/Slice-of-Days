@@ -7,6 +7,7 @@ func _ready() -> void:
 	var locations := _load_json("res://data/world/locations.json")
 	var routes := _load_json("res://data/world/travel_routes.json")
 	var residents := _load_json("res://data/npcs/demo_npcs.json")
+	var core_residents := _load_json("res://data/npcs/core_residents.json")
 	var events := _load_json("res://data/story/events.json")
 	var openings := _load_json("res://data/story/day_openings.json")
 	var transitions := _load_json("res://data/story/transitions.json")
@@ -22,6 +23,7 @@ func _ready() -> void:
 	var event_ids := _unique_ids(events.get("events", []), "event")
 	var module_ids := _unique_ids(modules.get("modules", []), "module")
 	_validate_schedules(resident_rows, location_ids)
+	_validate_core_residents(core_residents.get("profiles", []), resident_ids)
 	if resident_rows.size() != 100:
 		failures.append("the graybox roster should expand to exactly 100 residents, got %d" % resident_rows.size())
 	_validate_routes(routes.get("edges", []), location_ids)
@@ -35,7 +37,7 @@ func _ready() -> void:
 	_validate_module_coverage(modules.get("modules", []), prototypes.get("prototypes", []))
 	_validate_tarot(arcana.get("cards", []), tarot_cases.get("cases", []))
 	if failures.is_empty():
-		print("CONTENT VALIDATION PASS: world data, character profiles, day openings, story events, appointments, chapter transitions, endings, gameplay modules and tarot cases")
+		print("CONTENT VALIDATION PASS: world data, character and core resident profiles, day openings, story events, appointments, chapter transitions, endings, gameplay modules and tarot cases")
 		get_tree().quit(0)
 	else:
 		for failure in failures:
@@ -76,6 +78,26 @@ func _validate_schedules(rows: Array, location_ids: Array[String]) -> void:
 				failures.append("schedule %s has an invalid time range" % activity_id)
 
 
+func _validate_core_residents(rows: Array, resident_ids: Array[String]) -> void:
+	var core_ids := _unique_ids(rows, "core resident profile")
+	if core_ids.size() != 12:
+		failures.append("core resident profiles should define exactly 12 residents, got %d" % core_ids.size())
+	for row in rows:
+		var resident_id := str(row.get("id", ""))
+		if not resident_ids.has(resident_id):
+			failures.append("core resident profile references missing resident %s" % resident_id)
+		for field in ["town_role", "public_face", "private_pressure", "recognition_basis", "refusal_basis", "voice", "recurring_image"]:
+			if str(row.get(field, "")).is_empty():
+				failures.append("core resident %s is missing %s" % [resident_id, field])
+		var lenses: Dictionary = row.get("role_lens", {})
+		var ambient: Dictionary = row.get("ambient_lines", {})
+		for role in ["A", "B"]:
+			if str(lenses.get(role, "")).is_empty():
+				failures.append("core resident %s is missing the %s role lens" % [resident_id, role])
+			if (ambient.get(role, []) as Array).size() < 2:
+				failures.append("core resident %s needs at least two %s ambient lines" % [resident_id, role])
+
+
 func _validate_routes(edges: Array, location_ids: Array[String]) -> void:
 	for edge in edges:
 		for key in ["from", "to"]:
@@ -87,12 +109,19 @@ func _validate_routes(edges: Array, location_ids: Array[String]) -> void:
 func _validate_events(rows: Array, location_ids: Array[String], resident_ids: Array[String], event_ids: Array[String], module_ids: Array[String]) -> void:
 	for event in rows:
 		var event_id := str(event.get("id", ""))
-		for line in event.get("presentation", {}).get("lines", []):
+		var presentation: Dictionary = event.get("presentation", {})
+		for line in presentation.get("lines", []):
 			if line is Dictionary:
 				if str(line.get("text", "")).is_empty():
 					failures.append("event %s has a dialogue line without text" % event_id)
 			elif str(line).is_empty():
 				failures.append("event %s has an empty presentation line" % event_id)
+		for beat in presentation.get("beats", []):
+			if str(beat.get("text", "")).is_empty():
+				failures.append("event %s has a staged beat without text" % event_id)
+		var image_path := str(presentation.get("image_path", ""))
+		if not image_path.is_empty() and not ResourceLoader.exists(image_path):
+			failures.append("event %s references missing presentation image %s" % [event_id, image_path])
 		var conditions: Dictionary = event.get("conditions", {})
 		for location_id in conditions.get("locations", []):
 			if not location_ids.has(str(location_id)):
@@ -103,6 +132,9 @@ func _validate_events(rows: Array, location_ids: Array[String], resident_ids: Ar
 		for required in conditions.get("required_events", []):
 			if not event_ids.has(str(required)):
 				failures.append("event %s requires missing event %s" % [event_id, str(required)])
+		for forbidden in conditions.get("forbidden_events", []):
+			if not event_ids.has(str(forbidden)):
+				failures.append("event %s forbids missing event %s" % [event_id, str(forbidden)])
 		var launch_module := str(event.get("launch_module", ""))
 		if not launch_module.is_empty() and not module_ids.has(launch_module):
 			failures.append("event %s launches missing module %s" % [event_id, launch_module])

@@ -76,7 +76,11 @@ func _result_panel(at: Vector2, result: Dictionary, outcome_copy: Dictionary) ->
 	var outcome := _label(panel, str(outcome_copy.get(copy_key, "这七天已经被记录。")), Vector2(34, 198), Vector2(532, 58), 15, INK)
 	outcome.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label(panel, "完成经历 %d · 私人记录 %d" % [int(result.get("completed_events", 0)), int(result.get("journal_entries", 0))], Vector2(34, 270), Vector2(532, 28), 15, MUTED)
-	_label(panel, "待定 %d · 拒绝 %d" % [int(result.get("pending", 0)), int(result.get("refused", 0))], Vector2(34, 305), Vector2(500, 28), 15, MUTED)
+	_label(panel, "待定 %d · 拒绝 %d · 撤回 %d" % [
+		int(result.get("pending", 0)),
+		int(result.get("refused", 0)),
+		int(result.get("withdrawn", 0)),
+	], Vector2(34, 305), Vector2(500, 28), 15, MUTED)
 
 
 func _variant_id(a: Dictionary, b: Dictionary) -> String:

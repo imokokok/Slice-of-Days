@@ -9,6 +9,7 @@ func _ready() -> void:
 	EventSystem.load_event_data("res://data/story/events.json")
 	_test_calendar_and_role_isolation()
 	_test_schedule_and_route()
+	_test_core_resident_profiles()
 	_test_event_and_relationship()
 	_test_draft_confirmation_request()
 	_test_appointment_lifecycle()
@@ -17,7 +18,7 @@ func _ready() -> void:
 	_test_chapter_progression()
 	_test_save_roundtrip()
 	if failures.is_empty():
-		print("SMOKE TEST PASS: dual-role state, calendar, routes, events, appointments, relationships, gameplay modules, chapters and save/load")
+		print("SMOKE TEST PASS: dual-role state, calendar, routes, core resident profiles, events, appointments, relationships, gameplay modules, chapters and save/load")
 		get_tree().quit(0)
 	else:
 		for failure in failures:
@@ -67,6 +68,14 @@ func _test_schedule_and_route() -> void:
 	var result: Dictionary = TravelSystem.travel("park", "walk")
 	_check(bool(result.get("ok", false)), "The route graph should connect residence to park")
 	_check(GameState.current_location == "park", "Travel should update the active role location")
+
+
+func _test_core_resident_profiles() -> void:
+	_check(ResidentProfileSystem.profiles.size() == 12, "The core resident layer should load exactly 12 profiles")
+	_check(ResidentProfileSystem.town_role("mossner") == "剧作人和临时邀约的发起者", "A core resident profile should expose its town role")
+	var a_line := ResidentProfileSystem.ambient_line("jiu", "A", 0)
+	var b_line := ResidentProfileSystem.ambient_line("jiu", "B", 0)
+	_check(not a_line.is_empty() and not b_line.is_empty() and a_line != b_line, "A and B should receive distinct ambient lines from a core resident")
 
 
 func _test_event_and_relationship() -> void:

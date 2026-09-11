@@ -208,6 +208,19 @@ func _test_gameplay_module_state() -> void:
 			interaction.get("selected_tokens", []) == ["lemon", "bread", "tomato"],
 			"The selected workbench tokens should survive in the gameplay outcome"
 		)
+	_check(GameplayModuleSystem.unlock("sound_sampling"), "Sound sampling should unlock for its constraint test")
+	_check(GameplayModuleSystem.begin_session("sound_sampling", "smoke_permissions"), "Sound sampling session should begin")
+	var blocked_delivery := GameplayModuleSystem.complete_choice(
+		"planned_route",
+		{"mode": "ordered", "selected_tokens": ["rain_awning", "bus_brake", "cafe_cups"]}
+	)
+	_check(not bool(blocked_delivery.get("ok", false)), "An unauthorized voice sample should block the delivery route")
+	_check(GameplayModuleSystem.pending_module_id() == "sound_sampling", "A blocked delivery should keep the workbench session active")
+	var allowed_delivery := GameplayModuleSystem.complete_choice(
+		"planned_route",
+		{"mode": "ordered", "selected_tokens": ["rain_awning", "bus_brake", "distant_flute"]}
+	)
+	_check(bool(allowed_delivery.get("ok", false)), "Authorized and traceable sound samples should allow delivery")
 
 
 func _test_save_roundtrip() -> void:

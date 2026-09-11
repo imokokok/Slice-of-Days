@@ -147,6 +147,45 @@ func prototype_for(module_id: String) -> Dictionary:
 	return prototypes.get(module_id, {}).duplicate(true)
 
 
+func choice_interaction_check(module_id: String, choice_id: String, interaction_record: Dictionary) -> Dictionary:
+	if not prototypes.has(module_id):
+		return {"ok": false, "message": "找不到这个玩法。"}
+	var prototype: Dictionary = prototypes[module_id]
+	var selected: Dictionary = {}
+	for choice in prototype.get("choices", []):
+		if str(choice.get("id", "")) == choice_id:
+			selected = choice
+			break
+	if selected.is_empty():
+		return {"ok": false, "message": "找不到这个玩法选择。"}
+	var selected_tokens: Array = interaction_record.get("selected_tokens", [])
+	var interaction: Dictionary = prototype.get("interaction", {})
+	var minimum := int(interaction.get("min_select", 0))
+	var maximum := int(interaction.get("max_select", minimum))
+	if selected_tokens.size() < minimum:
+		return {"ok": false, "message": "还需要选择%d项。" % (minimum - selected_tokens.size())}
+	if selected_tokens.size() > maximum:
+		return {"ok": false, "message": "选择数量超过了当前上限。"}
+	var known_tokens: Array[String] = []
+	for token in interaction.get("tokens", []):
+		known_tokens.append(str(token.get("id", "")))
+	var seen_tokens: Array[String] = []
+	for token_id_value in selected_tokens:
+		var token_id := str(token_id_value)
+		if not known_tokens.has(token_id) or seen_tokens.has(token_id):
+			return {"ok": false, "message": "操作记录里有无效或重复的项目。"}
+		seen_tokens.append(token_id)
+	for required_id_value in selected.get("required_tokens", []):
+		var required_id := str(required_id_value)
+		if not selected_tokens.has(required_id):
+			return {"ok": false, "message": str(selected.get("constraint_note", "这个结果还缺少必要项目。"))}
+	for forbidden_id_value in selected.get("forbidden_tokens", []):
+		var forbidden_id := str(forbidden_id_value)
+		if selected_tokens.has(forbidden_id):
+			return {"ok": false, "message": str(selected.get("constraint_note", "当前选择包含不能用于这个结果的项目。"))}
+	return {"ok": true, "message": ""}
+
+
 func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> Dictionary:
 	var module_id := pending_module_id()
 	if module_id.is_empty() or not prototypes.has(module_id):
@@ -159,6 +198,9 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 			break
 	if selected.is_empty():
 		return {"ok": false, "message": "找不到这个玩法选择。"}
+	var interaction_check := choice_interaction_check(module_id, choice_id, interaction_record)
+	if not bool(interaction_check.get("ok", false)):
+		return interaction_check
 	var cost: Dictionary = selected.get("cost", {})
 	var payment := EventSystem.can_pay_cost_data(cost)
 	if not bool(payment.get("ok", false)):

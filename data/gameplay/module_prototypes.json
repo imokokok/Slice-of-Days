@@ -167,27 +167,36 @@
     {
       "module_id": "sound_sampling",
       "title": "城市采样与编曲",
-      "description": "把雨声、公交刹车和街道里的停顿编排成一段可以交付的声音。",
+      "description": "把雨声、公交刹车和街道里的停顿编排成短曲；来源与授权范围决定它能否交付。",
+      "background_path": "res://art/locations/record_store/record_store_rain_session_v01.png",
       "interaction": {
-        "prompt": "把三段声音排成一条短轨。最先选择的声音会成为开头。",
+        "prompt": "把三段声音排成一条短轨。最先选择的声音会成为开头；未授权或无来源片段不能进入交付版本。",
         "mode": "ordered",
         "min_select": 3,
         "max_select": 3,
+        "progress_steps": [
+          "声音师：先听来源，不要先找节拍。",
+          "第一段被放进时间线；来源标记仍和它一起移动。",
+          "第二段接上以后，雨里的空白开始像一个可以剪开的停顿。",
+          "三段声音已经排好。现在决定它是可交付短曲，还是只属于这次漫游的私人采样。"
+        ],
         "tokens": [
-          {"id": "rain_awning", "label": "雨落遮阳棚", "detail": "连续、轻而密"},
-          {"id": "bus_brake", "label": "公交刹车", "detail": "短促的金属摩擦"},
-          {"id": "cafe_cups", "label": "咖啡杯碰桌", "detail": "很小的节拍"},
-          {"id": "old_hinge", "label": "不属于这里的门轴", "detail": "只出现过一次"},
-          {"id": "distant_flute", "label": "远处的竹笛", "detail": "像从街道另一头经过"}
+          {"id": "rain_awning", "label": "雨落遮阳棚", "detail": "公共环境声，没有可辨认的人声"},
+          {"id": "bus_brake", "label": "公交刹车", "detail": "车辆声采集范围已经确认"},
+          {"id": "distant_flute", "label": "公园里的声音", "detail": "阿锰明确授权的竹笛演奏段"},
+          {"id": "cafe_cups", "label": "咖啡杯与一句人声", "detail": "节拍清楚，但谈话没有获得授权"},
+          {"id": "old_hinge", "label": "不属于这里的门轴", "detail": "原始录音没有对应波形，来源无法追溯"}
         ]
       },
       "choices": [
         {
           "id": "planned_route",
           "label": "按路线采样并完成短曲",
-          "detail": "花费90分钟，获得授权费。",
+          "detail": "花费90分钟，只能使用已授权且来源可追溯的片段。",
+          "constraint_note": "交付版本不能包含未授权人声或无来源门轴声。",
+          "forbidden_tokens": ["cafe_cups", "old_hinge"],
           "cost": {"minutes": 90},
-          "result_text": "短曲被唱片店收下。雨声里那一下旧门轴声被单独保存了。",
+          "result_text": "已授权的短曲被唱片店收下。导出文件里却多出一下原始录音没有的旧门轴声。",
           "results": {
             "money": 40,
             "facts": ["采样的雨声里混进了一下不属于这里的旧门轴声。"],
@@ -196,13 +205,17 @@
             ]
           },
           "results_by_role": {
-            "B": {"encounters": ["a_meng"], "confirmations": {"a_meng": "granted"}}
+            "B": {
+              "encounters": ["a_meng"],
+              "relationship_flags": {"a_meng": ["按授权范围交付了公园演奏段"]},
+              "confirmations": {"a_meng": "granted"}
+            }
           }
         },
         {
           "id": "wander_and_record",
           "label": "边走边录，不先决定结构",
-          "detail": "花费60分钟，保留更多偶然声音。",
+          "detail": "花费60分钟，可以保留边界不明的片段，但只存为私人采样。",
           "cost": {"minutes": 60},
           "result_text": "这段声音还不能交付，但里面有一小段很像旧列车。",
           "results": {

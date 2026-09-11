@@ -89,7 +89,8 @@ func _simulate_b_route() -> void:
 	_context(3, 840, "night_market")
 	_event("b_d3_help_market")
 	_context(3, 840, "record_store")
-	_module_event("b_d3_sound_session", "sound_sampling", "planned_route")
+	_choice_module_event("b_d3_sound_session", "mark_permissions", "sound_sampling", "planned_route")
+	_choice_event("b_d3_hinge_isolate", "keep_private_copy")
 
 	_context(4, 840, "old_station")
 	_choice_event("b_d4_missed_window", "record_the_absence")
@@ -142,6 +143,16 @@ func _choice_event(event_id: String, choice_id: String) -> void:
 func _module_event(event_id: String, expected_module_id: String, choice_id: String) -> void:
 	var result := EventSystem.trigger(event_id)
 	_check(bool(result.get("ok", false)), "Module entry event %s failed: %s" % [event_id, str(result.get("message", ""))])
+	_complete_module_result(result, event_id, expected_module_id, choice_id)
+
+
+func _choice_module_event(event_id: String, event_choice_id: String, expected_module_id: String, choice_id: String) -> void:
+	var result := EventSystem.trigger(event_id, event_choice_id)
+	_check(bool(result.get("ok", false)), "Module entry choice %s/%s failed: %s" % [event_id, event_choice_id, str(result.get("message", ""))])
+	_complete_module_result(result, event_id, expected_module_id, choice_id)
+
+
+func _complete_module_result(result: Dictionary, event_id: String, expected_module_id: String, choice_id: String) -> void:
 	var module_id := str(result.get("launch_module", ""))
 	_check(module_id == expected_module_id, "Event %s should launch %s, got %s" % [event_id, expected_module_id, module_id])
 	if module_id.is_empty():

@@ -437,9 +437,43 @@
       "presentation": {
         "title": "一段可以交付的声音",
         "summary": "采样已经足够，剩下的是决定哪些声音进入结构。",
+        "image_path": "res://art/locations/record_store/record_store_rain_session_v01.png",
+        "location_cue": "唱片店 · 雨天收声角",
+        "beats": [
+          {"speaker": "画面", "text": "公交车在雨里刹住。唱片店的玻璃跟着轻轻震了一下，录音机上的电平亮到黄色。", "direction": "B按下停止。雨声、刹车和遮阳棚下几句模糊的谈话留在同一个文件里。"},
+          {"speaker": "唱片店声音师", "text": "长度够了。先别急着剪，里面有人的声音。", "direction": "他把五段素材拖到不同颜色的区域，却没有替任何一段写上“可以使用”。"},
+          {"speaker": "阿锰的语音", "text": "公园里那段笛子可以用。后来我们说话那段，别放进去。", "direction": "授权不是针对整份文件，而是针对其中一段清楚的边界。"},
+          {"speaker": "B", "text": "先标来源和范围，再排结构。", "direction": "她需要决定怎样处理那些没有得到同意、或根本找不到来源的声音。"}
+        ],
         "result": "城市采样工作台已经打开。"
       },
-      "results": {"unlock_modules": ["sound_sampling"]},
+      "results": {
+        "unlock_modules": ["sound_sampling"],
+        "encounters": ["recordist"],
+        "relationship_flags": {"recordist": ["一起核对过采样来源"]}
+      },
+      "choices": [
+        {
+          "id": "mark_permissions",
+          "label": "逐段标记来源与授权范围",
+          "detail": "先建立可以交付的边界，再开始编排。",
+          "results": {
+            "relationship_flags": {"a_meng": ["B在编排前先核对了授权范围"]},
+            "facts": ["阿锰只授权公园演奏段，不授权之后的私人谈话。"]
+          },
+          "presentation": {"result": "所有片段先得到来源与授权标记。工作台会阻止未授权素材进入交付路线。"}
+        },
+        {
+          "id": "exclude_clear_voices",
+          "label": "先移除所有可辨认的人声",
+          "detail": "保守处理边界不清的部分，再从环境声开始。",
+          "results": {
+            "relationship_flags": {"a_meng": ["B主动排除了边界不清的人声"]},
+            "facts": ["B决定不使用任何未明确授权的可辨认人声。"]
+          },
+          "presentation": {"result": "可辨认的人声先被移出工作区；环境声和明确授权的演奏段留下来。"}
+        }
+      ],
       "launch_module": "sound_sampling"
     },
     {
@@ -464,19 +498,48 @@
       "id": "b_d3_hinge_isolate",
       "choice_text": "单独听一遍多出来的门轴声（10分钟）",
       "priority": 40,
-      "conditions": {"roles": ["B"], "days": [3], "locations": ["record_store"], "start": 930, "end": 1080, "required_events": ["b_d3_sound_session"]},
+      "conditions": {"roles": ["B"], "days": [3], "locations": ["record_store"], "start": 930, "end": 1080, "required_events": ["b_d3_sound_session"], "required_facts": ["采样的雨声里混进了一下不属于这里的旧门轴声。"]},
       "cost": {"minutes": 10},
       "presentation": {
         "title": "采样里没有那扇门",
         "summary": "雨声与公交刹车之间，混进了旧房间门轴转动的声音。",
-        "lines": ["原始录音里找不到对应的波形。", "B把耳机摘下来，又戴回去。"],
-        "result": "这段声音被单独保存，暂时不用于交付。"
+        "image_path": "res://art/locations/record_store/record_store_rain_session_v01.png",
+        "location_cue": "唱片店 · 导出以后",
+        "beats": [
+          {"speaker": "画面", "text": "短曲导出以后，雨声与公交刹车之间多了一下很轻的门轴转动。", "direction": "B回到原始文件。相同位置只有完整的雨声，波形没有断开。"},
+          {"speaker": "唱片店声音师", "text": "店里没有这种门。刚才的采样点也没有。", "direction": "他说完以后去检查玻璃门，门轴安静得像从没使用过。"},
+          {"speaker": "B", "text": "无法确认来源，也无法取得授权。", "direction": "可它不是人声。规则没有直接告诉她，记忆是否也算一种需要同意的素材。"},
+          {"speaker": "画面", "text": "那一下声音很像旧合租房深夜打开的卧室门。", "direction": "B必须决定如何保存这份无法复现的副本。"}
+        ],
+        "result": "门轴声的处理方式进入B的私人记录。"
       },
       "results": {
-        "artifacts": [{"collection": "samples", "shared": false, "data": {"id": "old_hinge_sample", "title": "无来源的门轴声", "kind": "audio_note"}}],
         "facts": ["城市采样中出现过原始录音里不存在的旧门轴声。"],
-        "journal_entries": [{"id": "b_d3_hinge_note", "kind": "anomaly", "text": "门轴声没有来源。先单独存。"}]
-      }
+        "encounters": ["recordist"]
+      },
+      "choices": [
+        {
+          "id": "keep_private_copy",
+          "label": "单独保存，不放进交付版本",
+          "detail": "保留异常，但不把无法说明来源的声音公开。",
+          "results": {
+            "artifacts": [{"collection": "samples", "shared": false, "data": {"id": "old_hinge_sample", "title": "无来源的门轴声", "kind": "audio_note"}}],
+            "relationship_flags": {"recordist": ["一起把无来源声音留在私人副本"]},
+            "journal_entries": [{"id": "b_d3_hinge_note", "kind": "anomaly", "text": "门轴声没有来源。保留私人副本，不用于交付。"}]
+          },
+          "presentation": {"result": "门轴声被移出交付版本，保留在一份不公开的副本里。"}
+        },
+        {
+          "id": "delete_unverified_copy",
+          "label": "删除无法验证的副本",
+          "detail": "不把不可追溯的异常变成可以反复消费的素材。",
+          "results": {
+            "relationship_flags": {"recordist": ["一起删除了无法验证的声音副本"]},
+            "journal_entries": [{"id": "b_d3_hinge_deleted", "kind": "anomaly", "text": "我删除了门轴声。记录仍在，但声音本身不再保留。"}]
+          },
+          "presentation": {"result": "副本被删除。计划本仍记得它出现过，却无法再播放。"}
+        }
+      ]
     },
     {
       "id": "a_d4_confirmation_withdrawn",

@@ -17,6 +17,7 @@ var interaction: Dictionary = {}
 var selected_tokens: Array[String] = []
 var token_buttons: Dictionary = {}
 var choice_buttons: Array[Button] = []
+var choice_button_ids: Dictionary = {}
 var selection_label: Label
 var result_label: Label
 var clear_button: Button
@@ -110,8 +111,11 @@ func _build_outcome_choices(parent: Node) -> void:
 		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_label(card, "%d分钟 · %d元" % [minutes, int(cost.get("money", 0))], Vector2(20, 108), Vector2(210, 24), 13, TEAL)
 		var choose := _button(card, "采用", Vector2(card_width - 188, 83), Vector2(164, 44), TERRACOTTA)
-		choose.pressed.connect(_complete_choice.bind(str(choice.get("id", ""))))
+		var choice_id := str(choice.get("id", ""))
+		choose.tooltip_text = str(choice.get("constraint_note", choice.get("detail", "")))
+		choose.pressed.connect(_complete_choice.bind(choice_id))
 		choice_buttons.append(choose)
+		choice_button_ids[choice_id] = choose
 
 
 func _toggle_token(token_id: String) -> void:
@@ -149,8 +153,18 @@ func _update_interaction_state() -> void:
 	var prefix := "排列" if mode == "ordered" else "已保留"
 	selection_label.text = "%s：%s" % [prefix, " → ".join(labels)] if not labels.is_empty() else "尚未选择 · 需要%d项，最多%d项" % [minimum, maximum]
 	if not completed:
-		for button in choice_buttons:
-			button.disabled = not ready
+		var interaction_record := {
+			"mode": mode,
+			"selected_tokens": selected_tokens.duplicate(),
+		}
+		for choice in prototype.get("choices", []):
+			var choice_id := str(choice.get("id", ""))
+			var button: Button = choice_button_ids.get(choice_id)
+			if button == null:
+				continue
+			var choice_check := GameplayModuleSystem.choice_interaction_check(module_id, choice_id, interaction_record)
+			button.disabled = not ready or not bool(choice_check.get("ok", false))
+			button.tooltip_text = str(choice_check.get("message", "")) if ready and button.disabled else str(choice.get("constraint_note", choice.get("detail", "")))
 		clear_button.disabled = selected_tokens.is_empty()
 		var progress_steps: Array = interaction.get("progress_steps", [])
 		if progress_steps.is_empty():
@@ -158,7 +172,7 @@ func _update_interaction_state() -> void:
 		else:
 			var progress_index: int = mini(selected_tokens.size(), progress_steps.size() - 1)
 			var progress_text := str(progress_steps[progress_index])
-			result_label.text = "%s\n材料已准备，可以决定怎样完成。" % progress_text if ready else "%s\n还需要选择%d项。" % [progress_text, max(0, minimum - selected_tokens.size())]
+			result_label.text = "%s\n操作已准备，可以决定怎样完成。" % progress_text if ready else "%s\n还需要选择%d项。" % [progress_text, max(0, minimum - selected_tokens.size())]
 		result_label.add_theme_color_override("font_color", INK if ready else MUTED)
 
 
@@ -292,7 +306,8 @@ func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2
 
 
 func _capture(filename: String) -> void:
-	await get_tree().process_frame
+	for _frame in 4:
+		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	var directory := ProjectSettings.globalize_path("res://captures")
 	DirAccess.make_dir_recursive_absolute(directory)

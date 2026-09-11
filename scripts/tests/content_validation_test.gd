@@ -189,6 +189,7 @@ func _validate_prototypes(rows: Array, module_ids: Array[String], resident_ids: 
 		if not background_path.is_empty() and not ResourceLoader.exists(background_path):
 			failures.append("prototype %s references missing background %s" % [module_id, background_path])
 		_validate_module_interaction(module_id, prototype.get("interaction", {}))
+		_validate_choice_token_constraints(module_id, prototype.get("choices", []), prototype.get("interaction", {}))
 		for choice in prototype.get("choices", []):
 			var label := "%s/%s" % [module_id, str(choice.get("id", ""))]
 			_validate_results(label, choice.get("results", {}), resident_ids, module_ids)
@@ -225,6 +226,23 @@ func _validate_module_interaction(module_id: String, interaction: Dictionary) ->
 		for step in progress_steps:
 			if str(step).is_empty():
 				failures.append("prototype %s has an empty progress step" % module_id)
+
+
+func _validate_choice_token_constraints(module_id: String, choices: Array, interaction: Dictionary) -> void:
+	var token_ids: Array[String] = []
+	for token in interaction.get("tokens", []):
+		token_ids.append(str(token.get("id", "")))
+	for choice in choices:
+		var choice_id := str(choice.get("id", ""))
+		var required: Array = choice.get("required_tokens", [])
+		var forbidden: Array = choice.get("forbidden_tokens", [])
+		for token_id_value in required + forbidden:
+			var token_id := str(token_id_value)
+			if not token_ids.has(token_id):
+				failures.append("prototype %s/%s constrains missing token %s" % [module_id, choice_id, token_id])
+		for token_id_value in required:
+			if forbidden.has(token_id_value):
+				failures.append("prototype %s/%s both requires and forbids token %s" % [module_id, choice_id, str(token_id_value)])
 
 
 func _validate_module_coverage(modules: Array, prototypes: Array) -> void:

@@ -2,17 +2,13 @@ extends Node3D
 signal return_requested
 const BIRD = preload("res://resources/bird_constellation.tres")
 const WHALE = preload("res://resources/whale_constellation.tres")
-@export var drag_sensitivity := 0.001
-@export var comfort_mode := true
-@export var comfort_range := Vector2(0.22, 0.15)
-@export var damping := 5.0
-@export var rotation_limit := Vector2(0.85, 0.48)
+const STEP_ANGLE := 0.04
+const STEP_LIMIT := 12
+var source_data: ConstellationData
 var data: ConstellationData
-var angles := Vector2.ZERO
-var target_angles := Vector2.ZERO
-var target_fov := 55.0
-var dragging := false
-var freeze_time := 0.0
+var adjustment := Vector2i.ZERO
+var solution := Vector2i.ZERO
+var dial_label: Label
 var reveal_tween: Tween
 var is_capturing := false
 @onready var camera := $Camera3D
@@ -30,80 +26,95 @@ func _ready() -> void:
   OS.shell_open(ProjectSettings.globalize_path("user://album")))
  next.pressed.connect(func(): select_constellation(WHALE if data.id == "bird" else BIRD))
  checker.matched.connect(found)
+ build_controls()
  select_constellation(WHALE if GameState.discovered.bird and not GameState.discovered.whale else BIRD)
+func build_controls() -> void:
+ var panel := VBoxContainer.new()
+ panel.name = "Adjustment"
+ $UI.add_child(panel)
+ panel.anchor_left = 0.5
+ panel.anchor_right = 0.5
+ panel.anchor_top = 1.0
+ panel.anchor_bottom = 1.0
+ panel.offset_left = -230
+ panel.offset_right = 230
+ panel.offset_top = -190
+ panel.offset_bottom = -25
+ dial_label = Label.new()
+ dial_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+ panel.add_child(dial_label)
+ for axis in 2:
+  var row := HBoxContainer.new()
+  row.alignment = BoxContainer.ALIGNMENT_CENTER
+  panel.add_child(row)
+  for direction in [-1, 1]:
+   var button := Button.new()
+   button.text = (["水平 −", "水平 +"] if axis == 0 else ["垂直 −", "垂直 +"])[0 if direction < 0 else 1]
+   button.custom_minimum_size = Vector2(190, 48)
+   button.pressed.connect(adjust.bind(Vector2i(direction, 0) if axis == 0 else Vector2i(0, direction)))
+   row.add_child(button)
+ $UI/Instructions.text = "固定星图 · 点击按钮逐档调整 · 对准后停留 1.25 秒 · ESC 返回"
 func select_constellation(value: ConstellationData) -> void:
  if reveal_tween: reveal_tween.kill()
- data = value
- var side := -1.0 if randf() < 0.5 else 1.0
- angles = data.reference_angles + Vector2(side*randf_range(0.36,0.52),randf_range(-0.24,0.24))
- angles = angles.clamp(-rotation_limit,rotation_limit)
- if comfort_mode:
-  angles = data.reference_angles + Vector2(side*randf_range(0.14,0.2),randf_range(-0.09,0.09))
- target_angles = angles
- target_fov = data.reference_fov
- camera.fov = target_fov
+ source_data = value
+ # Only the display copy changes; authored world coordinates stay immutable.
+ data = value.duplicate(true)
+ solution = Vector2i(-4, 3) if value.id == "bird" else Vector2i(5, -3)
+ adjustment = Vector2i.ZERO
+ camera.transform = Transform3D.IDENTITY
+ camera.fov = 55.0
  checker.configure(data)
+ update_layout()
  field.show_constellation(data)
- hint.text = "观测册  /  " + data.title + "
-" + data.hint
  lines.camera = camera
  lines.data = data
  lines.strength = 0.0
  lines.reveal_progress = 0.0
  refresh_buttons()
- update_camera()
- if comfort_mode: $UI/Instructions.text = "轻拖微调 · 松手即停 · 焦距锁定 · ESC 返回"
+func adjust(change: Vector2i) -> void:
+ if is_capturing: return
+ var updated := (adjustment + change).clamp(Vector2i(-STEP_LIMIT, -STEP_LIMIT), Vector2i(STEP_LIMIT, STEP_LIMIT))
+ if updated == adjustment: return
+ adjustment = updated
+ checker.elapsed = 0.0
+ update_layout()
+ for i in field.key_stars.size():
+  field.key_stars[i].position = data.positions[i]
+func update_layout() -> void:
+ # Calculate a virtual projection, then place its points on a fixed-depth plane.
+ # The real camera and distant background never move, and no motion is tweened.
+ var angles := source_data.reference_angles + Vector2(adjustment - solution) * STEP_ANGLE
+ var basis := Basis.from_euler(Vector3(angles.y, angles.x, 0))
+ var inverse := Transform3D(basis, basis * Vector3(0, 0, source_data.orbit_radius)).affine_inverse()
+ var points := PackedVector3Array()
+ for point in source_data.positions:
+  var projected: Vector3 = inverse * point
+  points.append(projected * (30.0 / -projected.z))
+ data.positions = points
+ dial_label.text = "水平 %+d     垂直 %+d" % [adjustment.x, adjustment.y]
+ lines.queue_redraw()
 func refresh_buttons() -> void:
  capture.visible = checker.completed and checker.error < data.error_threshold * 3.0
  capture.text = "已收入观测册 · 再拍一张" if GameState.collected[data.id] else "拍下这片星光"
  next.visible = GameState.discovered.bird
  next.text = "寻找鲸鱼 →" if data.id == "bird" else "重访飞鸟 →"
  $UI/Album.text = "观测册 · %d / 2" % (int(GameState.collected.bird) + int(GameState.collected.whale))
-func update_camera() -> void:
- var basis := Basis.from_euler(Vector3(angles.y,angles.x,0))
- camera.transform = Transform3D(basis,basis * Vector3(0,0,data.orbit_radius))
- if comfort_mode:
-  # 远处星幕作为固定视觉参照，仅关键星图产生有限视差。
-  field.get_node("BackgroundStars").global_transform = camera.global_transform
 func _unhandled_input(event: InputEvent) -> void:
- if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+ if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
   return_requested.emit()
- if event is InputEventMouseButton:
-  if event.button_index == MOUSE_BUTTON_LEFT: dragging = event.pressed
-  if not comfort_mode:
-   if event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_UP: target_fov = clampf(target_fov-2,42,66)
-   if event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_DOWN: target_fov = clampf(target_fov+2,42,66)
- if event is InputEventMouseMotion and dragging and freeze_time <= 0:
-  target_angles -= event.relative * drag_sensitivity * (1.0-checker.attraction)
-  target_angles.x = clampf(target_angles.x,-rotation_limit.x,rotation_limit.x)
-  target_angles.y = clampf(target_angles.y,-rotation_limit.y,rotation_limit.y)
-  if comfort_mode:
-   target_angles = target_angles.clamp(data.reference_angles-comfort_range,data.reference_angles+comfort_range)
-   angles = target_angles
 func _process(delta: float) -> void:
  if not data: return
- if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT): dragging = false
- freeze_time = maxf(0.0, freeze_time-delta)
- if comfort_mode:
-  angles = target_angles
-  camera.fov = data.reference_fov
- else:
-  angles = angles.lerp(target_angles,1.0-exp(-damping*delta))
-  camera.fov = lerpf(camera.fov,target_fov,1.0-exp(-damping*delta))
- update_camera()
  checker.step(camera,data,delta)
  var aligned: bool = checker.completed and checker.error < data.error_threshold * 3.0
  lines.strength = move_toward(lines.strength,1.0 if aligned else 0.0,delta*1.8)
  field.set_brightness(0.95 + checker.attraction*0.4 + lines.strength*2.2)
  capture.visible = aligned and not is_capturing
  if not checker.completed:
-  hint.text = "观测册  /  " + data.title + "\n" + ("星点正在靠拢，稳住视角……" if checker.elapsed > 0.05 else data.hint + "\n寻找完整轮廓，稳住片刻，星光会自行相连。")
+  hint.text = "观测册  /  " + data.title + "\n" + ("轮廓已对齐，等待星光相连……" if checker.elapsed > 0.05 else data.hint + "\n点击按钮寻找完整轮廓，对准后停留片刻。")
  lines.queue_redraw()
 func found() -> void:
  GameState.discovered[data.id] = true
  GameState.save_state()
- freeze_time = 0.5
- target_angles = angles
  AudioManager.feedback(true)
  lines.reveal_progress = 0.0
  reveal_tween = create_tween()

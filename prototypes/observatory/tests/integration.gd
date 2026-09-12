@@ -50,37 +50,42 @@ func run() -> void:
  check(not deck.visible and main.sky != null,"telescope enters standalone 3D scene")
  var sky = main.sky
  check(sky.field.get_node("BackgroundStars").multimesh.instance_count == 1000,"1000 batched stars")
- var original_points: PackedVector3Array = sky.data.positions.duplicate()
+ var original_points: PackedVector3Array = sky.source_data.positions.duplicate()
+ var fixed_camera: Transform3D = sky.camera.transform
+ var fixed_background: Transform3D = sky.field.get_node("BackgroundStars").global_transform
  var wheel := InputEventMouseButton.new()
  wheel.button_index = MOUSE_BUTTON_WHEEL_UP
  wheel.pressed = true
  sky._unhandled_input(wheel)
- check(sky.target_fov == 55.0,"comfort mode locks FOV")
  var motion := InputEventMouseMotion.new()
- motion.relative = Vector2(20,10)
- sky.dragging = true
- var before_drag: Vector2 = sky.target_angles
+ motion.relative = Vector2(200,100)
  sky._unhandled_input(motion)
- check(sky.target_angles != before_drag,"mouse drag changes view")
- check(sky.angles == sky.target_angles,"comfort mode has no inertial lag")
- var stopped_angles: Vector2 = sky.angles
+ check(sky.adjustment == Vector2i.ZERO and sky.camera.fov == 55.0,"drag and wheel ignored")
+ sky.get_node("UI/Adjustment").get_child(1).get_child(1).pressed.emit()
+ check(sky.adjustment == Vector2i(1,0),"horizontal button advances exactly one step")
+ sky.get_node("UI/Adjustment").get_child(2).get_child(0).pressed.emit()
+ check(sky.adjustment == Vector2i(1,-1),"vertical button advances exactly one step")
+ var stopped_points: PackedVector3Array = sky.data.positions.duplicate()
  await settle(0.15)
- check(sky.angles == stopped_angles,"view stops without continued input")
- check(sky.field.get_node("BackgroundStars").global_transform.is_equal_approx(sky.camera.global_transform),"distant background stays camera-relative")
- check(sky.data.positions == original_points,"player input leaves stars fixed")
+ check(sky.data.positions == stopped_points,"layout stays still between clicks")
+ check(sky.camera.transform == fixed_camera,"camera never moves")
+ check(sky.field.get_node("BackgroundStars").global_transform == fixed_background,"background never moves")
+ check(sky.source_data.positions == original_points,"authored coordinates unchanged")
+ sky.adjust(Vector2i(100, -100))
+ check(sky.adjustment == Vector2i(12,-12),"adjustment limits enforced")
+ var controls: Control = sky.get_node("UI/Adjustment")
+ check(root.get_visible_rect().encloses(controls.get_global_rect()),"adjustment controls fit viewport")
  check(not sky.next.visible,"whale locked before bird")
  for data in [sky.BIRD,sky.WHALE]:
   sky.select_constellation(data)
   await settle(0.1)
-  var wrong: float = sky.checker.measure(sky.camera,data)
+  var wrong: float = sky.checker.measure(sky.camera,sky.data)
   check(wrong > data.error_threshold * 2,"wrong angle rejected: " + data.id)
-  sky.angles = data.reference_angles
-  sky.target_angles = data.reference_angles
-  sky.update_camera()
-  var exact: float = sky.checker.measure(sky.camera,data)
+  sky.adjust(sky.solution - sky.adjustment)
+  var exact: float = sky.checker.measure(sky.camera,sky.data)
   print("PROJECTION ",data.id," wrong=",wrong," exact=",exact)
   check(exact < 0.0001,"reference projection matches: " + data.id)
-  sky.checker.step(sky.camera,data,0.1)
+  sky.checker.step(sky.camera,sky.data,0.1)
   check(not sky.checker.completed,"hold duration required: " + data.id)
   await settle(data.hold_duration + 0.15)
   check(state.discovered[data.id],"discovery persisted: " + data.id)
@@ -88,13 +93,11 @@ func run() -> void:
   await settle(1.5)
   check(sky.lines.reveal_progress > 0.99 and sky.lines.strength > 0.9,"connected glow after discovery: " + data.id)
   check(sky.next.visible,"unlocked constellation navigation")
-  sky.target_fov = 45.0
-  sky.camera.fov = 45.0
-  check(sky.checker.measure(sky.camera,data) < 0.0001,"FOV normalization: " + data.id)
-  sky.camera.transform.origin += Vector3(0,0,100)
-  sky.camera.rotate_y(PI)
-  check(is_inf(sky.checker.measure(sky.camera,data)),"behind-camera rejection: " + data.id)
-  sky.update_camera()
+  check(sky.camera.transform == fixed_camera and sky.camera.fov == 55.0,"solving preserves camera and FOV")
+  sky.adjust(Vector2i(6, 0))
+  await settle(0.8)
+  check(not sky.capture.visible and sky.lines.strength < 0.1,"misalignment removes glow and capture")
+  check(data.positions != sky.data.positions,"display layout is independent of resource")
  await main.leave_sky()
  check(deck.visible and main.sky == null,"return restores 2D deck")
  check(state.slide_index==retained_index and state.slide_elapsed>retained_time,"slideshow continues through 3D")

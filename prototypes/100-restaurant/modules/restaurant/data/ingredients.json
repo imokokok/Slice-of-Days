@@ -1,0 +1,1505 @@
+[
+  {
+    "id": "tomato",
+    "name": "番茄",
+    "category": "basic",
+    "color": "e65d4f",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "sour"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.16,
+    "friction": 0.55,
+    "bounce": 0.16,
+    "model": "tomato"
+  },
+  {
+    "id": "egg",
+    "name": "鸡蛋",
+    "category": "basic",
+    "color": "f5ca66",
+    "tags": [
+      "protein",
+      "comfort"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.06,
+    "friction": 0.55,
+    "bounce": 0.02,
+    "model": "egg"
+  },
+  {
+    "id": "mushroom",
+    "name": "蘑菇",
+    "category": "basic",
+    "color": "bca486",
+    "tags": [
+      "vegetable",
+      "umami"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.08,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "mushroom"
+  },
+  {
+    "id": "shrimp",
+    "name": "整虾",
+    "category": "basic",
+    "color": "f49b80",
+    "tags": [
+      "seafood",
+      "protein",
+      "umami"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.04,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "shrimp"
+  },
+  {
+    "id": "rice",
+    "name": "米饭",
+    "category": "basic",
+    "color": "f1e9cb",
+    "tags": [
+      "grain",
+      "comfort"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.22,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "rice"
+  },
+  {
+    "id": "cheese",
+    "name": "芝士",
+    "category": "basic",
+    "color": "e5b343",
+    "tags": [
+      "dairy",
+      "rich",
+      "savory"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.12,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "cheese"
+  },
+  {
+    "id": "chili",
+    "name": "辣椒",
+    "category": "basic",
+    "color": "bb3b43",
+    "tags": [
+      "vegetable",
+      "spicy"
+    ],
+    "weirdness": 0.05,
+    "needs_cook": false,
+    "mass": 0.03,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "chili"
+  },
+  {
+    "id": "chicken",
+    "name": "鸡肉",
+    "category": "basic",
+    "color": "dba78a",
+    "tags": [
+      "meat",
+      "protein",
+      "comfort"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.3,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "chicken"
+  },
+  {
+    "id": "pork",
+    "name": "五花肉",
+    "category": "basic",
+    "color": "de9a91",
+    "tags": [
+      "meat",
+      "protein",
+      "rich"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.28,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "pork"
+  },
+  {
+    "id": "beef",
+    "name": "牛肉",
+    "category": "basic",
+    "color": "a7534c",
+    "tags": [
+      "meat",
+      "protein",
+      "umami"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.32,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "beef"
+  },
+  {
+    "id": "fish",
+    "name": "整鱼",
+    "category": "basic",
+    "color": "cfbda1",
+    "tags": [
+      "seafood",
+      "protein",
+      "mild"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.26,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "fish"
+  },
+  {
+    "id": "tofu",
+    "name": "豆腐",
+    "category": "basic",
+    "color": "eee2b9",
+    "tags": [
+      "plant_protein",
+      "mild",
+      "comfort"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.24,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "tofu"
+  },
+  {
+    "id": "potato",
+    "name": "土豆",
+    "category": "basic",
+    "color": "cda16d",
+    "tags": [
+      "vegetable",
+      "starchy",
+      "comfort"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.23,
+    "friction": 0.55,
+    "bounce": 0.16,
+    "model": "potato"
+  },
+  {
+    "id": "carrot",
+    "name": "胡萝卜",
+    "category": "basic",
+    "color": "e28a3e",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "sweet"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.15,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "carrot"
+  },
+  {
+    "id": "onion",
+    "name": "洋葱",
+    "category": "basic",
+    "color": "caa0b9",
+    "tags": [
+      "vegetable",
+      "aromatic"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.18,
+    "friction": 0.55,
+    "bounce": 0.16,
+    "model": "onion"
+  },
+  {
+    "id": "cucumber",
+    "name": "黄瓜",
+    "category": "basic",
+    "color": "6b9954",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.22,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "cucumber"
+  },
+  {
+    "id": "cabbage",
+    "name": "卷心菜",
+    "category": "basic",
+    "color": "a9bc75",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "comfort"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.65,
+    "friction": 0.82,
+    "bounce": 0.04,
+    "model": "cabbage"
+  },
+  {
+    "id": "lettuce",
+    "name": "生菜",
+    "category": "basic",
+    "color": "88ac55",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.24,
+    "friction": 0.82,
+    "bounce": 0.04,
+    "model": "lettuce"
+  },
+  {
+    "id": "broccoli",
+    "name": "西兰花",
+    "category": "basic",
+    "color": "51834d",
+    "tags": [
+      "vegetable",
+      "fresh"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.28,
+    "friction": 0.82,
+    "bounce": 0.04,
+    "model": "broccoli"
+  },
+  {
+    "id": "corn",
+    "name": "玉米",
+    "category": "basic",
+    "color": "e7bd49",
+    "tags": [
+      "grain",
+      "sweet",
+      "comfort"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.27,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "corn"
+  },
+  {
+    "id": "pumpkin",
+    "name": "南瓜",
+    "category": "basic",
+    "color": "d69642",
+    "tags": [
+      "vegetable",
+      "sweet",
+      "comfort"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.9,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "pumpkin"
+  },
+  {
+    "id": "eggplant",
+    "name": "茄子",
+    "category": "basic",
+    "color": "725785",
+    "tags": [
+      "vegetable",
+      "savory"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.28,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "eggplant"
+  },
+  {
+    "id": "spinach",
+    "name": "菠菜",
+    "category": "basic",
+    "color": "588765",
+    "tags": [
+      "vegetable",
+      "fresh"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.12,
+    "friction": 0.82,
+    "bounce": 0.04,
+    "model": "spinach"
+  },
+  {
+    "id": "lotus_root",
+    "name": "莲藕",
+    "category": "basic",
+    "color": "d8c1a5",
+    "tags": [
+      "vegetable",
+      "crisp",
+      "comfort"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.24,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "lotus_root"
+  },
+  {
+    "id": "noodles",
+    "name": "面条",
+    "category": "basic",
+    "color": "e8d6a6",
+    "tags": [
+      "grain",
+      "comfort"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.2,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "noodles"
+  },
+  {
+    "id": "bread",
+    "name": "面包",
+    "category": "basic",
+    "color": "cda26f",
+    "tags": [
+      "grain",
+      "comfort",
+      "mild"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.07,
+    "friction": 0.82,
+    "bounce": 0.04,
+    "model": "bread"
+  },
+  {
+    "id": "sausage",
+    "name": "熟香肠",
+    "category": "basic",
+    "color": "b66d57",
+    "tags": [
+      "meat",
+      "savory",
+      "smoky"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.1,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "sausage"
+  },
+  {
+    "id": "salmon",
+    "name": "三文鱼",
+    "category": "basic",
+    "color": "e68e6d",
+    "tags": [
+      "seafood",
+      "protein",
+      "rich"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.25,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "salmon"
+  },
+  {
+    "id": "squid",
+    "name": "鱿鱼",
+    "category": "basic",
+    "color": "c4a6ad",
+    "tags": [
+      "seafood",
+      "protein",
+      "umami"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.22,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "squid"
+  },
+  {
+    "id": "mussel",
+    "name": "青口贝",
+    "category": "basic",
+    "color": "667f79",
+    "tags": [
+      "seafood",
+      "umami"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.06,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "mussel"
+  },
+  {
+    "id": "bean_sprout",
+    "name": "豆芽",
+    "category": "basic",
+    "color": "d8dbb5",
+    "tags": [
+      "vegetable",
+      "crisp",
+      "fresh"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": true,
+    "mass": 0.1,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "bean_sprout"
+  },
+  {
+    "id": "seaweed",
+    "name": "海苔",
+    "category": "basic",
+    "color": "50654e",
+    "tags": [
+      "vegetable",
+      "umami",
+      "savory"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.03,
+    "friction": 0.82,
+    "bounce": 0.04,
+    "model": "seaweed"
+  },
+  {
+    "id": "vinegar",
+    "name": "陈醋",
+    "category": "seasoning",
+    "color": "745340",
+    "tags": [
+      "sour",
+      "seasoning"
+    ],
+    "weirdness": 0.08,
+    "needs_cook": false,
+    "mass": 0.2,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "vinegar",
+    "dispense_mode": "pour",
+    "dispense_mass": 0.025
+  },
+  {
+    "id": "salt",
+    "name": "海盐",
+    "category": "seasoning",
+    "color": "e1dfcf",
+    "tags": [
+      "salty",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.07,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "salt",
+    "dispense_mode": "powder",
+    "dispense_mass": 0.006
+  },
+  {
+    "id": "sugar",
+    "name": "白砂糖",
+    "category": "seasoning",
+    "color": "eee3cf",
+    "tags": [
+      "sweet",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.07,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "sugar",
+    "dispense_mode": "powder",
+    "dispense_mass": 0.008
+  },
+  {
+    "id": "soy_sauce",
+    "name": "酱油",
+    "category": "seasoning",
+    "color": "6f473a",
+    "tags": [
+      "salty",
+      "umami",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.2,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "soy_sauce",
+    "dispense_mode": "pour",
+    "dispense_mass": 0.02
+  },
+  {
+    "id": "oil",
+    "name": "食用油",
+    "category": "seasoning",
+    "color": "d6b454",
+    "tags": [
+      "rich",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.18,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "oil",
+    "dispense_mode": "pour",
+    "dispense_mass": 0.02
+  },
+  {
+    "id": "pepper",
+    "name": "黑胡椒",
+    "category": "seasoning",
+    "color": "746358",
+    "tags": [
+      "spicy",
+      "aromatic",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.04,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "pepper",
+    "dispense_mode": "powder",
+    "dispense_mass": 0.003
+  },
+  {
+    "id": "cumin",
+    "name": "孜然",
+    "category": "seasoning",
+    "color": "a68a53",
+    "tags": [
+      "aromatic",
+      "bold",
+      "seasoning"
+    ],
+    "weirdness": 0.05,
+    "needs_cook": false,
+    "mass": 0.04,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "cumin",
+    "dispense_mode": "powder",
+    "dispense_mass": 0.004
+  },
+  {
+    "id": "mustard",
+    "name": "芥末",
+    "category": "seasoning",
+    "color": "a2b966",
+    "tags": [
+      "spicy",
+      "bold",
+      "seasoning"
+    ],
+    "weirdness": 0.12,
+    "needs_cook": false,
+    "mass": 0.08,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "mustard",
+    "dispense_mode": "squeeze",
+    "dispense_mass": 0.018
+  },
+  {
+    "id": "chili_sauce",
+    "name": "辣酱",
+    "category": "seasoning",
+    "color": "b74c36",
+    "tags": [
+      "spicy",
+      "savory",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.12,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "chili_sauce",
+    "dispense_mode": "squeeze",
+    "dispense_mass": 0.025
+  },
+  {
+    "id": "ketchup",
+    "name": "番茄酱",
+    "category": "seasoning",
+    "color": "d96143",
+    "tags": [
+      "sweet",
+      "sour",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.12,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "ketchup",
+    "dispense_mode": "squeeze",
+    "dispense_mass": 0.035
+  },
+  {
+    "id": "sesame_oil",
+    "name": "芝麻香油",
+    "category": "seasoning",
+    "color": "a88347",
+    "tags": [
+      "aromatic",
+      "rich",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.1,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "sesame_oil",
+    "dispense_mode": "pour",
+    "dispense_mass": 0.012
+  },
+  {
+    "id": "curry",
+    "name": "咖喱",
+    "category": "seasoning",
+    "color": "c49b38",
+    "tags": [
+      "aromatic",
+      "spicy",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.08,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "curry",
+    "dispense_mode": "powder",
+    "dispense_mass": 0.006
+  },
+  {
+    "id": "ginger",
+    "name": "生姜",
+    "category": "seasoning",
+    "color": "d6b780",
+    "tags": [
+      "aromatic",
+      "spicy",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.08,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "ginger"
+  },
+  {
+    "id": "garlic",
+    "name": "大蒜",
+    "category": "seasoning",
+    "color": "e4d9ba",
+    "tags": [
+      "aromatic",
+      "bold",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.06,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "garlic"
+  },
+  {
+    "id": "mayonnaise",
+    "name": "蛋黄酱",
+    "category": "seasoning",
+    "color": "e9d89f",
+    "tags": [
+      "rich",
+      "mild",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.12,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "mayonnaise",
+    "dispense_mode": "squeeze",
+    "dispense_mass": 0.03
+  },
+  {
+    "id": "miso",
+    "name": "味噌",
+    "category": "seasoning",
+    "color": "b88c62",
+    "tags": [
+      "umami",
+      "salty",
+      "seasoning"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.13,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "miso"
+  },
+  {
+    "id": "milk",
+    "name": "牛奶",
+    "category": "sweet",
+    "color": "eee6d6",
+    "tags": [
+      "dairy",
+      "mild"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.24,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "milk",
+    "dispense_mode": "pour",
+    "dispense_mass": 0.06
+  },
+  {
+    "id": "grapes",
+    "name": "葡萄",
+    "category": "sweet",
+    "color": "956da8",
+    "tags": [
+      "fruit",
+      "sweet",
+      "fresh"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.16,
+    "friction": 0.55,
+    "bounce": 0.16,
+    "model": "grapes"
+  },
+  {
+    "id": "ice_cream",
+    "name": "冰淇淋",
+    "category": "sweet",
+    "color": "eeb1ad",
+    "tags": [
+      "sweet",
+      "dairy",
+      "cold"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.15,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "ice_cream"
+  },
+  {
+    "id": "strawberry",
+    "name": "草莓",
+    "category": "sweet",
+    "color": "dc717c",
+    "tags": [
+      "fruit",
+      "sweet",
+      "sour"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.04,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "strawberry"
+  },
+  {
+    "id": "banana",
+    "name": "香蕉",
+    "category": "sweet",
+    "color": "e8c75f",
+    "tags": [
+      "fruit",
+      "sweet",
+      "mild"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.14,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "banana"
+  },
+  {
+    "id": "apple",
+    "name": "苹果",
+    "category": "sweet",
+    "color": "d77b69",
+    "tags": [
+      "fruit",
+      "sweet",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.18,
+    "friction": 0.55,
+    "bounce": 0.16,
+    "model": "apple"
+  },
+  {
+    "id": "mango",
+    "name": "芒果",
+    "category": "sweet",
+    "color": "e6af46",
+    "tags": [
+      "fruit",
+      "sweet",
+      "aromatic"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.3,
+    "friction": 0.55,
+    "bounce": 0.16,
+    "model": "mango"
+  },
+  {
+    "id": "peach",
+    "name": "桃子",
+    "category": "sweet",
+    "color": "e2b0a0",
+    "tags": [
+      "fruit",
+      "sweet",
+      "fresh"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.17,
+    "friction": 0.55,
+    "bounce": 0.16,
+    "model": "peach"
+  },
+  {
+    "id": "watermelon",
+    "name": "西瓜",
+    "category": "sweet",
+    "color": "e08083",
+    "tags": [
+      "fruit",
+      "sweet",
+      "fresh"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 1.1,
+    "friction": 0.55,
+    "bounce": 0.16,
+    "model": "watermelon"
+  },
+  {
+    "id": "lemon",
+    "name": "柠檬",
+    "category": "sweet",
+    "color": "dfcd55",
+    "tags": [
+      "fruit",
+      "sour",
+      "fresh"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.12,
+    "friction": 0.55,
+    "bounce": 0.16,
+    "model": "lemon"
+  },
+  {
+    "id": "honey",
+    "name": "蜂蜜",
+    "category": "sweet",
+    "color": "c99243",
+    "tags": [
+      "sweet",
+      "aromatic"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.16,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "honey",
+    "dispense_mode": "pour",
+    "dispense_mass": 0.025
+  },
+  {
+    "id": "chocolate",
+    "name": "巧克力",
+    "category": "sweet",
+    "color": "86604f",
+    "tags": [
+      "sweet",
+      "rich",
+      "bitter"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.08,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "chocolate"
+  },
+  {
+    "id": "yogurt",
+    "name": "酸奶",
+    "category": "sweet",
+    "color": "e5dfcf",
+    "tags": [
+      "dairy",
+      "sour",
+      "mild"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.2,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "yogurt",
+    "dispense_mode": "pour",
+    "dispense_mass": 0.05
+  },
+  {
+    "id": "butter",
+    "name": "黄油",
+    "category": "sweet",
+    "color": "deca82",
+    "tags": [
+      "dairy",
+      "rich",
+      "aromatic"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.12,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "butter"
+  },
+  {
+    "id": "tapioca",
+    "name": "珍珠",
+    "category": "sweet",
+    "color": "786057",
+    "tags": [
+      "sweet",
+      "chewy",
+      "topping"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.1,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "tapioca"
+  },
+  {
+    "id": "tea",
+    "name": "红茶",
+    "category": "sweet",
+    "color": "b58048",
+    "tags": [
+      "tea",
+      "aromatic",
+      "bitter"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.22,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "tea",
+    "dispense_mode": "pour",
+    "dispense_mass": 0.06
+  },
+  {
+    "id": "houttuynia",
+    "name": "折耳根",
+    "category": "odd",
+    "color": "a6b87c",
+    "tags": [
+      "vegetable",
+      "herbal",
+      "bold"
+    ],
+    "weirdness": 0.35,
+    "needs_cook": false,
+    "mass": 0.09,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "houttuynia"
+  },
+  {
+    "id": "sock",
+    "name": "幻想袜子",
+    "category": "odd",
+    "color": "77a4ad",
+    "tags": [
+      "odd",
+      "textile"
+    ],
+    "weirdness": 1.0,
+    "needs_cook": false,
+    "mass": 0.05,
+    "friction": 0.82,
+    "bounce": 0.04,
+    "model": "sock"
+  },
+  {
+    "id": "paper",
+    "name": "纸片",
+    "category": "odd",
+    "color": "dbd5b8",
+    "tags": [
+      "odd",
+      "paper"
+    ],
+    "weirdness": 0.8,
+    "needs_cook": false,
+    "mass": 0.03,
+    "friction": 0.82,
+    "bounce": 0.04,
+    "model": "paper"
+  },
+  {
+    "id": "durian",
+    "name": "榴莲",
+    "category": "odd",
+    "color": "c1b16e",
+    "tags": [
+      "fruit",
+      "sweet",
+      "bold"
+    ],
+    "weirdness": 0.35,
+    "needs_cook": false,
+    "mass": 1.2,
+    "friction": 0.82,
+    "bounce": 0.04,
+    "model": "durian"
+  },
+  {
+    "id": "century_egg",
+    "name": "皮蛋",
+    "category": "odd",
+    "color": "807766",
+    "tags": [
+      "protein",
+      "umami",
+      "bold"
+    ],
+    "weirdness": 0.3,
+    "needs_cook": false,
+    "mass": 0.07,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "century_egg"
+  },
+  {
+    "id": "bitter_melon",
+    "name": "苦瓜",
+    "category": "odd",
+    "color": "8bab6c",
+    "tags": [
+      "vegetable",
+      "bitter",
+      "bold"
+    ],
+    "weirdness": 0.25,
+    "needs_cook": false,
+    "mass": 0.22,
+    "friction": 0.82,
+    "bounce": 0.04,
+    "model": "bitter_melon"
+  },
+  {
+    "id": "stinky_tofu",
+    "name": "臭豆腐",
+    "category": "odd",
+    "color": "7b8074",
+    "tags": [
+      "plant_protein",
+      "umami",
+      "bold"
+    ],
+    "weirdness": 0.4,
+    "needs_cook": true,
+    "mass": 0.16,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "stinky_tofu"
+  },
+  {
+    "id": "natto",
+    "name": "纳豆",
+    "category": "odd",
+    "color": "ad9864",
+    "tags": [
+      "plant_protein",
+      "sticky",
+      "bold"
+    ],
+    "weirdness": 0.35,
+    "needs_cook": false,
+    "mass": 0.1,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "natto"
+  },
+  {
+    "id": "blue_cheese",
+    "name": "蓝纹奶酪",
+    "category": "odd",
+    "color": "a2b8aa",
+    "tags": [
+      "dairy",
+      "rich",
+      "bold"
+    ],
+    "weirdness": 0.3,
+    "needs_cook": false,
+    "mass": 0.13,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "blue_cheese"
+  },
+  {
+    "id": "soap",
+    "name": "泡泡肥皂",
+    "category": "odd",
+    "color": "9bbec0",
+    "tags": [
+      "odd",
+      "bubbly"
+    ],
+    "weirdness": 0.95,
+    "needs_cook": false,
+    "mass": 0.1,
+    "friction": 0.28,
+    "bounce": 0.04,
+    "model": "soap"
+  },
+  {
+    "id": "eraser",
+    "name": "橡皮擦",
+    "category": "odd",
+    "color": "d9a4b2",
+    "tags": [
+      "odd",
+      "rubber"
+    ],
+    "weirdness": 0.85,
+    "needs_cook": false,
+    "mass": 0.04,
+    "friction": 0.55,
+    "bounce": 0.38,
+    "model": "eraser"
+  },
+  {
+    "id": "button",
+    "name": "彩色纽扣",
+    "category": "odd",
+    "color": "af8aba",
+    "tags": [
+      "odd",
+      "textile"
+    ],
+    "weirdness": 0.8,
+    "needs_cook": false,
+    "mass": 0.03,
+    "friction": 0.55,
+    "bounce": 0.16,
+    "model": "button"
+  },
+  {
+    "id": "spring",
+    "name": "小弹簧",
+    "category": "odd",
+    "color": "9ba5b3",
+    "tags": [
+      "odd",
+      "metal"
+    ],
+    "weirdness": 0.9,
+    "needs_cook": false,
+    "mass": 0.05,
+    "friction": 0.55,
+    "bounce": 0.48,
+    "model": "spring"
+  },
+  {
+    "id": "confetti",
+    "name": "派对纸屑",
+    "category": "odd",
+    "color": "cfb786",
+    "tags": [
+      "odd",
+      "paper",
+      "colorful"
+    ],
+    "weirdness": 0.8,
+    "needs_cook": false,
+    "mass": 0.03,
+    "friction": 0.82,
+    "bounce": 0.04,
+    "model": "confetti"
+  },
+  {
+    "id": "toy_brick",
+    "name": "积木块",
+    "category": "odd",
+    "color": "648eb2",
+    "tags": [
+      "odd",
+      "toy",
+      "colorful"
+    ],
+    "weirdness": 0.95,
+    "needs_cook": false,
+    "mass": 0.05,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "toy_brick"
+  },
+  {
+    "id": "candle",
+    "name": "生日蜡烛",
+    "category": "odd",
+    "color": "daa0a5",
+    "tags": [
+      "odd",
+      "wax",
+      "colorful"
+    ],
+    "weirdness": 0.85,
+    "needs_cook": false,
+    "mass": 0.07,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "candle"
+  },
+  {
+    "id": "baseball_bat",
+    "name": "棒球棍",
+    "category": "odd",
+    "color": "aa8253",
+    "tags": [
+      "odd",
+      "wood",
+      "bold"
+    ],
+    "weirdness": 0.9,
+    "needs_cook": false,
+    "mass": 0.8,
+    "friction": 0.7,
+    "bounce": 0.04,
+    "model": "baseball_bat"
+  },
+  {
+    "id": "computer_mouse",
+    "name": "电脑鼠标",
+    "category": "odd",
+    "color": "b3aa88",
+    "tags": [
+      "odd",
+      "plastic",
+      "bold"
+    ],
+    "weirdness": 0.9,
+    "needs_cook": false,
+    "mass": 0.12,
+    "friction": 0.7,
+    "bounce": 0.04,
+    "model": "computer_mouse"
+  },
+  {
+    "id": "slipper",
+    "name": "拖鞋",
+    "category": "odd",
+    "color": "a59465",
+    "tags": [
+      "odd",
+      "textile"
+    ],
+    "weirdness": 0.9,
+    "needs_cook": false,
+    "mass": 0.2,
+    "friction": 0.7,
+    "bounce": 0.04,
+    "model": "slipper"
+  },
+  {
+    "id": "perfume",
+    "name": "香水",
+    "category": "odd",
+    "color": "c1a76d",
+    "tags": [
+      "odd",
+      "aromatic"
+    ],
+    "weirdness": 0.9,
+    "needs_cook": false,
+    "mass": 0.08,
+    "friction": 0.7,
+    "bounce": 0.04,
+    "model": "perfume",
+    "dispense_mode": "pour"
+  },
+  {
+    "id": "doll",
+    "name": "布玩偶",
+    "category": "odd",
+    "color": "a0946f",
+    "tags": [
+      "odd",
+      "textile"
+    ],
+    "weirdness": 0.9,
+    "needs_cook": false,
+    "mass": 0.14,
+    "friction": 0.7,
+    "bounce": 0.04,
+    "model": "doll"
+  },
+  {
+    "id": "lipstick",
+    "name": "口红",
+    "category": "odd",
+    "color": "ac674c",
+    "tags": [
+      "odd",
+      "bold"
+    ],
+    "weirdness": 0.9,
+    "needs_cook": false,
+    "mass": 0.04,
+    "friction": 0.7,
+    "bounce": 0.04,
+    "model": "lipstick"
+  },
+  {
+    "id": "rubber_duck",
+    "name": "橡皮鸭",
+    "category": "odd",
+    "color": "ccaf59",
+    "tags": [
+      "odd",
+      "plastic"
+    ],
+    "weirdness": 0.9,
+    "needs_cook": false,
+    "mass": 0.09,
+    "friction": 0.7,
+    "bounce": 0.04,
+    "model": "rubber_duck"
+  },
+  {
+    "id": "rock",
+    "name": "小石头",
+    "category": "odd",
+    "color": "837b65",
+    "tags": [
+      "odd",
+      "mineral"
+    ],
+    "weirdness": 0.9,
+    "needs_cook": false,
+    "mass": 0.4,
+    "friction": 0.7,
+    "bounce": 0.04,
+    "model": "rock"
+  }
+]

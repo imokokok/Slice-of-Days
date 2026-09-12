@@ -1,0 +1,57 @@
+name: Godot checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  gameplay-and-storage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download pinned Godot
+        run: |
+          curl -L --fail -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip -d /tmp/godot
+          chmod +x /tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+      - name: Import project
+        run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --editor --import --quit
+      - name: Domain
+        run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script modules/restaurant/domain/test_domain.gd
+      - name: Storage
+        run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script modules/restaurant/storage/smoke_test.gd
+      - name: Integration
+        run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_integration.gd
+      - name: High-fidelity state and cut-batch stability
+        run: |
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_high_fidelity_state.gd
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_cut_batch_stability.gd
+      - name: Knife input and physics
+        run: |
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_knife_physics.gd
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_knife_drag.gd
+      - name: Poster and collage
+        run: |
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script modules/restaurant/ui/poster_store_test.gd
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script modules/restaurant/ui/collage_test.gd
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_collage_input.gd
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script modules/restaurant/storage/paper_recipe_test.gd
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_recipe_diy.gd
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_tape_editing.gd
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_tape_tools.gd
+      - name: Seasoning input and physics
+        run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_seasoning.gd
+      - name: Spatula input and physics
+        run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_spatula.gd
+      - name: Heat controls
+        run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_heat_control.gd
+      - name: Pan water audio and food dragging
+        run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_kitchen_interactions.gd
+      - name: Customer personalities
+        run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_customer_reviews.gd
+      - name: Free pan pouring and magnified workstations
+        run: |
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_free_pan.gd
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_workstations.gd
+      - name: Comfortable input and complete sprite atlas
+        run: |
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_comfort_release.gd
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/capture_asset_gallery.gd

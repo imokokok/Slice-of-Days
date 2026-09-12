@@ -1,0 +1,24 @@
+; Open this file in Godot 4.7 or newer, then press F6 or F5.
+config_version=5
+
+[application]
+config/name="听懂你"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://assets/icon.svg"
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=960
+window/size/window_width_override=1152
+window/size/window_height_override=864
+window/size/min_width=896
+window/size/min_height=672
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+environment/defaults/default_clear_color=Color(0.95686, 0.94510, 0.91765, 1)

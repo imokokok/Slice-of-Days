@@ -89,3 +89,7 @@ godot --headless --path /Users/imokokok/Documents/100game res://scenes/tarot_mec
 ## 独立观景台原型
 
 [夜海观景台源码与运行说明](prototypes/observatory/README.md)：包含照片轮播、星图观察和收藏；作为独立 Godot 工程保存，尚未接入主游戏入口。
+
+## 独立原型：听懂你
+
+[听懂你源码与运行说明](prototypes/hear-you/README.md)：菜市场场景中的双人 emoji 对话，通过六段图形记忆理解同一句话背后的不同语境；包含完整对白、拖动交互、场景素材与流程检查。作为独立 Godot 项目保存，尚未接入主游戏入口。

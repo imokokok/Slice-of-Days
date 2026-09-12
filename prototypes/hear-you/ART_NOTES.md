@@ -1,0 +1,10 @@
+# 场景制作记录
+
+方式：内置 image_gen 图像生成工具。
+用途：游戏实际使用的菜市场背景，保留原有 emoji 人物和交互。
+参考一用于块面与景深组织，参考二用于米白、青绿、橄榄绿和陶土色配色。
+图片：assets/market-painted.png。游戏按比例裁切显示，不拉伸。
+
+## 最终提示词
+
+Create an ORIGINAL production background asset for a 2D conversation game: a complete outdoor neighborhood FOOD MARKET, wide landscape 2:1 composition, edge to edge no margins. Reference image 1 is STYLE ONLY: simplified irregular flat polygon silhouettes, strong foreground/midground/background separation, readable shapes, gentle handmade painted edges, restrained detail. Do NOT depict the bus stop or use grayscale. Reference image 2 is COLOR PALETTE ONLY: warm pale limestone cream, seafoam and dusty turquoise walls, deep teal shutters, muted olive foliage, terracotta flowerpots, a little faded coral awning, clear pale cyan daylight. Less detailed than image 2, more like flat scenic concept art from image 1. Scene: a modest market courtyard enclosed by pale stone and turquoise buildings, balconies and pots in distant background; large canvas-roofed vegetable stall on the LEFT with generous stacked wooden crates of cabbages, tomatoes, carrots, aubergines; a butcher/food stall on the RIGHT with tasteful simplified trays of wrapped meats and eggs, hanging scale; small secondary stalls receding near a central archway. Bold angular sunlit paving and soft olive-blue cast shadow shapes unite the foreground. Must read immediately as a real food market, not two isolated UI icons. Camera near eye level with mild depth, wide fixed game stage. Leave the bottom 35 percent as an open unobstructed paved shopping lane, especially around 25 percent and 75 percent of image width, where the game will overlay two emoji shoppers. Keep upper left and upper right reasonably calm for floating thought bubbles. NO people, NO emoji, NO text, NO letters, NO logos, NO watermark, NO speech bubbles, NO interface. Polished restrained flat illustration, NO photorealism, NO 3D rendering, NO excessive line drawing, no ornate texture. The illustration fills the entire wide canvas.

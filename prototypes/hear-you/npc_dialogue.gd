@@ -376,6 +376,3 @@ func _drain_lines() -> void:
 		_continue()
 		guard+=1
 		assert(guard<40)
-
-
-

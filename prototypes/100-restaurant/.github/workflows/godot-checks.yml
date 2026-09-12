@@ -20,6 +20,10 @@ jobs:
         run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script modules/restaurant/storage/smoke_test.gd
       - name: Integration
         run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_integration.gd
+      - name: High-fidelity state and cut-batch stability
+        run: |
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_high_fidelity_state.gd
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_cut_batch_stability.gd
       - name: Knife input and physics
         run: |
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tests/test_knife_physics.gd

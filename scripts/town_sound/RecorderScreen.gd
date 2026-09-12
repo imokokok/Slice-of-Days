@@ -1,8 +1,8 @@
 extends Control
 
-const Recorder = preload("res://scripts/audio/AudioRecorder.gd")
-const Store = preload("res://scripts/data/SampleStore.gd")
-const Waveform = preload("res://scripts/audio/WaveformView.gd")
+const Recorder = preload("res://scripts/town_sound/audio/AudioRecorder.gd")
+const Store = preload("res://scripts/town_sound/data/SampleStore.gd")
+const Waveform = preload("res://scripts/town_sound/audio/WaveformView.gd")
 var recorder: FieldRecorder
 var store := Store.new()
 var player: AudioStreamPlayer
@@ -27,8 +27,16 @@ var quit_dialog: ConfirmationDialog
 var pending_delete := ""
 var row_buttons: Array[Button] = []
 var sample_peaks: Dictionary = {}
+var shop_mode := false
+var closing_to_town := false
+var previous_auto_accept_quit := true
+
+func _draw() -> void:
+	draw_rect(Rect2(Vector2.ZERO, size), Color("f1eddf"))
 
 func _ready() -> void:
+	preload("res://scripts/town_sound/data/LegacyTownSound.gd").migrate()
+	previous_auto_accept_quit = get_tree().auto_accept_quit
 	get_tree().auto_accept_quit = false
 	_build_theme()
 	recorder = Recorder.new()
@@ -37,7 +45,7 @@ func _ready() -> void:
 	add_child(player)
 	_build_ui()
 	get_node("/root/SoundSettings").input_changed.connect(func(_device: String) -> void: _refresh_devices())
-	load("res://scripts/record_shop/PresetRecords.gd").ensure_presets()
+	load("res://scripts/town_sound/record_shop/PresetRecords.gd").ensure_presets()
 	recorder.meter_changed.connect(func(peak: float, seconds: float) -> void:
 		meter.value = clampf((linear_to_db(maxf(peak, 0.00001)) + 60.0) / 60.0, 0.0, 1.0)
 		timer_label.text = "%02d:%05.2f" % [int(seconds) / 60, fmod(seconds, 60.0)])
@@ -117,6 +125,7 @@ func _build_ui() -> void:
 	var title := _label("TOWN SOUND / 城市采样", 30)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.add_child(title)
+	heading.add_child(_button("返回小镇", request_close))
 	heading.add_child(_button("♪ 声音设置 / 测试音", func() -> void:
 		if recorder.capturing:
 			status_label.text = "请先停止录音，再切换声音设备。"
@@ -198,25 +207,32 @@ func _build_ui() -> void:
 	status_label.custom_minimum_size.y = 48
 	column.add_child(status_label)
 	column.add_child(_button("进入 STUDIO / 编排声音", func() -> void:
+		if not can_edit_here():
+			status_label.text = "录音已在本机保存。请先抵达唱片店，再使用编曲工作台。"
+			return
 		if recorder.capturing or draft != null:
 			status_label.text = "请先停止并保存，或放弃当前录音。"
 			return
 		player.stop()
-		var studio = load("res://scripts/studio/StudioScreen.gd").new()
+		var studio = load("res://scripts/town_sound/studio/StudioScreen.gd").new()
 		studio.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 		add_child(studio)
 		margin.hide()
 		studio.tree_exited.connect(func() -> void: margin.show())))
+	column.get_child(column.get_child_count() - 1).visible = can_edit_here()
 	column.add_child(_button("LOCAL RECORDINGS / 唱片店", func() -> void:
+		if not can_edit_here(): return
 		if recorder.capturing or draft != null:
 			status_label.text = "请先保存或放弃当前录音。"
 			return
 		player.stop()
-		var shelf = load("res://scripts/record_shop/RecordShelf.gd").new()
+		var shelf = load("res://scripts/town_sound/record_shop/RecordShelf.gd").new()
 		shelf.host = self
 		add_child(shelf)
 		margin.hide()
 		shelf.tree_exited.connect(func() -> void: margin.show())))
+	column.get_child(column.get_child_count() - 1).visible = can_edit_here()
+	if not can_edit_here(): column.add_child(_label("素材随身保存；编曲、试听成品与压片，请到唱片店。", 16))
 	delete_dialog = ConfirmationDialog.new()
 	delete_dialog.title = "删除这段录音？"
 	delete_dialog.dialog_text = "将从录音库移除，文件会移到本地 samples/trash 回收目录。"
@@ -233,8 +249,24 @@ func _build_ui() -> void:
 	quit_dialog.title = "还有未保存的录音"
 	quit_dialog.dialog_text = "退出会丢弃当前未保存的录音。已保存的录音不会受影响。"
 	quit_dialog.ok_button_text = "放弃并退出"
-	quit_dialog.confirmed.connect(func() -> void: get_tree().quit())
+	quit_dialog.confirmed.connect(func() -> void:
+		if closing_to_town: queue_free()
+		else: get_tree().quit())
 	add_child(quit_dialog)
+
+func can_edit_here() -> bool:
+	return shop_mode and has_node("/root/GameState") and get_node("/root/GameState").current_location == "record_store"
+
+func request_close() -> void:
+	if recorder.capturing or draft != null:
+		closing_to_town = true
+		quit_dialog.dialog_text = "当前这段录音尚未保存。返回小镇会放弃它，已保存素材不受影响。"
+		quit_dialog.popup_centered()
+	else:
+		queue_free()
+
+func _exit_tree() -> void:
+	get_tree().auto_accept_quit = previous_auto_accept_quit
 
 func _refresh_devices() -> void:
 	devices.clear()
@@ -387,6 +419,7 @@ func _refresh_controls() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		closing_to_town = false
 		if recorder.capturing or draft != null:
 			quit_dialog.popup_centered()
 		else:

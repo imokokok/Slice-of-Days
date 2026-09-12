@@ -28,6 +28,11 @@ GameplayModuleSystem="*res://scripts/core/gameplay_module_system.gd"
 SaveManager="*res://scripts/core/save_manager.gd"
 SettingsSystem="*res://scripts/core/settings_system.gd"
 SceneRouter="*res://scripts/core/scene_router.gd"
+SoundSettings="*res://scripts/town_sound/audio/SoundSettings.gd"
+
+[audio]
+
+driver/enable_input=true
 
 [display]
 

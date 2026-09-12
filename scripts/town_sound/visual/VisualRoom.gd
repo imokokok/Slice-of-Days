@@ -85,7 +85,7 @@ func submit() -> void:
 	submitting = true
 	await get_tree().create_timer(8.0).timeout
 	player.stop()
-	pressing = load("res://scripts/record_shop/PressingTable.gd").new()
+	pressing = load("res://scripts/town_sound/record_shop/PressingTable.gd").new()
 	pressing.room = self
 	pressing.model = model
 	pressing.audio = audio

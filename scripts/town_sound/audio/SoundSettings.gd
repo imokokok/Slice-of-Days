@@ -17,6 +17,8 @@ func _ready() -> void:
 	input_device = choose_device(AudioServer.get_input_device_list(), str(config.get_value("audio", "input", "")))
 	output_device = choose_device(AudioServer.get_output_device_list(), str(config.get_value("audio", "output", "")))
 	volume = clampf(float(config.get_value("audio", "volume", 0.8)), 0, 1)
+	if has_node("/root/SettingsSystem"):
+		volume = float(get_node("/root/SettingsSystem").master_volume()) / 100
 	apply_devices()
 	test_player = AudioStreamPlayer.new()
 	add_child(test_player)
@@ -97,6 +99,8 @@ func build_dialog() -> void:
 	slider.value = volume
 	slider.value_changed.connect(func(value: float) -> void:
 		volume = value
+		if has_node("/root/SettingsSystem"):
+			get_node("/root/SettingsSystem").set_master_volume(value * 100)
 		AudioServer.set_bus_mute(0, volume <= 0)
 		AudioServer.set_bus_volume_db(0, linear_to_db(maxf(volume, 0.00001)))
 		volume_label.text = "游戏音量 %d%%" % int(volume * 100)
@@ -129,6 +133,7 @@ func play_test_tone() -> void:
 		data.encode_s16(i * 2, int(sin(time * TAU * frequency) * envelope * 0.2 * 32767))
 	wav.data = data
 	test_player.stream = wav
-	test_player.play()
+	if AudioServer.get_driver_name() != "Dummy":
+		test_player.play()
 	if message != null:
-		message.text = "测试音输出到：" + output_device + "\n若仍听不到，换一个输出设备，并检查系统音量。"
+		message.text = "测试音输出到：" + output_device + "\n若仍听不到，换一个输出设备，并检查系统音量。" if AudioServer.get_driver_name() != "Dummy" else "当前没有可用的音频输出驱动。"

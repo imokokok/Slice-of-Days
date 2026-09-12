@@ -1,5 +1,5 @@
 extends SceneTree
-const Model = preload("res://scripts/studio/Arrangement.gd")
+const Model = preload("res://scripts/town_sound/studio/Arrangement.gd")
 var failures := 0
 func check(ok: bool, message: String) -> void:
 	if not ok:
@@ -8,6 +8,7 @@ func check(ok: bool, message: String) -> void:
 func _initialize() -> void:
 	call_deferred("run")
 func run() -> void:
+	root.get_node("GameState").current_location = "record_store"
 	var model := Model.new()
 	var pcm := PackedFloat32Array()
 	pcm.resize(22050)
@@ -62,7 +63,7 @@ func run() -> void:
 	timeline._gui_input(up)
 	check(selection.size() == 3 and is_equal_approx(selection[0], 1.25) and is_equal_approx(selection[1], 2.75), "Mouse range gesture did not select intended audio")
 	timeline.free()
-	var studio = load("res://scripts/studio/StudioScreen.gd").new()
+	var studio = load("res://scripts/town_sound/studio/StudioScreen.gd").new()
 	root.add_child(studio)
 	await process_frame
 	studio.free()

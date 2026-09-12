@@ -1,7 +1,7 @@
 extends Control
-const Model = preload("res://scripts/studio/Arrangement.gd")
-const Timeline = preload("res://scripts/studio/Timeline.gd")
-const DragButton = preload("res://scripts/studio/SampleDragButton.gd")
+const Model = preload("res://scripts/town_sound/studio/Arrangement.gd")
+const Timeline = preload("res://scripts/town_sound/studio/Timeline.gd")
+const DragButton = preload("res://scripts/town_sound/studio/SampleDragButton.gd")
 var model := Model.new()
 var timeline: SoundTimeline
 var player: AudioStreamPlayer
@@ -18,6 +18,10 @@ var region_end := -1.0
 var region_track := 0
 
 func _ready() -> void:
+	if has_node("/root/GameState") and get_node("/root/GameState").current_location != "record_store":
+		set_process(false)
+		queue_free()
+		return
 	model.load_project()
 	player = AudioStreamPlayer.new()
 	add_child(player)
@@ -348,7 +352,7 @@ func open_visual() -> void:
 		status.text = model.error
 		return
 	stop()
-	var visual = load("res://scripts/visual/VisualRoom.gd").new()
+	var visual = load("res://scripts/town_sound/visual/VisualRoom.gd").new()
 	visual.studio = self
 	visual.model = model
 	visual.audio = mixdown

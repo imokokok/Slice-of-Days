@@ -30,6 +30,11 @@ var hold_seconds := 0.0
 var stamp_picked := false
 var serial := 1
 var summary_label: Label
+var cover_sources: HBoxContainer
+var pending_photo: Image
+var photo_preview: TextureRect
+var cover_source := "visual"
+var source_photo_id := ""
 const STEPS := ["01 / 签下唱片信息", "02 / 留下封面画面", "03 / 打印纸质封套", "04 / 对齐中心标签", "05 / 压制与冷却", "06 / 收进防尘内袋", "07 / 装入封面外套", "08 / 封住袋口", "09 / 盖下收录印章", "10 / 插入编号卡", "11 / 交给唱片店老板", "LOCAL RECORDINGS"]
 const HINTS := ["给作品写下标题、作者和一句话。", "拖动滑条取景，暂停后留下这一帧。", "点击打印机的绿色按钮，看封套从出纸口慢慢出来。", "拿起右侧圆形标签，对准唱片中心孔后松手。", "按住机器右侧红色把手 1 秒，等待压盘下降、刻纹与冷却。", "握住唱片边缘，拖向右侧内袋开口。", "拿起装好唱片的内袋，滑进右侧印好封面的外套。", "把小圆封签移到外套上沿，不要贴在封面正中。", "先点右侧木柄印章拿起，再点封套右下角落章。", "将右侧编号纸卡插进左侧封套下沿的卡槽。", "把完整唱片递到柜台托盘，老板会接过并上架。", "这段声音已经在店里有了一个位置。"]
 
@@ -60,6 +65,17 @@ func _ready() -> void:
 	summary_label = room.studio.label("", 17)
 	column.add_child(summary_label)
 	summary_label.hide()
+	cover_sources = HBoxContainer.new()
+	column.add_child(cover_sources)
+	cover_sources.add_child(room.studio.button("选择程序画面", func() -> void:
+		pending_photo = null
+		cover_source = "visual"
+		source_photo_id = ""
+		photo_preview.hide()
+		cover_container.show()
+		next_button.text = "暂停并使用当前帧"))
+	cover_sources.add_child(room.studio.button("从本地相册选封面", select_photo_cover))
+	cover_sources.hide()
 	next_button = room.studio.button("完成命名", advance)
 	column.add_child(next_button)
 	cover_container = SubViewportContainer.new()
@@ -77,6 +93,14 @@ func _ready() -> void:
 	preview.configure(audio, model.prompt, seed_value)
 	cover_viewport.add_child(preview)
 	cover_container.hide()
+	photo_preview = TextureRect.new()
+	photo_preview.position = Vector2(50, 350)
+	photo_preview.size = Vector2(480, 270)
+	photo_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	photo_preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	photo_preview.mouse_filter = MOUSE_FILTER_IGNORE
+	add_child(photo_preview)
+	photo_preview.hide()
 	crop_slider = HSlider.new()
 	crop_slider.position = Vector2(50, 630)
 	crop_slider.size = Vector2(480, 30)
@@ -116,6 +140,7 @@ func advance() -> void:
 		summary_label.text = "「%s」  /  %s  ·  LOCAL-%04d" % [title_input.text, artist_input.text, serial]
 		summary_label.show()
 		step = 1
+		cover_sources.show()
 		crop_overlay.queue_redraw()
 		cover_container.show()
 		crop_slider.show()
@@ -123,12 +148,14 @@ func advance() -> void:
 	elif step == 1:
 		locked = true
 		await RenderingServer.frame_post_draw
-		var frame := cover_viewport.get_texture().get_image()
+		var frame: Image = pending_photo if pending_photo != null else cover_viewport.get_texture().get_image()
 		var edge := mini(frame.get_width(), frame.get_height())
 		cover = frame.get_region(Rect2i(int((frame.get_width() - edge) * crop_slider.value), 0, edge, edge))
 		cover.resize(512, 512)
 		texture = ImageTexture.create_from_image(cover)
 		cover_container.hide()
+		photo_preview.hide()
+		cover_sources.hide()
 		crop_slider.hide()
 		crop_overlay.hide()
 		locked = false
@@ -169,6 +196,7 @@ func complete_action() -> void:
 			saved_record = library.save_record({"title": title_input.text, "artist": artist_input.text,
 				"one_line_note": note_input.text, "duration": audio.get_length(), "visual_prompt": model.prompt,
 				"visual_profile": profile, "visual_seed": seed_value, "visual_version": 1, "source_sample_count": samples.size(),
+				"cover_source": cover_source, "source_photo_id": source_photo_id,
 				"payment": payment, "project_path": "user://projects/current.json"}, audio, cover)
 		if saved_record.is_empty():
 			instructions.text = library.last_error
@@ -190,6 +218,24 @@ func complete_action() -> void:
 	else:
 		instructions.text = STEPS[step] + "\n" + HINTS[step]
 	queue_redraw()
+
+func select_photo_cover() -> void:
+	if step != 1 or locked: return
+	var album = load("res://scripts/town_sound/PhotoAlbum.gd").new()
+	album.selection_mode = true
+	album.photo_selected.connect(use_photo_cover)
+	add_child(album)
+
+func use_photo_cover(image: Image, metadata: Dictionary) -> void:
+	if step != 1: return
+	pending_photo = image.duplicate()
+	cover_source = "photo"
+	source_photo_id = str(metadata.get("photo_id", ""))
+	photo_preview.texture = ImageTexture.create_from_image(pending_photo)
+	cover_container.hide()
+	photo_preview.show()
+	next_button.text = "使用这张照片的当前取景"
+	instructions.text = "从本地照片制作封面 · 拖动下方滑条调整裁切。"
 
 func _process(delta: float) -> void:
 	if holding and step == 4 and not locked:

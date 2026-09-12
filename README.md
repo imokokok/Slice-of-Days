@@ -1,8 +1,8 @@
 # Solmere
 
-## 独立原型：城市采样 / Town Sound
+## 随身录音、拍照与唱片店 / Town Sound
 
-[Town Sound 源码与运行说明](prototypes/town-sound/README.md)：真实麦克风录音、四轨编排与选区剪辑、本地音频 Visual、唱片制作工作台、付款和本地唱片架。当前 v0.2；录音设备的人声输入仍待确认，公共后端尚未部署。作为独立 Godot 项目保存，尚未接入 Solmere 主场景。后续修改与推送见 [Git 工作流程](prototypes/town-sound/GIT_WORKFLOW.md)。
+[Town Sound 使用说明](prototypes/town-sound/README.md)：主游戏小镇右上角有录音、相机、相册三个图标。录音和游戏内照片保存在本机；抵达唱片店后才能编曲、制作和试听成品。唱片封面可用动态 Visual 截帧或本地相册照片。运行代码只维护一份，位于 `scripts/town_sound/`，不再另存重复的独立原型项目。当前 v0.3；录音设备的人声输入仍待确认，公共后端尚未部署。后续修改与推送见 [Git 工作流程](prototypes/town-sound/GIT_WORKFLOW.md)。
 
 ## 独立原型：拼贴书信
 

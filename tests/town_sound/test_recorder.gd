@@ -1,7 +1,7 @@
 extends SceneTree
 ## Synthetic PCM is test input only; it is never substituted for microphone input.
-const Store = preload("res://scripts/data/SampleStore.gd")
-const Recorder = preload("res://scripts/audio/AudioRecorder.gd")
+const Store = preload("res://scripts/town_sound/data/SampleStore.gd")
+const Recorder = preload("res://scripts/town_sound/audio/AudioRecorder.gd")
 var failures := 0
 
 func check(condition: bool, message: String) -> void:

@@ -8,10 +8,11 @@ func check(ok: bool, message: String) -> void:
 func _initialize() -> void:
 	call_deferred("run")
 func run() -> void:
-	var host = load("res://scenes/Main.tscn").instantiate()
+	root.get_node("GameState").current_location = "record_store"
+	var host = load("res://scenes/town_sound/Recorder.tscn").instantiate()
 	root.add_child(host)
 	await process_frame
-	var studio = load("res://scripts/studio/StudioScreen.gd").new()
+	var studio = load("res://scripts/town_sound/studio/StudioScreen.gd").new()
 	studio.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	host.add_child(studio)
 	await process_frame
@@ -27,7 +28,7 @@ func run() -> void:
 	studio.timeline.arrangement = model
 	var wav := model.mix()
 	check(wav != null, "Mix failed")
-	var room = load("res://scripts/visual/VisualRoom.gd").new()
+	var room = load("res://scripts/town_sound/visual/VisualRoom.gd").new()
 	room.studio = studio
 	room.model = model
 	room.audio = wav
@@ -41,7 +42,7 @@ func run() -> void:
 	room.canvas.time = 1.0
 	room.canvas.analyze()
 	check(room.canvas.features[0] > 0.05, "RMS not audio-driven")
-	var table = load("res://scripts/record_shop/PressingTable.gd").new()
+	var table = load("res://scripts/town_sound/record_shop/PressingTable.gd").new()
 	table.room = room
 	table.model = model
 	table.audio = wav
@@ -52,6 +53,13 @@ func run() -> void:
 	table.title_input.text = "Integration Test"
 	table.artist_input.text = "Test Runner"
 	table.advance()
+	if OS.get_cmdline_user_args().has("--photo-cover"):
+		var photo_library := PhotoLibrary.new()
+		photo_library.root_path = "user://tests/cover_photos_" + Crypto.new().generate_random_bytes(8).hex_encode()
+		var photo := Image.create(640, 360, false, Image.FORMAT_RGB8)
+		photo.fill(Color("1d7682"))
+		var metadata := photo_library.save_photo(photo, {"title": "Cover test"})
+		table.use_photo_cover(photo_library.load_photo(metadata.photo_id), metadata)
 	await create_timer(0.25).timeout
 	await table.advance()
 	check(table.cover != null and table.cover.get_width() == 512, "Cover capture failed")
@@ -70,6 +78,10 @@ func run() -> void:
 	check(restored.money() >= 60 and restored.money() <= 180, "Payment outside bounds")
 	check(FileAccess.file_exists(table.saved_record.final_audio_path), "Final WAV missing")
 	check(FileAccess.file_exists(table.saved_record.cover_path), "Cover PNG missing")
+	if OS.get_cmdline_user_args().has("--photo-cover"):
+		check(table.saved_record.cover_source == "photo", "Photo cover source not saved")
+		var cover_image := Image.load_from_file(table.saved_record.cover_path)
+		check(cover_image.get_pixel(256, 256).is_equal_approx(Color("1d7682")), "Photo cover pixels differ from selected photo")
 	var online := OnlineRecordLibrary.new()
 	check(not online.can_upload(), "Unconfigured backend allowed upload")
 	print("FULL_LOCAL_FLOW: ", "PASS" if failures == 0 else "FAIL", " failures=", failures)

@@ -16,13 +16,19 @@ try {
     if ($currentBranch -ne 'main') { throw "Expected main, found $currentBranch. Switch intentionally before pushing." }
     $remoteUrl = (& git remote get-url --push origin).Trim()
     if ($remoteUrl -notmatch 'github\.com[:/]imokokok/Slice-of-Days(?:\.git)?$') { throw 'origin is not the expected Slice-of-Days repository.' }
-    $scope = 'prototypes/town-sound/'
+    $scopes = @('prototypes/town-sound/', 'scripts/town_sound/', 'scenes/town_sound/', 'tests/town_sound/')
+    $sharedFiles = @('README.md', 'project.godot', 'scripts/ui/town_day.gd')
     $changedPaths = @(& git diff --name-only) + @(& git diff --cached --name-only) + @(& git ls-files --others --exclude-standard)
-    $otherPaths = @($changedPaths | Where-Object { $_ -and -not $_.StartsWith($scope) })
+    $otherPaths = @($changedPaths | Where-Object {
+        $candidatePath = $_
+        $isAllowed = $sharedFiles -contains $candidatePath
+        foreach ($scope in $scopes) { if ($candidatePath.StartsWith($scope)) { $isAllowed = $true } }
+        $candidatePath -and -not $isAllowed
+    })
     if ($otherPaths.Count -gt 0) {
         throw "Changes outside Town Sound exist. Commit or handle them separately first: $($otherPaths -join ', ')"
     }
-    Invoke-ProjectGit -GitArguments @('add', '--', 'prototypes/town-sound')
+    Invoke-ProjectGit -GitArguments @('add', '--', 'prototypes/town-sound', 'scripts/town_sound', 'scenes/town_sound', 'tests/town_sound', 'README.md', 'project.godot', 'scripts/ui/town_day.gd')
     & git diff --cached --quiet
     if ($LASTEXITCODE -eq 1) {
         Invoke-ProjectGit -GitArguments @('commit', '-m', $Message)

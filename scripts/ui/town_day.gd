@@ -41,6 +41,8 @@ var staged_direction_label: Label
 var staged_progress_label: Label
 var staged_advance_button: Button
 var staged_choices_box: VBoxContainer
+var pocket_panel: Control
+var pocket_opening := false
 
 
 func _ready() -> void:
@@ -157,9 +159,16 @@ func _build_ui() -> void:
 	var header := _panel(self, Vector2.ZERO, Vector2(1600, 78), Color("fff8eb", 0.97), LINE)
 	_label(header, "第七日之前", Vector2(28, 14), Vector2(240, 30), 22, BONE)
 	role_label = _label(header, "", Vector2(28, 44), Vector2(400, 21), 13, MUTED)
-	clock_label = _label(header, "", Vector2(980, 19), Vector2(150, 28), 18, BONE, HORIZONTAL_ALIGNMENT_RIGHT)
-	money_label = _label(header, "", Vector2(1140, 19), Vector2(115, 28), 16, BONE, HORIZONTAL_ALIGNMENT_RIGHT)
-	confirmation_label = _label(header, "", Vector2(1265, 19), Vector2(180, 28), 16, BONE, HORIZONTAL_ALIGNMENT_RIGHT)
+	clock_label = _label(header, "", Vector2(840, 19), Vector2(170, 28), 18, BONE, HORIZONTAL_ALIGNMENT_RIGHT)
+	money_label = _label(header, "", Vector2(1020, 19), Vector2(110, 28), 16, BONE, HORIZONTAL_ALIGNMENT_RIGHT)
+	confirmation_label = _label(header, "", Vector2(1138, 19), Vector2(140, 28), 16, BONE, HORIZONTAL_ALIGNMENT_RIGHT)
+	var pocket_tools := [{"id": "recorder", "name": "随身录音 · 本地素材", "action": _open_pocket_recorder}, {"id": "camera", "name": "拍照 · 游戏内取景", "action": _open_pocket_camera}, {"id": "album", "name": "本地相册", "action": _open_pocket_album}]
+	for index in pocket_tools.size():
+		var tool: Dictionary = pocket_tools[index]
+		var icon_button := _button(header, "", Vector2(1290 + index * 50, 16), Vector2(44, 38), "quiet")
+		icon_button.icon = preload("res://scripts/town_sound/MediaTheme.gd").icon(tool.id)
+		icon_button.tooltip_text = tool.name
+		icon_button.pressed.connect(tool.action)
 	var save := _button(header, "保存", Vector2(1460, 16), Vector2(58, 34), "quiet")
 	var menu := _button(header, "菜单", Vector2(1524, 16), Vector2(58, 34), "quiet")
 	save.pressed.connect(_save_game)
@@ -339,6 +348,8 @@ func _render_actions(current_people: Array[String]) -> void:
 	if selected_location != GameState.current_location:
 		_add_action("先抵达这里，才能互动", Callable(), true)
 		return
+	if GameState.current_location == "record_store":
+		_add_action("进入唱片店工作台 · 编曲 / 制作 / 唱片架", _open_record_store)
 	for event in EventSystem.available_events():
 		var event_id := str(event.get("id", ""))
 		var choice_text := str(event.get("choice_text", event_id))
@@ -361,6 +372,54 @@ func _render_actions(current_people: Array[String]) -> void:
 		_add_action("和%s聊几句（20分钟）" % str(resident.get("display_name", resident_id)), _ambient_talk.bind(resident_id))
 	if actions_box.get_child_count() == 0:
 		_add_action("观察周围（20分钟）", _observe)
+
+
+func _show_pocket_panel(panel: Control) -> void:
+	pocket_panel = panel
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(panel)
+	panel.tree_exited.connect(func() -> void:
+		pocket_panel = null
+		if is_inside_tree() and not is_queued_for_deletion(): _refresh())
+
+
+func _open_pocket_recorder() -> void:
+	if is_instance_valid(pocket_panel) or pocket_opening: return
+	var panel = load("res://scenes/town_sound/Recorder.tscn").instantiate()
+	panel.shop_mode = false
+	_show_pocket_panel(panel)
+
+
+func _open_record_store() -> void:
+	if GameState.current_location != "record_store": return
+	if is_instance_valid(pocket_panel) or pocket_opening: return
+	var panel = load("res://scenes/town_sound/Recorder.tscn").instantiate()
+	panel.shop_mode = true
+	_show_pocket_panel(panel)
+
+
+func _open_pocket_album() -> void:
+	if is_instance_valid(pocket_panel) or pocket_opening: return
+	_show_pocket_panel(load("res://scripts/town_sound/PhotoAlbum.gd").new())
+
+
+func _open_pocket_camera() -> void:
+	if is_instance_valid(pocket_panel) or pocket_opening: return
+	pocket_opening = true
+	var hidden_widgets: Array[CanvasItem] = []
+	for child in get_children():
+		if child is CanvasItem and child != backdrop and child.visible:
+			hidden_widgets.append(child)
+			child.hide()
+	await RenderingServer.frame_post_draw
+	var frame := get_viewport().get_texture().get_image()
+	for child in hidden_widgets:
+		if is_instance_valid(child): child.show()
+	pocket_opening = false
+	var camera = load("res://scripts/town_sound/PocketCamera.gd").new()
+	camera.source = frame
+	camera.context = {"location": GameState.current_location, "title": _location_name(GameState.current_location), "day": GameState.current_day}
+	_show_pocket_panel(camera)
 
 
 func _ambient_talk(resident_id: String) -> void:

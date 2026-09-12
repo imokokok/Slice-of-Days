@@ -93,3 +93,7 @@ godot --headless --path /Users/imokokok/Documents/100game res://scenes/tarot_mec
 ## 独立原型：听懂你
 
 [听懂你源码与运行说明](prototypes/hear-you/README.md)：菜市场场景中的双人 emoji 对话，通过六段图形记忆理解同一句话背后的不同语境；包含完整对白、拖动交互、场景素材与流程检查。作为独立 Godot 项目保存，尚未接入主游戏入口。
+
+## 独立原型：老棋友
+
+[老棋友源码与运行说明](prototypes/elder-board-game/README.md)：围棋（9/13/19 路）、五子棋与国际象棋的本地 AI 对弈，棋后分支对话，以及文字/涂鸦教学、A/B 共享本地棋谱和已学规则对弈。实时读图对话需配置模型服务。作为独立 Godot 项目保存，尚未接入主游戏场景与主存档。

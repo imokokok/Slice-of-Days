@@ -2,7 +2,7 @@
 
 ## 随身录音、拍照与唱片店 / Town Sound
 
-[Town Sound 使用说明](prototypes/town-sound/README.md)：主游戏小镇右上角有录音、相机、相册三个图标。录音和游戏内照片保存在本机；抵达唱片店后才能编曲、制作和试听成品。唱片封面可用动态 Visual 截帧或本地相册照片。运行代码只维护一份，位于 `scripts/town_sound/`，不再另存重复的独立原型项目。当前 v0.3；录音设备的人声输入仍待确认，公共后端尚未部署。后续修改与推送见 [Git 工作流程](prototypes/town-sound/GIT_WORKFLOW.md)。
+[Town Sound 使用说明](prototypes/town-sound/README.md)：主游戏小镇右上角有录音、相机、相册三个图标。录音和游戏内照片保存在本机；抵达唱片店后才能编曲、制作和试听成品。唱片封面可用动态 Visual 截帧或本地相册照片。运行代码只维护一份，位于 `scripts/town_sound/`，不再另存重复的独立原型项目。当前 v0.4：默认录制游戏声景与音效，可收起面板边逛边录；真实麦克风为可选声源。Visual 使用有主次与留白的几何构图。游戏声音实录已通过，人声输入仍待确认，公共后端尚未部署。后续修改与推送见 [Git 工作流程](prototypes/town-sound/GIT_WORKFLOW.md)。
 
 ## 独立原型：拼贴书信
 

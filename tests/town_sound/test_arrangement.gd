@@ -62,10 +62,37 @@ func run() -> void:
 	up.position = Vector2(82.5, 55)
 	timeline._gui_input(up)
 	check(selection.size() == 3 and is_equal_approx(selection[0], 1.25) and is_equal_approx(selection[1], 2.75), "Mouse range gesture did not select intended audio")
+	# Loop left-trim must shift phase without shortening the repeating source.
+	timeline.selection_mode = false
+	edit.clips.clear()
+	edit.add_sample({"id": "test", "name": "test", "duration": 1.0}, 0, 0)
+	edit.clips[0].loop = true
+	edit.clips[0].length = 3.0
+	down.position = Vector2(1, 55)
+	timeline._gui_input(down)
+	move.position = Vector2(16, 55)
+	timeline._gui_input(move)
+	timeline._gui_input(up)
+	check(is_equal_approx(edit.clips[0].source_end - edit.clips[0].source_start, 1.0), "Left trim changed loop period")
+	check(is_equal_approx(edit.clips[0].get("phase", 0), 0.5), "Left trim lost loop phase")
+	# A cleared selection must not cut a previously selected, invisible range.
+	check(selection[0] == -1, "Move tool retained stale selection")
+	var before_invalid := edit.clips.duplicate(true)
+	edit.remove_range(2, 1, 0)
+	check(edit.clips == before_invalid, "Reversed range damaged clips")
 	timeline.free()
 	var studio = load("res://scripts/town_sound/studio/StudioScreen.gd").new()
 	root.add_child(studio)
 	await process_frame
+	studio.model.clips.clear()
+	studio.model.add_sample({"id": "test", "name": "test", "duration": 1.0}, 0, 0)
+	studio.selected = 0
+	studio.hide()
+	var delete_key := InputEventKey.new()
+	delete_key.keycode = KEY_DELETE
+	delete_key.pressed = true
+	studio._unhandled_key_input(delete_key)
+	check(studio.model.clips.size() == 1, "Hidden Studio handled destructive keyboard input")
 	studio.free()
 	print("ARRANGEMENT_TESTS: ", "PASS" if failures == 0 else "FAIL")
 	quit(failures)

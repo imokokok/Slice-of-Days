@@ -5,7 +5,12 @@ var visual: VisualCanvas
 var note: Label
 var library := LocalRecordLibrary.new()
 
+var monitor_locked := false
+
 func _ready() -> void:
+	if has_node("/root/WorldSound"):
+		get_node("/root/WorldSound").lock_monitor(true)
+		monitor_locked = true
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	player = AudioStreamPlayer.new()
 	add_child(player)
@@ -62,3 +67,6 @@ func _process(_delta: float) -> void:
 	if player.playing:
 		visual.time = player.get_playback_position()
 		visual.queue_redraw()
+
+func _exit_tree() -> void:
+	if monitor_locked: get_node("/root/WorldSound").lock_monitor(false)

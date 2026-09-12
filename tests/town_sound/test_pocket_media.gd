@@ -23,6 +23,19 @@ func run() -> void:
 	town._open_pocket_recorder()
 	check(is_instance_valid(town.pocket_panel), "Recorder did not open")
 	check(not town.pocket_panel.can_edit_here(), "Pocket recorder exposed shop actions")
+	check(town.pocket_panel.source_picker.selected == 0, "Game sound is not the default source")
+	check(not town.pocket_panel.device_row.visible, "Microphone has priority in game capture UI")
+	town.pocket_panel.set_compact(true)
+	check(town.pocket_panel.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Compact recorder blocks town interactions")
+	check(not town.pocket_panel.page_scroll.visible and town.pocket_panel.compact_bar.visible, "Compact recorder layout failed")
+	town.pocket_panel.set_compact(false)
+	town.pocket_panel.draft = AudioStreamWAV.new()
+	check(town._guard_pocket_audio(), "Unsaved compact recording can be lost on scene transition")
+	town.pocket_panel.draft = null
+	if OS.get_cmdline_user_args().has("--screenshots"):
+		await RenderingServer.frame_post_draw
+		DirAccess.make_dir_recursive_absolute("user://tests/screenshots")
+		root.get_texture().get_image().save_png("user://tests/screenshots/game-recorder.png")
 	var first_id: int = town.pocket_panel.get_instance_id()
 	town._open_pocket_recorder()
 	check(town.pocket_panel.get_instance_id() == first_id, "Duplicate recorder opened")

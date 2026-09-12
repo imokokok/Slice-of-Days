@@ -69,6 +69,18 @@ func run() -> void:
 			await RenderingServer.frame_post_draw
 			DirAccess.make_dir_recursive_absolute("user://tests/screenshots")
 			root.get_texture().get_image().save_png("user://tests/screenshots/pressing-%02d.png" % stage)
+		if stage == 10 and OS.get_cmdline_user_args().has("--save-retry"):
+			var good_path: String = table.library.root_path
+			DirAccess.make_dir_recursive_absolute("user://tests")
+			var blocked_path := "user://tests/blocked_record_output"
+			var blocker := FileAccess.open(blocked_path, FileAccess.WRITE)
+			blocker.store_string("test-only directory blocker")
+			blocker.close()
+			table.library.root_path = blocked_path
+			await table.complete_action()
+			check(table.step == 10 and not table.locked and not table.next_button.disabled, "Failed record save cannot be retried")
+			table.library.root_path = good_path
+			DirAccess.remove_absolute(blocked_path)
 		await table.complete_action()
 	check(table.step == 11, "Packaging did not finish")
 	check(not table.saved_record.is_empty(), "Final record not saved")

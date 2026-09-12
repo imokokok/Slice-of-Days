@@ -113,6 +113,8 @@ func _gui_input(event: InputEvent) -> void:
 			queue_redraw()
 			return
 		range_begin = -1
+		range_end = -1
+		region_selected.emit(-1, -1, range_track)
 		selected = -1
 		for i in range(arrangement.clips.size() - 1, -1, -1):
 			var rect := clip_rect(arrangement.clips[i])
@@ -133,7 +135,7 @@ func _gui_input(event: InputEvent) -> void:
 		var clip := arrangement.clips[selected]
 		var delta: float = (event.position.x - down.x) / size.x * 60.0
 		if drag_mode == "move":
-			clip.start = snappedf(clampf(float(original.start) + delta, 0, 60 - float(clip.length)), 0.05)
+			clip.start = clampf(snappedf(float(original.start) + delta, 0.05), 0, 60 - float(clip.length))
 			clip.track = clampi(int((event.position.y - 32) / 66), 0, 3)
 		elif drag_mode == "right":
 			var maximum := 60.0 - float(clip.start)
@@ -146,8 +148,12 @@ func _gui_input(event: InputEvent) -> void:
 			if not clip.loop:
 				clip.source_end = float(clip.source_start) + float(clip.get("phase", 0)) + float(clip.length) * float(clip.speed)
 		elif drag_mode == "left":
-			var movement := clampf(delta, maxf(-float(original.start), -float(original.source_start) / float(original.speed)), float(original.length) - 0.05)
+			var earliest := -float(original.start) if clip.loop else maxf(-float(original.start), -float(original.source_start) / float(original.speed))
+			var movement := clampf(delta, earliest, float(original.length) - 0.05)
 			clip.start = float(original.start) + movement
 			clip.length = float(original.length) - movement
-			clip.source_start = float(original.source_start) + movement * float(original.speed)
+			if clip.loop:
+				clip.phase = float(original.get("phase", 0.0)) + movement * float(original.speed)
+			else:
+				clip.source_start = float(original.source_start) + movement * float(original.speed)
 		queue_redraw()

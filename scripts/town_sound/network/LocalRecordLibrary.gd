@@ -19,6 +19,13 @@ func list_records() -> Array[Dictionary]:
 	return result
 
 func save_record(metadata: Dictionary, audio: AudioStreamWAV, cover: Image) -> Dictionary:
+	last_error = ""
+	if audio == null or audio.data.is_empty() or cover == null or cover.is_empty():
+		last_error = "成品声音或封面为空，请返回检查。"
+		return {}
+	if FileAccess.file_exists(root_path) or FileAccess.file_exists(root_path.get_base_dir()):
+		last_error = "唱片目录被同名文件占用。请修复保存位置后重试。"
+		return {}
 	var id := "rec_" + Crypto.new().generate_random_bytes(12).hex_encode()
 	var path := root_path.path_join(id)
 	if DirAccess.make_dir_recursive_absolute(path) != OK:

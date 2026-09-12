@@ -94,6 +94,7 @@ func _ready() -> void:
 				GameState.commit_active_role_state()
 				_seed_capture_module_echo(event)
 				break
+	WorldSound.set_active(true)
 	_load_locations()
 	selected_location = GameState.current_location
 	backdrop = $Backdrop
@@ -257,6 +258,7 @@ func _select_location(id: String) -> void:
 
 
 func _travel(method: String) -> void:
+	WorldSound.play_detail(true)
 	if selected_location == GameState.current_location:
 		status_message = "你已经在这里。"
 	else:
@@ -285,6 +287,7 @@ func _next_free_block() -> void:
 
 
 func _refresh() -> void:
+	WorldSound.set_location(GameState.current_location)
 	var appointment_changes := GameState.refresh_appointments()
 	for appointment in appointment_changes:
 		if str(appointment.get("status", "")) == "missed":
@@ -803,6 +806,7 @@ func _presentation_lines_text(raw_lines: Array) -> String:
 
 
 func _finish_chapter() -> void:
+	if _guard_pocket_audio(): return
 	GameState.commit_active_role_state()
 	SaveManager.save_game()
 	SceneRouter.chapter_transition()
@@ -879,6 +883,7 @@ func _save_game() -> void:
 
 
 func _return_to_menu() -> void:
+	if _guard_pocket_audio(): return
 	SaveManager.save_game()
 	SceneRouter.main_menu()
 
@@ -1083,3 +1088,14 @@ func _capture(filename: String) -> void:
 	await RenderingServer.frame_post_draw
 	get_viewport().get_texture().get_image().save_png(ProjectSettings.globalize_path("res://captures/%s" % filename))
 	get_tree().quit()
+
+func _exit_tree() -> void:
+	WorldSound.set_active(false)
+
+func _guard_pocket_audio() -> bool:
+	if is_instance_valid(pocket_panel) and pocket_panel.has_method("set_compact"):
+		if pocket_panel.recorder.capturing or pocket_panel.draft != null:
+			pocket_panel.set_compact(false)
+			pocket_panel.status_label.text = "请先停止并保存，或放弃当前录音，再离开小镇。"
+			return true
+	return false

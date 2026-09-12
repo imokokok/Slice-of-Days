@@ -7,6 +7,13 @@ var recorder: FieldRecorder
 var store := Store.new()
 var player: AudioStreamPlayer
 var draft: AudioStreamWAV
+var source_picker: OptionButton
+var device_row: HBoxContainer
+var source_hint: Label
+var page_scroll: ScrollContainer
+var compact_bar: HBoxContainer
+var compact := false
+var compact_timer: Label
 var devices: OptionButton
 var record_button: Button
 var stop_button: Button
@@ -27,12 +34,13 @@ var quit_dialog: ConfirmationDialog
 var pending_delete := ""
 var row_buttons: Array[Button] = []
 var sample_peaks: Dictionary = {}
+var preview_monitor_locked := false
 var shop_mode := false
 var closing_to_town := false
 var previous_auto_accept_quit := true
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, size), Color("f1eddf"))
+	if not compact: draw_rect(Rect2(Vector2.ZERO, size), Color("f1eddf"))
 
 func _ready() -> void:
 	preload("res://scripts/town_sound/data/LegacyTownSound.gd").migrate()
@@ -48,9 +56,11 @@ func _ready() -> void:
 	load("res://scripts/town_sound/record_shop/PresetRecords.gd").ensure_presets()
 	recorder.meter_changed.connect(func(peak: float, seconds: float) -> void:
 		meter.value = clampf((linear_to_db(maxf(peak, 0.00001)) + 60.0) / 60.0, 0.0, 1.0)
-		timer_label.text = "%02d:%05.2f" % [int(seconds) / 60, fmod(seconds, 60.0)])
+		timer_label.text = "%02d:%05.2f" % [int(seconds) / 60, fmod(seconds, 60.0)]
+		compact_timer.text = "● " + timer_label.text)
 	recorder.completed.connect(_on_recorded)
 	recorder.failed.connect(func(message: String) -> void:
+		set_compact(false)
 		status_label.text = message
 		meter.value = 0
 		_refresh_controls())
@@ -107,7 +117,7 @@ func _button(text: String, action: Callable) -> Button:
 	return button
 
 func _build_ui() -> void:
-	var page_scroll := ScrollContainer.new()
+	page_scroll = ScrollContainer.new()
 	page_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	page_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	add_child(page_scroll)
@@ -145,7 +155,19 @@ func _build_ui() -> void:
 	left.add_theme_constant_override("separation", 12)
 	body.add_child(left)
 	left.add_child(_label("01  /  TOWN RECORDER", 21))
-	var device_row := HBoxContainer.new()
+	source_picker = OptionButton.new()
+	source_picker.add_item("小镇声音 · 游戏环境与音效（默认）")
+	source_picker.add_item("真实人声 · 使用麦克风（可选）")
+	source_picker.item_selected.connect(func(_index: int) -> void: _refresh_devices())
+	left.add_child(source_picker)
+	source_hint = _label("", 14)
+	source_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	left.add_child(source_hint)
+	left.add_child(_button("听听身边 · 环境互动", func() -> void:
+		get_node("/root/WorldSound").play_detail()
+		status_label.text = get_node("/root/WorldSound").detail_label()))
+	left.add_child(_button("收起面板 · 边逛边录", func() -> void: set_compact(true)))
+	device_row = HBoxContainer.new()
 	left.add_child(device_row)
 	devices = OptionButton.new()
 	devices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -155,7 +177,7 @@ func _build_ui() -> void:
 	device_row.add_child(devices)
 	refresh_button = _button("刷新 / 重试", _refresh_devices)
 	device_row.add_child(refresh_button)
-	left.add_child(_label("INPUT · 仅在录制时使用麦克风", 14))
+
 	meter = ProgressBar.new()
 	meter.max_value = 1.0
 	meter.show_percentage = false
@@ -253,6 +275,15 @@ func _build_ui() -> void:
 		if closing_to_town: queue_free()
 		else: get_tree().quit())
 	add_child(quit_dialog)
+	compact_bar = HBoxContainer.new()
+	compact_bar.position = Vector2(920, 88)
+	add_child(compact_bar)
+	compact_timer = _label("口袋录音机", 20)
+	compact_bar.add_child(compact_timer)
+	compact_bar.add_child(_button("停止 / 展开", func() -> void:
+		if recorder.capturing: recorder.stop()
+		set_compact(false)))
+	compact_bar.hide()
 
 func can_edit_here() -> bool:
 	return shop_mode and has_node("/root/GameState") and get_node("/root/GameState").current_location == "record_store"
@@ -267,6 +298,7 @@ func request_close() -> void:
 
 func _exit_tree() -> void:
 	get_tree().auto_accept_quit = previous_auto_accept_quit
+	if preview_monitor_locked: get_node("/root/WorldSound").lock_monitor(false)
 
 func _refresh_devices() -> void:
 	devices.clear()
@@ -275,7 +307,11 @@ func _refresh_devices() -> void:
 	var selected_device: String = get_node("/root/SoundSettings").input_device
 	for index in devices.item_count:
 		if devices.get_item_text(index) == selected_device: devices.select(index)
-	if devices.item_count == 0:
+	device_row.visible = source_picker.selected == 1
+	source_hint.text = "直接录下当前地点的游戏背景声与互动音效，不启用麦克风。" if source_picker.selected == 0 else "仅按下 REC 时启用麦克风。建议戴耳机录制人声。"
+	if source_picker.selected == 0:
+		status_label.text = "小镇采样已就绪。按 REC，可收起面板边走边录。"
+	elif devices.item_count == 0:
 		status_label.text = "MICROPHONE NOT AVAILABLE · 未找到麦克风，连接设备后点重试。"
 	else:
 		status_label.text = "录音设备：" + selected_device + "。按 REC 开始采集。"
@@ -283,11 +319,11 @@ func _refresh_devices() -> void:
 
 func _start_recording() -> void:
 	player.stop()
-	if draft != null or devices.selected < 0:
+	if draft != null or (source_picker.selected == 1 and devices.selected < 0):
 		return
 	waveform.set_audio(null)
 	timer_label.text = "00:00.00"
-	if recorder.start(devices.get_item_text(devices.selected)):
+	if recorder.start(devices.get_item_text(devices.selected) if devices.selected >= 0 else "", "game" if source_picker.selected == 0 else "microphone"):
 		status_label.text = "正在录制 · 录完请按 STOP，最长 60 秒。"
 	_refresh_controls()
 
@@ -300,6 +336,7 @@ func _stop() -> void:
 	_refresh_controls()
 
 func _on_recorded(wav: AudioStreamWAV, warning: String) -> void:
+	set_compact(false)
 	draft = wav
 	waveform.set_audio(wav)
 	name_input.text = ""
@@ -312,7 +349,7 @@ func _preview_draft() -> void:
 		return
 	player.stream = draft
 	player.play()
-	status_label.text = "正在试听未保存的录音。" if audio_peak(draft) > 0.0001 else "这段录音为静音，播放不会出声。请选择麦克风并对着它说话后重录。"
+	status_label.text = "正在试听未保存的录音。" if audio_peak(draft) > 0.0001 else "这段录音为静音，播放不会出声。请检查所选声源后重录。"
 	_refresh_controls()
 
 func _save_draft() -> void:
@@ -342,7 +379,7 @@ func _refresh_library() -> void:
 	row_buttons.clear()
 	var items := store.list_samples()
 	count_label.text = "02  /  RECORDED SOUNDS  %02d / 20" % items.size()
-	var prompts := ["短促的声音：拍手、敲杯子", "持续的声音：水声、风扇", "人的声音：说话、哼唱", "一个你喜欢的奇怪声音"]
+	var prompts := ["在小镇录下一段背景声", "试试环境互动的短音", "换个地点，寻找另一种声音", "可选：用麦克风加一段人声"]
 	tutorial_label.text = "MAKE A SONG FROM WHERE YOU ARE\n"
 	for i in range(4):
 		tutorial_label.text += ("✓ " if items.size() > i else "○ ") + str(i + 1) + ". " + prompts[i] + ("    " if i % 2 == 0 else "\n")
@@ -392,7 +429,7 @@ func _play_sample(item: Dictionary) -> void:
 	waveform.set_audio(wav)
 	player.stream = wav
 	player.play()
-	status_label.text = "正在试听：「%s」" % item.name if audio_peak(wav) > 0.0001 else "「%s」没有声音数据。旧录音无法恢复，请选择实际麦克风后重录。" % item.name
+	status_label.text = "正在试听：「%s」" % item.name if audio_peak(wav) > 0.0001 else "「%s」没有声音数据。旧录音无法恢复，请检查所选声源后重录。" % item.name
 	_refresh_controls()
 
 func audio_peak(wav: AudioStreamWAV) -> float:
@@ -405,12 +442,16 @@ func audio_peak(wav: AudioStreamWAV) -> float:
 func _refresh_controls() -> void:
 	if record_button == null:
 		return
+	if preview_monitor_locked != player.playing:
+		preview_monitor_locked = player.playing
+		get_node("/root/WorldSound").lock_monitor(preview_monitor_locked)
 	var active := recorder.capturing
-	record_button.disabled = active or draft != null or devices.item_count == 0 or store.list_samples().size() >= Store.MAX_SAMPLES
+	record_button.disabled = active or draft != null or (source_picker.selected == 1 and devices.item_count == 0) or store.list_samples().size() >= Store.MAX_SAMPLES
 	stop_button.disabled = not active and not player.playing
 	save_button.disabled = draft == null or active
 	preview_button.disabled = draft == null or active
 	discard_button.disabled = draft == null or active
+	source_picker.disabled = active or draft != null
 	devices.disabled = active
 	refresh_button.disabled = active
 	name_input.editable = draft != null and not active
@@ -424,3 +465,10 @@ func _notification(what: int) -> void:
 			quit_dialog.popup_centered()
 		else:
 			get_tree().quit()
+
+func set_compact(value: bool) -> void:
+	compact = value
+	page_scroll.visible = not value
+	compact_bar.visible = value
+	mouse_filter = Control.MOUSE_FILTER_IGNORE if value else Control.MOUSE_FILTER_STOP
+	queue_redraw()

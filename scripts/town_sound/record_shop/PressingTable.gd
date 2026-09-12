@@ -23,6 +23,7 @@ var crop_slider: HSlider
 var cover_time := 0.0
 var sound: AudioStreamPlayer
 var saved_record: Dictionary = {}
+var photo_album: Control
 var library := LocalRecordLibrary.new()
 var progress := 0.0
 var holding := false
@@ -195,12 +196,13 @@ func complete_action() -> void:
 		if saved_record.is_empty():
 			saved_record = library.save_record({"title": title_input.text, "artist": artist_input.text,
 				"one_line_note": note_input.text, "duration": audio.get_length(), "visual_prompt": model.prompt,
-				"visual_profile": profile, "visual_seed": seed_value, "visual_version": 1, "source_sample_count": samples.size(),
+				"visual_profile": profile, "visual_seed": seed_value, "visual_version": int(profile.get("visual_version", 2)), "source_sample_count": samples.size(),
 				"cover_source": cover_source, "source_photo_id": source_photo_id,
 				"payment": payment, "project_path": "user://projects/current.json"}, audio, cover)
 		if saved_record.is_empty():
 			instructions.text = library.last_error
 			locked = false
+			next_button.disabled = false
 			return
 		instructions.text = "老板：我晚点再听一遍。\n正在把你的唱片放上 LOCAL RECORDINGS……"
 		var tween := create_tween()
@@ -220,8 +222,9 @@ func complete_action() -> void:
 	queue_redraw()
 
 func select_photo_cover() -> void:
-	if step != 1 or locked: return
+	if step != 1 or locked or is_instance_valid(photo_album): return
 	var album = load("res://scripts/town_sound/PhotoAlbum.gd").new()
+	photo_album = album
 	album.selection_mode = true
 	album.photo_selected.connect(use_photo_cover)
 	add_child(album)

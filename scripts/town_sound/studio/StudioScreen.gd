@@ -16,8 +16,15 @@ var root_column: VBoxContainer
 var region_start := -1.0
 var region_end := -1.0
 var region_track := 0
+var mute_controls: Array[CheckButton] = []
+var gain_controls: Array[HSlider] = []
+
+var monitor_locked := false
 
 func _ready() -> void:
+	if has_node("/root/WorldSound"):
+		get_node("/root/WorldSound").lock_monitor(true)
+		monitor_locked = true
 	if has_node("/root/GameState") and get_node("/root/GameState").current_location != "record_store":
 		set_process(false)
 		queue_free()
@@ -130,6 +137,7 @@ func _ready() -> void:
 			model.muted[i] = value
 			changed())
 		control.add_child(mute)
+		mute_controls.append(mute)
 		var gain := HSlider.new()
 		gain.max_value = 1.5
 		gain.step = 0.05
@@ -139,6 +147,7 @@ func _ready() -> void:
 			model.gains[i] = value
 			changed())
 		control.add_child(gain)
+		gain_controls.append(gain)
 	timeline = Timeline.new()
 	timeline.arrangement = model
 	timeline.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -159,6 +168,10 @@ func _ready() -> void:
 	track_row.add_child(timeline_scroll)
 	timeline_scroll.add_child(timeline)
 	timeline.region_selected.connect(func(begin: float, end: float, track: int) -> void:
+		if begin < 0:
+			region_start = -1
+			region_end = -1
+			return
 		region_start = begin
 		region_end = end
 		region_track = track
@@ -196,7 +209,7 @@ func field(row: HBoxContainer, title: String, key: String, low: float, high: flo
 		model.clips[selected][key] = value
 		dirty = true
 		stop()
-		model.save_project())
+		if not model.save_project(): status.text = model.error)
 	row.add_child(spin)
 
 func build_inspector() -> void:
@@ -264,6 +277,9 @@ func build_inspector() -> void:
 		changed()))
 
 func changed() -> void:
+	for i in mute_controls.size():
+		mute_controls[i].set_pressed_no_signal(bool(model.muted[i]))
+		gain_controls[i].set_value_no_signal(float(model.gains[i]))
 	dirty = true
 	stop()
 	timeline.queue_redraw()
@@ -338,6 +354,9 @@ func edit_region(keep: bool) -> void:
 	status.text = "已保留选区内的声音。" if keep else "选区已剪掉，左右两段保留在原来的位置。"
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if not is_visible_in_tree(): return
+	var focus := get_viewport().gui_get_focus_owner()
+	if focus is LineEdit or focus is TextEdit: return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_D and event.is_command_or_control_pressed():
 			duplicate_clip()
@@ -358,3 +377,6 @@ func open_visual() -> void:
 	visual.audio = mixdown
 	get_parent().add_child(visual)
 	hide()
+
+func _exit_tree() -> void:
+	if monitor_locked: get_node("/root/WorldSound").lock_monitor(false)

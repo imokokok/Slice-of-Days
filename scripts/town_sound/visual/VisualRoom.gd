@@ -10,6 +10,7 @@ var status: Label
 var prompt_input: LineEdit
 var pressing: Control
 var submitting := false
+var listening_controls: Array[BaseButton] = []
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -52,18 +53,25 @@ func _ready() -> void:
 	controls.add_child(studio.button("交给老板试听", submit))
 	controls.add_child(studio.button("返回 Studio", func() -> void:
 		model.prompt = prompt_input.text
-		model.save_project()
+		if not model.save_project():
+			status.text = model.error
+			return
 		studio.show()
 		queue_free()))
+	for child in controls.get_children():
+		if child is BaseButton and child.text != "返回 Studio": listening_controls.append(child)
 	status = studio.label("画面只使用本地关键词、种子和音频数据。", 15)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(status)
 
-func generate() -> void:
+func generate() -> bool:
 	model.prompt = prompt_input.text
 	canvas.configure(audio, model.prompt, model.seed_value)
-	model.save_project()
+	if not model.save_project():
+		status.text = model.error
+		return false
 	status.text = "本地生成完成 · Seed %d" % model.seed_value
+	return true
 
 func _process(_delta: float) -> void:
 	if player.playing and not player.stream_paused:
@@ -77,12 +85,14 @@ func submit() -> void:
 		status.text = "老板：这个还像个草稿。再弄一点，我给你留着位置。\n需要至少 2 种录音、2 个片段、8 秒作品。"
 		return
 	if pressing != null or submitting: return
-	generate()
+	if not generate(): return
 	status.text = "老板：新做的？行，放吧。\n正在试听作品（8 秒）……"
 	player.stream_paused = false
 	player.play()
 	# Submission is locked during listening; returning frees this node and cancels the continuation.
 	submitting = true
+	for button in listening_controls: button.disabled = true
+	prompt_input.editable = false
 	await get_tree().create_timer(8.0).timeout
 	player.stop()
 	pressing = load("res://scripts/town_sound/record_shop/PressingTable.gd").new()

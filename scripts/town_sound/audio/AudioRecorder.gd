@@ -1,7 +1,7 @@
 class_name FieldRecorder
 extends Node
-## A private, muted microphone bus. Capture happens before the bus is muted.
-## The microphone is opened only while the player is actively recording.
+## Capture the dedicated game bus or an isolated, muted microphone bus.
+## The real microphone is opened only during explicitly selected voice recording.
 
 signal meter_changed(peak: float, seconds: float)
 signal completed(wav: AudioStreamWAV, warning: String)
@@ -19,6 +19,8 @@ var bus_index := -1
 var elapsed := 0.0
 var largest_peak := 0.0
 var discarded_start := 0
+var source_mode := "microphone"
+var capture_bus := ""
 
 func _ready() -> void:
 	bus_index = AudioServer.bus_count
@@ -27,23 +29,30 @@ func _ready() -> void:
 	AudioServer.set_bus_mute(bus_index, true)
 	capture = AudioEffectCapture.new()
 	capture.buffer_length = 0.5
-	AudioServer.add_bus_effect(bus_index, capture)
+
 	microphone = AudioStreamPlayer.new()
 	microphone.bus = "TownSoundMicrophone"
 	microphone.stream = AudioStreamMicrophone.new()
 	add_child(microphone)
 	set_process(false)
 
-func start(device: String) -> bool:
+func start(device: String, source: String = "microphone") -> bool:
 	if capturing:
 		return false
 	if AudioServer.get_driver_name() == "Dummy":
-		failed.emit("MICROPHONE NOT AVAILABLE · 当前音频驱动不支持录音。")
+		failed.emit("当前音频驱动不支持录音，请使用正常音频输出启动游戏。")
 		return false
-	if not AudioServer.get_input_device_list().has(device):
+	if source == "microphone" and not AudioServer.get_input_device_list().has(device):
 		failed.emit("MICROPHONE NOT AVAILABLE · 输入设备已断开，请刷新后重试。")
 		return false
-	AudioServer.input_device = device
+	source_mode = source
+	capture_bus = "TownWorld" if source == "game" else "TownSoundMicrophone"
+	var target := AudioServer.get_bus_index(capture_bus)
+	if target < 0:
+		failed.emit("游戏声景尚未就绪，请返回小镇重试。")
+		return false
+	AudioServer.add_bus_effect(target, capture)
+	if source == "microphone": AudioServer.input_device = device
 	sample_rate = int(AudioServer.get_mix_rate())
 	frame_count = 0
 	elapsed = 0.0
@@ -53,7 +62,7 @@ func start(device: String) -> bool:
 	capture.clear_buffer()
 	discarded_start = capture.get_discarded_frames()
 	capturing = true
-	microphone.play()
+	if source_mode == "microphone": microphone.play()
 	set_process(true)
 	return true
 
@@ -62,7 +71,7 @@ func _process(delta: float) -> void:
 	_drain()
 	if elapsed > 2.0 and frame_count == 0:
 		_cancel()
-		failed.emit("MICROPHONE NOT AVAILABLE · 未收到音频。请检查麦克风权限和输入设备，再点重试。")
+		failed.emit("未收到音频。游戏采样请返回小镇；人声采样请检查麦克风设备。")
 	elif frame_count >= int(MAX_SECONDS * sample_rate):
 		stop()
 
@@ -98,9 +107,9 @@ func stop() -> void:
 	wav.data = pcm
 	var warning := ""
 	if largest_peak < 0.0001:
-		warning = "这段录音没有可听见的信号。请在声音设置中选择实际麦克风（如 Realtek），然后重新录制。"
+		warning = "这段录音没有可听见的信号。游戏采样请尝试环境互动；人声采样请检查实际麦克风。"
 	elif largest_peak < 0.01:
-		warning = "录音音量非常小。请确认选择了实际麦克风，并靠近麦克风重新录制。"
+		warning = "录音较轻，可在编曲中调整音量；人声采样可靠近麦克风重录。"
 	elif largest_peak > 0.98:
 		warning = "输入接近削波；下次可以离麦克风远一点。"
 	if capture.get_discarded_frames() > discarded_start:
@@ -112,9 +121,20 @@ func _cancel() -> void:
 	capturing = false
 	set_process(false)
 	microphone.stop()
+	_detach_capture()
+
+func _detach_capture() -> void:
+	var target := AudioServer.get_bus_index(capture_bus)
+	if target < 0: return
+	for index in range(AudioServer.get_bus_effect_count(target) - 1, -1, -1):
+		if AudioServer.get_bus_effect(target, index) == capture:
+			AudioServer.remove_bus_effect(target, index)
+	capture_bus = ""
 
 func _exit_tree() -> void:
 	if is_instance_valid(microphone):
 		microphone.stop()
+	_detach_capture()
+	bus_index = AudioServer.get_bus_index("TownSoundMicrophone")
 	if bus_index >= 0 and bus_index < AudioServer.bus_count:
 		AudioServer.remove_bus(bus_index)

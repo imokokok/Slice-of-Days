@@ -1,5 +1,9 @@
 # Solmere
 
+## 独立原型：100饭店
+
+[100饭店源码、运行说明与缺陷审计](prototypes/100-restaurant/README.md)：Godot 4.7.2 的独立 2D 自由烹饪项目，包含真实切块状态、锅具与水槽、火候、整批装盘、顾客反馈、摄影、DIY 菜谱和海报工作台。项目由 `prototypes/.gdignore` 与 Solmere 主场景隔离，便于先独立验证再按宿主接口接入；本轮审计记录见 [BUG_AUDIT_2026-09-12.md](prototypes/100-restaurant/docs/BUG_AUDIT_2026-09-12.md)。
+
 ## 独立原型：拼贴书信
 
 [拼贴书信源码与运行说明](prototypes/collage-letter/README.md)：刻刀裁切、33 份素材、拼贴书信与火漆封装，以及含服务端的漂流瓶互寄/回信系统。它是独立 Godot 项目，尚未接入 Solmere 主场景。`prototypes/.gdignore` 使原型资源不参与主项目导入。

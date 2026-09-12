@@ -81,3 +81,7 @@ godot --headless --path /Users/imokokok/Documents/100game res://scenes/tarot_mec
 ## 当前边界
 
 这是已经能够从第1天推进到第7天、并容纳一百位稳定居民 ID 的灰盒版本，不是所有居民专属剧情与玩法终稿的最终制作版。当前灰盒用于验证路线、条件、选择、预约、时间成本、认可与分支结局；正式对白、美术、动画、声音和小游戏深度仍可逐项替换。工程结构说明见 `docs/SECOND_STAGE_SKELETON.md`，第三阶段叙事表现与替换入口见 `docs/THIRD_STAGE_NARRATIVE_SLICE.md`，当前第一天与居民开发层见 `docs/FOURTH_STAGE_FIRST_DAY.md`。
+
+## 独立观景台原型
+
+[夜海观景台源码与运行说明](prototypes/observatory/README.md)：包含照片轮播、星图观察和收藏；作为独立 Godot 工程保存，尚未接入主游戏入口。

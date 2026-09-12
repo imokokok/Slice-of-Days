@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#101b34"/><stop offset="1" stop-color="#3d5866"/></linearGradient><linearGradient id="sea" x2="0" y2="1"><stop stop-color="#304d59"/><stop offset="1" stop-color="#122735"/></linearGradient></defs>
+<path fill="url(#sky)" d="M0 0h1280v720H0z"/><circle cx="970" cy="122" r="32" fill="#eee4ba" opacity=".8"/>
+<path fill="url(#sea)" d="M0 326h1280v394H0z"/>
+<g stroke="#789497" opacity=".2"><path d="M40 365h200m110 18h260m180-25h250M20 430h170m220-18h150m280 10h340M80 480h240m490-15h330"/></g>
+<path fill="#aaa48b" d="M0 532Q640 467 1280 532v188H0z"/><path fill="#706e61" d="M0 595q640-60 1280 0v125H0z"/>
+<g stroke="#b3af97" stroke-width="12" fill="none"><path d="M0 475q640-55 1280 0M80 475v70m175-90v70m770-70v70m175-50v70"/></g>
+<g fill="#463c39"><path d="M418 315h444v16H418zM438 329h12v220h-12zM832 329h12v220h-12z"/><path d="M180 539h190v22H180zM193 561h13v63h-13zM342 561h13v63h-13z"/></g>
+<path fill="#86746b" d="M186 512h177v26H186z"/>
+<g stroke="#313c40" stroke-width="3" fill="none"><path d="M0 175Q640 372 1280 175"/></g>
+<g fill="#e5c889"><circle cx="85" cy="200" r="6"/><circle cx="218" cy="231" r="6"/><circle cx="352" cy="255" r="6"/><circle cx="489" cy="272" r="6"/><circle cx="638" cy="277" r="6"/><circle cx="790" cy="272" r="6"/><circle cx="934" cy="254" r="6"/><circle cx="1070" cy="231" r="6"/><circle cx="1200" cy="198" r="6"/></g>
+<g stroke="#b6a079" stroke-width="9"><path d="M1010 516l-43 103m43-103 47 103m-47-103v101"/></g>
+<g transform="rotate(-28 1014 486)"><rect x="968" y="471" width="107" height="32" rx="7" fill="#b7a16c"/><rect x="1058" y="465" width="19" height="44" rx="4" fill="#d3bc85"/><rect x="954" y="480" width="18" height="15" fill="#645a4a"/></g>
+<g fill="#364e48"><ellipse cx="106" cy="530" rx="23" ry="52"/><ellipse cx="130" cy="544" rx="28" ry="36"/><ellipse cx="1170" cy="541" rx="31" ry="48"/></g><g fill="#806b56"><path d="M80 566h66l-10 48H91zM1140 577h63l-9 43h-44z"/></g>
+</svg>

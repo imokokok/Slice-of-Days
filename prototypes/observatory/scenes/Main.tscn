@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/main.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/ObservatoryDeck.tscn" id="2"]
+[node name="Main" type="Node"]
+script = ExtResource("1")
+[node name="ObservatoryDeck" parent="." instance=ExtResource("2")]
+[node name="Transition" type="CanvasLayer" parent="."]
+layer = 100
+[node name="Fade" type="ColorRect" parent="Transition"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.01,0.02,0.04,0)
+mouse_filter = 2

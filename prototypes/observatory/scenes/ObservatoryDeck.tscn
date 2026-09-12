@@ -1,0 +1,67 @@
+[gd_scene load_steps=9 format=3]
+[ext_resource type="Script" path="res://scripts/observatory_deck.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/background/observatory_scene_hd.png" id="2"]
+[ext_resource type="Script" path="res://scripts/slideshow_controller.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/telescope_hotspot.gd" id="4"]
+[ext_resource type="Shader" path="res://shaders/subtle_shimmer.gdshader" id="5"]
+[ext_resource type="Shader" path="res://shaders/photo_perspective.gdshader" id="6"]
+[sub_resource type="ShaderMaterial" id="Shimmer"]
+shader = ExtResource("5")
+[sub_resource type="StyleBoxEmpty" id="Empty"]
+[node name="ObservatoryDeck" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1")
+[node name="ObservationDeckArt" type="TextureRect" parent="."]
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource("2")
+expand_mode = 1
+mouse_filter = 2
+[node name="PhotoScreen" type="Control" parent="."]
+layout_mode = 1
+anchor_left = 0.481897
+anchor_top = 0.290524
+anchor_right = 0.671086
+anchor_bottom = 0.564838
+script = ExtResource("3")
+preserve_background_when_empty = true
+projection_shader = ExtResource("6")
+mouse_filter = 2
+[node name="TelescopeHotspot" type="Button" parent="."]
+layout_mode = 1
+anchor_left = 0.799
+anchor_top = 0.53
+anchor_right = 0.89
+anchor_bottom = 0.9
+tooltip_text = "透过望远镜，看看夜空"
+theme_override_styles/normal = SubResource("Empty")
+theme_override_styles/hover = SubResource("Empty")
+theme_override_styles/pressed = SubResource("Empty")
+script = ExtResource("4")
+[node name="Title" type="Label" parent="."]
+visible = false
+offset_left = 48.0
+offset_top = 38.0
+theme_override_colors/font_color = Color(0.87,0.85,0.74,1)
+theme_override_font_sizes/font_size = 28
+text = "夜海观景台"
+mouse_filter = 2
+[node name="Subtitle" type="Label" parent="."]
+visible = false
+offset_left = 50.0
+offset_top = 84.0
+theme_override_colors/font_color = Color(0.57,0.66,0.7,1)
+text = "坐一会儿，等星光靠近。"
+mouse_filter = 2
+[node name="Help" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_top = -51.0
+theme_override_colors/font_color = Color(0.85,0.83,0.75,1)
+text = "点击右侧望远镜，翻开今晚的观测册"
+mouse_filter = 2

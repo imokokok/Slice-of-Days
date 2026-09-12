@@ -1,0 +1,76 @@
+[gd_scene load_steps=6 format=3]
+[ext_resource type="Script" path="res://scripts/star_gazing_controller.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/constellation_projection_checker.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/star_field.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/constellation_lines.gd" id="4"]
+[sub_resource type="Environment" id="Night"]
+background_mode = 1
+background_color = Color(0.018,0.029,0.065,1)
+[node name="StarGazing3D" type="Node3D"]
+script = ExtResource("1")
+[node name="Camera3D" type="Camera3D" parent="."]
+current = true
+fov = 55.0
+far = 300.0
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Night")
+[node name="StarField" type="Node3D" parent="."]
+script = ExtResource("3")
+[node name="ProjectionChecker" type="Node" parent="."]
+script = ExtResource("2")
+[node name="UI" type="CanvasLayer" parent="."]
+[node name="Lines" type="Control" parent="UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("4")
+[node name="Return" type="Button" parent="UI"]
+offset_left = 32.0
+offset_top = 28.0
+offset_right = 174.0
+offset_bottom = 70.0
+text = "← 回到海边"
+[node name="Instructions" type="Label" parent="UI"]
+offset_left = 208.0
+offset_top = 37.0
+text = "拖动观察 · 滚轮调焦 · ESC 返回"
+theme_override_colors/font_color = Color(0.48,0.57,0.67,1)
+mouse_filter = 2
+[node name="Hint" type="Label" parent="UI"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = -158.0
+offset_bottom = -40.0
+theme_override_colors/font_color = Color(0.79,0.83,0.88,1)
+theme_override_font_sizes/font_size = 21
+mouse_filter = 2
+[node name="Album" type="Button" parent="UI"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_right = -40.0
+offset_top = 28.0
+offset_bottom = 70.0
+text = "观测册 · 0 / 2"
+[node name="Capture" type="Button" parent="UI"]
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_right = -40.0
+offset_top = -126.0
+offset_bottom = -82.0
+text = "拍下这片星光"
+[node name="Next" type="Button" parent="UI"]
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_right = -40.0
+offset_top = -72.0
+offset_bottom = -28.0
+text = "寻找鲸鱼 →"

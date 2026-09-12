@@ -1,0 +1,18 @@
+config_version=5
+
+[application]
+config/name="拼贴书信 · 海盐书信事务所"
+run/main_scene="res://Main.tscn"
+config/features=PackedStringArray("4.5", "GL Compatibility")
+
+[display]
+window/size/viewport_width=1440
+window/size/viewport_height=900
+window/size/window_width_override=1280
+window/size/window_height_override=800
+window/stretch/mode="canvas_items"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+environment/defaults/default_clear_color=Color(0.76,0.69,0.57,1)

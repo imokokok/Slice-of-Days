@@ -44,6 +44,10 @@ Godot 4.7.2 项目。当前版本在第一阶段垂直切片上完成了第二�
 
 ## 运行与测试
 
+### 协作原型：万景塔罗海龟汤
+
+新增独立原型 [prototypes/myriorama-tarot](prototypes/myriorama-tarot/README.md)，含18种有效牌、逐张抽牌、离线提问库、万景入门与完整真相判断。请单独导入该目录的 `project.godot`；不会替换主游戏的 Solmere 塔罗场景。测试及素材说明见原型 README。
+
 ```bash
 godot --path /Users/imokokok/Documents/100game
 godot --headless --path /Users/imokokok/Documents/100game res://scenes/system_smoke_test.tscn

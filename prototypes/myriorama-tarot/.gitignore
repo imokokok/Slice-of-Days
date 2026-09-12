@@ -1,0 +1,6 @@
+.godot/
+*.import
+*.log
+assets/chinese.ttc
+table-session*.json
+export/

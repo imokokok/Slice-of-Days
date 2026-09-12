@@ -1,0 +1,542 @@
+[
+  {
+    "id": "01",
+    "roman": "XIV",
+    "cn": "节制",
+    "en": "TEMPERANCE",
+    "scene": "Two identical golden cups with clearly corresponding water levels. A serene winged angel in a cream robe pours a single stream from one cup to the other, one bare foot in the shared river and one on its bank. Red wings folded within central area. Keep the stream between cups physically plausible. Do NOT use the previous water keeper or sluice.",
+    "core": "两个杯子、流动的水、一水一陆、远方道路。\n象征两个对象之间的交换、对应与平衡。",
+    "mean": "平衡、调和、相等、比例、混合、交换、过渡、持续过程。",
+    "story": "两个数量之间的对应关系；两个条件是否达到平衡；某种结果是否需要特定比例；一个状态如何过渡到另一个状态。",
+    "questions": "两个对象之间有什么对应？\n数量是否重要？\n相等或比例是否重要？\n改变其中一方会发生什么？",
+    "source": "source-images/01-TEMPERANCE.png",
+    "front": "cards/01-TEMPERANCE-front.png",
+    "back": "cards/01-TEMPERANCE-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 807,
+        "top": 20,
+        "width": 574,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "02",
+    "roman": "IV",
+    "cn": "皇帝",
+    "en": "THE EMPEROR",
+    "scene": "A bearded emperor seated centrally on a symmetrical geometric stone throne. Stone stairs step from a low terrace on the inner left up to a high terrace on the inner right. ALL height difference is inside the central 70%, both external edges return to the same meadow, road and river elevation. Crown and simple sceptre, red cloak, visibly ordered stone architecture.",
+    "core": "王座、石阶、对称结构、山峰。\n象征稳定的秩序，以及事物之间明确的位置关系。",
+    "mean": "结构、顺序、规则、等级、控制、稳定、边界。",
+    "story": "多个对象之间存在固定结构；大小或位置之间存在顺序；结果受到某种稳定规则控制。",
+    "questions": "谁高谁低重要吗？\n顺序是否重要？\n几个对象之间是否存在固定结构？\n规则是否保持稳定？",
+    "source": "source-images/02-THE-EMPEROR.png",
+    "front": "cards/02-THE-EMPEROR-front.png",
+    "back": "cards/02-THE-EMPEROR-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "03",
+    "roman": "X",
+    "cn": "命运之轮",
+    "en": "WHEEL OF FORTUNE",
+    "scene": "A large but centrally contained wooden wheel on a stone support beside the common road. Exactly four stations around the wheel bear a cup, a coin, a sword and a wand, one at each cardinal position, suggesting the same objects change places as the wheel turns. No extra letters, occult symbols or equations. The wheel and pedestal must not occupy outer 18%.",
+    "core": "轮盘、四个位置、旋转、循环道路。",
+    "mean": "变化、轮换、循环、交换、偶然、位置变化。",
+    "story": "对象交换位置后结果是否改变；某个规律是否依赖具体位置；同样条件能否在不同位置成立。",
+    "questions": "位置重要吗？\n交换之后会改变什么？\n规律是否跟着位置移动？\n有没有重复出现的状态？",
+    "source": "source-images/03-WHEEL-OF-FORTUNE.png",
+    "front": "cards/03-WHEEL-OF-FORTUNE-front.png",
+    "back": "cards/03-WHEEL-OF-FORTUNE-back.png",
+    "sourceBoxes": [
+      {
+        "left": 157,
+        "top": 20,
+        "width": 571,
+        "height": 984
+      },
+      {
+        "left": 807,
+        "top": 20,
+        "width": 574,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "04",
+    "roman": "XVI",
+    "cn": "高塔",
+    "en": "THE TOWER",
+    "scene": "A central old stone tower struck by one zigzag bolt, top masonry breaking and two small clothed figures falling without gore, safely contained centrally. Show two conspicuously equal rectangular foundation stones under the tower; despite their equality the tower is collapsing. Warm yellow sky remains identical at side edges; only a small ink cloud above the central tower. Not a dark horror landscape.",
+    "core": "高塔、闪电、坠落、破裂的结构。",
+    "mean": "突变、崩塌、反例、错误判断被推翻、隐藏条件出现。",
+    "story": "当前规律并不完整；看似成立的解释存在例外；还缺少一个决定结果的条件。",
+    "questions": "现在的猜测有没有反例？\n什么条件被忽略了？\n为什么相似情况得到不同结果？\n哪一部分规律需要修改？",
+    "source": "source-images/04-THE-TOWER.png",
+    "front": "cards/04-THE-TOWER-front.png",
+    "back": "cards/04-THE-TOWER-back.png",
+    "sourceBoxes": [
+      {
+        "left": 157,
+        "top": 20,
+        "width": 571,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "05",
+    "roman": "XI",
+    "cn": "正义",
+    "en": "JUSTICE",
+    "scene": "A calm seated Justice figure centrally, holding a straight sword upright in one hand and a symmetrical balanced two-pan scale in the other. Two scale pans look equal in weight. Modest stone seat with no enclosing wall. Shared open hills, road and river behind, no objects at edges.",
+    "core": "天平、剑、左右两侧。",
+    "mean": "比较、平衡、证据、判断、因果。",
+    "story": "两个条件之间的比较；某个判断是否得到事实支持；结果是否取决于双方关系。",
+    "questions": "两边有什么不同？\n什么相同？\n判断依据是什么？\n一个条件能否单独决定结果？",
+    "source": "source-images/05-JUSTICE.png",
+    "front": "cards/05-JUSTICE-front.png",
+    "back": "cards/05-JUSTICE-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "06",
+    "roman": "I",
+    "cn": "魔术师",
+    "en": "THE MAGICIAN",
+    "scene": "Classic Magician standing at a small horizontal table wholly inside central 65%, one hand points up holding a wand and the other points down. Exactly four recognisable tools across tabletop: cup, coin, sword, wand. Cream tunic brick red cloak, clear theatrical but human pose. Open landscape remains visible around and underneath table, not a full width table.",
+    "core": "四件工具、桌面、上下指向的双手。",
+    "mean": "行动、操作、改变、实验、主动干预。",
+    "story": "人为改变一个条件；使用不同方法测试结果；控制变量。",
+    "questions": "如果只改变一个东西会怎样？\n哪些条件可以主动控制？\n结果由哪个变量影响？",
+    "source": "source-images/06-THE-MAGICIAN.png",
+    "front": "cards/06-THE-MAGICIAN-front.png",
+    "back": "cards/06-THE-MAGICIAN-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "07",
+    "roman": "VII",
+    "cn": "战车",
+    "en": "THE CHARIOT",
+    "scene": "A classic small chariot with an armoured charioteer, pulled by two different animals, one cream and one dark blue, looking towards different directions. Keep wheel anatomy, reins and two animals clear. Central composition with the road entering and leaving both side edges untouched. Indicate controlled travel and choice, no modern vehicles.",
+    "core": "战车、驾车者、两只朝向不同的动物、贯通的道路。",
+    "mean": "行动、方向、移动、选择、控制、到达。",
+    "story": "人物选择一条路线或一扇门；行动改变所处的位置；到达某处是否足以决定结果。",
+    "questions": "选择了哪个方向？\n人物是否真正到达？\n位置本身能决定结果吗？\n行动前后什么发生了变化？",
+    "source": "source-images/07-THE-CHARIOT.png",
+    "front": "cards/07-THE-CHARIOT-front.png",
+    "back": "cards/07-THE-CHARIOT-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "08",
+    "roman": "XVII",
+    "cn": "星星",
+    "en": "THE STAR",
+    "scene": "A modestly dressed kneeling woman at the common river, with two pitchers pouring measured water into river and land, a single large eight-pointed star and seven tiny restrained stars above her within central sky. Yellow sky at edges must match all other cards; use a small central pale blue sky oval only if needed, not a night background. Main visual is hopeful water and guidance. No naked body.",
+    "core": "星星、倾水的人、水流、远方道路。",
+    "mean": "希望、方向、线索、清晰、指引、寻找规律。",
+    "story": "零散线索逐渐形成方向；当前思路需要重新聚焦；数量、位置或结构可能提供新的突破口。",
+    "questions": "哪条线索还没有解释？\n应继续关注数量、位置还是结构？\n哪些现象反复出现？\n什么证据能帮助确定方向？",
+    "source": "source-images/08-THE-STAR.png",
+    "front": "cards/08-THE-STAR-front.png",
+    "back": "cards/08-THE-STAR-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 985
+      },
+      {
+        "left": 807,
+        "top": 20,
+        "width": 574,
+        "height": 985
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "09",
+    "roman": "II",
+    "cn": "圣杯二",
+    "en": "TWO OF CUPS",
+    "scene": "Two adults in distinct medieval clothes face each other and exchange exactly two matching cups. A fine red ribbon softly links their wrists, clear reciprocal intimate connection. Their figures and ribbon are centrally contained, no dependence on a particular neighboring card. At both sides a universal thin ochre path line remains unchanged.",
+    "core": "两个人、两个杯子、交换、彼此面对。",
+    "mean": "亲密、互相吸引、关系建立、约定、共同情感。",
+    "story": "两个人曾经存在亲密联系；双方曾经主动选择彼此；一段关系曾经成立。",
+    "questions": "两个人之间是什么关系？\n双方都参与其中吗？\n这种联系曾经有多亲密？\n这段关系对现在还有影响吗？",
+    "source": "source-images/09-TWO-OF-CUPS.png",
+    "front": "cards/09-TWO-OF-CUPS-front.png",
+    "back": "cards/09-TWO-OF-CUPS-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 807,
+        "top": 20,
+        "width": 574,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "10",
+    "roman": "V",
+    "cn": "圣杯五",
+    "en": "FIVE OF CUPS",
+    "scene": "A bowed cloaked person looks at exactly three fallen cups before them, while exactly two intact cups stand behind. A broken fine red ribbon with two visibly separated ends lies beside fallen cups, recalling connection now ended. All cups count precisely five. Open common river and distant road, no closed vignette. Keep lower river band clear.",
+    "core": "倒下的杯子、仍然站立的杯子、低头的人、远方道路。",
+    "mean": "失去、结束、遗憾、悲伤、无法接受变化、仍有残留。",
+    "story": "一段关系已经结束；有人仍然停留在过去；失去成为后续行为的原因。",
+    "questions": "失去了什么？\n结束发生在什么时候？\n谁没有接受这个结果？\n过去是否仍在影响现在？",
+    "source": "source-images/10-FIVE-OF-CUPS.png",
+    "front": "cards/10-FIVE-OF-CUPS-front.png",
+    "back": "cards/10-FIVE-OF-CUPS-back.png",
+    "sourceBoxes": [
+      {
+        "left": 157,
+        "top": 20,
+        "width": 571,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "11",
+    "roman": "VI",
+    "cn": "恋人",
+    "en": "THE LOVERS",
+    "scene": "Two adults stand in midground on either side of a fork in the road; a third small adult silhouette approaches far behind on one branch. A restrained small radiant motif above. Emphasize a choice between two directions and third-party influence, not simply holding hands. Branching only centrally, shared side exits exactly unchanged.",
+    "core": "两个人、分岔道路、第三个人、上方的光。",
+    "mean": "关系、选择、吸引、价值取向、第三方影响、关系变化。",
+    "story": "人物在两段关系或两个方向之间作出选择；新的关系影响旧关系；第三个人改变原有状态。",
+    "questions": "这里发生了什么选择？\n是否出现了新的关系？\n第三个人是否影响原来的两个人？\n关系变化发生在谁之间？",
+    "source": "source-images/11-THE-LOVERS.png",
+    "front": "cards/11-THE-LOVERS-front.png",
+    "back": "cards/11-THE-LOVERS-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "12",
+    "roman": "XV",
+    "cn": "恶魔",
+    "en": "THE DEVIL",
+    "scene": "Classic horned winged tarot devil on a low central plinth with two clothed adults restrained by loose visible chains. Small symbolic flame, no horror or gore, same sunny landscape. Chains curve towards both sides and gradually merge into the SAME ochre road edge line at the fixed universal road height; chain links end BEFORE the last 10% of either side so no neighbor needs a special matching chain. Keep wings within central 65%.",
+    "core": "锁链、被束缚的人、恶魔、火焰。",
+    "mean": "欲望、执念、嫉妒、占有、依赖、控制、无法放下。",
+    "story": "某个人受到强烈情绪驱动；过去的关系变成束缚；占有欲推动后续行动。",
+    "questions": "谁无法放下？\n真正想得到什么？\n情绪是否指向某个人？\n欲望是否推动了行动？",
+    "source": "source-images/12-THE-DEVIL.png",
+    "front": "cards/12-THE-DEVIL-front.png",
+    "back": "cards/12-THE-DEVIL-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "13",
+    "roman": "V",
+    "cn": "权杖五",
+    "en": "FIVE OF WANDS",
+    "scene": "Three medieval villagers caught in a sudden argument and physical clash with exactly five long wooden staves intersecting dynamically; each stave readable end to end, two held in pairs and one held singly. Gestures not extreme injury, no gore. All staves and people contained centrally. Road continues horizontally behind the confrontation.",
+    "core": "交错的权杖、冲突的人物、混乱动作。",
+    "mean": "争执、碰撞、竞争、冲突升级、失控。",
+    "story": "人物之间发生直接冲突；原本的交流升级为身体对抗；现场痕迹来自一次搏斗。",
+    "questions": "谁和谁发生冲突？\n冲突发生在哪里？\n它是计划好的还是突然升级？\n冲突之后发生了什么？",
+    "source": "source-images/13-FIVE-OF-WANDS.png",
+    "front": "cards/13-FIVE-OF-WANDS-front.png",
+    "back": "cards/13-FIVE-OF-WANDS-back.png",
+    "sourceBoxes": [
+      {
+        "left": 157,
+        "top": 20,
+        "width": 571,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 985
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "14",
+    "roman": "XIII",
+    "cn": "死神",
+    "en": "DEATH",
+    "scene": "Classic skeletal knight in dark armour riding a pale horse, carrying a plain black banner with a white five-petal rose, fallen person small and non-graphic, a fallen white flower and extinguished lantern beside the road. Distant small rising sun central, same yellow sky at side edges. Full horse anatomically sound, no gore, no depiction of a specific murder victim.",
+    "core": "骑行的死神、倒下的人、远方太阳、道路。",
+    "mean": "死亡、结束、不可逆变化、状态转换。",
+    "story": "某个行动最终导致死亡；一段过程到达无法挽回的结果；人物状态彻底改变。",
+    "questions": "什么真正结束了？\n死亡发生在什么之后？\n这是原因还是结果？\n谁的行动与死亡直接相关？",
+    "source": "source-images/14-DEATH.png",
+    "front": "cards/14-DEATH-front.png",
+    "back": "cards/14-DEATH-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 985
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "15",
+    "roman": "XVIII",
+    "cn": "月亮",
+    "en": "THE MOON",
+    "scene": "Classic two towers in central midground framing a pale moon disk, a domestic dog and a wolf on opposite sides of a clearly drawn low stone threshold crossing the central path. Similar but distinctly different dog and wolf, no extra animal. Maintain yellow sky on both sides, pale daytime moon above center. Towers do not touch outer 18%. Shared horizontal river uninterrupted.",
+    "core": "月亮、狗与狼、两座塔、道路、边界。",
+    "mean": "误解、错觉、不完整信息、相似事物被混淆、另一种解释。",
+    "story": "一句真实信息被理解成了另一件事；两个看起来接近的概念实际不同；玩家看到的事实还缺一个角度。",
+    "questions": "事实本身错了吗，还是理解错了？\n哪两个概念被混在一起？\n有没有另一种解释？\n缺少了什么信息？",
+    "source": "source-images/15-THE-MOON.png",
+    "front": "cards/15-THE-MOON-front.png",
+    "back": "cards/15-THE-MOON-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "16",
+    "roman": "XII",
+    "cn": "倒吊人",
+    "en": "THE HANGED MAN",
+    "scene": "Classic calm clothed Hanged Man hanging upside down by ONE ankle from a wooden beam just before a central stone archway, free leg bent. No strangulation, neck unbound, contemplative safe symbolic pose. A visible threshold separates near side from far side, path passes through arch then curves back to universal side exits. Viewpoint distinction clear, man can see into place without being inside. Arch contained centrally.",
+    "core": "倒吊的人、颠倒视角、门槛、穿过门的道路。",
+    "mean": "换位观察、暂停判断、视角限制、内外差异。",
+    "story": "某个人能看到某件事，却没有真正进入；观察位置改变了对事件的理解；同一个现场从不同角度会得到不同结论。",
+    "questions": "这个人当时在哪里？\n能看到什么？\n看见是否等于进入？\n换一个视角后事实是否改变？",
+    "source": "source-images/16-THE-HANGED-MAN.png",
+    "front": "cards/16-THE-HANGED-MAN-front.png",
+    "back": "cards/16-THE-HANGED-MAN-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "17",
+    "roman": "XX",
+    "cn": "审判",
+    "en": "JUDGEMENT",
+    "scene": "A small winged herald in central sky blowing a long trumpet, three clothed villagers below turn back and listen. A few hand-drawn curved sound lines fade away into the central sky BEFORE outer connection zones, so shared sky edge identical. Suggest notification, recollection and revisiting events, no coffins or naked people. Road/river continuous.",
+    "core": "号角、声音、回望的人、重新出现的过去。",
+    "mean": "通知、召唤、回顾、重新判断、过去被重新看见。",
+    "story": "有人发现异常后通知外界；一个旧事件需要重新检查；时间顺序需要重新整理。",
+    "questions": "谁通知了谁？\n通知发生在什么时候？\n此前发生了什么？\n重新回看后哪件事意义改变？",
+    "source": "source-images/17-JUDGEMENT.png",
+    "front": "cards/17-JUDGEMENT-front.png",
+    "back": "cards/17-JUDGEMENT-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 985
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  },
+  {
+    "id": "18",
+    "roman": "II",
+    "cn": "女祭司",
+    "en": "HIGH PRIESTESS",
+    "scene": "Classic High Priestess seated between one dark and one pale column with a restrained fabric veil behind her and a partly concealed rolled scroll on her lap. Both pillars within central 65%, open landscape visible behind outer pillars and around veil. No enclosed room, no text on scroll or pillars. Calm observant face, blue and cream robes.",
+    "core": "帷幕、黑白柱、卷轴、安静观察的人。",
+    "mean": "秘密、隐藏知识、未公开信息、过去、沉默、观察。",
+    "story": "某段经历尚未被说出；人物之间存在未公开的联系；过去的信息可能改变对现在的判断。",
+    "questions": "谁知道但没有说？\n哪段过去尚未公开？\n人物之间还有什么联系？\n隐藏的信息会改变哪项判断？",
+    "source": "source-images/18-HIGH-PRIESTESS.png",
+    "front": "cards/18-HIGH-PRIESTESS-front.png",
+    "back": "cards/18-HIGH-PRIESTESS-back.png",
+    "sourceBoxes": [
+      {
+        "left": 158,
+        "top": 20,
+        "width": 570,
+        "height": 984
+      },
+      {
+        "left": 808,
+        "top": 20,
+        "width": 573,
+        "height": 984
+      }
+    ],
+    "width": 700,
+    "height": 1200
+  }
+]

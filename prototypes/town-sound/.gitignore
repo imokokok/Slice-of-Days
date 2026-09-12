@@ -1,0 +1,9 @@
+.godot/
+*.tmp
+/build/
+*.exe
+*.pck
+*.zip
+*.log
+.env
+.env.*

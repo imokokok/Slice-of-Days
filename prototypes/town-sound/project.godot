@@ -1,0 +1,25 @@
+; Town Sound — local-first field recorder.
+config_version=5
+
+[application]
+config/name="Town Sound"
+run/main_scene="res://scenes/Main.tscn"
+config/features=PackedStringArray("4.4", "GL Compatibility")
+
+[autoload]
+SoundSettings="*res://scripts/audio/SoundSettings.gd"
+
+[display]
+window/size/viewport_width=1120
+window/size/viewport_height=760
+window/size/window_width_override=1120
+window/size/window_height_override=760
+window/stretch/mode="canvas_items"
+
+[audio]
+driver/enable_input=true
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.945, 0.929, 0.882, 1)

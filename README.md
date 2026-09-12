@@ -1,5 +1,9 @@
 # Solmere
 
+## 独立原型：城市采样 / Town Sound
+
+[Town Sound 源码与运行说明](prototypes/town-sound/README.md)：真实麦克风录音、四轨编排与选区剪辑、本地音频 Visual、唱片制作工作台、付款和本地唱片架。当前 v0.2；录音设备的人声输入仍待确认，公共后端尚未部署。作为独立 Godot 项目保存，尚未接入 Solmere 主场景。后续修改与推送见 [Git 工作流程](prototypes/town-sound/GIT_WORKFLOW.md)。
+
 ## 独立原型：拼贴书信
 
 [拼贴书信源码与运行说明](prototypes/collage-letter/README.md)：刻刀裁切、33 份素材、拼贴书信与火漆封装，以及含服务端的漂流瓶互寄/回信系统。它是独立 Godot 项目，尚未接入 Solmere 主场景。`prototypes/.gdignore` 使原型资源不参与主项目导入。

@@ -4,7 +4,7 @@ signal state_changed
 signal message_posted(message: String)
 signal role_changed(role: String)
 
-const REAL_SECONDS_PER_GAME_MINUTE := 12.0
+const REAL_SECONDS_PER_GAME_MINUTE := 4.0
 const SAVE_VERSION := 4
 const CALENDAR_PATH := "res://data/story/calendar.json"
 

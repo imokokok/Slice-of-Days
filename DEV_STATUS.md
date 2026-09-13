@@ -4,7 +4,7 @@
 
 Phase 0 complete: audited original entry/controller/schedules/dialogue/router/clock/save/minigames/autoload/input/assets, recorded KEEP/REFACTOR/LEGACY, created backup branch. No minigame assets deleted.
 
-Phase 1 functional: fifteen-node graph, eight small stage partitions, roads/map, priced transport and bus timetable, separate stage return positions, configurable 5:1 clock. All fifteen locations reachable. Public-space interior doors remain direct proximity interactions.
+Phase 1 functional: fifteen-node graph, eight small stage partitions, roads/map, priced transport and bus timetable, separate stage return positions, configurable 15:1 clock. All fifteen locations reachable. Public-space interior doors remain direct proximity interactions.
 
 Phase 2 foundation: configurable composition anchor per stage; angular shared silhouettes, inertia/turn/knee gait, synchronized footfalls; reference palette applied. Existing complex minigames retain their art. Individual NPC gesture animations, object-mask transitions and final lighting are pending.
 

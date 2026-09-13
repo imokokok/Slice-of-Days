@@ -38,6 +38,7 @@ var preview_monitor_locked := false
 var shop_mode := false
 var closing_to_town := false
 var previous_auto_accept_quit := true
+var draft_context: Dictionary = {}
 
 func _draw() -> void:
 	if not compact: draw_rect(Rect2(Vector2.ZERO, size), Color("f1eddf"))
@@ -323,7 +324,9 @@ func _start_recording() -> void:
 		return
 	waveform.set_audio(null)
 	timer_label.text = "00:00.00"
-	if recorder.start(devices.get_item_text(devices.selected) if devices.selected >= 0 else "", "game" if source_picker.selected == 0 else "microphone"):
+	var source_mode := "game" if source_picker.selected == 0 else "microphone"
+	draft_context = _capture_context(source_mode)
+	if recorder.start(devices.get_item_text(devices.selected) if devices.selected >= 0 else "", source_mode):
 		status_label.text = "正在录制 · 录完请按 STOP，最长 60 秒。"
 	_refresh_controls()
 
@@ -353,12 +356,13 @@ func _preview_draft() -> void:
 	_refresh_controls()
 
 func _save_draft() -> void:
-	var metadata := store.save_sample(draft, name_input.text)
+	var metadata := store.save_sample(draft, name_input.text, draft_context)
 	if metadata.is_empty():
 		status_label.text = store.last_error + " 当前录音仍在，可重试。"
 		return
 	status_label.text = "已保存：「%s」 · %.2f 秒" % [metadata.name, metadata.duration]
 	draft = null
+	draft_context.clear()
 	name_input.text = ""
 	_refresh_library()
 	_refresh_controls()
@@ -366,6 +370,7 @@ func _save_draft() -> void:
 func _discard_draft() -> void:
 	player.stop()
 	draft = null
+	draft_context.clear()
 	waveform.set_audio(null)
 	name_input.text = ""
 	timer_label.text = "00:00.00"
@@ -389,7 +394,8 @@ func _refresh_library() -> void:
 		var card := VBoxContainer.new()
 		card.add_theme_constant_override("separation", 5)
 		library.add_child(card)
-		var label := _label("%s   /   %.2f s%s" % [item.name, item.duration, " · 文件丢失" if item.missing else ""], 17)
+		var memory := _sample_memory_text(item)
+		var label := _label("%s   /   %.2f s%s\n%s" % [item.name, item.duration, " · 文件丢失" if item.missing else "", memory], 17)
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		card.add_child(label)
 		var row := HBoxContainer.new()
@@ -420,6 +426,43 @@ func _refresh_library() -> void:
 		row_buttons.append(remove)
 	if not store.last_error.is_empty():
 		status_label.text = store.last_error
+
+
+func _capture_context(source_mode: String) -> Dictionary:
+	var context := {
+		"source_mode": source_mode,
+		"usage_scope": "local_only" if source_mode == "microphone" else "game_world",
+		"consent_status": "not_required" if source_mode == "game" else "private_capture",
+	}
+	if not has_node("/root/GameState"):
+		return context
+	context["role"] = GameState.current_role
+	context["game_day"] = GameState.current_day
+	context["game_minute"] = GameState.current_minute
+	context["location"] = GameState.current_location
+	context["nearby_npcs"] = ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
+	if not context["nearby_npcs"].is_empty():
+		context["usage_scope"] = "local_only"
+		context["consent_status"] = "contains_nearby_residents"
+	context["event_tag"] = GameState.completed_events[-1] if not GameState.completed_events.is_empty() else ""
+	return context
+
+
+func _sample_memory_text(item: Dictionary) -> String:
+	var role := str(item.get("role", ""))
+	var location := str(item.get("location", ""))
+	var day := int(item.get("game_day", 0))
+	var minute := int(item.get("game_minute", 0))
+	var local_only := str(item.get("usage_scope", "local_only")) == "local_only"
+	var source := "真实人声 · 仅本地" if str(item.get("source_mode", "")) == "microphone" else "游戏声景"
+	if local_only and str(item.get("source_mode", "")) != "microphone":
+		source += " · 含在场居民，仅本地"
+	if role.is_empty() or day <= 0:
+		return source + " · 旧录音未记录小镇来源"
+	var place := location
+	if has_node("/root/TravelSystem"):
+		place = TravelSystem.location_name(location)
+	return "%s采集 · 第%d天 %02d:%02d · %s · %s" % [role, day, minute / 60, minute % 60, place, source]
 
 func _play_sample(item: Dictionary) -> void:
 	var wav := store.load_audio(item)

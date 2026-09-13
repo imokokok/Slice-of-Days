@@ -1,0 +1,6 @@
+.godot/
+.env
+.env.*
+!.env.example
+*.log
+*.tmp

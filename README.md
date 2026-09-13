@@ -2,11 +2,11 @@
 
 ## 随身录音、拍照与唱片店 / Town Sound
 
-[Town Sound 使用说明](prototypes/town-sound/README.md)：主游戏小镇右上角有录音、相机、相册三个图标。录音和游戏内照片保存在本机；抵达唱片店后才能编曲、制作和试听成品。唱片封面可用动态 Visual 截帧或本地相册照片。运行代码只维护一份，位于 `scripts/town_sound/`，不再另存重复的独立原型项目。当前 v0.4：默认录制游戏声景与音效，可收起面板边逛边录；真实麦克风为可选声源。Visual 使用有主次与留白的几何构图。游戏声音实录已通过，人声输入仍待确认，公共后端尚未部署。后续修改与推送见 [Git 工作流程](prototypes/town-sound/GIT_WORKFLOW.md)。
+[Town Sound 使用说明](prototypes/town-sound/README.md)：主游戏小镇右上角有录音、相机、相册三个图标。录音和游戏内照片保存在本机；抵达“潮声唱片”室内后，可从唱片制作台进入编曲、动态视觉、封面、十一段压片仪式和本地唱片架。声音素材会记录 A/B 视角、游戏日、时刻、地点、在场居民、关联事件和使用范围；真实麦克风及含在场居民的采样默认仅限本地。A/B 拥有独立 Studio 工程，唱片授权费进入主游戏钱包且同一唱片不会重复结算。公共后端尚未部署时自动保持可完整运行的 Local Mode。
 
 ## 独立原型：拼贴书信
 
-[拼贴书信源码与运行说明](prototypes/collage-letter/README.md)：刻刀裁切、33 份素材、拼贴书信与火漆封装，以及含服务端的漂流瓶互寄/回信系统。它是独立 Godot 项目，尚未接入 Solmere 主场景。`prototypes/.gdignore` 使原型资源不参与主项目导入。
+[拼贴书信源码与运行说明](prototypes/collage-letter/README.md)：刻刀裁切、33 份素材、拼贴书信与火漆封装，以及含服务端的漂流瓶互寄/回信系统。可运行内容已复制到 `extensions/collage_letter/` 并由海盐书信事务所接入主游戏；原型目录继续作为独立开发源保存。
 
 Godot 4.7.2 项目。当前版本在第一阶段垂直切片上完成了第二阶段游戏骨架：玩家可以从 A 或 B 开始，在两条平行的七天线路之间切换；角色状态、时间、居民关系、认可、剧情事件、地点路线、章节过场和存档均可通过数据持续扩展。Solmere 塔罗海龟汤已作为可完整游玩的独立牌桌场景接入。
 
@@ -45,13 +45,20 @@ Godot 4.7.2 项目。当前版本在第一阶段垂直切片上完成了第二�
 - 完整计划本/相册界面，以及双通过、仅A通过、仅B通过、均未通过四种第七天审核结局。
 - 可持久保存的全屏、主音量和减少转场位移设置。
 - 内容引用校验和 A/B 七天达到 12 份认可的可完成性模拟。
+- 统一空间系统：街道正面进入九个室内，再以横版舞台选择物件近景；室内支持在场居民对话、时间成本、关系记忆和计划本回写。
+- 扩展玩法宿主：听懂你、拼贴书信、老棋友和夜海观景台已经接入同一进入/退出/完成协议，完成后回到原室内并写回主存档。
+- 烹饪、声音授权、摄影、空间错觉与公共档案均已拥有专属操作：火候、授权时间线、取景曝光、视角投影和来源交叉索引，同时继续使用同一剧情结算接口。
 
 ## 运行与测试
 
 ```bash
 godot --path /Users/imokokok/Documents/100game
 godot --headless --path /Users/imokokok/Documents/100game res://scenes/system_smoke_test.tscn
+godot --headless --path /Users/imokokok/Documents/100game res://scenes/content_validation_test.tscn
+godot --headless --path /Users/imokokok/Documents/100game res://scenes/seven_day_simulation_test.tscn
 godot --headless --path /Users/imokokok/Documents/100game res://scenes/tarot_mechanic_test.tscn
+godot --headless --path /Users/imokokok/Documents/100game --script res://tests/integration/test_interactive_spaces.gd
+godot --headless --path /Users/imokokok/Documents/100game --script res://tests/integration/test_native_modules.gd
 ```
 
 在进入页面选择“开始新游戏”，再选择 A 或 B。目标是在两条平行的七天路线中安排时间、赴约、认识居民，并让每个人分别取得 12 份有效确认。
@@ -65,6 +72,7 @@ godot --headless --path /Users/imokokok/Documents/100game res://scenes/tarot_mec
 - NPC 日程：`data/npcs/demo_npcs.json`
 - 十二名核心居民资料：`data/npcs/core_residents.json`
 - 地点：`data/world/locations.json`
+- 街道—室内—物件配置：`data/world/interactive_spaces.json`
 - 塔罗牌库：`data/tarot/major_arcana.json`
 - 牌桌案件：`data/tarot/cases.json`
 - 后续玩法模块登记：`data/gameplay/modules.json`
@@ -74,7 +82,7 @@ godot --headless --path /Users/imokokok/Documents/100game res://scenes/tarot_mec
 - 章节切换文本与临时画面：`data/story/transitions.json`
 - 结局分支文本：`data/story/endings.json`
 - 地点路线：`data/world/travel_routes.json`
-- 灰盒玩法：`data/gameplay/module_prototypes.json`
+- 玩法叙事与结算数据：`data/gameplay/module_prototypes.json`
 - 画风参考：`art/reference/`
 - 美术替换约定：`docs/ART_REPLACEMENT_GUIDE.md`
 - 第一天与核心居民开发说明：`docs/FOURTH_STAGE_FIRST_DAY.md`
@@ -88,16 +96,16 @@ godot --headless --path /Users/imokokok/Documents/100game res://scenes/tarot_mec
 
 ## 当前边界
 
-这是已经能够从第1天推进到第7天、并容纳一百位稳定居民 ID 的灰盒版本，不是所有居民专属剧情与玩法终稿的最终制作版。当前灰盒用于验证路线、条件、选择、预约、时间成本、认可与分支结局；正式对白、美术、动画、声音和小游戏深度仍可逐项替换。工程结构说明见 `docs/SECOND_STAGE_SKELETON.md`，第三阶段叙事表现与替换入口见 `docs/THIRD_STAGE_NARRATIVE_SLICE.md`，当前第一天与居民开发层见 `docs/FOURTH_STAGE_FIRST_DAY.md`。
+这是已经能够从第1天推进到第7天，并把九个室内、五个原生生活玩法、四个独立扩展、塔罗和完整声音唱片链连回主存档的可运行整合版。100 位居民拥有稳定 ID；其中十二位已有专属人物层，其余居民仍使用可替换的通用日程与情境交流。真正的跨玩家公共唱片库需要单独部署后端和内容治理，因此当前明确保持 Local Mode，不会伪上传或阻塞单机流程。工程结构说明见 `docs/SECOND_STAGE_SKELETON.md`，新空间与扩展协议见 `docs/INTERIOR_AND_EXTENSION_SYSTEM.md`。
 
 ## 独立观景台原型
 
-[夜海观景台源码与运行说明](prototypes/observatory/README.md)：包含照片轮播、星图观察和收藏；作为独立 Godot 工程保存，尚未接入主游戏入口。
+[夜海观景台源码与运行说明](prototypes/observatory/README.md)：包含照片轮播、星图观察和收藏；可运行版本已由河岸公园的夜海观景台接入，收藏至少一个星座后写回主游戏。
 
 ## 独立原型：听懂你
 
-[听懂你源码与运行说明](prototypes/hear-you/README.md)：菜市场场景中的双人 emoji 对话，通过六段图形记忆理解同一句话背后的不同语境；包含完整对白、拖动交互、场景素材与流程检查。作为独立 Godot 项目保存，尚未接入主游戏入口。
+[听懂你源码与运行说明](prototypes/hear-you/README.md)：菜市场场景中的双人图形记忆对话；可运行版本已由潮汐饭店室内接入，完成三段对话和六次交换后写回关系日记。
 
 ## 独立原型：老棋友
 
-[老棋友源码与运行说明](prototypes/elder-board-game/README.md)：围棋（9/13/19 路）、五子棋与国际象棋的本地 AI 对弈，棋后分支对话，以及文字/涂鸦教学、A/B 共享本地棋谱和已学规则对弈。实时读图对话需配置模型服务。作为独立 Godot 项目保存，尚未接入主游戏场景与主存档。
+[老棋友源码与运行说明](prototypes/elder-board-game/README.md)：围棋（9/13/19 路）、五子棋与国际象棋的本地 AI 对弈，棋后分支对话，以及文字/涂鸦教学、A/B 共享本地棋谱和已学规则对弈。可运行版本已由河岸棋社接入；完成一局后生成共享棋局作品。实时读图对话仍需配置模型服务。

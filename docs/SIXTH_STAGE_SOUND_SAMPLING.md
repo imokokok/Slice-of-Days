@@ -20,7 +20,7 @@
 - 逐拍场景与异常分支：`data/story/events.json` 的 `b_d3_sound_session`、`b_d3_hinge_isolate`。
 - 声音素材、过程反馈和交付约束：`data/gameplay/module_prototypes.json` 的 `sound_sampling`。
 - 约束执行：`GameplayModuleSystem.choice_interaction_check()`。
-- 工作台按钮状态与原因提示：`scripts/ui/module_workbench.gd`。
+- 授权时间线、完整试听、按钮状态与原因提示：`scripts/ui/native_module_game.gd`。
 - 雨天唱片店背景：`art/locations/record_store/record_store_rain_session_v01.png`。
 
 ## 可替换范围

@@ -809,7 +809,7 @@ func _refresh_state() -> void:
 func _return_to_town() -> void:
 	if GameplayModuleSystem.pending_module_id() == "tarot":
 		GameplayModuleSystem.cancel_session()
-	SceneRouter.town_day()
+	SceneRouter.return_from_gameplay()
 
 
 func _unhandled_input(event: InputEvent) -> void:

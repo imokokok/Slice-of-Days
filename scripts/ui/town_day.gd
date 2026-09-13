@@ -43,6 +43,7 @@ var staged_advance_button: Button
 var staged_choices_box: VBoxContainer
 var pocket_panel: Control
 var pocket_opening := false
+var interactive_spaces: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -96,6 +97,7 @@ func _ready() -> void:
 				break
 	WorldSound.set_active(true)
 	_load_locations()
+	_load_interactive_spaces()
 	selected_location = GameState.current_location
 	backdrop = $Backdrop
 	_build_ui()
@@ -154,6 +156,20 @@ func _load_locations() -> void:
 		return
 	for row in parsed.get("locations", []):
 		locations[str(row.get("id", ""))] = row
+
+
+func _load_interactive_spaces() -> void:
+	interactive_spaces.clear()
+	var path := "res://data/world/interactive_spaces.json"
+	if not FileAccess.file_exists(path):
+		return
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_error("Invalid interactive space data")
+		return
+	for row in parsed.get("spaces", []):
+		if row is Dictionary:
+			interactive_spaces.append(row)
 
 
 func _build_ui() -> void:
@@ -351,7 +367,11 @@ func _render_actions(current_people: Array[String]) -> void:
 	if selected_location != GameState.current_location:
 		_add_action("先抵达这里，才能互动", Callable(), true)
 		return
-	if GameState.current_location == "record_store":
+	for space in _spaces_at(GameState.current_location):
+		_add_action("进入%s · %s" % [str(space.get("name", "室内")), str(space.get("sign", "ENTER"))], SceneRouter.enter_space.bind(str(space.get("id", ""))))
+		if actions_box.get_child_count() >= 4:
+			return
+	if GameState.current_location == "record_store" and _spaces_at(GameState.current_location).is_empty():
 		_add_action("进入唱片店工作台 · 编曲 / 制作 / 唱片架", _open_record_store)
 	for event in EventSystem.available_events():
 		var event_id := str(event.get("id", ""))
@@ -375,6 +395,14 @@ func _render_actions(current_people: Array[String]) -> void:
 		_add_action("和%s聊几句（20分钟）" % str(resident.get("display_name", resident_id)), _ambient_talk.bind(resident_id))
 	if actions_box.get_child_count() == 0:
 		_add_action("观察周围（20分钟）", _observe)
+
+
+func _spaces_at(location_id: String) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for space in interactive_spaces:
+		if str(space.get("location_id", "")) == location_id:
+			result.append(space)
+	return result
 
 
 func _show_pocket_panel(panel: Control) -> void:

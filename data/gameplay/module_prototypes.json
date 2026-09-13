@@ -1,5 +1,5 @@
 {
-  "_note": "灰盒玩法数据。正式数值、文本和美术可以直接替换，不改变系统接口。",
+  "_note": "玩法叙事、选择成本与结算数据。专属交互场景与扩展均通过同一结果接口写回。",
   "prototypes": [
     {
       "module_id": "cooking",
@@ -322,6 +322,7 @@
       "module_id": "photography",
       "title": "摄影与相册",
       "description": "选择取景范围。照片偶尔会比拍摄者多记住一点东西。",
+      "background_path": "res://art/locations/print_shop/print_shop_morning_v01.png",
       "interaction": {
         "prompt": "先决定画面里保留什么。被排除在取景框外的东西不会消失。",
         "mode": "toggle",
@@ -365,9 +366,10 @@
     {
       "module_id": "optical_illusion",
       "title": "局部记录与空间错觉",
-      "description": "照片、手绘、文字和模型都漏掉了一部分。灰盒版只验证连接选择，不锁定最终2D或3D表现。",
+      "description": "照片、手绘、文字和模型都漏掉了一部分。选择矛盾记录并改变观察角度，让断开的连接在投影中成立。",
+      "background_path": "res://art/locations/old_station/old_station_long_evening_v01.png",
       "interaction": {
-        "prompt": "挑出两份互相矛盾却都要保留的记录。正式美术以后可直接替换成可旋转模型。",
+        "prompt": "挑出两份互相矛盾却都要保留的记录，再旋转观察角度寻找它们共同成立的投影。",
         "mode": "toggle",
         "min_select": 2,
         "max_select": 2,
@@ -390,6 +392,56 @@
               {"collection": "models", "shared": false, "data": {"id": "contradictory_room", "title": "互相矛盾的房间", "kind": "model"}}
             ],
             "relationship_flags": {"stagehand": ["一起保留了矛盾的空间记录"]}
+          }
+        }
+      ]
+    },
+    {
+      "module_id": "archives",
+      "title": "公共档案与缺失索引",
+      "description": "照片、车票、潮汐表和录音来自不同的人。交叉查询可以建立连接，也必须允许证据不足的位置继续空着。",
+      "background_path": "res://art/locations/library/library_letter_revision_v01.png",
+      "interaction": {
+        "prompt": "选择三份记录进行交叉查询。\n日期、地点和来源必须一起保留，不能只留下方便的结论。",
+        "mode": "ordered",
+        "min_select": 3,
+        "max_select": 3,
+        "progress_steps": [
+          "档案志愿者：先看来源，再看它们像不像同一件事。",
+          "第一份记录放到阅览架上，原来的编号仍留在角落。",
+          "第二份记录与它共享一个地点，但日期还没有对齐。",
+          "三份记录已经展开。现在决定建立索引，还是诚实地留下缺口。"
+        ],
+        "tokens": [
+          {"id": "undated_photo", "label": "没有日期的港口照片", "detail": "背面只写着‘风很大’"},
+          {"id": "tide_log", "label": "旧潮汐记录", "detail": "其中一天的时间比车站钟慢十一分钟"},
+          {"id": "station_ticket", "label": "停止使用的车票", "detail": "终点站名称被折痕遮住"},
+          {"id": "bus_manifest", "label": "末班车行车单", "detail": "记录了一次没有乘客的停靠"},
+          {"id": "voice_catalog", "label": "未署名的声音目录", "detail": "只注明‘门轴、远处列车、海风’"}
+        ]
+      },
+      "choices": [
+        {
+          "id": "build_cross_index",
+          "label": "建立一条可追溯的交叉索引",
+          "detail": "花费45分钟，保留全部来源编号。",
+          "cost": {"minutes": 45},
+          "result_text": "三份记录被一条新索引连接起来。它没有证明故事，却让后来的人能够重新检查。",
+          "results": {
+            "facts": ["公共档案里，旧车站、港口照片与十一分钟误差之间存在一条可追溯索引。"],
+            "artifacts": [{"collection": "archives", "shared": true, "data": {"id": "station_port_cross_index", "title": "旧站与港口交叉索引", "kind": "archive_index"}}],
+            "journal_entries": [{"id": "public_archive_cross_index", "kind": "research", "text": "把三份不同来源的记录连成了一条仍可被复查的索引。"}]
+          }
+        },
+        {
+          "id": "preserve_archive_gap",
+          "label": "标出无法确认的缺口",
+          "detail": "花费30分钟，不用猜测补齐缺失日期。",
+          "cost": {"minutes": 30},
+          "result_text": "索引卡上留下一个明确的空格。缺失没有被误写成答案。",
+          "results": {
+            "facts": ["档案中的缺失日期被明确保留，没有用推测补齐。"],
+            "journal_entries": [{"id": "public_archive_gap", "kind": "research", "text": "在公共档案索引里保留了一处无法确认的日期。"}]
           }
         }
       ]

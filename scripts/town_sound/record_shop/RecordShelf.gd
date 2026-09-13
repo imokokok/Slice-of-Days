@@ -23,7 +23,8 @@ func _ready() -> void:
 	column.add_child(host._label("LOCAL RECORDINGS / 本地唱片架", 28))
 	column.add_child(host._button("♪ 声音设置 / 测试音", func() -> void: get_node("/root/SoundSettings").show_dialog()))
 	column.add_child(host._button("返回录音", func() -> void: queue_free()))
-	column.add_child(host._label("游戏内余额：%d   /   LOCAL MODE" % library.money(), 18))
+	var balance := GameState.money if has_node("/root/GameState") else library.money()
+	column.add_child(host._label("游戏内余额：%d   /   LOCAL MODE" % balance, 18))
 	note = host._label("居民唱片与自己的成品，随时回来听。", 16)
 	column.add_child(note)
 	column.add_child(host._button("公共唱片库状态", func() -> void:
@@ -41,7 +42,9 @@ func _ready() -> void:
 				cover.custom_minimum_size = Vector2(68, 68)
 				cover.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 				row.add_child(cover)
-		row.add_child(host._label("%s / %s / %.1f s\n%s" % [record.title, record.artist, record.duration, record.get("one_line_note", "")], 15))
+		var creator := str(record.get("created_by", ""))
+		var origin := " · %s视角制作" % creator if not creator.is_empty() else ""
+		row.add_child(host._label("%s / %s / %.1f s%s\n%s" % [record.title, record.artist, record.duration, origin, record.get("one_line_note", "")], 15))
 		row.add_child(host._button("▶ 试听", func() -> void: listen(record)))
 	column.add_child(host._button("■ 停止试听", func() -> void: player.stop()))
 	visual = VisualCanvas.new()

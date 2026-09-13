@@ -87,11 +87,11 @@
 
 预约至少填写稳定 `id`、`day`、`start`、`end`、`location` 和 `label`。承接预约的事件应与预约使用同一 ID，并在条件里填写同一个 `required_appointment`。系统自动维护 `scheduled`、`active`、`completed`、`missed`，内容数据不要手动跳过这些状态。
 
-## 灰盒玩法
+## 原生玩法数据
 
-`data/gameplay/modules.json` 登记稳定玩法ID和场景入口；`data/gameplay/module_prototypes.json` 保存灰盒选择、成本与结果。正式美术和更复杂的交互可以替换工作台场景，但应继续通过同一结果结构写回关系、日记、作品和玩法状态。
+`data/gameplay/modules.json` 登记稳定玩法ID和场景入口；`data/gameplay/module_prototypes.json` 保存交互素材、规则、成本与结果。当前原生玩法已经具备专属操作，正式美术与动画仍可替换呈现层，但应继续通过同一结果结构写回关系、日记、作品和玩法状态。
 
-每个灰盒玩法还需要一个 `interaction`：
+每个原生玩法需要一个 `interaction`：
 
 - `prompt`：进入桌面后要完成的具体操作说明。
 - `mode`：`ordered` 表示选择顺序有意义，`toggle` 表示只记录保留了哪些项目。
@@ -110,7 +110,8 @@
 
 - `choice_key`：匹配 `事件ID/选择ID`。
 - `journal_id` 或 `journal_kind`：匹配具体日记或某类日记。
-- `artifact_id`：同时查询角色私人物件与公共作品。
+- `artifact_id`：按稳定 ID 同时查询角色私人物件与公共作品。
+- `artifact_collection` 与 `artifact_kind`：匹配运行时生成 ID 的某类作品，例如本地压片唱片。
 - `module_id` 与可选的 `module_choice_id`：读取某个玩法最近一次结果。
 - `role`：可选；限制只查询 A 或 B。省略时依次查询两人。
 

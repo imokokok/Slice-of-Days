@@ -1,14 +1,14 @@
 {
   "modules": [
-    {"id": "cooking", "name": "烹饪与公共食谱", "core_action": "组合食材并交换配方", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
-    {"id": "ghostwriting", "name": "代写与拼贴诗", "core_action": "从语句碎片组织作者声音", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
+    {"id": "cooking", "name": "烹饪与公共食谱", "core_action": "选择三样材料、调整火候并决定出餐方式", "stage": "playable", "scene_path": "res://scenes/native_module_game.tscn"},
+    {"id": "ghostwriting", "name": "代写与拼贴书信", "core_action": "裁切、拼贴、折叠并封存一封仍属于写信人的信", "stage": "playable", "scene_path": "res://scenes/extension_host.tscn", "extension_scene_path": "res://extensions/collage_letter/Main.tscn", "completion_hint": "完成拼贴、折叠、装封和火漆，把信送出后即可带着结果返回。", "direct_time_minutes": 60, "external_results": {"facts": ["亲手完成并封存过一封拼贴书信。"], "journal_entries": [{"id": "extension_collage_letter", "kind": "work", "text": "纸张、停顿和没有说满的话被装进同一只信封。"}], "artifacts": [{"collection": "letters", "shared": false, "data": {"id": "collage_letter", "title": "一封拼贴书信", "kind": "letter"}}]}},
     {"id": "tarot", "name": "Solmere 塔罗海龟汤", "core_action": "三选一读牌、意象提问、深读与交叉解读", "stage": "playable", "initially_unlocked": true, "scene_path": "res://scenes/tarot_table.tscn"},
-    {"id": "translation", "name": "误解与翻译", "core_action": "在不完整语义间做选择", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
-    {"id": "optical_illusion", "name": "三维视觉错觉", "core_action": "改变视角让空间关系成立", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
-    {"id": "sound_sampling", "name": "城市采样与音乐影像", "core_action": "收集声音并编排成段落", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
-    {"id": "chess", "name": "棋局", "core_action": "用局面表达人物关系", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
-    {"id": "contemplation", "name": "凝视与风景", "core_action": "用停留时间换取感知线索", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
-    {"id": "photography", "name": "摄影工作台", "core_action": "构图、显影并归档证据", "stage": "graybox", "scene_path": "res://scenes/module_workbench.tscn"},
-    {"id": "archives", "name": "公共档案", "core_action": "交叉查询居民与城市记录", "stage": "prototype_hook"}
+    {"id": "translation", "name": "听懂你", "core_action": "交换没有说出口的图形记忆，让两个人听见同一句话背后的不同经验", "stage": "playable", "scene_path": "res://scenes/extension_host.tscn", "extension_scene_path": "res://extensions/hear_you/main.tscn", "completion_hint": "完成三段对话和六次记忆交换后返回。", "direct_time_minutes": 30, "external_results": {"facts": ["同一句话可能来自完全不同的生活经验。"], "journal_entries": [{"id": "extension_hear_you", "kind": "relationship", "text": "争执没有替任何人做决定，但两边都真正听见了对方。"}]}},
+    {"id": "optical_illusion", "name": "三维视觉错觉", "core_action": "选择矛盾记录并调整观察角度让空间关系成立", "stage": "playable", "scene_path": "res://scenes/native_module_game.tscn"},
+    {"id": "sound_sampling", "name": "城市采样与音乐影像", "core_action": "按来源与授权选择声音、排列时间线并试听交付", "stage": "playable", "scene_path": "res://scenes/native_module_game.tscn"},
+    {"id": "chess", "name": "老棋友", "core_action": "对弈、听故事，或把自己会的规则教给老人", "stage": "playable", "scene_path": "res://scenes/extension_host.tscn", "extension_scene_path": "res://extensions/elder_board/scenes/main.tscn", "completion_hint": "完成一局棋后，可以继续听故事，也可以把这段经历带回小镇。", "direct_time_minutes": 45, "external_results": {"facts": ["棋谱会记住一局棋，也会记住是谁坐在棋盘另一边。"], "journal_entries": [{"id": "extension_elder_board", "kind": "relationship", "text": "在河岸棋社完整坐完了一局棋。"}], "artifacts": [{"collection": "game_records", "shared": true, "data": {"id": "elder_board_match", "title": "窗边的一局棋", "kind": "board_game"}}]}},
+    {"id": "contemplation", "name": "夜海观景台", "core_action": "调整固定视角，让分散的星点在正确投影中相遇", "stage": "playable", "scene_path": "res://scenes/extension_host.tscn", "extension_scene_path": "res://extensions/observatory/scenes/Main.tscn", "completion_hint": "找到并收藏至少一个星座后返回。", "direct_time_minutes": 30, "external_results": {"facts": ["固定的星点会在正确视角下连接成另一种图形。"], "journal_entries": [{"id": "extension_observatory", "kind": "observation", "text": "夜海上方的星点在一个角度短暂相连。"}], "artifacts": [{"collection": "observations", "shared": false, "data": {"id": "night_constellation", "title": "夜海星图", "kind": "constellation"}}]}},
+    {"id": "photography", "name": "摄影工作台", "core_action": "选择画面关系、调整曝光并按下快门", "stage": "playable", "scene_path": "res://scenes/native_module_game.tscn"},
+    {"id": "archives", "name": "公共档案", "core_action": "选择三份记录、核对来源并建立或保留一条索引连接", "stage": "playable", "scene_path": "res://scenes/native_module_game.tscn"}
   ]
 }

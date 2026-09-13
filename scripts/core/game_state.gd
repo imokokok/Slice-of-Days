@@ -59,6 +59,7 @@ func _initialize_new_state(start_role: String) -> void:
 		"completed_transitions": [],
 		"seen_openings": [],
 		"world_artifacts": {},
+		"credited_record_ids": [],
 		"game_complete": false,
 	}
 	_load_role_state(str(shared_state.chapter_start_role))
@@ -315,6 +316,35 @@ func add_artifact(collection: String, artifact: Dictionary, shared := false) -> 
 		artifacts = target
 	commit_active_role_state()
 	state_changed.emit()
+
+
+func credit_record_once(record_id: String, payment: int, record: Dictionary = {}) -> bool:
+	if record_id.is_empty() or payment <= 0:
+		return false
+	var credited: Array = shared_state.get("credited_record_ids", [])
+	if credited.has(record_id):
+		return false
+	credited.append(record_id)
+	shared_state["credited_record_ids"] = credited
+	money += payment
+	var artifact := {
+		"id": record_id,
+		"title": str(record.get("title", "未命名唱片")),
+		"artist": str(record.get("artist", current_role)),
+		"kind": "record",
+		"created_by": current_role,
+		"day": current_day,
+		"payment": payment,
+	}
+	add_artifact("records", artifact, true)
+	add_journal_entry({
+		"id": "record_%s" % record_id,
+		"kind": "work",
+		"text": "唱片《%s》被放进本地唱片架，获得 %d 元录音授权费。" % [artifact.title, payment],
+	})
+	commit_active_role_state()
+	state_changed.emit()
+	return true
 
 
 func add_appointment(appointment: Dictionary) -> void:

@@ -194,16 +194,26 @@ func complete_action() -> void:
 		payment += randi_range(5, 15) + randi_range(-10, 20)
 		payment = clampi(payment, 60, 180)
 		if saved_record.is_empty():
+			var role := GameState.current_role if has_node("/root/GameState") else ""
+			var day := GameState.current_day if has_node("/root/GameState") else 0
 			saved_record = library.save_record({"title": title_input.text, "artist": artist_input.text,
 				"one_line_note": note_input.text, "duration": audio.get_length(), "visual_prompt": model.prompt,
 				"visual_profile": profile, "visual_seed": seed_value, "visual_version": int(profile.get("visual_version", 2)), "source_sample_count": samples.size(),
 				"cover_source": cover_source, "source_photo_id": source_photo_id,
-				"payment": payment, "project_path": "user://projects/current.json"}, audio, cover)
+				"payment": payment, "project_path": model.project_path, "created_by": role,
+				"game_day": day, "location": "record_store"}, audio, cover)
 		if saved_record.is_empty():
 			instructions.text = library.last_error
 			locked = false
 			next_button.disabled = false
 			return
+		if has_node("/root/GameState"):
+			GameState.credit_record_once(
+				str(saved_record.get("record_id", saved_record.get("id", ""))),
+				int(saved_record.get("payment", payment)),
+				saved_record
+			)
+			SaveManager.save_game()
 		instructions.text = "老板：我晚点再听一遍。\n正在把你的唱片放上 LOCAL RECORDINGS……"
 		var tween := create_tween()
 		tween.tween_property(self, "progress", 1.0, 3.5).set_trans(Tween.TRANS_CUBIC)
@@ -216,7 +226,8 @@ func complete_action() -> void:
 	var buttons := {3: "辅助操作：对齐标签", 4: "辅助操作：压下把手", 5: "辅助操作：滑入内袋", 6: "辅助操作：装进外套", 7: "辅助操作：贴下封签", 8: "辅助操作：拿起并盖章", 9: "辅助操作：插入编号卡", 10: "辅助操作：交给老板", 11: "返回 Studio"}
 	next_button.text = buttons.get(step, "继续")
 	if step == 11:
-		instructions.text = "「%s」已上架  +%d / LOCAL RECORDING LICENSE\n游戏内余额：%d · 唱片已本地保存。公共库尚未配置，保持 Local Mode。" % [saved_record.title, saved_record.payment, library.money()]
+		var balance := GameState.money if has_node("/root/GameState") else library.money()
+		instructions.text = "「%s」已上架  +%d / LOCAL RECORDING LICENSE\n游戏内余额：%d · 唱片已本地保存。公共库尚未配置，保持 Local Mode。" % [saved_record.title, saved_record.payment, balance]
 	else:
 		instructions.text = STEPS[step] + "\n" + HINTS[step]
 	queue_redraw()

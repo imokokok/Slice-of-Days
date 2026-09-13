@@ -17,6 +17,7 @@ func _ready() -> void:
 	_test_appointment_lifecycle()
 	_test_choice_history()
 	_test_gameplay_module_state()
+	_test_external_extension_and_record_credit()
 	_test_ending_echo_resolver()
 	_test_ui_scenes_load()
 	_test_chapter_progression()
@@ -80,15 +81,42 @@ func _test_core_resident_profiles() -> void:
 	var a_line := ResidentProfileSystem.ambient_line("jiu", "A", 0)
 	var b_line := ResidentProfileSystem.ambient_line("jiu", "B", 0)
 	_check(not a_line.is_empty() and not b_line.is_empty() and a_line != b_line, "A and B should receive distinct ambient lines from a core resident")
+	var generated_a := ResidentProfileSystem.ambient_line("town_resident_033", "A", 0)
+	var generated_b := ResidentProfileSystem.ambient_line("town_resident_033", "B", 0)
+	_check(not generated_a.is_empty() and not generated_b.is_empty(), "Generated residents should have contextual dialogue instead of empty placeholder text")
+	_check(ResidentProfileSystem.role_lens("town_resident_033", "A") != ResidentProfileSystem.role_lens("town_resident_033", "B"), "Generated residents should react differently to A and B")
 
 
 func _test_ui_scenes_load() -> void:
 	var town_scene = load("res://scenes/town_day.tscn")
 	var workbench_scene = load("res://scenes/module_workbench.tscn")
 	var ending_scene = load("res://scenes/ending.tscn")
+	var interior_scene = load("res://scenes/interactive_space.tscn")
+	var extension_host_scene = load("res://scenes/extension_host.tscn")
 	_check(town_scene is PackedScene, "The town UI scene and its script should parse")
 	_check(workbench_scene is PackedScene, "The module workbench scene and its script should parse")
 	_check(ending_scene is PackedScene, "The ending UI scene and its dynamic echo resolver should parse")
+	_check(interior_scene is PackedScene, "The street-to-interior scene should parse")
+	_check(extension_host_scene is PackedScene, "The extension host scene should parse")
+
+
+func _test_external_extension_and_record_credit() -> void:
+	ChapterSystem.start_new_game("A")
+	_check(GameplayModuleSystem.begin_session("translation", "space:restaurant:market_memory"), "A direct interior extension should begin")
+	var complete_ok := GameplayModuleSystem.complete_external(
+		"translation",
+		{"choice_id": "extension_complete", "label": "听懂你"},
+		GameplayModuleSystem.modules.get("translation", {}).get("external_results", {})
+	)
+	_check(complete_ok, "An external extension should complete through the shared gameplay contract")
+	_check(GameplayModuleSystem.pending_module_id().is_empty(), "Completing an extension should clear the pending session")
+	_check(GameState.known_facts.has("同一句话可能来自完全不同的生活经验。"), "Extension results should return facts to the main save")
+	var before_money := GameState.money
+	var record := {"title": "Smoke Record", "artist": "A"}
+	_check(GameState.credit_record_once("smoke_record", 90, record), "A new pressed record should grant its license payment")
+	_check(GameState.money == before_money + 90, "The record payment should update the active role wallet")
+	_check(not GameState.credit_record_once("smoke_record", 90, record), "The same record should never be paid twice")
+	_check(GameState.money == before_money + 90, "A duplicate credit attempt should leave money unchanged")
 
 
 func _test_event_and_relationship() -> void:
@@ -269,6 +297,14 @@ func _test_ending_echo_resolver() -> void:
 	_check(ending_text.contains("未出现。不是未完成。"), "The ending should preserve the missed schedule as an absence")
 	_check(ending_text.contains("后来被重新说了一遍"), "The ending should preserve the relationship repair")
 	_check(not ending_text.contains("{selected_"), "Resolved ending copy should not expose data placeholders")
+	_check(GameState.credit_record_once("smoke-ending-record", 10, {"title": "潮线之间", "artist": "B"}), "The ending echo test should create a dynamic record artifact")
+	var record_echo: Dictionary = {}
+	for raw_echo in ending_data.get("echoes", []):
+		if str(raw_echo.get("id", "")) == "pressed_local_record":
+			record_echo = raw_echo
+			break
+	var record_ending := {"max_echoes": 1, "one_per_category": true, "echoes": [record_echo], "fallback_echo": "missing"}
+	_check(resolver.display_text(record_ending).contains("《潮线之间》"), "The ending should resolve dynamically generated record artifacts by collection and kind")
 
 
 func _store_echo_outcome(module_id: String, choice_id: String, label: String, selected_labels: Array[String]) -> void:

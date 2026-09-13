@@ -205,7 +205,7 @@ func _complete_choice(choice_id: String) -> void:
 func _return_to_town() -> void:
 	if not GameplayModuleSystem.pending_module_id().is_empty():
 		GameplayModuleSystem.cancel_session()
-	SceneRouter.town_day()
+	SceneRouter.return_from_gameplay()
 
 
 func _panel(parent: Node, at: Vector2, panel_size: Vector2, color: Color, border: Color, radius: int) -> Panel:

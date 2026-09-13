@@ -102,6 +102,83 @@
       "text": "写得过于清楚的初稿还没有封口；它从{selected_joined}开始。"
     },
     {
+      "id": "collage_letter_sent",
+      "category": "letter",
+      "priority": 89,
+      "module_id": "ghostwriting",
+      "artifact_id": "collage_letter",
+      "text": "那封由纸边、停顿和旧车票组成的拼贴信已经封口；它仍然属于写信的人。"
+    },
+    {
+      "id": "archive_cross_index",
+      "category": "archive",
+      "priority": 78,
+      "module_id": "archives",
+      "module_choice_id": "build_cross_index",
+      "text": "公共档案多了一条由{selected_joined}组成的交叉索引；每份来源编号都还留在原处。"
+    },
+    {
+      "id": "archive_preserved_gap",
+      "category": "archive",
+      "priority": 78,
+      "module_id": "archives",
+      "module_choice_id": "preserve_archive_gap",
+      "text": "档案索引没有猜测缺失日期；{selected_joined}之间仍留着一处明确的空格。"
+    },
+    {
+      "id": "optical_connection",
+      "category": "old_station",
+      "priority": 74,
+      "module_id": "optical_illusion",
+      "module_choice_id": "preserve_contradiction",
+      "text": "旧车站的模型同时保留了{selected_joined}；它们只在那个观察角度短暂相连。"
+    },
+    {
+      "id": "photographed_reflection",
+      "category": "photography",
+      "priority": 72,
+      "module_id": "photography",
+      "module_choice_id": "photograph_reflection",
+      "text": "相册里那张由{selected_joined}组成的照片，仍有一瞬间像另一处旧阳台。"
+    },
+    {
+      "id": "photographed_people",
+      "category": "photography",
+      "priority": 72,
+      "module_id": "photography",
+      "module_choice_id": "photograph_people",
+      "text": "没有人为了照片停下来；{selected_joined}仍按自己的时间留在画面里。"
+    },
+    {
+      "id": "translation_heard",
+      "category": "understanding",
+      "priority": 70,
+      "module_id": "translation",
+      "text": "那场争论没有被漂亮地解决，但同一句话背后的两种生活经验都被听见了。"
+    },
+    {
+      "id": "elder_board_match",
+      "category": "chess",
+      "priority": 68,
+      "artifact_id": "elder_board_match",
+      "text": "河岸棋社仍留着那盘窗边棋局；没有走完的停顿也算在棋谱里。"
+    },
+    {
+      "id": "night_constellation",
+      "category": "observation",
+      "priority": 64,
+      "artifact_id": "night_constellation",
+      "text": "夜海上方的星点只在一个角度相连，那张星图已经被收进私人记录。"
+    },
+    {
+      "id": "pressed_local_record",
+      "category": "music",
+      "priority": 62,
+	  "artifact_collection": "records",
+	  "artifact_kind": "record",
+	  "text": "唱片架上还留着《{artifact_title}》，那是这七天真正压制完成的本地唱片。"
+    },
+    {
       "id": "missed_appointment",
       "category": "schedule",
       "priority": 85,

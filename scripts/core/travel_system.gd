@@ -1,12 +1,15 @@
 extends Node
 
 const ROUTES_PATH := "res://data/world/travel_routes.json"
+const LOCATIONS_PATH := "res://data/world/locations.json"
 
 var adjacency: Dictionary = {}
+var location_names: Dictionary = {}
 
 
 func _ready() -> void:
 	load_route_data(ROUTES_PATH)
+	load_location_names(LOCATIONS_PATH)
 
 
 func load_route_data(path: String) -> void:
@@ -26,6 +29,30 @@ func load_route_data(path: String) -> void:
 		_add_edge(from_id, to_id, minutes)
 		if bool(edge.get("bidirectional", true)):
 			_add_edge(to_id, from_id, minutes)
+
+
+func load_location_names(path: String) -> void:
+	location_names.clear()
+	if not FileAccess.file_exists(path):
+		push_warning("Location data not found: %s" % path)
+		return
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		push_warning("Unable to open location data: %s" % path)
+		return
+	var parsed = JSON.parse_string(file.get_as_text())
+	if not (parsed is Dictionary):
+		push_warning("Invalid location data: %s" % path)
+		return
+	for item in parsed.get("locations", []):
+		if item is Dictionary:
+			var location_id := str(item.get("id", ""))
+			if not location_id.is_empty():
+				location_names[location_id] = str(item.get("name", location_id))
+
+
+func location_name(location_id: String) -> String:
+	return str(location_names.get(location_id, location_id))
 
 
 func _add_edge(from_id: String, to_id: String, minutes: int) -> void:

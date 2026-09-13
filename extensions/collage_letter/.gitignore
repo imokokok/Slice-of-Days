@@ -1,0 +1,11 @@
+.godot/
+.reload_requested
+runtime/Godot.exe
+*.tmp
+__pycache__/
+*.sqlite3*
+server/test-data/
+runtime/python/
+runtime/
+bottle_identity*.json
+letter_v1.json

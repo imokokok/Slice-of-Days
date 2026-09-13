@@ -38,7 +38,7 @@ func list_samples() -> Array[Dictionary]:
 	results.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a.created_at) < str(b.created_at))
 	return results
 
-func save_sample(wav: AudioStreamWAV, sample_name: String) -> Dictionary:
+func save_sample(wav: AudioStreamWAV, sample_name: String, context: Dictionary = {}) -> Dictionary:
 	last_error = ""
 	if wav == null or wav.data.is_empty():
 		last_error = "没有可保存的录音。"
@@ -68,7 +68,16 @@ func save_sample(wav: AudioStreamWAV, sample_name: String) -> Dictionary:
 	var metadata := {
 		"id": id, "name": clean_name if not clean_name.is_empty() else "未命名的声音",
 		"duration": wav.get_length(), "created_at": Time.get_datetime_string_from_system(true),
-		"file_path": final_path, "sample_rate": wav.mix_rate, "channels": 2 if wav.stereo else 1
+		"file_path": final_path, "sample_rate": wav.mix_rate, "channels": 2 if wav.stereo else 1,
+		"source_mode": str(context.get("source_mode", "unknown")),
+		"role": str(context.get("role", "")),
+		"game_day": int(context.get("game_day", 0)),
+		"game_minute": int(context.get("game_minute", 0)),
+		"location": str(context.get("location", "")),
+		"nearby_npcs": context.get("nearby_npcs", []).duplicate(),
+		"event_tag": str(context.get("event_tag", "")),
+		"usage_scope": str(context.get("usage_scope", "local_only")),
+		"consent_status": str(context.get("consent_status", "unknown")),
 	}
 	if not _write_json(root_path.path_join(id + ".json"), metadata):
 		DirAccess.remove_absolute(final_path)
@@ -89,16 +98,9 @@ func rename_sample(id: String, new_name: String) -> bool:
 	return false
 
 func delete_sample(id: String) -> bool:
-	if root_path == "user://samples" and FileAccess.file_exists("user://projects/current.json"):
-		var parser := JSON.new()
-		if parser.parse(FileAccess.get_file_as_string("user://projects/current.json")) != OK:
-			last_error = "工程无法读取，暂不删除原始录音，以免损坏工程。"
-			return false
-		if parser.data is Dictionary:
-			for clip in parser.data.get("clips", []):
-				if clip is Dictionary and clip.get("sample_id", "") == id:
-					last_error = "这段录音正被 Studio 使用，请先移除相关片段并保存工程。"
-					return false
+	if root_path == "user://samples" and _sample_is_used_by_project(id):
+		last_error = "这段录音正被 A 或 B 的 Studio 工程使用，请先移除相关片段并保存工程。"
+		return false
 	for item in list_samples():
 		if item.id != id:
 			continue
@@ -118,6 +120,22 @@ func delete_sample(id: String) -> bool:
 			return false
 		return true
 	last_error = "找不到这段录音。"
+	return false
+
+
+func _sample_is_used_by_project(sample_id: String) -> bool:
+	var paths: Array[String] = ["user://projects/current.json", "user://projects/a_current.json", "user://projects/b_current.json"]
+	for path in paths:
+		if not FileAccess.file_exists(path):
+			continue
+		var parser := JSON.new()
+		if parser.parse(FileAccess.get_file_as_string(path)) != OK:
+			# A damaged project is treated conservatively so its source audio is not lost.
+			return true
+		if parser.data is Dictionary:
+			for clip in parser.data.get("clips", []):
+				if clip is Dictionary and str(clip.get("sample_id", "")) == sample_id:
+					return true
 	return false
 
 func load_audio(item: Dictionary) -> AudioStreamWAV:

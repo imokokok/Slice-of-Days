@@ -70,8 +70,10 @@ func _matching_context(echo: Dictionary) -> Dictionary:
 				continue
 			context["journal"] = journal
 		var artifact_id := str(echo.get("artifact_id", ""))
-		if not artifact_id.is_empty():
-			var artifact := _artifact_in_state_or_world(state, artifact_id)
+		var artifact_collection := str(echo.get("artifact_collection", ""))
+		var artifact_kind := str(echo.get("artifact_kind", ""))
+		if not artifact_id.is_empty() or not artifact_collection.is_empty() or not artifact_kind.is_empty():
+			var artifact := _artifact_in_state_or_world(state, artifact_id, artifact_collection, artifact_kind)
 			if artifact.is_empty():
 				continue
 			context["artifact"] = artifact
@@ -107,19 +109,25 @@ func _journal_in_state(state: Dictionary, journal_id: String, journal_kind: Stri
 	return {}
 
 
-func _artifact_in_state_or_world(state: Dictionary, artifact_id: String) -> Dictionary:
-	var artifact := _artifact_in_collections(state.get("artifacts", {}), artifact_id)
+func _artifact_in_state_or_world(state: Dictionary, artifact_id: String, collection_id: String = "", artifact_kind: String = "") -> Dictionary:
+	var artifact := _artifact_in_collections(state.get("artifacts", {}), artifact_id, collection_id, artifact_kind)
 	if not artifact.is_empty():
 		return artifact
-	return _artifact_in_collections(GameState.shared_state.get("world_artifacts", {}), artifact_id)
+	return _artifact_in_collections(GameState.shared_state.get("world_artifacts", {}), artifact_id, collection_id, artifact_kind)
 
 
-func _artifact_in_collections(collections: Dictionary, artifact_id: String) -> Dictionary:
-	for collection_id in collections:
-		for raw_artifact in collections[collection_id]:
+func _artifact_in_collections(collections: Dictionary, artifact_id: String, requested_collection: String = "", artifact_kind: String = "") -> Dictionary:
+	for collection_id_value in collections:
+		var collection_id := str(collection_id_value)
+		if not requested_collection.is_empty() and collection_id != requested_collection:
+			continue
+		for raw_artifact in collections[collection_id_value]:
 			var artifact: Dictionary = raw_artifact
-			if str(artifact.get("id", "")) == artifact_id:
-				return artifact
+			if not artifact_id.is_empty() and str(artifact.get("id", "")) != artifact_id:
+				continue
+			if not artifact_kind.is_empty() and str(artifact.get("kind", "")) != artifact_kind:
+				continue
+			return artifact
 	return {}
 
 

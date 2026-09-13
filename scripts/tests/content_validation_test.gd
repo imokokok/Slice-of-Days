@@ -15,6 +15,7 @@ func _ready() -> void:
 	var characters := _load_json("res://data/story/characters.json")
 	var modules := _load_json("res://data/gameplay/modules.json")
 	var prototypes := _load_json("res://data/gameplay/module_prototypes.json")
+	var spaces := _load_json("res://data/world/interactive_spaces.json")
 	var arcana := _load_json("res://data/tarot/major_arcana.json")
 	var tarot_cases := _load_json("res://data/tarot/cases.json")
 	var location_ids := _unique_ids(locations.get("locations", []), "location")
@@ -35,9 +36,11 @@ func _ready() -> void:
 	_validate_characters(characters)
 	_validate_prototypes(prototypes.get("prototypes", []), module_ids, resident_ids)
 	_validate_module_coverage(modules.get("modules", []), prototypes.get("prototypes", []))
+	_validate_module_scenes(modules.get("modules", []))
+	_validate_interactive_spaces(spaces.get("spaces", []), location_ids, module_ids)
 	_validate_tarot(arcana.get("cards", []), tarot_cases.get("cases", []))
 	if failures.is_empty():
-		print("CONTENT VALIDATION PASS: world data, character and core resident profiles, day openings, story events, appointments, chapter transitions, endings, gameplay modules and tarot cases")
+		print("CONTENT VALIDATION PASS: world data, interiors, extension scenes, character and core resident profiles, story, gameplay modules and tarot cases")
 		get_tree().quit(0)
 	else:
 		for failure in failures:
@@ -254,8 +257,54 @@ func _validate_module_coverage(modules: Array, prototypes: Array) -> void:
 	for prototype in prototypes:
 		prototype_ids.append(str(prototype.get("module_id", "")))
 	for module in modules:
-		if str(module.get("stage", "")) == "graybox" and not prototype_ids.has(str(module.get("id", ""))):
-			failures.append("graybox module %s needs a playable prototype" % str(module.get("id", "")))
+		var module_id := str(module.get("id", ""))
+		var stage := str(module.get("stage", ""))
+		var is_external := not str(module.get("extension_scene_path", "")).is_empty()
+		if stage == "graybox" and not prototype_ids.has(module_id):
+			failures.append("graybox module %s needs a playable prototype" % module_id)
+		if stage == "playable" and not is_external and module_id != "tarot" and not prototype_ids.has(module_id):
+			failures.append("native playable module %s needs interaction and outcome data" % module_id)
+
+
+func _validate_module_scenes(modules: Array) -> void:
+	for module in modules:
+		var module_id := str(module.get("id", ""))
+		var stage := str(module.get("stage", ""))
+		var scene_path := str(module.get("scene_path", ""))
+		if stage in ["graybox", "playable"] and (scene_path.is_empty() or not ResourceLoader.exists(scene_path)):
+			failures.append("module %s needs a loadable scene" % module_id)
+		var extension_path := str(module.get("extension_scene_path", ""))
+		if not extension_path.is_empty() and not ResourceLoader.exists(extension_path):
+			failures.append("module %s references missing extension scene %s" % [module_id, extension_path])
+
+
+func _validate_interactive_spaces(rows: Array, location_ids: Array[String], module_ids: Array[String]) -> void:
+	var space_ids := _unique_ids(rows, "interactive space")
+	if space_ids.size() < 9:
+		failures.append("the town should expose all nine interactive interiors")
+	for space in rows:
+		var space_id := str(space.get("id", ""))
+		if not location_ids.has(str(space.get("location_id", ""))):
+			failures.append("interactive space %s references a missing location" % space_id)
+		for field in ["name", "sign", "tagline", "interior_note"]:
+			if str(space.get(field, "")).is_empty():
+				failures.append("interactive space %s is missing %s" % [space_id, field])
+		var background_path := str(space.get("background_path", ""))
+		if not background_path.is_empty() and not ResourceLoader.exists(background_path):
+			failures.append("interactive space %s references missing background %s" % [space_id, background_path])
+		var object_ids: Array[String] = []
+		for item in space.get("objects", []):
+			var object_id := str(item.get("id", ""))
+			if object_id.is_empty() or object_ids.has(object_id):
+				failures.append("interactive space %s has an empty or duplicated object id" % space_id)
+			else:
+				object_ids.append(object_id)
+			var kind := str(item.get("kind", "module"))
+			if not ["module", "tarot", "record_shop"].has(kind):
+				failures.append("interactive object %s/%s uses unsupported kind %s" % [space_id, object_id, kind])
+			var module_id := str(item.get("module_id", ""))
+			if kind == "module" and not module_ids.has(module_id):
+				failures.append("interactive object %s/%s references missing module %s" % [space_id, object_id, module_id])
 
 
 func _validate_results(label: String, results: Dictionary, resident_ids: Array[String], module_ids: Array[String]) -> void:
@@ -368,7 +417,8 @@ func _validate_endings(data: Dictionary, module_ids: Array[String], prototypes: 
 			failures.append("ending echo %s has a module choice without a module" % echo_id)
 		elif not module_choice_id.is_empty() and not (prototype_choice_ids.get(module_id, []) as Array).has(module_choice_id):
 			failures.append("ending echo %s references missing module choice %s/%s" % [echo_id, module_id, module_choice_id])
-		var has_condition := not module_id.is_empty() or not str(echo.get("choice_key", "")).is_empty() or not str(echo.get("journal_id", "")).is_empty() or not str(echo.get("journal_kind", "")).is_empty() or not str(echo.get("artifact_id", "")).is_empty()
+		var has_artifact_condition := not str(echo.get("artifact_id", "")).is_empty() or not str(echo.get("artifact_collection", "")).is_empty() or not str(echo.get("artifact_kind", "")).is_empty()
+		var has_condition := not module_id.is_empty() or not str(echo.get("choice_key", "")).is_empty() or not str(echo.get("journal_id", "")).is_empty() or not str(echo.get("journal_kind", "")).is_empty() or has_artifact_condition
 		if not has_condition:
 			failures.append("ending echo %s needs at least one state condition" % echo_id)
 		if (text.contains("{selected_") or text.contains("{module_choice}")) and module_id.is_empty():

@@ -101,9 +101,9 @@
         "beats": [
           {"speaker": "画面", "text": "太阳沉到栏杆以下时，海面把剧场工作灯的颜色还了回来。", "direction": "A举起相机。这一次，取景框里没有需要被证明的人。"},
           {"speaker": "A", "text": "只拍光就好。", "direction": "快门按下前，浪花里闪过旧合租房阳台的铁栏杆。"},
-          {"speaker": "画面", "text": "它只出现了一瞬间。照片里留下的，却像比眼睛看见的多一点。", "direction": "摄影灰盒会让玩家亲手决定画面保留什么。"}
+          {"speaker": "画面", "text": "它只出现了一瞬间。照片里留下的，却像比眼睛看见的多一点。", "direction": "玩家将亲手选择画面关系、调整曝光并按下快门。"}
         ],
-        "result": "摄影灰盒已经解锁。"
+        "result": "摄影与显影玩法已经解锁。"
       },
       "results": {"unlock_modules": ["photography"]},
       "launch_module": "photography"
@@ -1227,7 +1227,7 @@
       "presentation": {
         "title": "每一份记录都漏掉了一部分",
         "summary": "照片、手绘、文字和模型描述着同一个空间。",
-        "result": "空间错觉灰盒已经打开。"
+        "result": "空间投影与视角谜题已经打开。"
       },
       "results": {"unlock_modules": ["optical_illusion"]},
       "launch_module": "optical_illusion"

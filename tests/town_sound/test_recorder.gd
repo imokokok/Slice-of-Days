@@ -25,10 +25,26 @@ func run() -> void:
 	wav.data = bytes
 	var first: Dictionary
 	for i in 20:
-		var item := store.save_sample(wav, "测试声音 " + str(i))
+		var context := {}
+		if i == 0:
+			context = {
+				"source_mode": "game",
+				"role": "B",
+				"game_day": 3,
+				"game_minute": 1020,
+				"location": "record_store",
+				"nearby_npcs": ["recordist"],
+				"event_tag": "b_d3_record_store",
+				"usage_scope": "local_only",
+				"consent_status": "contains_nearby_residents",
+			}
+		var item := store.save_sample(wav, "测试声音 " + str(i), context)
 		check(not item.is_empty(), "Consecutive save failed: " + str(i))
 		if i == 0:
 			first = item
+	check(first.get("role", "") == "B" and int(first.get("game_day", 0)) == 3, "Sample source memory was not persisted")
+	check(first.get("location", "") == "record_store" and first.get("event_tag", "") == "b_d3_record_store", "Sample world context was not persisted")
+	check(first.get("usage_scope", "") == "local_only" and first.get("consent_status", "") == "contains_nearby_residents", "Sample privacy scope was not persisted")
 	check(Store.new(test_path).list_samples().size() == 20, "Fresh store failed to restore 20 recordings")
 	check(store.save_sample(wav, "over limit").is_empty(), "Limit not enforced")
 	var restored := store.load_audio(first)

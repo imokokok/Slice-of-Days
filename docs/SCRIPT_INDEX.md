@@ -6,11 +6,11 @@
 - extensions/collage_letter/scripts/collage_piece.gd: 52 lines; _draw, bounds, hit, serialize
 - extensions/collage_letter/scripts/main.gd: 1261 lines; _ready, label_at, button, build_ui, phase_title, say, _draw, text_at, paper, draw_envelope, draw_wax_tools, draw_ellipse_custom, draw_seal, advance_dialogue, set_tool, pick, select, _unhandled_input, roughen, finish_cut, finish_tape, add_handwriting, delete_selected, _process, complete_letter, stage_input, close_envelope, wax_input, generate_seal, send_letter, restart, export_art, changed, animate_property, save_game, load_game, _notification, run_smoke_test, capture_test, material_ids, update_material_slots, cycle_photo, open_bottles, start_bottle, send_bottle, run_network_test
 - extensions/collage_letter/scripts/paper_art.gd: 136 lines; word, _draw, draw_document, draw_photo
-- extensions/elder_board/scripts/chess_rules.gd: 192 lines; 
-- extensions/elder_board/scripts/elder_memory.gd: 49 lines; 
+- extensions/elder_board/scripts/chess_rules.gd: 192 lines;
+- extensions/elder_board/scripts/elder_memory.gd: 49 lines;
 - extensions/elder_board/scripts/elder_story.gd: 100 lines; _ready, refresh, choose, advance
-- extensions/elder_board/scripts/game_text.gd: 21 lines; 
-- extensions/elder_board/scripts/grid_rules.gd: 140 lines; 
+- extensions/elder_board/scripts/game_text.gd: 21 lines;
+- extensions/elder_board/scripts/grid_rules.gd: 140 lines;
 - extensions/elder_board/scripts/learned_match.gd: 141 lines; setup, _ready, restart, refresh, _draw, _gui_input, play, ai_turn, finish, show_rules
 - extensions/elder_board/scripts/main.gd: 264 lines; _ready, _fit_stage, _panel_style, _button, _build_dialogue, _select_game, _chat, _cancel_setup, _start_match, _reset_selection, _open_match, _close_match, _unhandled_key_input, _open_teaching, _close_teaching, _play_learned, _on_finished, _show_story, _preview_story, _close_story
 - extensions/elder_board/scripts/match.gd: 337 lines; setup, _ready, label_at, button_at, _build_ui, restart, _draw, _gui_input, play_stone, play_chess, ai_turn, human_pass, begin_score, finish_score, resign, finish, show_rules
@@ -18,8 +18,8 @@
 - extensions/elder_board/scripts/sketch_pad.gd: 93 lines; _ready, _draw, _gui_input, undo, clear, load_picture, has_art, picture
 - extensions/elder_board/scripts/teaching_ai.gd: 110 lines; _ready, discuss, _exit_tree
 - extensions/elder_board/scripts/teaching_room.gd: 328 lines; _ready, refresh, mark_edited, snapshot_draft, save_draft, restore, new_lesson, import_picture, send_message, retry, request_reply, confirm_lesson, refresh_library, load_lesson, play_lesson, leave, show_settings, make_field
-- extensions/elder_board/scripts/teaching_rules.gd: 142 lines; 
-- extensions/elder_board/scripts/ui_bits.gd: 44 lines; 
+- extensions/elder_board/scripts/teaching_rules.gd: 142 lines;
+- extensions/elder_board/scripts/ui_bits.gd: 44 lines;
 - extensions/hear_you/main.gd: 529 lines; _ready, _process, _draw, _draw_panel, _draw_memory_card, _draw_question, _draw_footer, _draw_floating_card, _input, _notification, _begin_drag, _finish_drag, _cancel_drag, _wrong_match, _exchange, _reset, _keyboard_next, _card_rect, _card_at, _question_rect, _question_memory, _question_at, _received_count, _current_memory, _text, _center_text, _wrapped_text, _box, _button, _play_tone, _run_qa, _qa_capture
 - extensions/hear_you/npc_dialogue.gd: 379 lines; _ready, _reset, _process, _draw, _draw_room, _draw_npc, draw_ellipse_shadow, _thought_rect, _draw_thought, _draw_dialogue, _next_line, _continue, _thought_at, _recipient_at, _give, _input, _draw_token, _run_qa, _drain_lines
 - extensions/observatory/scripts/audio_manager.gd: 36 lines; _ready, _exit_tree, set_stargazing, feedback
@@ -56,17 +56,17 @@
 - scripts/town_sound/audio/SoundSettings.gd: 140 lines; _ready, apply_devices, save_settings, select_input, show_dialog, fill_picker, build_dialog, play_test_tone
 - scripts/town_sound/audio/WaveformView.gd: 26 lines; set_audio, _draw
 - scripts/town_sound/audio/WorldSound.gd: 114 lines; _ready, set_active, set_location, lock_monitor, detail_label, play_detail
-- scripts/town_sound/data/LegacyTownSound.gd: 30 lines; 
+- scripts/town_sound/data/LegacyTownSound.gd: 30 lines;
 - scripts/town_sound/data/PhotoLibrary.gd: 66 lines; list_photos, save_photo, load_photo
 - scripts/town_sound/data/SampleStore.gd: 169 lines; _init, list_samples, save_sample, rename_sample, delete_sample, _sample_is_used_by_project, load_audio, _write_json
-- scripts/town_sound/MediaTheme.gd: 28 lines; 
+- scripts/town_sound/MediaTheme.gd: 28 lines;
 - scripts/town_sound/network/LocalRecordLibrary.gd: 62 lines; list_records, save_record, money
 - scripts/town_sound/network/OnlineRecordLibrary.gd: 11 lines; list_records, can_upload
 - scripts/town_sound/network/RecordLibraryBase.gd: 6 lines; list_records
 - scripts/town_sound/PhotoAlbum.gd: 82 lines; _ready
 - scripts/town_sound/PocketCamera.gd: 86 lines; _ready, make_slider, cropped_image, update_preview, take_photo
 - scripts/town_sound/RecorderScreen.gd: 518 lines; _draw, _ready, _build_theme, _label, _button, _build_ui, can_edit_here, request_close, _exit_tree, _refresh_devices, _start_recording, _stop, _on_recorded, _preview_draft, _save_draft, _discard_draft, _refresh_library, _capture_context, _sample_memory_text, _play_sample, audio_peak, _refresh_controls, _notification, set_compact
-- scripts/town_sound/record_shop/PresetRecords.gd: 36 lines; 
+- scripts/town_sound/record_shop/PresetRecords.gd: 36 lines;
 - scripts/town_sound/record_shop/PressingTable.gd: 463 lines; _ready, advance, complete_action, select_photo_cover, use_photo_cover, _process, play_feedback, source_rect, target_rect, _gui_input, caption, vinyl, label_disc, inner_sleeve, outer_sleeve, _draw
 - scripts/town_sound/record_shop/RecordShelf.gd: 76 lines; _ready, listen, _process, _exit_tree
 - scripts/town_sound/studio/Arrangement.gd: 222 lines; length, add_sample, split, duplicate_clip, remove_range, keep_range, load_pcm, mix, save_project, load_project

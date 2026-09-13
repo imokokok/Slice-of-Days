@@ -1,0 +1,129 @@
+{
+  "segments": [
+    {
+      "id": "public_west",
+      "locations": [
+        "town_entrance",
+        "night_market",
+        "produce_stall"
+      ],
+      "anchor": 650
+    },
+    {
+      "id": "public_middle",
+      "locations": [
+        "handcraft_shop",
+        "cafe",
+        "print_shop"
+      ],
+      "anchor": 900
+    },
+    {
+      "id": "public_east",
+      "locations": [
+        "library",
+        "record_store",
+        "tarot_stall",
+        "chess_stall"
+      ],
+      "anchor": 1050
+    },
+    {
+      "id": "home_a",
+      "locations": [
+        "residence"
+      ],
+      "anchor": 550
+    },
+    {
+      "id": "home_b",
+      "locations": [
+        "dorm"
+      ],
+      "anchor": 1000
+    },
+    {
+      "id": "bus",
+      "locations": [
+        "bus_stop"
+      ],
+      "anchor": 800
+    },
+    {
+      "id": "parking",
+      "locations": [
+        "port"
+      ],
+      "anchor": 650
+    },
+    {
+      "id": "lookout",
+      "locations": [
+        "park"
+      ],
+      "anchor": 500
+    }
+  ],
+  "map_positions": {
+    "town_entrance": [
+      300,
+      310
+    ],
+    "night_market": [
+      170,
+      430
+    ],
+    "produce_stall": [
+      350,
+      490
+    ],
+    "handcraft_shop": [
+      480,
+      275
+    ],
+    "cafe": [
+      560,
+      430
+    ],
+    "print_shop": [
+      720,
+      290
+    ],
+    "library": [
+      740,
+      490
+    ],
+    "record_store": [
+      930,
+      380
+    ],
+    "tarot_stall": [
+      1070,
+      470
+    ],
+    "chess_stall": [
+      1010,
+      600
+    ],
+    "bus_stop": [
+      690,
+      150
+    ],
+    "port": [
+      410,
+      130
+    ],
+    "residence": [
+      150,
+      150
+    ],
+    "dorm": [
+      230,
+      680
+    ],
+    "park": [
+      1130,
+      150
+    ]
+  }
+}

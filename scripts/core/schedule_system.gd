@@ -75,6 +75,7 @@ func residents_at(location_id: String, day: int, minute: int) -> Array[String]:
 		var activity := activity_at(resident_id, day, minute)
 		if str(activity.get("location", "")) == location_id:
 			result.append(resident_id)
+	result.sort_custom(func(a: String, b: String) -> bool: return ResidentProfileSystem.is_core(a) and not ResidentProfileSystem.is_core(b))
 	return result
 
 
@@ -98,3 +99,6 @@ func activity_by_id(activity_id: String) -> Dictionary:
 				result["resident_name"] = str(resident.get("display_name", resident_id))
 				return result
 	return {}
+
+func mood_at(resident_id: String, day: int, minute: int) -> String:
+	return str(activity_at(resident_id,day,minute).get("mood","relaxed"))

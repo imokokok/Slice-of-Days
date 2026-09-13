@@ -25,7 +25,7 @@ func go_to(path: String) -> void:
 	curtain.layer = 100
 	var wash := ColorRect.new()
 	wash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	wash.color = Color("18252a", 0.0)
+	wash.color = Color("172f43", 0.0) if GameState.current_minute >= 1080 else Color("f0e0b7",0.0)
 	curtain.add_child(wash)
 	add_child(curtain)
 	var scene := get_tree().current_scene
@@ -35,7 +35,7 @@ func go_to(path: String) -> void:
 				child.pivot_offset = Vector2(child.player_x - child.camera_x, 580)
 				create_tween().tween_property(child, "scale", Vector2(1.08, 1.08), 0.28)
 	var fade := create_tween()
-	fade.tween_property(wash, "color:a", 1.0, 0.3)
+	fade.tween_property(wash, "color:a", 0.95, 0.3)
 	await fade.finished
 	get_tree().change_scene_to_file(path)
 	await get_tree().process_frame
@@ -109,3 +109,17 @@ func ending() -> void:
 
 func journal() -> void:
 	go_to(JOURNAL)
+
+func town_map(destination := "") -> void:
+	if transitioning: return
+	GameState.shared_state["map_destination"] = destination
+	go_to("res://scenes/town_map.tscn")
+func travel_to(destination: String, method: String) -> Dictionary:
+	if transitioning: return {"ok":false,"message":"还在路上。"}
+	var result := TravelSystem.travel(destination,method)
+	if not bool(result.get("ok",false)): return result
+	active_space_id = ""
+	GameState.shared_state["map_arrival"] = destination
+	SaveManager.save_game()
+	town_day()
+	return result

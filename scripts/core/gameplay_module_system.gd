@@ -237,6 +237,7 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 		"interaction": stored_interaction,
 	}
 	complete(module_id, outcome)
+	EchoSystem.record_module(module_id, outcome)
 	GameState.shared_state.erase("pending_module")
 	GameState.commit_active_role_state()
 	return {
@@ -260,6 +261,16 @@ func complete_external(module_id: String, outcome: Dictionary, results: Dictiona
 	EventSystem.apply_results("module_%s_external" % module_id, results)
 	if not complete(module_id, outcome):
 		return false
+	EchoSystem.record_module(module_id, outcome)
 	GameState.shared_state.erase("pending_module")
 	GameState.commit_active_role_state()
 	return true
+
+func time_hint(module_id: String) -> String:
+	var metadata: Dictionary = modules.get(module_id,{})
+	if int(metadata.get("direct_time_minutes",0)) > 0: return "%d分钟" % int(metadata.direct_time_minutes)
+	var costs: Array[int] = []
+	for choice in prototypes.get(module_id,{}).get("choices",[]): costs.append(int(choice.get("cost",{}).get("minutes",0)))
+	if costs.is_empty(): return ""
+	costs.sort()
+	return "%d分钟" % costs[0] if costs[0] == costs[-1] else "%d—%d分钟" % [costs[0],costs[-1]]

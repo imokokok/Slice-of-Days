@@ -1,0 +1,242 @@
+{
+  "mossner": {
+    "greeting": "我在给一封没写收件人的信找信封。",
+    "personal": "有些人先把想说的话剪下来，再慢慢决定寄给谁。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  },
+  "xanni": {
+    "greeting": "耳机里是昨天录到的锅铲声。",
+    "personal": "我想试试让一首曲子像人走过街角那样，突然听不见，又重新出现。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  },
+  "chenyuan": {
+    "greeting": "你先说，是约好了，还是说有空再来？",
+    "personal": "我以为答应了就是会来。后来才发现，我们说的可能不是同一个意思。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  },
+  "maya": {
+    "greeting": "等我浇完这一盆，水会从下面滴下来。",
+    "personal": "书里夹过什么，比折了几页更能让我记住一个读者。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  },
+  "mingming": {
+    "greeting": "这张沙发比我昨天睡的床舒服。",
+    "personal": "我不是不想出门，只是今天想找一个不用一直说话的地方。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  },
+  "zhou_xiaoliu": {
+    "greeting": "刚才我还记得那首歌怎么开头。",
+    "personal": "我喜欢等车时听别人说到一半的话。车来了，故事就换了结尾。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  },
+  "beetman": {
+    "greeting": "这个罐头还没贴标签，猜猜里面是什么。",
+    "personal": "给罐头画标签的时候，我会先画它打开时的声音。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  },
+  "xia_touming": {
+    "greeting": "先坐下，牌还没洗好。",
+    "personal": "同一张牌在两个人眼里不一样，我想先听你看到的。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  },
+  "yuxingqing": {
+    "greeting": "别急着找星座，先让眼睛适应黑暗。",
+    "personal": "星星没有移动。我换了个角度，才看见它们之间那条线。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  },
+  "shi_yongqi": {
+    "greeting": "锅还热着，别把那把木勺放太近。",
+    "personal": "我记得客人点过什么，也记得有人把一道菜起了个特别不像菜的名字。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  },
+  "naonao": {
+    "greeting": "这一手我还没想好，你可以先坐。",
+    "personal": "一盘棋没有下完也没关系，记住局面，下次见面接着下。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  },
+  "wu_wu": {
+    "greeting": "等等，它又闻到同一块石头了。",
+    "personal": "我手机里最多的不是风景，是它每次都像第一次出门的样子。",
+    "rumor": "周晓六说下午好像在公共区域见过尘缘。她也不确定是不是今天。",
+    "topics": [
+      "greeting",
+      "daily_state",
+      "small_talk",
+      "personal_topic",
+      "town_info",
+      "npc_info",
+      "schedule_info",
+      "location_info",
+      "rumor",
+      "minigame_hook",
+      "relationship_followup",
+      "recognition_related",
+      "goodbye"
+    ]
+  }
+}

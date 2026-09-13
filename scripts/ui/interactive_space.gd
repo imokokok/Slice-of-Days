@@ -26,6 +26,8 @@ var pocket_panel: Control
 var stage: Control
 var room_dialogue: Panel
 var notes_overlay: Control
+var conversation: Control
+var roster_minute := -1
 
 
 func _ready() -> void:
@@ -49,10 +51,12 @@ func _ready() -> void:
 	_build_ui()
 	stage.hotspots.append({"x":90, "kind":"exit", "label":"回到街道"})
 	for index in objects.size():
-		stage.hotspots.append({"x":_hotspot_x(index), "kind":"object", "index":index, "prop":"bed" if str(objects[index].get("kind", "")) == "sleep" else "table", "label":str(objects[index].get("name", ""))})
+		stage.hotspots.append({"x":_hotspot_x(index), "kind":"object", "index":index, "prop":"bed" if str(objects[index].get("kind", "")) == "sleep" else "table", "label":_object_hint(index)})
 	for index in mini(people.size(), 3):
 		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
 		stage.hotspots.append({"x":920 + index * 180, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", "居民"))})
+	for echo in EchoSystem.at_location(GameState.current_location):
+		stage.hotspots.append({"x":700,"kind":"echo","label":"看黑板上的字","text":str(echo.text)})
 	WorldSound.set_active(true)
 	WorldSound.set_location(GameState.current_location)
 
@@ -268,13 +272,17 @@ func _process(_delta: float) -> void:
 		speech_progress += _delta * 28.0
 		cue_label.visible_characters = int(speech_progress)
 	if not is_instance_valid(stage): return
-	stage.enabled = not is_instance_valid(pocket_panel) and not is_instance_valid(notes_overlay) and not SceneRouter.transitioning and not room_dialogue.visible
+	stage.enabled = not is_instance_valid(conversation) and not is_instance_valid(pocket_panel) and not is_instance_valid(notes_overlay) and not SceneRouter.transitioning and not room_dialogue.visible
 	if stage.enabled and DisplayServer.window_is_focused():
 		GameState.advance_world_clock(_delta)
+	if roster_minute != GameState.current_minute:
+		roster_minute = GameState.current_minute
+		_refresh_people()
 	avatar_x = stage.player_x
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_instance_valid(conversation): return
 	if is_instance_valid(pocket_panel) or is_instance_valid(notes_overlay) or SceneRouter.transitioning: return
 	if not event is InputEventKey or not event.pressed or event.echo: return
 	if room_dialogue.visible:
@@ -287,11 +295,18 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.keycode == KEY_J:
 		SceneRouter.journal()
+	elif event.keycode == KEY_M:
+		SceneRouter.town_map()
 	elif event.keycode == KEY_E:
 		var nearest: Dictionary = stage.nearest()
 		match str(nearest.get("kind", "")):
+			"echo":
+				name_label.text = "黑板"
+				cue_label.text = str(nearest.text)
+				detail_label.text = "E · 收起视线"
+				room_dialogue.show()
 			"exit": SceneRouter.leave_space()
-			"person": _talk_to_resident()
+			"person": _start_conversation(str(nearest.id))
 			"object":
 				_select_object(int(nearest.index))
 				_open_selected()
@@ -395,3 +410,22 @@ func _style_button(button: Button, kind: String) -> void:
 	button.add_theme_color_override("font_hover_color", text_color)
 	button.add_theme_color_override("font_pressed_color", text_color)
 	button.add_theme_color_override("font_focus_color", text_color)
+
+func _start_conversation(resident_id: String) -> void:
+	conversation = preload("res://scripts/ui/conversation_panel.gd").new()
+	conversation.npc = resident_id
+	for item in stage.hotspots:
+		if str(item.get("id","")) == resident_id and absf(float(item.x)-stage.player_x) > 1.0: stage.facing = signf(float(item.x)-stage.player_x)
+	stage.velocity = 0.0
+	add_child(conversation)
+func _refresh_people() -> void:
+	people = ScheduleSystem.residents_at(GameState.current_location,GameState.current_day,GameState.current_minute)
+	if SceneRouter.active_space_id in ["home_a","home_b"]: people.clear()
+	stage.hotspots = stage.hotspots.filter(func(item: Dictionary) -> bool: return str(item.get("kind","")) != "person")
+	for i in mini(people.size(),3):
+		stage.hotspots.append({"x":920+i*180,"kind":"person","id":people[i],"label":"和%s交谈" % str(ScheduleSystem.residents[people[i]].display_name)})
+
+func _object_hint(index: int) -> String:
+	var item: Dictionary = objects[index]
+	var hint := GameplayModuleSystem.time_hint(str(item.get("module_id","")))
+	return str(item.get("name","")) + (" · " + hint if not hint.is_empty() else "")

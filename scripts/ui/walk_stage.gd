@@ -7,9 +7,11 @@ const REACH := 85.0
 var player_x := 500.0
 var world_width := 1800.0
 var camera_x := 0.0
+var composition_anchor := 710.0
 var enabled := true
 var indoor := false
 var walking := false
+var sitting := false
 var facing := 1.0
 var phase := 0.0
 var velocity := 0.0
@@ -21,6 +23,7 @@ var room_kind := ""
 var walk_limit := INF
 
 func _ready() -> void:
+	WorldSound.set_indoor(indoor)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
@@ -32,19 +35,23 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func move_player(axis: float, delta: float, hurry := false) -> void:
-	var target := axis * SPEED * (1.6 if hurry else 1.0) if enabled else 0.0
+	var target := axis * SPEED * (1.6 if hurry else 1.0) if enabled and not sitting else 0.0
+	if enabled and not is_zero_approx(axis) and not is_equal_approx(facing, signf(axis)):
+		velocity = 0.0
+		facing = move_toward(facing,signf(axis),delta*12.0)
+		target = 0.0
 	velocity = move_toward(velocity, target, (1150.0 if axis else 1800.0) * delta)
 	if not enabled: velocity = 0.0
 	walking = absf(velocity) > 1.0
-	if walking:
-		facing = move_toward(facing, signf(velocity), delta * 12.0)
 	var previous := player_x
 	player_x = clampf(player_x + velocity * delta, 80.0, minf(world_width - 80.0, walk_limit))
 	var distance := absf(player_x - previous)
+	var previous_step := int(phase / PI)
 	phase += distance / 30.0
+	if int(phase / PI) != previous_step and enabled: WorldSound.play_footstep()
 	gait_weight = move_toward(gait_weight, minf(absf(velocity) / SPEED, 1.0) if distance > 0.0 else 0.0, delta * 8.0)
 	if distance > 0.0: moved.emit(player_x)
-	var camera_target := clampf(player_x - 710.0, 0.0, maxf(0.0, world_width - 1600.0))
+	var camera_target := clampf(player_x - composition_anchor, 0.0, maxf(0.0, world_width - 1600.0))
 	camera_x = lerpf(camera_x, camera_target, 1.0 - exp(-5.0 * delta)) if delta > 0.0 else camera_target
 
 func nearest() -> Dictionary:
@@ -64,7 +71,7 @@ func _draw() -> void:
 		_draw_room()
 	else:
 		_draw_street(night)
-	draw_rect(Rect2(0, 718, 1600, 182), Color("465854"))
+	draw_rect(Rect2(0, 718, 1600, 182), Color("d2c29e"))
 	for i in range(5):
 		draw_line(Vector2(0, 750 + i * 36), Vector2(1600, 750 + i * 36), Color("819084", 0.16), 1)
 	draw_line(Vector2(0, 718), Vector2(1600, 718), Color("8d9b96"), 2)
@@ -74,14 +81,24 @@ func _draw() -> void:
 			continue
 		var kind := str(item.get("kind", ""))
 		if kind == "person" or kind == "event":
-			_draw_person(Vector2(x, 714), Color("8a958a"), 0.0, -1.0)
+			var shades := [Color("324b62"),Color("567363"),Color("76554c"),Color("ada16b")]
+			var shade: Color = shades[absi(str(item.get("id", "")).hash()) % shades.size()]
+			_draw_person(Vector2(x, 714), shade, 0.0, -1.0)
+		elif kind == "echo":
+			draw_rect(Rect2(x-55,572,110,118),Color("4c4937"))
+			draw_rect(Rect2(x-49,580,98,102),Color("203f43"))
+			draw_string(ThemeDB.fallback_font,Vector2(x-35,615),"今日的菜",HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("f1e6c6"))
+		elif kind == "roads":
+			draw_line(Vector2(x, 625),Vector2(x,715),Color("557052"),5)
+			draw_colored_polygon(PackedVector2Array([Vector2(x-45,627),Vector2(x+35,627),Vector2(x+55,642),Vector2(x+35,657),Vector2(x-45,657)]),Color("efd39a"))
+			draw_string(ThemeDB.fallback_font,Vector2(x-35,649),"小镇路口",HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("245664"))
 		elif kind in ["bench", "wait_open"]:
 			draw_rect(Rect2(x - 40, 679, 80, 8), Color("9a7e60"))
 			draw_line(Vector2(x - 30, 687), Vector2(x - 30, 715), Color("776b5f"), 4)
 			draw_line(Vector2(x + 30, 687), Vector2(x + 30, 715), Color("776b5f"), 4)
 		elif indoor and kind == "object":
 			_draw_furniture(x, str(item.get("prop", "table")))
-	_draw_person(Vector2(player_x - camera_x, 713), Color("d69b71") if GameState.current_role == "A" else Color("7da8b5"), sin(phase) * gait_weight, facing)
+	_draw_person(Vector2(player_x - camera_x, 713), Color("d69b71") if GameState.current_role == "A" else Color("7da8b5"), sin(phase) * gait_weight, facing, sitting)
 	if is_finite(walk_limit):
 		var gate_x := walk_limit - camera_x + 18
 		draw_line(Vector2(gate_x, 640), Vector2(gate_x, 718), Color("40544e"), 7)
@@ -115,12 +132,12 @@ func _draw_street(night: bool) -> void:
 		draw_line(Vector2(x, 718), Vector2(x + 11, 692), Color("455d55"), 2)
 
 func _draw_sea(night: bool) -> void:
-	var sky := Color("9bafb0") if not night else Color("243647")
+	var sky := Color("3862d0") if not night else Color("243647")
 	draw_rect(Rect2(0, 70, 1600, 648), sky)
 	var offset := fmod(camera_x * 0.018, 110.0)
-	draw_colored_polygon(PackedVector2Array([Vector2(-150 - offset, 470), Vector2(190 - offset, 299), Vector2(351 - offset, 312), Vector2(479 - offset, 416), Vector2(719 - offset, 349), Vector2(950 - offset, 423), Vector2(1148 - offset, 248), Vector2(1360 - offset, 254), Vector2(1690 - offset, 459), Vector2(1690, 610), Vector2(-150, 610)]), Color("7b9197") if not night else Color("354e60"))
-	draw_colored_polygon(PackedVector2Array([Vector2(-100, 500), Vector2(125, 463), Vector2(390, 487), Vector2(730, 415), Vector2(910, 479), Vector2(1190, 426), Vector2(1680, 509), Vector2(1680, 622), Vector2(-100, 622)]), Color("637f88"))
-	draw_rect(Rect2(0, 511, 1600, 207), Color("86a7af") if not night else Color("365e75"))
+	draw_colored_polygon(PackedVector2Array([Vector2(-150 - offset, 470), Vector2(190 - offset, 299), Vector2(351 - offset, 312), Vector2(479 - offset, 416), Vector2(719 - offset, 349), Vector2(950 - offset, 423), Vector2(1148 - offset, 248), Vector2(1360 - offset, 254), Vector2(1690 - offset, 459), Vector2(1690, 610), Vector2(-150, 610)]), Color("85bac6") if not night else Color("354e60"))
+	draw_colored_polygon(PackedVector2Array([Vector2(-100, 500), Vector2(125, 463), Vector2(390, 487), Vector2(730, 415), Vector2(910, 479), Vector2(1190, 426), Vector2(1680, 509), Vector2(1680, 622), Vector2(-100, 622)]), Color("4d9fab"))
+	draw_rect(Rect2(0, 511, 1600, 207), Color("267fb0") if not night else Color("365e75"))
 	for i in range(16):
 		var x := float(i) * 118 - fmod(camera_x * 0.028, 118.0)
 		var y := 551 + i % 4 * 28
@@ -131,12 +148,12 @@ func _draw_sea(night: bool) -> void:
 		var y := 476 - i % 4 * 13.0
 		draw_rect(Rect2(x, y - 27, 27, 34), Color("b5b39b"))
 		draw_colored_polygon(PackedVector2Array([Vector2(x - 2, y - 27), Vector2(x + 13, y - 40), Vector2(x + 30, y - 27)]), Color("8c8172"))
-	draw_rect(Rect2(0, 705, 1600, 13), Color("8f9583"))
+	draw_rect(Rect2(0, 705, 1600, 13), Color("efdfb5"))
 
 func _draw_facade(x: float, kind: String, title: String) -> void:
-	var wall := Color("b4ac94")
-	if kind in ["post", "restaurant", "records"]: wall = Color("b39179")
-	elif kind in ["bookstore", "tarot"]: wall = Color("8faaa5")
+	var wall := Color("eee0b9")
+	if kind in ["post", "restaurant", "records"]: wall = Color("cd9374")
+	elif kind in ["bookstore", "tarot"]: wall = Color("82bdb1")
 	var height := 333.0 if kind in ["home_a", "home_b", "community"] else 288.0
 	var roof := 718 - height
 	draw_rect(Rect2(x - 290, roof, 580, height), wall)
@@ -151,7 +168,7 @@ func _draw_facade(x: float, kind: String, title: String) -> void:
 			draw_rect(Rect2(wx + 35, roof + 37, 10, 76), Color("52675e"))
 	for side in [-1, 1]:
 		var wx: float = x + side * 160
-		draw_rect(Rect2(wx - 67, 558, 134, 132), Color("536d6c"))
+		draw_rect(Rect2(wx - 67, 558, 134, 132), Color("247d87"))
 		draw_colored_polygon(PackedVector2Array([Vector2(wx - 59, 565), Vector2(wx + 59, 565), Vector2(wx + 59, 623), Vector2(wx - 59, 678)]), Color("c8b98f", 0.7))
 		draw_line(Vector2(wx, 557), Vector2(wx, 690), wall.darkened(0.2), 7)
 		draw_line(Vector2(wx - 67, 622), Vector2(wx + 67, 622), wall.darkened(0.2), 5)
@@ -161,13 +178,13 @@ func _draw_facade(x: float, kind: String, title: String) -> void:
 			for k in range(3): draw_circle(Vector2(wx - 38 + k * 38, 651), 13, Color("334949"))
 		elif kind == "bookstore":
 			for k in range(5): draw_rect(Rect2(wx - 44 + k * 19, 639 - k % 2 * 6, 15, 25 + k % 2 * 6), Color("b49c76"))
-	draw_rect(Rect2(x - 48, 560, 96, 158), Color("415954"))
-	draw_rect(Rect2(x - 36, 573, 72, 115), Color("718781"))
+	draw_rect(Rect2(x - 48, 560, 96, 158), Color("205867"))
+	draw_rect(Rect2(x - 36, 573, 72, 115), Color("398d9b"))
 	draw_line(Vector2(x + 23, 641), Vector2(x + 23, 664), Color("d8c49d"), 3)
 	draw_rect(Rect2(x - 149, 508, 298, 36), Color("cec0a0"))
 	draw_string(ThemeDB.fallback_font, Vector2(x - 144, 533), title, HORIZONTAL_ALIGNMENT_CENTER, 288, 22, Color("3d5551"))
 	if kind in ["restaurant", "grocery", "records"]:
-		draw_colored_polygon(PackedVector2Array([Vector2(x - 258, 544), Vector2(x + 258, 544), Vector2(x + 278, 562), Vector2(x - 278, 562)]), Color("6b8274"))
+		draw_colored_polygon(PackedVector2Array([Vector2(x - 258, 544), Vector2(x + 258, 544), Vector2(x + 278, 562), Vector2(x - 278, 562)]), Color("a5ad60"))
 	if kind == "post":
 		draw_rect(Rect2(x + 250, 632, 37, 80), Color("9a715d"))
 		draw_rect(Rect2(x + 255, 648, 27, 5), Color("3e5450"))
@@ -181,15 +198,15 @@ func _draw_tree(x: float, ground: float, scale_value: float) -> void:
 	draw_set_transform(Vector2(x, ground), 0, Vector2.ONE * scale_value)
 	draw_colored_polygon(PackedVector2Array([Vector2(-20, 0), Vector2(12, 0), Vector2(5, -150), Vector2(30, -267), Vector2(10, -271), Vector2(-13, -163)]), Color("3e5a51"))
 	draw_line(Vector2(-8, -155), Vector2(-80, -251), Color("3e5a51"), 11)
-	draw_colored_polygon(PackedVector2Array([Vector2(-157, -251), Vector2(-107, -357), Vector2(-14, -373), Vector2(67, -343), Vector2(125, -237), Vector2(65, -204), Vector2(-61, -212)]), Color("526c58"))
-	draw_colored_polygon(PackedVector2Array([Vector2(-107, -357), Vector2(-14, -373), Vector2(67, -343), Vector2(13, -281), Vector2(-81, -275)]), Color("6d8060"))
+	draw_colored_polygon(PackedVector2Array([Vector2(-157, -251), Vector2(-107, -357), Vector2(-14, -373), Vector2(67, -343), Vector2(125, -237), Vector2(65, -204), Vector2(-61, -212)]), Color("797831"))
+	draw_colored_polygon(PackedVector2Array([Vector2(-107, -357), Vector2(-14, -373), Vector2(67, -343), Vector2(13, -281), Vector2(-81, -275)]), Color("9a9947"))
 	draw_set_transform(Vector2.ZERO)
 
 func _draw_room() -> void:
 	draw_rect(Rect2(0, 100, 1600, 618), Color("51564f"))
-	draw_rect(Rect2(90, 160, 1420, 480), Color("a89177"))
+	draw_rect(Rect2(90, 160, 1420, 480), Color("e2c59b"))
 	for x in [300, 1100]:
-		draw_rect(Rect2(x, 250, 210, 225), Color("91a29e"))
+		draw_rect(Rect2(x, 250, 210, 225), Color("7bb9bd"))
 		draw_rect(Rect2(x + 8, 260, 194, 207), Color("314855"))
 		draw_line(Vector2(x + 105, 250), Vector2(x + 105, 475), Color("a5a18d"), 7)
 		draw_line(Vector2(x, 365), Vector2(x + 210, 365), Color("a5a18d"), 7)
@@ -300,15 +317,21 @@ func _draw_furniture(x: float, prop: String) -> void:
 	for side in [-1, 1]:
 		draw_line(Vector2(x + side * 50, 657), Vector2(x + side * 50, 718), Color("272c2d"), 6)
 
-func _draw_person(at: Vector2, coat: Color, stride: float, direction: float) -> void:
+func _draw_person(at: Vector2, coat: Color, stride: float, direction: float, seated := false) -> void:
 	var step := stride * 22.0
 	at.y -= absf(stride) * 2.5
 	draw_set_transform(at)
 	draw_colored_polygon(PackedVector2Array([Vector2(-30, 4), Vector2(30, 4), Vector2(55, 10), Vector2(-18, 10)]), Color("070e13", 0.5))
-	draw_polyline(PackedVector2Array([Vector2(-7, -39), Vector2(-8 + step * 0.35, -20), Vector2(-11 + step, -maxf(0.0, stride) * 8)]), Color("19272c"), 9, true)
-	draw_polyline(PackedVector2Array([Vector2(7, -39), Vector2(9 - step * 0.35, -19), Vector2(14 - step, -maxf(0.0, -stride) * 8)]), Color("213138"), 9, true)
+	if seated: at.y += 14.0
+	draw_set_transform(at,0,Vector2((1.0 if direction >= 0.0 else -1.0)*maxf(0.16,absf(direction)),1.0))
+	if seated:
+		draw_polyline(PackedVector2Array([Vector2(-9,-48),Vector2(21,-48),Vector2(26,-14)]),Color("19272c"),9,true)
+		draw_polyline(PackedVector2Array([Vector2(5,-46),Vector2(35,-43),Vector2(37,-14)]),Color("213138"),9,true)
+	else:
+		draw_polyline(PackedVector2Array([Vector2(-7, -39), Vector2(-8 + step * 0.35, -20), Vector2(-11 + step, -maxf(0.0, stride) * 8)]), Color("19272c"), 9, true)
+		draw_polyline(PackedVector2Array([Vector2(7, -39), Vector2(9 - step * 0.35, -19), Vector2(14 - step, -maxf(0.0, -stride) * 8)]), Color("213138"), 9, true)
 	draw_colored_polygon(PackedVector2Array([Vector2(-13, -89), Vector2(12, -89), Vector2(20, -36), Vector2(-19, -36)]), coat)
-	draw_line(Vector2(direction * 10, -82), Vector2(direction * 19 - step * 0.4, -50), coat.darkened(0.18), 8, true)
+	draw_line(Vector2(10, -82), Vector2(19 - step * 0.4, -50), coat.darkened(0.18), 8, true)
 	draw_colored_polygon(PackedVector2Array([Vector2(-10, -114), Vector2(9, -117), Vector2(12, -97), Vector2(3, -89), Vector2(-10, -96)]), Color("c2a68a"))
 	draw_colored_polygon(PackedVector2Array([Vector2(-12, -109), Vector2(-11, -119), Vector2(8, -121), Vector2(13, -112), Vector2(-2, -109), Vector2(-9, -99)]), Color("253039"))
 	draw_set_transform(Vector2.ZERO)

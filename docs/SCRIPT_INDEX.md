@@ -1,0 +1,104 @@
+# Script inventory at migration baseline
+
+- extensions/collage_letter/scripts/audio_manager.gd: 81 lines; _ready, synthesize, play, toggle, shutdown, _exit_tree
+- extensions/collage_letter/scripts/bottle_client.gd: 85 lines; _ready, select_identity, persist, connect_service, request, publish
+- extensions/collage_letter/scripts/bottle_dock.gd: 255 lines; open, add_label, add_button, apply_theme, lock, connect_now, refresh, show_letter, compose_new, clear, close
+- extensions/collage_letter/scripts/collage_piece.gd: 52 lines; _draw, bounds, hit, serialize
+- extensions/collage_letter/scripts/main.gd: 1261 lines; _ready, label_at, button, build_ui, phase_title, say, _draw, text_at, paper, draw_envelope, draw_wax_tools, draw_ellipse_custom, draw_seal, advance_dialogue, set_tool, pick, select, _unhandled_input, roughen, finish_cut, finish_tape, add_handwriting, delete_selected, _process, complete_letter, stage_input, close_envelope, wax_input, generate_seal, send_letter, restart, export_art, changed, animate_property, save_game, load_game, _notification, run_smoke_test, capture_test, material_ids, update_material_slots, cycle_photo, open_bottles, start_bottle, send_bottle, run_network_test
+- extensions/collage_letter/scripts/paper_art.gd: 136 lines; word, _draw, draw_document, draw_photo
+- extensions/elder_board/scripts/chess_rules.gd: 192 lines; 
+- extensions/elder_board/scripts/elder_memory.gd: 49 lines; 
+- extensions/elder_board/scripts/elder_story.gd: 100 lines; _ready, refresh, choose, advance
+- extensions/elder_board/scripts/game_text.gd: 21 lines; 
+- extensions/elder_board/scripts/grid_rules.gd: 140 lines; 
+- extensions/elder_board/scripts/learned_match.gd: 141 lines; setup, _ready, restart, refresh, _draw, _gui_input, play, ai_turn, finish, show_rules
+- extensions/elder_board/scripts/main.gd: 264 lines; _ready, _fit_stage, _panel_style, _button, _build_dialogue, _select_game, _chat, _cancel_setup, _start_match, _reset_selection, _open_match, _close_match, _unhandled_key_input, _open_teaching, _close_teaching, _play_learned, _on_finished, _show_story, _preview_story, _close_story
+- extensions/elder_board/scripts/match.gd: 337 lines; setup, _ready, label_at, button_at, _build_ui, restart, _draw, _gui_input, play_stone, play_chess, ai_turn, human_pass, begin_score, finish_score, resign, finish, show_rules
+- extensions/elder_board/scripts/rules_panel.gd: 84 lines; configure, _ready, _unhandled_key_input
+- extensions/elder_board/scripts/sketch_pad.gd: 93 lines; _ready, _draw, _gui_input, undo, clear, load_picture, has_art, picture
+- extensions/elder_board/scripts/teaching_ai.gd: 110 lines; _ready, discuss, _exit_tree
+- extensions/elder_board/scripts/teaching_room.gd: 328 lines; _ready, refresh, mark_edited, snapshot_draft, save_draft, restore, new_lesson, import_picture, send_message, retry, request_reply, confirm_lesson, refresh_library, load_lesson, play_lesson, leave, show_settings, make_field
+- extensions/elder_board/scripts/teaching_rules.gd: 142 lines; 
+- extensions/elder_board/scripts/ui_bits.gd: 44 lines; 
+- extensions/hear_you/main.gd: 529 lines; _ready, _process, _draw, _draw_panel, _draw_memory_card, _draw_question, _draw_footer, _draw_floating_card, _input, _notification, _begin_drag, _finish_drag, _cancel_drag, _wrong_match, _exchange, _reset, _keyboard_next, _card_rect, _card_at, _question_rect, _question_memory, _question_at, _received_count, _current_memory, _text, _center_text, _wrapped_text, _box, _button, _play_tone, _run_qa, _qa_capture
+- extensions/hear_you/npc_dialogue.gd: 379 lines; _ready, _reset, _process, _draw, _draw_room, _draw_npc, draw_ellipse_shadow, _thought_rect, _draw_thought, _draw_dialogue, _next_line, _continue, _thought_at, _recipient_at, _give, _input, _draw_token, _run_qa, _drain_lines
+- extensions/observatory/scripts/audio_manager.gd: 36 lines; _ready, _exit_tree, set_stargazing, feedback
+- extensions/observatory/scripts/constellation_data.gd: 31 lines; reference_transform, regenerate_depths
+- extensions/observatory/scripts/constellation_lines.gd: 25 lines; _draw
+- extensions/observatory/scripts/constellation_projection_checker.gd: 51 lines; configure, normalize_points, measure, step
+- extensions/observatory/scripts/game_state.gd: 22 lines; _ready, save_state, _notification
+- extensions/observatory/scripts/main.gd: 41 lines; _ready, dim, enter_sky, leave_sky
+- extensions/observatory/scripts/observatory_deck.gd: 16 lines; _ready, fit_artwork
+- extensions/observatory/scripts/slideshow_controller.gd: 71 lines; _ready, scan_images, texture_at, _process, advance
+- extensions/observatory/scripts/star_field.gd: 61 lines; star, _ready, show_constellation, set_brightness
+- extensions/observatory/scripts/star_gazing_controller.gd: 151 lines; _ready, build_controls, select_constellation, adjust, update_layout, refresh_buttons, _unhandled_input, _process, found, collect
+- extensions/observatory/scripts/telescope_hotspot.gd: 8 lines; _ready
+- scripts/core/chapter_system.gd: 171 lines; start_new_game, chapter_sequence, current_chapter, next_chapter, transition_context, advance_chapter, mark_transition_complete, opening_id, has_seen_opening, mark_opening_seen, residency_audit, journey_audit, sleep_at_home
+- scripts/core/character_system.gd: 44 lines; _ready, load_character_data, profile, job_title, portrait_path
+- scripts/core/ending_echo_resolver.gd: 158 lines; resolve, display_text, _matching_context, _choice_in_state, _journal_in_state, _artifact_in_state_or_world, _artifact_in_collections, _latest_module_outcome, _resolve_text
+- scripts/core/event_system.gd: 290 lines; _ready, load_event_data, available_events, day_leads, is_available, availability, can_pay_cost, can_pay_cost_data, resolved_presentation, _replace_presentation_placeholders, trigger, apply_results, _choice_for, _combined_cost
+- scripts/core/gameplay_module_system.gd: 266 lines; _ready, load_module_data, load_prototype_data, ensure_state, unlock, start, complete, is_unlocked, state_for, latest_outcome, begin_session, pending_module_id, cancel_session, prototype_for, choice_interaction_check, complete_choice, _prototype_token_label, complete_external
+- scripts/core/game_state.gd: 556 lines; _ready, begin_new_game, begin_vertical_slice, _initialize_new_state, _default_role_state, commit_active_role_state, switch_to_role, _load_role_state, schedule_for, active_time_blocks, advance_world_clock, spend_time, use_free_time, can_fit_now, current_block_remaining, advance_to_next_free_block, spend_money, earn_money, add_fact, add_confirmation, remove_confirmation, mark_event, has_event, unmark_event, meet_resident, add_journal_entry, add_artifact, credit_record_once, add_appointment, appointment_by_id, appointment_status, appointments_for_day, next_relevant_appointment, refresh_appointments, _add_missed_appointment_journal, reveal_schedule_entry, record_choice, has_choice, clock_text, reset_demo, to_save_data, load_save_data, _migrate_legacy_save, _load_json
+- scripts/core/relationship_system.gd: 152 lines; ensure_resident, record_encounter, add_flags, set_confirmation, confirmation_status, has_flag, summary, confirmation_request_preview, request_confirmation, _request_memory
+- scripts/core/resident_profile_system.gd: 86 lines; _ready, load_profile_data, profile_for, is_core, town_role, role_lens, ambient_line
+- scripts/core/save_manager.gd: 148 lines; path_for_slot, set_active_slot, has_slot, has_any_save, has_save, save_game, load_game, load_slot, slot_summary, _legacy_candidates, prepare_new_journey, load_latest
+- scripts/core/scene_router.gd: 112 lines; go_to, main_menu, town_day, enter_space, interactive_space, tarot_table, chapter_transition, gameplay_module, return_from_gameplay, leave_space, ending, journal
+- scripts/core/schedule_system.gd: 101 lines; _ready, load_schedule_data, expand_resident_rows, activity_at, residents_at, known_schedule_for, activity_by_id
+- scripts/core/settings_system.gd: 85 lines; _ready, load_settings, save_settings, apply_settings, master_volume, reduced_motion, fullscreen, set_master_volume, set_reduced_motion, set_fullscreen
+- scripts/core/tarot_case_engine.gd: 319 lines; load_data, case_at, card, reading_for, cross_reading_for, validate_question, evaluate_solution, draw_three, _resolve_reading, _find_other_case_match, _semantic_score, _misaligned_result, _invalid, _is_negated, _same_pair, _image_label, _matches_any, _normalize, _group_hint, _load_json
+- scripts/core/travel_system.gd: 155 lines; _ready, load_route_data, load_location_names, location_name, _add_edge, route, travel, _shortest_walk_minutes
+- scripts/tests/content_validation_test.gd: 556 lines; _ready, _unique_ids, _validate_schedules, _validate_core_residents, _validate_routes, _validate_events, _validate_appointments, _validate_prototypes, _validate_module_interaction, _validate_choice_token_constraints, _validate_module_coverage, _validate_module_scenes, _validate_interactive_spaces, _validate_results, _validate_transitions, _validate_day_openings, _validate_transition_beat, _validate_endings, _validate_characters, _validate_tarot, _validate_tarot_rule, _load_json
+- scripts/tests/seven_day_simulation_test.gd: 183 lines; _ready, _simulate_a_route, _simulate_b_route, _simulate_a_day_four_without_first_day_rehearsal, _context, _event, _choice_event, _module_event, _choice_module_event, _complete_module_result, _check
+- scripts/tests/system_smoke_test.gd: 344 lines; _ready, _test_calendar_and_role_isolation, _test_schedule_and_route, _test_core_resident_profiles, _test_ui_scenes_load, _test_external_extension_and_record_credit, _test_event_and_relationship, _test_draft_confirmation_request, _test_choice_history, _test_appointment_lifecycle, _test_chapter_progression, _test_gameplay_module_state, _test_ending_echo_resolver, _store_echo_outcome, _test_save_roundtrip, _check
+- scripts/tests/tarot_mechanic_test.gd: 119 lines; _ready, _check, _validate_case_coverage, _card_has_image
+- scripts/tests/tarot_pick_flow_test.gd: 70 lines; _ready, _check
+- scripts/town_sound/audio/AudioRecorder.gd: 141 lines; _ready, start, _process, _drain, stop, _cancel, _detach_capture, _exit_tree
+- scripts/town_sound/audio/SoundSettings.gd: 140 lines; _ready, apply_devices, save_settings, select_input, show_dialog, fill_picker, build_dialog, play_test_tone
+- scripts/town_sound/audio/WaveformView.gd: 26 lines; set_audio, _draw
+- scripts/town_sound/audio/WorldSound.gd: 114 lines; _ready, set_active, set_location, lock_monitor, detail_label, play_detail
+- scripts/town_sound/data/LegacyTownSound.gd: 30 lines; 
+- scripts/town_sound/data/PhotoLibrary.gd: 66 lines; list_photos, save_photo, load_photo
+- scripts/town_sound/data/SampleStore.gd: 169 lines; _init, list_samples, save_sample, rename_sample, delete_sample, _sample_is_used_by_project, load_audio, _write_json
+- scripts/town_sound/MediaTheme.gd: 28 lines; 
+- scripts/town_sound/network/LocalRecordLibrary.gd: 62 lines; list_records, save_record, money
+- scripts/town_sound/network/OnlineRecordLibrary.gd: 11 lines; list_records, can_upload
+- scripts/town_sound/network/RecordLibraryBase.gd: 6 lines; list_records
+- scripts/town_sound/PhotoAlbum.gd: 82 lines; _ready
+- scripts/town_sound/PocketCamera.gd: 86 lines; _ready, make_slider, cropped_image, update_preview, take_photo
+- scripts/town_sound/RecorderScreen.gd: 518 lines; _draw, _ready, _build_theme, _label, _button, _build_ui, can_edit_here, request_close, _exit_tree, _refresh_devices, _start_recording, _stop, _on_recorded, _preview_draft, _save_draft, _discard_draft, _refresh_library, _capture_context, _sample_memory_text, _play_sample, audio_peak, _refresh_controls, _notification, set_compact
+- scripts/town_sound/record_shop/PresetRecords.gd: 36 lines; 
+- scripts/town_sound/record_shop/PressingTable.gd: 463 lines; _ready, advance, complete_action, select_photo_cover, use_photo_cover, _process, play_feedback, source_rect, target_rect, _gui_input, caption, vinyl, label_disc, inner_sleeve, outer_sleeve, _draw
+- scripts/town_sound/record_shop/RecordShelf.gd: 76 lines; _ready, listen, _process, _exit_tree
+- scripts/town_sound/studio/Arrangement.gd: 222 lines; length, add_sample, split, duplicate_clip, remove_range, keep_range, load_pcm, mix, save_project, load_project
+- scripts/town_sound/studio/SampleDragButton.gd: 9 lines; _get_drag_data
+- scripts/town_sound/studio/StudioScreen.gd: 403 lines; _ready, _configure_role_project, label, button, field, build_inspector, changed, prepare_mix, play, pause, stop, _process, split_clip, duplicate_clip, delete_clip, edit_region, _unhandled_key_input, open_visual, _exit_tree
+- scripts/town_sound/studio/Timeline.gd: 160 lines; _ready, clip_rect, _draw, _get_drag_data, _can_drop_data, _drop_data, _gui_input
+- scripts/town_sound/visual/VisualCanvas.gd: 162 lines; configure, analyze, _draw
+- scripts/town_sound/visual/VisualRoom.gd: 106 lines; _ready, generate, _process, submit
+- scripts/ui/chapter_transition.gd: 39 lines; _ready, _continue_journey
+- scripts/ui/ending.gd: 197 lines; _ready, _draw, _build_ui, _result_panel, _variant_id, _echo_text, _load_json, _prepare_capture_state, _seed_capture_module, _capture_requested, _capture, _label, _button
+- scripts/ui/extension_host.gd: 176 lines; _ready, _fit_experience, _build_host_bar, _button, _process, _experience_completed, _complete, _cancel, _fail_and_return, _unhandled_input, _exit_tree
+- scripts/ui/interactive_space.gd: 398 lines; _ready, _load_active_space, _build_theme, _build_ui, _resident_names, _room_memory_text, _hotspot_x, _select_object, _open_selected, _open_record_shop, _talk_to_resident, _next_conversation_resident, _has_unspoken_resident, _conversation_event_id, _process, _unhandled_input, _show_book_notes, _panel, _label, _button, _style_button
+- scripts/ui/journal.gd: 269 lines; _ready, _draw, _build_ui, _today_text, _fact_text, _relationship_text, _memory_text, _planning_text, _load_location_names, _location_name, _block_text, _minute_text, _confirmation_text, _appointment_status_text, _text_panel, _label, _button
+- scripts/ui/main_menu.gd: 257 lines; _ready, _draw, _build_menu, _build_modal_shell, _on_new_game_pressed, _show_settings, _show_credits, _show_quit_confirmation, _prepare_modal, _hide_modal, _toggle_fullscreen, _toggle_reduced_motion, _unhandled_input, _make_label, _make_button, _capture, _continue_latest
+- scripts/ui/module_workbench.gd: 316 lines; _ready, _draw, _build_ui, _build_interaction_board, _build_outcome_choices, _toggle_token, _clear_tokens, _update_interaction_state, _token_label, _complete_choice, _return_to_town, _panel, _label, _token_button, _style_token, _button, _capture
+- scripts/ui/native_module_game.gd: 538 lines; _ready, _build_theme, _build_ui, _build_module_control, _toggle_token, _on_value_changed, _perform_primary_action, _process, _update_state, _update_module_value, _complete_choice, _interaction_record, _return_or_cancel, _fail, _unhandled_input, _draw, _draw_cooking, _draw_sound, _draw_photography, _draw_perspective, _draw_archives, _perspective_target, _token_label, _token_button_text, _eyebrow, _primary_text, _initial_status, _board_style, _panel, _label, _button, _style_button
+- scripts/ui/stage_backdrop.gd: 20 lines; _ready, _draw
+- scripts/ui/tarot_sigil.gd: 264 lines; configure, _draw, _p, _figure, _draw_path, _draw_magician, _draw_priestess, _draw_empress, _draw_emperor, _draw_keys, _draw_lovers, _draw_chariot, _draw_strength, _draw_hermit, _draw_wheel, _draw_justice, _draw_hanged, _draw_death, _draw_temperance, _draw_devil, _draw_tower, _draw_star, _draw_moon, _draw_sun, _draw_judgement, _draw_world
+- scripts/ui/tarot_table.gd: 1108 lines; _ready, _build_scene, _build_header, _build_case_panel, _build_reading_panel, _build_question_panel, _build_record_panel, _build_world_overlay, _start_case, _request_case, _draw_round, _prepare_draw_pile, _shuffle_pile, _reveal_cards, _render_pile, _render_draw, _select_card, _render_card_detail, _select_image, _select_next_cross_pair, _ask_question, _confirm_card, _refresh_records, _refresh_cross_button, _refresh_case_buttons, _on_next_pressed, _case_index_for_id, _available_cross_pairs, _pair_key, _open_world, _close_world, _submit_world, _on_question_submitted, _refresh_state, _return_to_town, _unhandled_input, _card_short_name, _confirmed_image_ids, _image_name, _set_phase, _animate_card_reveal, _animate_selected_card, _animate_selected_image, _animate_answer, _spawn_sparkles, _clear_children, _bbcode_escape, _input_style, _make_panel, _make_label, _make_button, _apply_button_style, capture_prototype
+- scripts/ui/town_backdrop.gd: 38 lines; _ready, set_points, _draw
+- scripts/ui/town_day.gd: 580 lines; _ready, _load_locations, _load_interactive_spaces, _build_ui, _refresh, _spaces_at, _show_pocket_panel, _open_pocket_recorder, _open_record_store, _open_pocket_album, _open_pocket_camera, _ambient_talk, _ambient_event_id, _confirmation_request_event_id, _request_confirmation, _resolve_event, _show_event_result, _build_event_modal, _open_event, _spend_action_time, _return_to_menu, _location_name, _minute_text, _panel, _label, _button, _style_button, _exit_tree, _guard_pocket_audio, _process, _on_walk, _remember_position, _rebuild_hotspots, _interact, _talk_nearby, _clear_dialogue, _show_line, _show_dialogue_beat, _open_journal, _unhandled_input, _pocket_blocks_walking, _notification
+- scripts/ui/walk_stage.gd: 315 lines; _ready, _process, move_player, nearest, _draw, _draw_street, _draw_sea, _draw_facade, _draw_tree, _draw_room, _draw_outdoor, _draw_room_details, _draw_furniture, _draw_person
+- tests/integration/test_interactive_spaces.gd: 67 lines; check, _initialize, run
+- tests/integration/test_native_modules.gd: 75 lines; check, _initialize, run, _exercise
+- tests/integration/test_observatory_hours.gd: 46 lines; check, _initialize, run
+- tests/integration/test_walking_journey.gd: 111 lines; check, _initialize, settle, run
+- tests/integration/test_world_clock.gd: 29 lines; check, _initialize, run
+- tests/town_sound/test_arrangement.gd: 99 lines; check, _initialize, run
+- tests/town_sound/test_audio_settings.gd: 20 lines; _initialize, run
+- tests/town_sound/test_flow.gd: 101 lines; check, _initialize, run
+- tests/town_sound/test_pocket_media.gd: 91 lines; check, _initialize, run
+- tests/town_sound/test_project_validation.gd: 35 lines; check, _initialize
+- tests/town_sound/test_recorder.gd: 86 lines; check, _initialize, run
+- tests/town_sound/test_visual_composition.gd: 44 lines; check, _initialize, tone, run
+- tests/town_sound/test_world_capture.gd: 59 lines; check, _initialize, peak, run

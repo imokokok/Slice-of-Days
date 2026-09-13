@@ -1,26 +1,113 @@
 {
   "edges": [
-    {"from": "town_entrance", "to": "residence", "walk_minutes": 10},
-    {"from": "town_entrance", "to": "print_shop", "walk_minutes": 8},
-    {"from": "residence", "to": "library", "walk_minutes": 15},
-    {"from": "residence", "to": "cafe", "walk_minutes": 14},
-    {"from": "print_shop", "to": "cafe", "walk_minutes": 8},
-    {"from": "print_shop", "to": "library", "walk_minutes": 9},
-    {"from": "library", "to": "night_market", "walk_minutes": 10},
-    {"from": "night_market", "to": "print_shop", "walk_minutes": 12},
-    {"from": "cafe", "to": "print_shop", "walk_minutes": 11},
-    {"from": "cafe", "to": "bus_stop", "walk_minutes": 8},
-    {"from": "bus_stop", "to": "park", "walk_minutes": 14},
-    {"from": "park", "to": "night_market", "walk_minutes": 9},
-    {"from": "night_market", "to": "tarot_stall", "walk_minutes": 6},
-    {"from": "night_market", "to": "dorm", "walk_minutes": 8},
-    {"from": "dorm", "to": "town_entrance", "walk_minutes": 7},
-    {"from": "print_shop", "to": "record_store", "walk_minutes": 12},
-    {"from": "record_store", "to": "bus_stop", "walk_minutes": 10},
-    {"from": "bus_stop", "to": "port", "walk_minutes": 13},
-    {"from": "port", "to": "night_market", "walk_minutes": 12},
-    {"from": "print_shop", "to": "print_shop", "walk_minutes": 10},
-    {"from": "print_shop", "to": "handcraft_shop", "walk_minutes": 11},
-    {"from": "handcraft_shop", "to": "library", "walk_minutes": 12}
-  ]
+    {
+      "from": "town_entrance",
+      "to": "night_market",
+      "walk_minutes": 3
+    },
+    {
+      "from": "night_market",
+      "to": "produce_stall",
+      "walk_minutes": 3
+    },
+    {
+      "from": "town_entrance",
+      "to": "handcraft_shop",
+      "walk_minutes": 4
+    },
+    {
+      "from": "handcraft_shop",
+      "to": "cafe",
+      "walk_minutes": 3
+    },
+    {
+      "from": "cafe",
+      "to": "print_shop",
+      "walk_minutes": 4
+    },
+    {
+      "from": "print_shop",
+      "to": "library",
+      "walk_minutes": 3
+    },
+    {
+      "from": "library",
+      "to": "record_store",
+      "walk_minutes": 4
+    },
+    {
+      "from": "record_store",
+      "to": "tarot_stall",
+      "walk_minutes": 2
+    },
+    {
+      "from": "tarot_stall",
+      "to": "chess_stall",
+      "walk_minutes": 3
+    },
+    {
+      "from": "town_entrance",
+      "to": "print_shop",
+      "walk_minutes": 6
+    },
+    {
+      "from": "cafe",
+      "to": "library",
+      "walk_minutes": 4
+    },
+    {
+      "from": "town_entrance",
+      "to": "bus_stop",
+      "walk_minutes": 6
+    },
+    {
+      "from": "town_entrance",
+      "to": "port",
+      "walk_minutes": 4
+    },
+    {
+      "from": "town_entrance",
+      "to": "residence",
+      "walk_minutes": 28
+    },
+    {
+      "from": "town_entrance",
+      "to": "dorm",
+      "walk_minutes": 38
+    },
+    {
+      "from": "town_entrance",
+      "to": "park",
+      "walk_minutes": 45
+    }
+  ],
+  "transport": {
+    "bus_stops": [
+      "bus_stop",
+      "residence",
+      "dorm",
+      "park"
+    ],
+    "bus_fare": 2,
+    "bus_first": 420,
+    "bus_last": 1350,
+    "bus_interval": 15,
+    "bus_night_start": 1200,
+    "bus_night_interval": 30,
+    "bus_factor": 0.38,
+    "bus_minimum": 8,
+    "taxi_cost": 20,
+    "taxi_wait": 5,
+    "taxi_factor": 0.24,
+    "taxi_minimum": 5,
+    "friend_minutes": 12,
+    "friend_npc": "zhou_xiaoliu",
+    "friend_start": 1140,
+    "friend_end": 1200,
+    "friend_encounters": 2,
+    "friend_destinations": [
+      "residence",
+      "dorm"
+    ]
+  }
 }

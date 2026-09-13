@@ -24,43 +24,45 @@ func _draw() -> void:
 
 
 func _build_ui() -> void:
-	var title := "A的随身灵感本" if GameState.current_role == "A" else "B的日程本"
+	var title := "A 的 Pocket / 随身物件" if GameState.current_role == "A" else "B的日程本"
 	_label(self, title, Vector2(45, 24), Vector2(600, 46), 30, INK)
 	var job_title := CharacterSystem.job_title(GameState.current_role)
 	_label(self, "%s · 第 %d 天 · %s · %d元 · 认可 %d/12" % [job_title, GameState.current_day, GameState.clock_text(), GameState.money, GameState.residency_confirmations], Vector2(48, 70), Vector2(850, 28), 15, MUTED)
 	var back := _button(self, "返回小镇", Vector2(1380, 28), Vector2(170, 44), TERRACOTTA)
 	back.pressed.connect(SceneRouter.return_from_gameplay)
 
-	_text_panel(Vector2(80, 125), Vector2(710, 710), "今天想找到的灵感" if GameState.current_role == "A" else "今日 To-do list", _today_text())
-	_text_panel(Vector2(810, 125), Vector2(710, 710), "沿途记下的事", _memory_text() + "\n\n" + _fact_text())
+	if GameState.current_role == "A": _build_pocket()
+	else: _text_panel(Vector2(80,125),Vector2(710,710),"Notebook / 已知信息",_today_text())
+	_text_panel(Vector2(810, 125), Vector2(710, 710), "沿途留下的东西", _memory_text() + "\n\n旧日记录（未经本次核实）\n" + _fact_text() + "\n\n" + _traces_text())
 
 func _today_text() -> String:
-	var schedule := GameState.schedule_for(GameState.current_role, GameState.current_day)
-	var inspirations := [
-		"今天想找：小镇第一次向我开口的声音。去社区中心，记下一句偶然听见的话。",
-		"今天想找：一顿饭留下的温度。在饭店听听忙碌之间的停顿。",
-		"今天想找：海与人之间的距离。21:00 后去观景台，看黑暗里的海。",
-		"今天想找：被留下的字迹。在书店和书信事务所，留意别人舍不得丢掉的话。",
-		"今天想找：旧旋律的新回声。去唱片店，记下想反复听的一段声音。",
-		"今天想找：星星之间还没有画出的线。21:00 后去观景台转动望远镜。",
-		"今天想找：想带走的小镇片段。把这一周的声音、照片和遇见留在本子里。"
-	]
-	var goal: String = inspirations[clampi(GameState.current_day - 1, 0, 6)] if GameState.current_role == "A" else str(schedule.get("goal", ""))
-	var lines: Array[String] = [goal, "沿途线索" if GameState.current_role == "A" else "今天的待办"]
-	for lead in EventSystem.day_leads():
-		var conditions: Dictionary = lead.get("conditions", {})
-		var locations: Array = conditions.get("locations", [])
-		var place := _location_name(str(locations[0])) if not locations.is_empty() else "小镇里"
-		var words := str(lead.get("choice_text", ""))
-		if GameState.current_role == "A":
-			lines.append("· %s\n  %s" % [words, place])
-		else:
-			lines.append("□ %s\n  %s · %s—%s" % [words, place, _minute_text(int(conditions.get("start", 0))), _minute_text(int(conditions.get("end", 1440)))])
-	if GameState.current_role == "B":
-		for appointment in GameState.appointments:
-			if int(appointment.get("day", 0)) == GameState.current_day:
-				lines.append("%s %s · %s" % ["✓" if str(appointment.get("status", "")) == "completed" else "□", _minute_text(int(appointment.get("start", 0))), str(appointment.get("label", "约定"))])
+	var lines: Array[String] = []
+	if GameState.current_role == "A":
+		lines.append("一张沾着海盐的明信片\n背面写着：饿的时候，来饭店坐坐。别急着把每一站都走完。")
+		lines.append("折起来的纸条\n观景台晚上九点开放，记得带相机。")
+	else:
+		lines.append("第%d天 · %s · 今日预算 %d元" % [GameState.current_day,GameState.clock_text(),GameState.money])
+		lines.append("□ 问问周晓六今天碰见过谁。\n□ 去下棋摊看看，闹闹傍晚可能会来。")
+	lines.append(KnowledgeSystem.text())
+	if not WorldGraph.pins().is_empty():
+		lines.append("夹着的地点便签" if GameState.current_role == "A" else "我的 Pin")
+		for place in WorldGraph.pins():
+			lines.append("· " + TravelSystem.location_name(str(place)))
+	for appointment in GameState.appointments:
+		if int(appointment.get("day",0)) == GameState.current_day:
+			lines.append("%s · %s · %s" % [_minute_text(int(appointment.get("start",0))),str(appointment.get("label","约定")),str(appointment.get("status",""))])
 	return "\n\n".join(lines)
+
+func _traces_text() -> String:
+	var lines: Array[String] = []
+	for row in GameState.shared_state.get("offscreen_"+GameState.current_role,[]): lines.append("第%d天 · %s" % [int(row.day),str(row.text)])
+	for row in GameState.shared_state.get("dialogue_history_"+GameState.current_role,[]):
+		var person: Dictionary = ScheduleSystem.residents.get(str(row.npc),{})
+		lines.append("%s · %s" % [str(person.get("display_name",row.npc))," / ".join(row.lines)])
+	return "\n\n".join(lines)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_J,KEY_ESCAPE]: SceneRouter.return_from_gameplay()
 
 func _fact_text() -> String:
 	if GameState.known_facts.is_empty():
@@ -266,3 +268,21 @@ func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2
 	button.add_theme_color_override("font_hover_color", PAPER)
 	parent.add_child(button)
 	return button
+
+func _build_pocket() -> void:
+	var scroll := ScrollContainer.new()
+	scroll.position = Vector2(80,125)
+	scroll.size = Vector2(710,710)
+	add_child(scroll)
+	var stack := VBoxContainer.new()
+	stack.add_theme_constant_override("separation",22)
+	scroll.add_child(stack)
+	var items: Array = [{"kind":"postcard","heading":"一张沾着海盐的明信片","text":"背面写着：饿的时候，来饭店坐坐。","place":"night_market"},{"kind":"note","heading":"折起来的纸条","text":"观景台晚上九点开放。记得带相机。","place":"park"}]
+	for fact in KnowledgeSystem.facts(): items.append({"kind":"note","heading":"谈话留下的便签","text":str(fact.get("text","")) + (" ?" if float(fact.get("confidence",1.0)) < 0.8 else ""),"place":""})
+	for item in items:
+		var card := preload("res://scripts/ui/pocket_card.gd").new()
+		card.kind = str(item.kind)
+		card.heading = str(item.heading)
+		card.caption = str(item.text)
+		card.place = str(item.place)
+		stack.add_child(card)

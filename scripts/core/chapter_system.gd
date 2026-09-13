@@ -17,26 +17,26 @@ func start_new_game(_start_role: String = "A") -> void:
 	var chapter := current_chapter()
 	GameState.switch_to_role(str(chapter.get("role", start_role)), int(chapter.get("day", 1)), true)
 	GameState.current_location = "town_entrance"
-	GameState.shared_state["street_layout_version"] = 3
-	GameState.shared_state["street_positions"] = {"A_1":150.0}
+	GameState.shared_state["street_layout_version"] = 4
+	GameState.shared_state["street_positions"] = {"A_1_public_west":150.0}
 	GameState.commit_active_role_state()
+	EchoSystem.begin_day()
 	chapter_started.emit(chapter)
 
 
 func chapter_sequence() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	var total_days := int(GameState.calendar_data.get("total_days", 7))
-	var first_role := "A"
-	var role_order := [first_role, "B" if first_role == "A" else "A"]
-	for day in range(1, total_days + 1):
-		for role in role_order:
-			result.append({
-				"id": "day_%d_%s" % [day, str(role).to_lower()],
-				"day": day,
-				"role": role,
-			})
+	var roles: Array = GameState.calendar_data.get("day_roles", ["A","B","B","A","B","A","choice"])
+	for index in roles.size():
+		var role := str(roles[index])
+		if role == "choice": role = str(GameState.shared_state.get("final_role", "choice"))
+		result.append({"id":"day_%d_%s" % [index+1,role.to_lower()], "day":index+1, "role":role})
 	return result
 
+func choose_final_role(role: String) -> bool:
+	if GameState.current_day != 6 or role not in ["A","B"] or not bool(GameState.shared_state.get("sleep_pending",false)): return false
+	GameState.shared_state["final_role"] = role
+	return true
 
 func current_chapter() -> Dictionary:
 	var sequence := chapter_sequence()
@@ -69,6 +69,8 @@ func advance_chapter() -> Dictionary:
 	var current := current_chapter()
 	if current.is_empty():
 		return {"ok": false, "complete": true}
+	if str(next_chapter().get("role", "")) == "choice": return {"ok":false,"needs_choice":true}
+	EchoSystem.close_day()
 	GameState.commit_active_role_state()
 	var completed: Array = GameState.shared_state.get("completed_chapters", [])
 	var current_id := str(current.get("id", ""))
@@ -88,6 +90,7 @@ func advance_chapter() -> Dictionary:
 	GameState.shared_state["chapter_index"] = next_index
 	var next: Dictionary = sequence[next_index]
 	GameState.switch_to_role(str(next.role), int(next.day), true)
+	EchoSystem.begin_day()
 	chapter_started.emit(next)
 	return {"ok": true, "complete": false, "chapter": next}
 

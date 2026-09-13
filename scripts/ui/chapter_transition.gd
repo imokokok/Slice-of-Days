@@ -18,6 +18,19 @@ func _ready() -> void:
 	words.add_theme_font_size_override("font_size", 29)
 	words.add_theme_color_override("font_color", Color("ddd0b8"))
 	var next := ChapterSystem.next_chapter()
+	if str(next.get("role", "")) == "choice":
+		words.text = "最后一天，想从哪一扇窗醒来？"
+		add_child(words)
+		for index in 2:
+			var role := "A" if index == 0 else "B"
+			var choice := Button.new()
+			choice.text = "进入 " + role + " 的最后一天"
+			choice.position = Vector2(470 + index * 360, 570)
+			choice.size = Vector2(300, 60)
+			choice.pressed.connect(func() -> void:
+				if ChapterSystem.choose_final_role(role): _continue_journey())
+			add_child(choice)
+		return
 	words.text = "灯熄了。海还醒着。" if next.is_empty() else "灯熄了。\n另一扇窗，正透进清晨。"
 	add_child(words)
 	words.modulate.a = 0.0

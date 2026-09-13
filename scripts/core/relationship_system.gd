@@ -87,7 +87,7 @@ func summary(resident_id: String) -> Dictionary:
 
 func confirmation_request_preview(resident_id: String) -> Dictionary:
 	var resident: Dictionary = ScheduleSystem.residents.get(resident_id, {})
-	if resident.is_empty() or not bool(resident.get("draft", false)):
+	if resident.is_empty() or (not bool(resident.get("draft", false)) and not ResidentProfileSystem.is_core(resident_id)):
 		return {"available": false}
 	var state: Dictionary = GameState.relationships.get(resident_id, {})
 	if state.is_empty():

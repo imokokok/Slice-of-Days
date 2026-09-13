@@ -5,7 +5,7 @@ signal message_posted(message: String)
 signal role_changed(role: String)
 
 const REAL_SECONDS_PER_GAME_MINUTE := 12.0
-const SAVE_VERSION := 3
+const SAVE_VERSION := 4
 const CALENDAR_PATH := "res://data/story/calendar.json"
 
 var current_role := "A"
@@ -178,10 +178,12 @@ func active_time_blocks() -> Array:
 ## Shared by street and indoor exploration; paused scenes do not feed the clock.
 func advance_world_clock(real_seconds: float) -> void:
 	if real_seconds <= 0.0 or not is_finite(real_seconds): return
+	var seconds_per_minute := float(calendar_data.get("real_seconds_per_game_minute", REAL_SECONDS_PER_GAME_MINUTE))
+	seconds_per_minute = maxf(seconds_per_minute, 0.1)
 	clock_remainder += real_seconds
-	var minutes := int(floor((clock_remainder + 0.0000001) / REAL_SECONDS_PER_GAME_MINUTE))
+	var minutes := int(floor((clock_remainder + 0.0000001) / seconds_per_minute))
 	if minutes == 0: return
-	clock_remainder = maxf(0.0, clock_remainder - minutes * REAL_SECONDS_PER_GAME_MINUTE)
+	clock_remainder = maxf(0.0, clock_remainder - minutes * seconds_per_minute)
 	spend_time(minutes)
 
 func spend_time(minutes: int) -> bool:
@@ -524,7 +526,13 @@ func load_save_data(data: Dictionary) -> void:
 	var location_aliases := {"cafeteria":"night_market", "theatre":"print_shop", "studio":"print_shop", "old_station":"bus_stop", "court":"town_entrance"}
 	current_location = str(location_aliases.get(current_location, current_location))
 	shared_state["chapter_start_role"] = "A"
-	shared_state["chapter_index"] = (current_day - 1) * 2 + (1 if current_role == "B" else 0)
+	shared_state["chapter_index"] = current_day - 1
+	if int(data.get("save_version", 0)) < 4:
+		var roles: Array = calendar_data.get("day_roles", [])
+		while current_day < 7 and str(roles[current_day - 1]) != current_role: current_day += 1
+		if current_day == 7: shared_state["final_role"] = current_role
+		shared_state["chapter_index"] = current_day - 1
+		shared_state.erase("street_positions")
 	commit_active_role_state()
 	state_changed.emit()
 

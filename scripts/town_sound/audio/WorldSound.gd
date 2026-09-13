@@ -5,16 +5,24 @@ const BUS := "TownWorld"
 const RATE := 22050
 var ambience: AudioStreamPlayer
 var foley: AudioStreamPlayer
+var coast: AudioStreamPlayer
+var indoors := false
 var location := ""
 var active := false
 var cache: Dictionary = {}
 var monitoring_locks := 0
+var footstep_cache: Dictionary = {}
 
 func _ready() -> void:
 	AudioServer.add_bus()
 	AudioServer.set_bus_name(AudioServer.bus_count - 1, BUS)
 	ambience = AudioStreamPlayer.new()
 	foley = AudioStreamPlayer.new()
+	coast = AudioStreamPlayer.new()
+	coast.bus = BUS
+	coast.stream = make_sea()
+	coast.volume_db = -8.0
+	add_child(coast)
 	for player in [ambience, foley]:
 		player.bus = BUS
 		add_child(player)
@@ -22,10 +30,12 @@ func _ready() -> void:
 func set_active(value: bool) -> void:
 	active = value
 	if not active:
+		coast.stop()
 		ambience.stop()
 		foley.stop()
 	elif ambience.stream != null and not ambience.playing and AudioServer.get_driver_name() != "Dummy":
 		ambience.play()
+	if active and not coast.playing and AudioServer.get_driver_name() != "Dummy": coast.play()
 
 func set_location(value: String) -> void:
 	if location == value: return
@@ -46,6 +56,7 @@ func detail_label() -> String:
 
 func play_detail(footsteps := false) -> void:
 	if not active or AudioServer.get_driver_name() == "Dummy": return
+	foley.volume_db = 0.0
 	foley.stream = make_detail(location, footsteps)
 	foley.play()
 
@@ -110,4 +121,43 @@ static func make_detail(place: String, footsteps := false) -> AudioStreamWAV:
 	wav.format = AudioStreamWAV.FORMAT_16_BITS
 	wav.mix_rate = RATE
 	wav.data = data
+	return wav
+
+func play_footstep() -> void:
+	if not active or AudioServer.get_driver_name() == "Dummy": return
+	if not footstep_cache.has(location):
+		var wav := make_detail(location,true)
+		wav.data = wav.data.slice(0,int(RATE*0.16)*2)
+		footstep_cache[location] = wav
+	foley.stream = footstep_cache[location]
+	foley.volume_db = -8.0
+	foley.play()
+
+func set_indoor(value: bool) -> void:
+	indoors = value
+	if coast != null: coast.volume_db = -27.0 if indoors else -8.0
+static func make_sea() -> AudioStreamWAV:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 71209
+	var data := PackedByteArray()
+	var count := RATE * 12
+	data.resize(count*2)
+	var low := 0.0
+	var wash := 0.0
+	for i in count:
+		var t := float(i)/RATE
+		var noise := rng.randf_range(-1,1)
+		low = lerpf(low,noise,0.035)
+		wash = lerpf(wash,noise,0.24)
+		var swell := 0.2 + 0.8 * pow(0.5 + 0.5 * sin(TAU*t/6.0),2.0)
+		var foam := 0.5 + 0.5 * sin(TAU*t/3.0+1.4)
+		var sample := (low*1.2 + wash*0.24 + noise*0.035*foam)*swell
+		sample *= minf(1.0,minf(t,12.0-t)/0.12)
+		data.encode_s16(i*2,int(clampf(sample,-1,1)*32767))
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = RATE
+	wav.data = data
+	wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	wav.loop_end = count
 	return wav

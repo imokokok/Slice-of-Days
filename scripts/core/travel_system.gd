@@ -4,6 +4,7 @@ const ROUTES_PATH := "res://data/world/travel_routes.json"
 const LOCATIONS_PATH := "res://data/world/locations.json"
 
 var adjacency: Dictionary = {}
+var transport: Dictionary = {}
 var location_names: Dictionary = {}
 
 
@@ -22,6 +23,7 @@ func load_route_data(path: String) -> void:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		push_error("Invalid travel route data: %s" % path)
 		return
+	transport = parsed.get("transport", {})
 	for edge in parsed.get("edges", []):
 		var from_id := str(edge.get("from", ""))
 		var to_id := str(edge.get("to", ""))
@@ -63,41 +65,46 @@ func _add_edge(from_id: String, to_id: String, minutes: int) -> void:
 	adjacency[from_id] = rows
 
 
-func route(from_id: String, to_id: String, method: String, role: String, minute: int) -> Dictionary:
-	if from_id == to_id:
-		return {"available": false, "reason": "已经在这里。"}
-	var walk_minutes := _shortest_walk_minutes(from_id, to_id)
-	if walk_minutes < 0:
-		return {"available": false, "reason": "当前没有通往这里的路线。"}
+func route(from_id: String, to_id: String, method: String, _role: String, minute: int) -> Dictionary:
+	if from_id == to_id: return {"available":false, "reason":"已经在这里。"}
+	var walking := _shortest_walk_minutes(from_id, to_id)
+	if walking < 0: return {"available":false, "reason":"没有连接的路线。"}
+	var wait := 0
+	var cost := 0
+	var duration := walking
+	var label := "步行"
 	match method:
-		"walk":
-			return {"available": true, "minutes": walk_minutes, "cost": 0, "label": "步行"}
+		"walk": pass
 		"bus":
-			var wait := (15 - minute % 15) % 15
-			return {
-				"available": true,
-				"minutes": max(8, int(ceil(walk_minutes * 0.55))) + wait,
-				"cost": 2,
-				"label": "公交",
-			}
+			if not transport.bus_stops.has(from_id) or not transport.bus_stops.has(to_id): return {"available":false, "reason":"请在公交站或住宅、观景台站点上下车。"}
+			var interval := int(transport.bus_night_interval if minute >= int(transport.bus_night_start) else transport.bus_interval)
+			var departure := maxi(int(transport.bus_first), int(ceil(float(minute) / interval)) * interval)
+			if departure > int(transport.bus_last): return {"available":false, "reason":"今天的末班车已经开走。"}
+			wait = departure - minute
+			cost = int(transport.bus_fare)
+			duration = maxi(int(transport.bus_minimum), int(ceil(walking * float(transport.bus_factor)))) + wait
+			label = "公交"
 		"taxi":
-			return {
-				"available": true,
-				"minutes": max(6, int(ceil(walk_minutes * 0.35))),
-				"cost": 20,
-				"label": "打车",
-			}
+			wait = int(transport.taxi_wait)
+			cost = int(transport.taxi_cost)
+			duration = maxi(int(transport.taxi_minimum), int(ceil(walking * float(transport.taxi_factor)))) + wait
+			label = "出租车"
 		"friend":
-			var available := role == "B" and minute >= 1140 and minute <= 1200
-			return {
-				"available": available,
-				"minutes": max(8, int(ceil(walk_minutes * 0.45))),
-				"cost": 0,
-				"label": "朋友顺路",
-				"reason": "朋友只在19:00至20:00顺路。" if not available else "",
-			}
-	return {"available": false, "reason": "不支持的交通方式。"}
-
+			var npc := str(transport.friend_npc)
+			var relationship: Dictionary = GameState.relationships.get(npc, {})
+			var activity := ScheduleSystem.activity_at(npc, GameState.current_day, minute)
+			var used: Array = GameState.shared_state.get("used_rides", [])
+			var token := "%d_%s" % [GameState.current_day, npc]
+			if not transport.get("friend_destinations",[]).has(to_id) or int(relationship.get("encounters", 0)) < int(transport.friend_encounters) or str(activity.get("location", "")) != from_id or minute < int(transport.friend_start) or minute + int(transport.friend_minutes) > int(transport.friend_end) or used.has(token):
+				return {"available":false, "reason":"现在没有相熟且有空的居民顺路。"}
+			duration = int(transport.friend_minutes)
+			label = "熟人顺路接送"
+		_: return {"available":false, "reason":"没有这种交通方式。"}
+	var conflicts: Array[String] = []
+	for appointment in GameState.appointments:
+		if int(appointment.get("day", 0)) == GameState.current_day and str(appointment.get("status", "")) in ["scheduled", "active"] and minute < int(appointment.get("end", 1440)) and minute + duration > int(appointment.get("start", 1440)):
+			conflicts.append(str(appointment.get("label", "已知预约")))
+	return {"available":true, "minutes":duration, "cost":cost, "wait":wait, "arrival":minute+duration, "label":label, "conflicts":conflicts}
 
 func travel(to_id: String, method: String) -> Dictionary:
 	var option := route(
@@ -111,13 +118,19 @@ func travel(to_id: String, method: String) -> Dictionary:
 		return {"ok": false, "message": str(option.get("reason", "当前无法使用。"))}
 	var duration := int(option.get("minutes", 0))
 	var cost := int(option.get("cost", 0))
-	if not GameState.can_fit_now(duration):
-		return {"ok": false, "message": "当前时间块放不下这段路程。"}
+	if GameState.current_minute + duration >= 1440:
+		return {"ok": false, "message": "今天已没有足够时间完成这段路程。"}
 	if cost > 0 and GameState.money < cost:
 		return {"ok": false, "message": "余额不足。"}
 	if cost > 0:
 		GameState.spend_money(cost)
-	GameState.use_free_time(duration)
+	GameState.spend_time(duration)
+	if method == "friend":
+		var used: Array = GameState.shared_state.get("used_rides", [])
+		used.append("%d_%s" % [GameState.current_day, str(transport.friend_npc)])
+		GameState.shared_state["used_rides"] = used
+	if method == "bus":
+		GameState.add_journal_entry({"kind":"ticket", "text":"一张公交票 · " + location_name(to_id)})
 	GameState.current_location = to_id
 	GameState.commit_active_role_state()
 	GameState.state_changed.emit()

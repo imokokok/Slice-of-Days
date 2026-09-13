@@ -11,6 +11,7 @@ func run() -> void:
 		return
 	var state = root.get_node("GameState")
 	root.get_node("ChapterSystem").start_new_game()
+	state.current_location = "park"
 	state.current_minute = 1259
 	check(not root.get_node("GameplayModuleSystem").begin_session("contemplation", "street:park"), "Telescope must reject entry before 21:00")
 	change_scene_to_file("res://scenes/town_day.tscn")
@@ -37,9 +38,9 @@ func run() -> void:
 	check(current_scene.scene_file_path.ends_with("town_day.tscn"), "Leaving telescope must return to town")
 	var journal = load("res://scenes/journal.tscn").instantiate()
 	root.add_child(journal)
-	check(journal._today_text().contains("今天想找"), "A carries daily inspiration prompts")
+	check(journal._today_text().contains("明信片"), "A carries daily inspiration prompts")
 	state.current_role = "B"
-	check(journal._today_text().contains("今天的待办"), "B carries a daily to-do list")
+	check(journal._today_text().contains("今日预算"), "B carries a daily to-do list")
 	journal.queue_free()
 	print("OBSERVATORY AND NOTEBOOK PASS" if failures == 0 else "FAIL: %d" % failures)
 	quit(failures)

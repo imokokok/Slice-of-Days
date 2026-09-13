@@ -817,15 +817,34 @@
       "id": "a_d5_translation",
       "choice_text": "帮两个人补全没有说出口的意思",
       "priority": 20,
-      "conditions": {"roles": ["A"], "days": [5], "locations": ["night_market"], "start": 900, "end": 1200, "required_events": ["a_d5_library_rescue"]},
+      "conditions": {
+        "roles": [
+          "A"
+        ],
+        "days": [
+          5
+        ],
+        "locations": [
+          "produce_stall"
+        ],
+        "start": 900,
+        "end": 1200,
+        "required_events": [
+          "a_d5_library_rescue"
+        ]
+      },
       "cost": {},
       "presentation": {
         "title": "同一个词里的两种生活",
         "summary": "争论的词是“家”。真正冲突的却不是字面意思。",
-        "result": "消除误解工作台已经打开。"
+        "result": "先听听买菜摊旁发生了什么。"
       },
-      "results": {"unlock_modules": ["translation"]},
-      "launch_module": "translation"
+      "results": {
+        "unlock_modules": [
+          "translation"
+        ]
+      },
+      "invitation_npc": "beetman"
     },
     {
       "id": "b_d5_ghostwriting",

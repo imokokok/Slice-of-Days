@@ -44,6 +44,7 @@ func _today_text() -> String:
 		lines.append("第%d天 · %s · 今日预算 %d元" % [GameState.current_day,GameState.clock_text(),GameState.money])
 		lines.append("□ 问问周晓六今天碰见过谁。\n□ 去下棋摊看看，闹闹傍晚可能会来。")
 	lines.append(KnowledgeSystem.text())
+	for lead in DialogueSystem.notebook_leads(): lines.append(str(lead.heading) + "\n" + str(lead.text))
 	if not WorldGraph.pins().is_empty():
 		lines.append("夹着的地点便签" if GameState.current_role == "A" else "我的 Pin")
 		for place in WorldGraph.pins():
@@ -278,6 +279,7 @@ func _build_pocket() -> void:
 	stack.add_theme_constant_override("separation",22)
 	scroll.add_child(stack)
 	var items: Array = [{"kind":"postcard","heading":"一张沾着海盐的明信片","text":"背面写着：饿的时候，来饭店坐坐。","place":"night_market"},{"kind":"note","heading":"折起来的纸条","text":"观景台晚上九点开放。记得带相机。","place":"park"}]
+	items.append_array(DialogueSystem.notebook_leads())
 	for fact in KnowledgeSystem.facts(): items.append({"kind":"note","heading":"谈话留下的便签","text":str(fact.get("text","")) + (" ?" if float(fact.get("confidence",1.0)) < 0.8 else ""),"place":""})
 	for item in items:
 		var card := preload("res://scripts/ui/pocket_card.gd").new()

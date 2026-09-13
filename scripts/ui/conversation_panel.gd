@@ -1,6 +1,8 @@
 extends Control
 signal closed
 var npc := ""
+var starting_topic := "greeting"
+var offer: Dictionary = {}
 var lines: Array[String] = []
 var index := 0
 var text_label: Label
@@ -24,7 +26,7 @@ func _ready() -> void:
 	box.size = Vector2(874,290)
 	panel.add_child(box)
 	typewriter = bool(GameState.shared_state.get("typewriter",true))
-	_show_topic("greeting")
+	_show_topic(starting_topic)
 func _clear() -> void:
 	text_label = null
 	options.clear()
@@ -51,6 +53,7 @@ func _button(value: String, action: Callable) -> void:
 	box.add_child(button)
 	options.append(button)
 func _show_topic(topic: String) -> void:
+	offer = DialogueSystem.invitation_for(npc) if topic == "minigame_hook" else {}
 	lines = DialogueSystem.reply(npc,topic)
 	index = 0
 	_show_line()
@@ -70,15 +73,20 @@ func _advance() -> void:
 		return
 	index += 1
 	if index < lines.size(): _show_line()
+	elif not offer.is_empty(): _offer_choices()
 	else: _topics()
 func _topics(page := 0) -> void:
 	_clear()
 	_label("你说……",19)
-	var topics := [["今天怎么样？","daily_state"],["你什么时候在这里？","schedule_info"],["最近见过谁？","rumor"],["怎么去观景台？","location_info"],["你最近在忙什么？","personal_topic"],["聊聊街角的声音。","small_talk"],["这里有什么可以试试？","minigame_hook"],["还记得上次吗？","relationship_followup"],["愿意确认认识我吗？","recognition_related"]]
+	var topics := [[str(DialogueSystem.content.get(npc,{}).get("chat_label","今天过得怎么样？")),"daily_state"],["晚点还能在这儿碰到你吗？","schedule_info"],["最近有什么小事？","rumor"],["我想去海边看看。","location_info"],["后来呢？再讲一点吧。","personal_topic"],["我再陪你坐一会儿。","small_talk"],["你刚才说的那件事……","relationship_followup"],["我们也算熟人了吧？","recognition_related"]]
+	var invitation := DialogueSystem.invitation_for(npc)
+	if not invitation.is_empty():
+		topics = topics.filter(func(t: Array) -> bool: return str(t[1]) != "minigame_hook")
+		topics.push_front([str(invitation.label),"minigame_hook"])
 	for i in range(page*4,mini(page*4+4,topics.size())):
 		var item: Array = topics[i]
 		_button("%d  %s" % [options.size()+1,str(item[0])],_show_topic.bind(str(item[1])))
-	_button("换个话题 →",_topics.bind((page+1)%3))
+	_button("再聊点别的。",_topics.bind((page+1)%int(ceil(topics.size()/4.0))))
 	_button("先聊到这里。",_close)
 	options[0].grab_focus()
 func _close() -> void:
@@ -100,3 +108,30 @@ func _unhandled_input(event: InputEvent) -> void:
 			var number := int(event.keycode-KEY_1)
 			if number < options.size(): options[number].pressed.emit()
 		get_viewport().set_input_as_handled()
+
+func _offer_choices() -> void:
+	_clear()
+	_label(str(ScheduleSystem.residents[npc].display_name),18)
+	var duration := GameplayModuleSystem.time_hint(str(offer.module))
+	_label("这段经历约需 " + duration if not duration.is_empty() else "先到台边看看，再决定怎么做。",23)
+	_button("1  " + str(offer.accept),_accept_offer)
+	_button("2  我晚一点再来。",_decline_offer)
+	options[0].grab_focus()
+func _decline_offer() -> void:
+	offer = {}
+	lines = ["好，不着急。你想好了再来找我。"]
+	index = 0
+	_show_line()
+func _accept_offer() -> void:
+	var accepted := DialogueSystem.accept_invitation(npc)
+	if accepted.is_empty(): _close(); return
+	if bool(accepted.get("launch",false)):
+		var minutes := int(GameplayModuleSystem.modules.get(str(accepted.module),{}).get("direct_time_minutes",0))
+		if not GameState.can_fit_now(minutes):
+			offer = {}
+			lines = ["这会儿时间不够，等你空下来我们再开始。"]
+			index = 0
+			_show_line()
+			return
+		SceneRouter.gameplay_module(str(accepted.module),"street:"+GameState.current_location+":invitation:"+npc)
+	_close()

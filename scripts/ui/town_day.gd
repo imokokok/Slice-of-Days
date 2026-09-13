@@ -262,6 +262,10 @@ func _build_event_modal() -> void:
 
 func _open_event(event_id: String) -> void:
 	if not EventSystem.events.has(event_id): return
+	var invitation_npc := str(EventSystem.events[event_id].get("invitation_npc",""))
+	if not invitation_npc.is_empty():
+		_talk_nearby(invitation_npc,"minigame_hook")
+		return
 	staged_event_id = event_id
 	staged_event_data = EventSystem.events[event_id]
 	staged_event_index = 0
@@ -462,7 +466,9 @@ func _rebuild_hotspots() -> void:
 			street.hotspots.append({"x":center + i * 120, "kind":"door", "id":str(rooms[i].id), "label":"进入" + str(rooms[i].name)})
 	for item in outdoor_objects:
 		if str(item.get("location_id", "")) == GameState.current_location:
-			street.hotspots.append({"x":center, "kind":"module", "id":str(item.module_id), "label":str(item.name) + " · " + GameplayModuleSystem.time_hint(str(item.module_id))})
+			if str(item.get("kind","")) == "dialogue":
+				if not DialogueSystem.invitation_for(str(item.npc_id)).is_empty(): street.hotspots.append({"x":center,"kind":"invitation","id":str(item.npc_id),"label":str(item.name)})
+			else: street.hotspots.append({"x":center, "kind":"module", "id":str(item.module_id), "label":str(item.name) + " · " + GameplayModuleSystem.time_hint(str(item.module_id))})
 	var available := EventSystem.available_events()
 	for index in available.size():
 		street.hotspots.append({"x":center - 190.0 - index * 110.0, "kind":"event", "id":str(available[index].id), "label":str(available[index].get("choice_text", "交谈"))})
@@ -486,16 +492,23 @@ func _interact() -> void:
 		"home": SceneRouter.enter_space("home_a" if GameState.current_role == "A" else "home_b")
 		"door":
 			if not _guard_pocket_audio(): SceneRouter.enter_space(str(item.id))
+		"invitation": _talk_nearby(str(item.id),"minigame_hook")
 		"module":
-			if not _guard_pocket_audio(): SceneRouter.gameplay_module(str(item.id), "street:" + GameState.current_location)
+			if _guard_pocket_audio(): return
+			var invite := DialogueSystem.invitation_for_module(str(item.id))
+			if str(item.id) == "chess" and not DialogueSystem.invitation_accepted("chess"):
+				if not DialogueSystem.invitation_for(str(invite.get("npc",""))).is_empty(): _talk_nearby(str(invite.npc),"minigame_hook")
+				else: _show_line("", "棋盘摆好了，对面的椅子还空着。等棋友来再聊聊。")
+			else: SceneRouter.gameplay_module(str(item.id), "street:" + GameState.current_location)
 		"event": _open_event(str(item.id))
 		"person": _talk_nearby(str(item.id))
 		"bench": _sit_on_bench(item)
 
-func _talk_nearby(resident_id: String) -> void:
+func _talk_nearby(resident_id: String, topic := "greeting") -> void:
 	if is_instance_valid(conversation): return
 	conversation = preload("res://scripts/ui/conversation_panel.gd").new()
 	conversation.npc = resident_id
+	conversation.starting_topic = topic
 	for item in street.hotspots:
 		if str(item.get("id","")) == resident_id and absf(float(item.x)-street.player_x) > 1.0: street.facing = signf(float(item.x)-street.player_x)
 	street.velocity = 0.0

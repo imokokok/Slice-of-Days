@@ -33,3 +33,7 @@ Phase 8 partial: palette, footstep timing and composition changes. Final atmosph
 Exit-only engine resource cleanup warnings remain. Legacy fourteen-chapter smoke/simulation/walking tests need reinterpretation for the new narrative model; see README for the authoritative current suite. No old save or old minigame asset was cleared.
 
 Latest playtest fixes: full-body facing flip and stopped turn before reversing; persistent reachable bench hotspots, seated posture, E to wait 30 minutes / Esc stand / wait until lookout opens; generated looped sea-wash layer on the TownWorld audio bus, quieter indoors. TURN SIT SEA test covers motion, proximity, time advancement and non-silent loop audio.
+
+## Dialogue and invitation update
+Twelve core residents now have authored multi-line everyday stories and repeat variants. Xanni describes her own hours in first person. Recollections retain the actual spoken text and uncertain source in B's notebook. Seven notebook leads point to the relevant resident and place; accepted invitations update the note. Cooking, letters, records and tarot require the host invitation before workbench entry; chess offers a conversation first. The misunderstanding module starts from BEETMAN's produce-stall conversation and returns there. Existing minigame content is retained.
+Validation: test_minigame_invitations.gd, test_network_vertical_slice.gd and content_validation_test.tscn pass. Existing Godot shutdown resource warnings remain.

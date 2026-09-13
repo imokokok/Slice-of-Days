@@ -164,6 +164,18 @@ func _open_selected() -> void:
 		ChapterSystem.sleep_at_home()
 		return
 	var module_id := str(item.get("module_id", ""))
+	if str(item.get("kind","")) == "record_shop": module_id = "sound_sampling"
+	if str(item.get("kind","")) == "tarot": module_id = "tarot"
+	var invite := DialogueSystem.invitation_for_module(module_id)
+	if not invite.is_empty() and not DialogueSystem.invitation_accepted(module_id):
+		if not DialogueSystem.invitation_for(str(invite.npc)).is_empty():
+			_start_conversation(str(invite.npc),"minigame_hook")
+		else:
+			name_label.text = "工作台旁留着便签"
+			cue_label.text = "先和店主聊聊，听听今天的委托。"
+			detail_label.text = "E · 继续"
+			room_dialogue.show()
+		return
 	if not module_id.is_empty():
 		var metadata: Dictionary = GameplayModuleSystem.modules.get(module_id, {})
 		var direct_minutes := int(metadata.get("direct_time_minutes", 0))
@@ -411,9 +423,10 @@ func _style_button(button: Button, kind: String) -> void:
 	button.add_theme_color_override("font_pressed_color", text_color)
 	button.add_theme_color_override("font_focus_color", text_color)
 
-func _start_conversation(resident_id: String) -> void:
+func _start_conversation(resident_id: String, topic := "greeting") -> void:
 	conversation = preload("res://scripts/ui/conversation_panel.gd").new()
 	conversation.npc = resident_id
+	conversation.starting_topic = topic
 	for item in stage.hotspots:
 		if str(item.get("id","")) == resident_id and absf(float(item.x)-stage.player_x) > 1.0: stage.facing = signf(float(item.x)-stage.player_x)
 	stage.velocity = 0.0

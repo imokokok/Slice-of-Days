@@ -1,0 +1,95 @@
+{
+  "invitations": [
+    {
+      "npc": "shi_yongqi",
+      "module": "cooking",
+      "location": "night_market",
+      "label": "厨房有什么需要帮忙的吗？",
+      "lines": [
+        "午饭这阵刚忙完，台上还留着几样食材。",
+        "能帮我试做一道今天的菜吗？客人的纸条放在操作台边。",
+        "不用只照着我来，做出什么味道，咱们一起尝尝。"
+      ],
+      "accept": "好，我去料理台试试。",
+      "launch": false
+    },
+    {
+      "npc": "mossner",
+      "module": "ghostwriting",
+      "location": "handcraft_shop",
+      "label": "这封信需要人帮忙吗？",
+      "lines": [
+        "这位客人写了好几遍，还是觉得说得不对。",
+        "你愿意陪他把想说的话重新拼一遍吗？报纸、剪刀和信纸都在桌上。",
+        "留一点他自己的口气，别替他把话说满。"
+      ],
+      "accept": "好，我到书写桌边看看。",
+      "launch": false
+    },
+    {
+      "npc": "xanni",
+      "module": "sound_sampling",
+      "location": "record_store",
+      "label": "要不要一起做一张唱片？",
+      "lines": [
+        "你口袋里有没有在镇上录到的声音？",
+        "我正缺一段开头。海浪、锅铲或者一句笑声，都可以拿来试试。",
+        "去制作台坐坐吧，剪出一段属于你的节奏，再给它做个封套。"
+      ],
+      "accept": "好，我去制作台。",
+      "launch": false
+    },
+    {
+      "npc": "xia_touming",
+      "module": "tarot",
+      "location": "tarot_stall",
+      "label": "今天这副牌讲什么故事？",
+      "lines": [
+        "今天有个故事，开头听起来有些说不通。",
+        "愿意陪我抽几张牌，一点点问清楚发生过什么吗？",
+        "你可以问，也可以改口。答案由你自己慢慢拼起来。"
+      ],
+      "accept": "好，我坐到牌桌前。",
+      "launch": false
+    },
+    {
+      "npc": "naonao",
+      "module": "chess",
+      "location": "chess_stall",
+      "label": "要不要下一局？",
+      "lines": [
+        "对面还空着，坐吗？",
+        "咱们下一局。没下完也不用赶，记着局面，下次接着来。",
+        "输赢都没关系，别悄悄拿走我的棋子就行。"
+      ],
+      "accept": "好，我坐下来陪你下一局。",
+      "launch": true
+    },
+    {
+      "npc": "beetman",
+      "module": "translation",
+      "location": "produce_stall",
+      "label": "刚才买菜时怎么吵起来了？",
+      "lines": [
+        "旁边那两位，一起来买菜的，刚才还在商量晚饭，忽然就说急了。",
+        "一个想分享家里常做的菜，一个已经说了自己不吃肉。越劝，越像没听见。",
+        "你愿意陪他们把话说完吗？先听听两个人各自在想什么。"
+      ],
+      "accept": "好，把你们记得的事慢慢说给我听。",
+      "launch": true
+    },
+    {
+      "npc": "yuxingqing",
+      "module": "contemplation",
+      "location": "park",
+      "label": "你在看哪一片星星？",
+      "lines": [
+        "来，试试这个望远镜。星星的位置没变，换个角度就不一样了。",
+        "有时候像一只飞鸟，有时候像一头鲸。",
+        "你自己转转看，我就在旁边。"
+      ],
+      "accept": "好，我去望远镜前看看。",
+      "launch": false
+    }
+  ]
+}

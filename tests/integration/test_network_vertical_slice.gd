@@ -50,6 +50,11 @@ func run() -> void:
 	current_scene.stage.player_x = current_scene._hotspot_x(0)
 	current_scene._select_object(0)
 	current_scene._open_selected()
+	await process_frame
+	check(is_instance_valid(current_scene.conversation),"Kitchen first introduces the shopkeeper commission")
+	current_scene.conversation._accept_offer()
+	await process_frame
+	current_scene._open_selected()
 	await settle()
 	check(current_scene.module_id == "cooking", "Kitchen enters existing cooking prototype")
 	for token in ["lemon","bread","tomato"]: current_scene._toggle_token(token)

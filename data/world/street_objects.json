@@ -21,9 +21,10 @@
     {
       "id": "vegetable_memory",
       "location_id": "produce_stall",
-      "kind": "module",
+      "kind": "dialogue",
       "module_id": "translation",
-      "name": "听听摊主的话"
+      "name": "和 BEETMAN 聊聊买菜时的误会",
+      "npc_id": "beetman"
     }
   ]
 }

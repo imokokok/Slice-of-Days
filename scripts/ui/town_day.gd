@@ -444,8 +444,11 @@ func _rebuild_hotspots() -> void:
 			street.hotspots.append({"x":index*BLOCK_WIDTH+790,"kind":"bench","label":"坐一会"})
 	if street.sitting:
 		street.hotspots.append({"x":street.player_x,"kind":"bench","label":"长椅"})
-	street.hotspots.append({"x":100, "kind":"roads", "label":"路口 · 查看去向"})
-	street.hotspots.append({"x":street.world_width - 110, "kind":"roads", "label":"路口 · 查看去向"})
+	# Keep exits on the actual movement limits. The old right exit shared the
+	# same x position as the final bench, so nearest() always selected the bench
+	# and made the road interaction unreachable.
+	street.hotspots.append({"x":80.0, "kind":"roads", "label":"路口 · 打开地图选择去向"})
+	street.hotspots.append({"x":street.world_width - 80.0, "kind":"roads", "label":"路口 · 打开地图选择去向"})
 	var center := current_index * BLOCK_WIDTH + 450.0
 	if GameState.current_location == "park" and GameState.current_minute < 1260:
 		street.hotspots.append({"x":center - 285, "kind":"closed", "label":"观景台 · 21:00 开放"})

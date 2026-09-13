@@ -17,7 +17,7 @@ Baseline: 09129be; backup/pre-network-09129be. New specification explicitly conf
 - scripts/ui/town_day.gd and walk_stage.gd: one 13,500-unit street → small shared stage instances selected by world graph; branch exits, saved local coordinates, composition anchors.
 - scripts/core/travel_system.gd: existing Dijkstra useful; remove universal buses and role-only friend rides, add configured stops/timetables/quotes, appointment conflicts and atomic arrival.
 - scripts/core/chapter_system.gd: fourteen alternating chapters → seven authored days A/B/B/A/B/A/choice. Sleep remains day-end action.
-- scripts/core/game_state.gd: save v3 → v4 migration, structured facts and offscreen traces in persisted shared state. 5:1 natural clock retained, configurable.
+- scripts/core/game_state.gd: save v3 → v4 migration, structured facts and offscreen traces in persisted shared state. 15:1 natural clock retained, configurable.
 - scripts/core/schedule_system.gd: retain location schedules, add deterministic mood/energy from authored slots and scheduled arrivals/departures indoors.
 - scripts/ui/journal.gd: A object Pocket, B factual Notebook, source/confidence and player pins. Do not reveal hidden event windows through day_leads.
 - Dialogue currently town event overlay + one-line interior chat. Introduce shared contextual conversation panel and data topics; pause natural clock, preserve actor visibility and history.

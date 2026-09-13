@@ -26,7 +26,7 @@ func run() -> void:
 	chapters.start_new_game("B")
 	check(state.current_role == "A", "Authored opening must always start with A")
 	var sequence: Array = chapters.chapter_sequence()
-	check(sequence.size() == 14 and sequence[1].role == "B" and sequence[2].day == 2, "Seven days must alternate A/B in the authored order")
+	check(sequence.size() == 7 and sequence[1].role == "B" and sequence[1].day == 2, "The authored journey must contain seven days and switch to B on Day 2")
 	check(not chapters.sleep_at_home(), "Sleeping outside one's home must be rejected")
 	var places: Array = JSON.parse_string(FileAccess.get_file_as_string("res://data/world/locations.json")).locations
 	var indoors: Array = JSON.parse_string(FileAccess.get_file_as_string("res://data/world/interactive_spaces.json")).spaces
@@ -59,11 +59,19 @@ func run() -> void:
 	var before: float = town.street.player_x
 	town.street.move_player(1, 0.2)
 	check(town.street.player_x > before, "Movement must be continuous, not hotspot selection")
+	town.street.player_x = town.street.world_width - 80.0
+	town._on_walk(town.street.player_x)
+	town._refresh()
+	check(str(town.street.nearest().get("kind", "")) == "roads", "The road interaction must remain reachable at the right edge")
 	town.street.hotspots.clear()
 	town.street.hotspots.append({"x":town.street.player_x + 200, "kind":"door"})
 	check(town.street.nearest().is_empty(), "Distant interactions must be inaccessible")
 	# Enter the home by proximity, then walk to the bed.
-	town.street.player_x = town.street_order.find("residence") * town.BLOCK_WIDTH + 450
+	state.current_location = "residence"
+	router.town_day()
+	await settle()
+	town = current_scene
+	town.street.player_x = 450.0
 	town._on_walk(town.street.player_x)
 	town._refresh()
 	town._interact()
@@ -77,7 +85,7 @@ func run() -> void:
 	home.stage.player_x = home._hotspot_x(1)
 	home._open_selected()
 	await settle(4.4)
-	check(state.current_role == "B" and state.current_day == 1, "Sleeping must automatically switch to B day 1")
+	check(state.current_role == "B" and state.current_day == 2, "Sleeping must automatically switch to B on Day 2")
 	check(state.current_location == "dorm", "B must wake at B's own home")
 	check(not state.shared_state.has("sleep_pending"), "Sleep transition must commit exactly once")
 	check(current_scene.scene_file_path.ends_with("town_day.tscn"), "Sleep must return to playable street without alignment")

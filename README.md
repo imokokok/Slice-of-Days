@@ -28,12 +28,16 @@ v4 存档保留旧钱、作品、关系与记录，将旧十四段日程定位�
 
 ```bash
 godot --headless --path . scenes/content_validation_test.tscn -- --isolated-save
+godot --headless --path . scenes/system_smoke_test.tscn -- --isolated-save
 godot --headless --path . --script tests/integration/test_network_vertical_slice.gd -- --isolated-save
 godot --headless --path . --script tests/integration/test_world_clock.gd -- --isolated-save
 godot --headless --path . --script tests/integration/test_turn_sit_sea.gd -- --isolated-save
 godot --headless --path . --script tests/integration/test_observatory_hours.gd -- --isolated-save
+godot --headless --path . --script tests/integration/test_walking_journey.gd -- --isolated-save
+godot --headless --path . --script tests/integration/test_minigame_invitations.gd -- --isolated-save
+godot --headless --path . --script tests/integration/test_myriorama_entry.gd -- --isolated-save
 godot --headless --path . --script tests/integration/test_native_modules.gd -- --isolated-save
 godot --headless --path . --script tests/integration/test_interactive_spaces.gd -- --isolated-save
 ```
 
-运行时检查与断言需同时通过；测试退出仍有原有 ObjectDB / resource 回收告警，不能只看进程退出码。旧的十四段轮换、旧核心名单和长街测试保留作为 v3 设计记录，不作为新版本验收。
+运行时检查与断言需同时通过；测试退出仍有原有 ObjectDB / resource 回收告警，不能只看进程退出码。旧的十四段轮换测试保留作为 v3 设计记录，不作为新版本验收。

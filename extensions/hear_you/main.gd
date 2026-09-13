@@ -26,9 +26,9 @@ const MEMORIES := [
 	{"icon": "table", "side": 1, "row": 2, "title": "每天的一餐", "question": "你平常吃饭时会想到什么？", "answer": "你想到日常的饭菜，不一定想到动物。", "memory": "对我来说，它也是每天熟悉的食物。吃饭时，我通常想着味道和同桌的人，不一定想到它来自哪种动物。"},
 ]
 
-var body_font: SystemFont
-var title_font: SystemFont
-var latin_font: SystemFont
+var body_font: Font
+var title_font: Font
+var latin_font: Font
 var textures: Array[Texture2D] = []
 var decoded: Array[bool] = [false, false, false, false, false, false]
 var reveal: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -54,13 +54,23 @@ var completed_count := 0
 
 
 func _ready() -> void:
-	body_font = SystemFont.new()
-	body_font.font_names = PackedStringArray(["Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei"])
-	title_font = SystemFont.new()
-	title_font.font_names = body_font.font_names
-	title_font.font_weight = 700
-	latin_font = SystemFont.new()
-	latin_font.font_names = PackedStringArray(["Georgia", "Times New Roman"])
+	if DisplayServer.get_name() == "headless":
+		# Headless CI has no system font database. Using SystemFont there emits
+		# thousands of FreeType errors and can hide real test failures.
+		body_font = ThemeDB.fallback_font
+		title_font = ThemeDB.fallback_font
+		latin_font = ThemeDB.fallback_font
+	else:
+		var body_system_font := SystemFont.new()
+		body_system_font.font_names = PackedStringArray(["Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "WenQuanYi Zen Hei"])
+		body_font = body_system_font
+		var title_system_font := SystemFont.new()
+		title_system_font.font_names = body_system_font.font_names
+		title_system_font.font_weight = 700
+		title_font = title_system_font
+		var latin_system_font := SystemFont.new()
+		latin_system_font.font_names = PackedStringArray(["Georgia", "Times New Roman"])
+		latin_font = latin_system_font
 	for item: Dictionary in MEMORIES:
 		textures.append(load("res://extensions/hear_you/assets/%s.svg" % item.icon))
 	audio_player = AudioStreamPlayer.new()

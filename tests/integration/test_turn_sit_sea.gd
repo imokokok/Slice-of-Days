@@ -34,6 +34,10 @@ func run() -> void:
 	check(state.current_minute == before+30 and stage.sitting,"Seated waiting advances exactly 30 minutes")
 	town._stand_from_bench()
 	check(not stage.sitting and not town.event_overlay.visible,"Standing restores exploration")
+	stage.player_x = stage.world_width - 80.0
+	town._on_walk(stage.player_x)
+	town._refresh()
+	check(str(stage.nearest().get("kind", "")) == "roads","Right edge road must not be hidden by the final bench")
 	var sound = root.get_node("WorldSound")
 	check(sound.coast.stream != null and sound.coast.stream.loop_mode == AudioStreamWAV.LOOP_FORWARD,"Sea sound must be looped")
 	var pcm: PackedByteArray = sound.coast.stream.data

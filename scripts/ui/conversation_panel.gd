@@ -11,6 +11,7 @@ var progress := 0.0
 var typewriter := true
 var options: Array[Button] = []
 var next_action: Callable
+var invite_after_chat := false
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -53,7 +54,9 @@ func _button(value: String, action: Callable) -> void:
 	box.add_child(button)
 	options.append(button)
 func _show_topic(topic: String) -> void:
+	invite_after_chat = topic == "greeting" and DialogueSystem.should_invite(npc)
 	offer = DialogueSystem.invitation_for(npc) if topic == "minigame_hook" else {}
+	if not offer.is_empty(): DialogueSystem.mark_invitation_heard(npc)
 	lines = DialogueSystem.reply(npc,topic)
 	index = 0
 	_show_line()
@@ -73,6 +76,9 @@ func _advance() -> void:
 		return
 	index += 1
 	if index < lines.size(): _show_line()
+	elif invite_after_chat:
+		invite_after_chat = false
+		_show_topic("minigame_hook")
 	elif not offer.is_empty(): _offer_choices()
 	else: _topics()
 func _topics(page := 0) -> void:
@@ -113,13 +119,15 @@ func _offer_choices() -> void:
 	_clear()
 	_label(str(ScheduleSystem.residents[npc].display_name),18)
 	var duration := GameplayModuleSystem.time_hint(str(offer.module))
-	_label("这段经历约需 " + duration if not duration.is_empty() else "先到台边看看，再决定怎么做。",23)
+	_label(str(offer.lines.back()),23)
+	if not duration.is_empty(): _label("约 " + duration,16)
 	_button("1  " + str(offer.accept),_accept_offer)
 	_button("2  我晚一点再来。",_decline_offer)
 	options[0].grab_focus()
 func _decline_offer() -> void:
+	var farewell := str(offer.get("decline","好，不着急。你想好了再来找我。"))
 	offer = {}
-	lines = ["好，不着急。你想好了再来找我。"]
+	lines = [farewell]
 	index = 0
 	_show_line()
 func _accept_offer() -> void:

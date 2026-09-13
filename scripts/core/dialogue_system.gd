@@ -62,6 +62,16 @@ func invitation_for_module(module_id: String) -> Dictionary:
 	for offer in invitations:
 		if str(offer.module) == module_id: return offer
 	return {}
+
+func should_invite(npc: String) -> bool:
+	var offer := invitation_for(npc)
+	return not offer.is_empty() and not invitation_accepted(str(offer.module)) and not GameState.shared_state.get("invitations_heard",{}).has("%s_%d_%s" % [GameState.current_role,GameState.current_day,npc])
+
+func mark_invitation_heard(npc: String) -> void:
+	var heard: Dictionary = GameState.shared_state.get("invitations_heard",{})
+	heard["%s_%d_%s" % [GameState.current_role,GameState.current_day,npc]] = true
+	GameState.shared_state["invitations_heard"] = heard
+	SaveManager.save_game()
 func invitation_accepted(module_id: String) -> bool:
 	return GameState.shared_state.get("accepted_invitations",{}).has("%s_%d_%s" % [GameState.current_role,GameState.current_day,module_id])
 func accept_invitation(npc: String) -> Dictionary:

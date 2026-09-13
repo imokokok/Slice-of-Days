@@ -36,6 +36,7 @@ func _ready() -> void:
 func _fit_experience() -> void:
 	if experience is Control:
 		experience.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		if module_id == "tarot": experience.offset_top = 60
 	if experience is Node2D:
 		if module_id == "ghostwriting":
 			experience.position = Vector2(80, 0)
@@ -80,8 +81,9 @@ func _build_host_bar() -> void:
 	complete_button = _button(panel, "完成并返回", Vector2(564, 19), Vector2(170, 50), true)
 	complete_button.disabled = true
 	complete_button.pressed.connect(_complete)
-	if module_id == "contemplation":
+	if module_id in ["contemplation", "tarot"]:
 		panel.position = Vector2(1210, 92)
+		if module_id == "tarot": panel.position.y = 0
 		panel.size = Vector2(360, 60)
 		title.hide()
 		status_label.hide()
@@ -121,6 +123,8 @@ func _process(_delta: float) -> void:
 
 func _experience_completed() -> bool:
 	match module_id:
+		"tarot":
+			return bool(experience.get("solmere_completed"))
 		"translation":
 			return bool(experience.get("finished"))
 		"ghostwriting":

@@ -16,6 +16,20 @@ func run() -> void:
 	state.current_minute = 700
 	var dialogue = root.get_node("DialogueSystem")
 	check(dialogue.notebook_leads().size() == 7,"Notebook leads to each invitation host")
+	var panel = load("res://scripts/ui/conversation_panel.gd").new()
+	panel.npc = "beetman"
+	root.add_child(panel)
+	panel.typewriter = false
+	check(panel.offer.is_empty(),"Ordinary greeting comes before the invitation")
+	for i in range(panel.lines.size()): panel._advance()
+	check(panel.offer.get("module","") == "translation","NPC volunteers invitation after chatting without player selecting a task topic")
+	check(not dialogue.should_invite("beetman"),"Invitation is remembered so reopening does not nag")
+	panel._decline_offer()
+	panel._show_topic("greeting")
+	for i in range(panel.lines.size()): panel._advance()
+	check(panel.offer.is_empty(),"Declined invitation leaves ordinary conversation available")
+	panel.queue_free()
+	await process_frame
 	var hours = dialogue.reply("xanni","schedule_info")
 	check(str(hours[0]).begins_with("我") and not str(hours[0]).contains("Xanni"),"Xanni uses first person for her own hours")
 	for person in dialogue.content:

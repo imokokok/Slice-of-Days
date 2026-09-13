@@ -269,6 +269,8 @@ func _process(_delta: float) -> void:
 		cue_label.visible_characters = int(speech_progress)
 	if not is_instance_valid(stage): return
 	stage.enabled = not is_instance_valid(pocket_panel) and not is_instance_valid(notes_overlay) and not SceneRouter.transitioning and not room_dialogue.visible
+	if stage.enabled and DisplayServer.window_is_focused():
+		GameState.advance_world_clock(_delta)
 	avatar_x = stage.player_x
 
 

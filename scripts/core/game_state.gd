@@ -4,12 +4,14 @@ signal state_changed
 signal message_posted(message: String)
 signal role_changed(role: String)
 
+const REAL_SECONDS_PER_GAME_MINUTE := 12.0
 const SAVE_VERSION := 3
 const CALENDAR_PATH := "res://data/story/calendar.json"
 
 var current_role := "A"
 var current_day := 1
 var current_minute := 9 * 60
+var clock_remainder := 0.0
 var money := 180
 var residency_confirmations := 0
 var current_location := "residence"
@@ -92,6 +94,7 @@ func commit_active_role_state() -> void:
 	role_states[current_role] = {
 		"day": current_day,
 		"minute": current_minute,
+		"clock_remainder": clock_remainder,
 		"money": money,
 		"location": current_location,
 		"completed_events": completed_events.duplicate(),
@@ -118,6 +121,7 @@ func switch_to_role(role: String, day := -1, reset_to_schedule_start := false) -
 	if reset_to_schedule_start:
 		var schedule := schedule_for(role, current_day)
 		current_minute = int(schedule.get("start", 9 * 60))
+		clock_remainder = 0.0
 		current_location = "residence" if role == "A" else "dorm"
 		for fact in schedule.get("opening_facts", []):
 			add_fact(str(fact), false)
@@ -133,6 +137,7 @@ func _load_role_state(role: String) -> void:
 	var data: Dictionary = role_states.get(role, _default_role_state(role))
 	current_day = int(data.get("day", 1))
 	current_minute = int(data.get("minute", 9 * 60))
+	clock_remainder = clampf(float(data.get("clock_remainder", 0.0)), 0.0, REAL_SECONDS_PER_GAME_MINUTE)
 	money = int(data.get("money", 180 if role == "A" else 45))
 	current_location = str(data.get("location", "residence"))
 	completed_events.assign(data.get("completed_events", []))
@@ -169,6 +174,15 @@ func schedule_for(role: String, day: int) -> Dictionary:
 func active_time_blocks() -> Array:
 	return schedule_for(current_role, current_day).get("blocks", [])
 
+
+## Shared by street and indoor exploration; paused scenes do not feed the clock.
+func advance_world_clock(real_seconds: float) -> void:
+	if real_seconds <= 0.0 or not is_finite(real_seconds): return
+	clock_remainder += real_seconds
+	var minutes := int(floor((clock_remainder + 0.0000001) / REAL_SECONDS_PER_GAME_MINUTE))
+	if minutes == 0: return
+	clock_remainder = maxf(0.0, clock_remainder - minutes * REAL_SECONDS_PER_GAME_MINUTE)
+	spend_time(minutes)
 
 func spend_time(minutes: int) -> bool:
 	if minutes <= 0:

@@ -67,3 +67,5 @@ godot --headless --path . --script res://tests/integration/test_walking_journey.
 随身本按主角区分：A 的灵感本列出当天创作线索，B 的日程本列出当天待办与预约；街道和室内均可按 J 打开。行走有加减速、屈膝抬脚与镜头缓动，对话逐字呈现，E 先补全再继续。
 
 观景台专项检查：`godot --headless --path . --script res://tests/integration/test_observatory_hours.gd -- --isolated-save`，覆盖 21:00 门禁、真实三维星体与摄像机旋转、星座解法、返回街道及两种随身本。
+
+自然时间流速为现实 60 秒 = 游戏 5 分钟（每 12 秒推进游戏 1 分钟），时钟只显示 HH:MM。街道和室内探索时均计时，站着也计时；对话、随身本、菜单、小游戏及窗口失焦时暂停自然计时。主动等待和剧情行动仍保留原定时间消耗。切换场景与存读档保留不足一分钟的计时进度。

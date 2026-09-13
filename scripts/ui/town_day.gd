@@ -25,7 +25,6 @@ var street: Control
 var street_order: Array[String] = []
 const BLOCK_WIDTH := 900.0
 var outdoor_objects: Array = []
-var walk_minutes := 0.0
 var current_index := -1
 var dialogue_choices: Array[Button] = []
 var spoken_line: Label
@@ -404,11 +403,8 @@ func _guard_pocket_audio() -> bool:
 
 func _process(delta: float) -> void:
 	street.enabled = not event_overlay.visible and not _pocket_blocks_walking() and not pocket_opening and not SceneRouter.transitioning
-	if street.enabled and street.walking:
-		walk_minutes += delta
-		if walk_minutes >= 3.0:
-			walk_minutes = 0.0
-			GameState.use_free_time(1)
+	if street.enabled and DisplayServer.window_is_focused():
+		GameState.advance_world_clock(delta)
 
 func _on_walk(x: float) -> void:
 	var index := clampi(int(x / BLOCK_WIDTH), 0, street_order.size() - 1)

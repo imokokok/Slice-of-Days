@@ -26,6 +26,9 @@ func _ready() -> void:
 		return
 	experience = packed.instantiate()
 	add_child(experience)
+	if module_id == "contemplation":
+		experience.return_requested.connect(_cancel)
+		ObservatoryAudio.set_stargazing(true)
 	_fit_experience()
 	_build_host_bar()
 
@@ -77,6 +80,15 @@ func _build_host_bar() -> void:
 	complete_button = _button(panel, "完成并返回", Vector2(564, 19), Vector2(170, 50), true)
 	complete_button.disabled = true
 	complete_button.pressed.connect(_complete)
+	if module_id == "contemplation":
+		panel.position = Vector2(1210, 92)
+		panel.size = Vector2(360, 60)
+		title.hide()
+		status_label.hide()
+		leave.position = Vector2(8, 8)
+		leave.size = Vector2(145, 44)
+		complete_button.position = Vector2(166, 8)
+		complete_button.size = Vector2(184, 44)
 
 
 func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, primary: bool) -> Button:
@@ -125,7 +137,7 @@ func _complete() -> void:
 		return
 	var pending: Dictionary = GameState.shared_state.get("pending_module", {})
 	var source_event_id := str(pending.get("source_event_id", ""))
-	if source_event_id.begins_with("space:"):
+	if source_event_id.begins_with("space:") or source_event_id.begins_with("street:"):
 		var direct_minutes := int(metadata.get("direct_time_minutes", 0))
 		if direct_minutes > 0 and not GameState.use_free_time(direct_minutes):
 			status_label.text = "当前时间块已不足 %d 分钟。进度保留在扩展内部，请暂时离开。" % direct_minutes
@@ -158,3 +170,6 @@ func _fail_and_return(message: String) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F10:
 		_cancel()
+
+func _exit_tree() -> void:
+	if module_id == "contemplation": ObservatoryAudio.set_stargazing(false)

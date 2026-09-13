@@ -123,6 +123,8 @@ func latest_outcome(module_id: String) -> Dictionary:
 
 
 func begin_session(module_id: String, source_event_id := "") -> bool:
+	if module_id == "contemplation" and GameState.current_minute < 1260:
+		return false
 	if not unlock(module_id) or not start(module_id):
 		return false
 	GameState.shared_state["pending_module"] = {

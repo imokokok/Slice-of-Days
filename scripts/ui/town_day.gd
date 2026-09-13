@@ -28,6 +28,8 @@ var outdoor_objects: Array = []
 var walk_minutes := 0.0
 var current_index := -1
 var dialogue_choices: Array[Button] = []
+var spoken_line: Label
+var speech_tween: Tween
 
 
 func _ready() -> void:
@@ -92,8 +94,8 @@ func _build_ui() -> void:
 		button.icon = preload("res://scripts/town_sound/MediaTheme.gd").icon(str(tools[index].id))
 		button.tooltip_text = str(tools[index].label)
 		button.pressed.connect(tools[index].action)
-	var notes := _button(self, "记录", Vector2(1395, 15), Vector2(78, 40), "quiet")
-	notes.tooltip_text = "J · 查看记录"
+	var notes := _button(self, "灵感本" if GameState.current_role == "A" else "日程本", Vector2(1395, 15), Vector2(78, 40), "quiet")
+	notes.tooltip_text = "J · 打开随身本"
 	notes.pressed.connect(_open_journal)
 	var menu := _button(self, "菜单", Vector2(1488, 15), Vector2(80, 40), "quiet")
 	menu.pressed.connect(_return_to_menu)
@@ -106,6 +108,10 @@ func _refresh() -> void:
 	GameState.refresh_appointments()
 	location_title.text = _location_name(GameState.current_location)
 	clock_label.text = "第 %d 天   %s" % [GameState.current_day, GameState.clock_text()]
+	street.walk_limit = street_order.find("park") * BLOCK_WIDTH + 180 if GameState.current_minute < 1260 else INF
+	if street.player_x > street.walk_limit:
+		street.player_x = street.walk_limit
+		street.move_player(0, 0)
 	_rebuild_hotspots()
 
 
@@ -423,6 +429,10 @@ func _remember_position() -> void:
 func _rebuild_hotspots() -> void:
 	street.hotspots.clear()
 	var center := current_index * BLOCK_WIDTH + 450.0
+	if GameState.current_location == "park" and GameState.current_minute < 1260:
+		street.hotspots.append({"x":center - 285, "kind":"closed", "label":"观景台 · 21:00 开放"})
+		street.hotspots.append({"x":center - 410, "kind":"wait_open", "label":"坐下等到 21:00"})
+		return
 	if GameState.current_location in ["residence", "dorm"]:
 		var own_home := "residence" if GameState.current_role == "A" else "dorm"
 		if GameState.current_location == own_home:
@@ -451,6 +461,11 @@ func _interact() -> void:
 	_remember_position()
 	SaveManager.save_game()
 	match str(item.kind):
+		"closed": _show_line("", "观景台将在晚上九点开放。可以在旁边的长椅坐一会。")
+		"wait_open":
+			GameState.spend_time(maxi(0, 1260 - GameState.current_minute))
+			SaveManager.save_game()
+			_refresh()
 		"home": SceneRouter.enter_space("home_a" if GameState.current_role == "A" else "home_b")
 		"door":
 			if not _guard_pocket_audio(): SceneRouter.enter_space(str(item.id))
@@ -478,6 +493,8 @@ func _talk_nearby(resident_id: String) -> void:
 		_show_line("", "刚才的话还留在风里。下次见面再聊吧。")
 
 func _clear_dialogue() -> void:
+	if speech_tween: speech_tween.kill()
+	spoken_line = null
 	dialogue_choices.clear()
 	for child in event_panel.get_children():
 		event_panel.remove_child(child)
@@ -491,6 +508,10 @@ func _show_line(speaker: String, text: String) -> void:
 	_label(event_panel, speaker, Vector2(32, 18), Vector2(675, 28), 19, Color("d6b58d"))
 	var line := _label(event_panel, text, Vector2(32, 61), Vector2(675, 180), 23, Color("ede3ce"))
 	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	spoken_line = line
+	line.visible_characters = 0
+	speech_tween = create_tween()
+	speech_tween.tween_property(line, "visible_characters", text.length(), maxf(0.3, text.length() / 28.0))
 	var next := _button(event_panel, "继续  E", Vector2(475, 288), Vector2(220, 43), "dialogue")
 	next.pressed.connect(func() -> void: event_overlay.hide())
 	dialogue_choices.append(next)
@@ -539,7 +560,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _pocket_blocks_walking() or pocket_opening: return
 	if event_overlay.visible:
 		if event.keycode == KEY_ESCAPE: event_overlay.hide()
-		elif event.keycode in [KEY_E, KEY_ENTER, KEY_SPACE] and dialogue_choices.size() == 1: dialogue_choices[0].pressed.emit()
+		elif event.keycode in [KEY_E, KEY_ENTER, KEY_SPACE] and dialogue_choices.size() == 1:
+			if is_instance_valid(spoken_line) and spoken_line.visible_characters >= 0 and spoken_line.visible_characters < spoken_line.text.length():
+				if speech_tween: speech_tween.kill()
+				spoken_line.visible_characters = -1
+			else: dialogue_choices[0].pressed.emit()
 		elif event.keycode >= KEY_1 and event.keycode <= KEY_9:
 			var index: int = event.keycode - KEY_1
 			if index < dialogue_choices.size(): dialogue_choices[index].pressed.emit()

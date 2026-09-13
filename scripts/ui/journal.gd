@@ -24,18 +24,43 @@ func _draw() -> void:
 
 
 func _build_ui() -> void:
-	var title := "A的随身记忆与相册" if GameState.current_role == "A" else "B的计划本"
+	var title := "A的随身灵感本" if GameState.current_role == "A" else "B的日程本"
 	_label(self, title, Vector2(45, 24), Vector2(600, 46), 30, INK)
 	var job_title := CharacterSystem.job_title(GameState.current_role)
 	_label(self, "%s · 第 %d 天 · %s · %d元 · 认可 %d/12" % [job_title, GameState.current_day, GameState.clock_text(), GameState.money, GameState.residency_confirmations], Vector2(48, 70), Vector2(850, 28), 15, MUTED)
 	var back := _button(self, "返回小镇", Vector2(1380, 28), Vector2(170, 44), TERRACOTTA)
 	back.pressed.connect(SceneRouter.return_from_gameplay)
 
-	_text_panel(Vector2(38, 125), Vector2(355, 710), "已知事实", _fact_text())
-	_text_panel(Vector2(420, 125), Vector2(355, 710), "居民关系", _relationship_text())
-	_text_panel(Vector2(802, 125), Vector2(355, 710), "经历与作品", _memory_text())
-	_text_panel(Vector2(1184, 125), Vector2(378, 710), "时间与预约", _planning_text())
+	_text_panel(Vector2(80, 125), Vector2(710, 710), "今天想找到的灵感" if GameState.current_role == "A" else "今日 To-do list", _today_text())
+	_text_panel(Vector2(810, 125), Vector2(710, 710), "沿途记下的事", _memory_text() + "\n\n" + _fact_text())
 
+func _today_text() -> String:
+	var schedule := GameState.schedule_for(GameState.current_role, GameState.current_day)
+	var inspirations := [
+		"今天想找：小镇第一次向我开口的声音。去社区中心，记下一句偶然听见的话。",
+		"今天想找：一顿饭留下的温度。在饭店听听忙碌之间的停顿。",
+		"今天想找：海与人之间的距离。21:00 后去观景台，看黑暗里的海。",
+		"今天想找：被留下的字迹。在书店和书信事务所，留意别人舍不得丢掉的话。",
+		"今天想找：旧旋律的新回声。去唱片店，记下想反复听的一段声音。",
+		"今天想找：星星之间还没有画出的线。21:00 后去观景台转动望远镜。",
+		"今天想找：想带走的小镇片段。把这一周的声音、照片和遇见留在本子里。"
+	]
+	var goal: String = inspirations[clampi(GameState.current_day - 1, 0, 6)] if GameState.current_role == "A" else str(schedule.get("goal", ""))
+	var lines: Array[String] = [goal, "沿途线索" if GameState.current_role == "A" else "今天的待办"]
+	for lead in EventSystem.day_leads():
+		var conditions: Dictionary = lead.get("conditions", {})
+		var locations: Array = conditions.get("locations", [])
+		var place := _location_name(str(locations[0])) if not locations.is_empty() else "小镇里"
+		var words := str(lead.get("choice_text", ""))
+		if GameState.current_role == "A":
+			lines.append("· %s\n  %s" % [words, place])
+		else:
+			lines.append("□ %s\n  %s · %s—%s" % [words, place, _minute_text(int(conditions.get("start", 0))), _minute_text(int(conditions.get("end", 1440)))])
+	if GameState.current_role == "B":
+		for appointment in GameState.appointments:
+			if int(appointment.get("day", 0)) == GameState.current_day:
+				lines.append("%s %s · %s" % ["✓" if str(appointment.get("status", "")) == "completed" else "□", _minute_text(int(appointment.get("start", 0))), str(appointment.get("label", "约定"))])
+	return "\n\n".join(lines)
 
 func _fact_text() -> String:
 	if GameState.known_facts.is_empty():
@@ -206,7 +231,7 @@ func _text_panel(at: Vector2, panel_size: Vector2, title: String, content: Strin
 	text.text = content
 	text.fit_content = false
 	text.scroll_active = true
-	text.add_theme_font_size_override("normal_font_size", 14)
+	text.add_theme_font_size_override("normal_font_size", 22)
 	text.add_theme_color_override("default_color", INK)
 	panel.add_child(text)
 

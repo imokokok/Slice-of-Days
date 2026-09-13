@@ -7,6 +7,7 @@ const STEP_LIMIT := 12
 var source_data: ConstellationData
 var data: ConstellationData
 var adjustment := Vector2i.ZERO
+var look_offset := Vector2.ZERO
 var solution := Vector2i.ZERO
 var dial_label: Label
 var reveal_tween: Tween
@@ -53,7 +54,7 @@ func build_controls() -> void:
    button.custom_minimum_size = Vector2(190, 48)
    button.pressed.connect(adjust.bind(Vector2i(direction, 0) if axis == 0 else Vector2i(0, direction)))
    row.add_child(button)
- $UI/Instructions.text = "固定星图 · 点击按钮逐档调整 · 对准后停留 1.25 秒 · ESC 返回"
+ $UI/Instructions.text = "拖动星空转动望远镜 · 方向键微调 · 对准后停留 1.25 秒 · ESC 返回"
 func select_constellation(value: ConstellationData) -> void:
  if reveal_tween: reveal_tween.kill()
  source_data = value
@@ -61,6 +62,7 @@ func select_constellation(value: ConstellationData) -> void:
  data = value.duplicate(true)
  solution = Vector2i(-4, 3) if value.id == "bird" else Vector2i(5, -3)
  adjustment = Vector2i.ZERO
+ look_offset = Vector2.ZERO
  camera.transform = Transform3D.IDENTITY
  camera.fov = 55.0
  checker.configure(data)
@@ -81,16 +83,12 @@ func adjust(change: Vector2i) -> void:
  for i in field.key_stars.size():
   field.key_stars[i].position = data.positions[i]
 func update_layout() -> void:
- # Calculate a virtual projection, then place its points on a fixed-depth plane.
- # The real camera and distant background never move, and no motion is tweened.
- var angles := source_data.reference_angles + Vector2(adjustment - solution) * STEP_ANGLE
+ # Keep the original authored points in three-dimensional world space.
+ # Only the real perspective camera orbits; depth and parallax remain intact.
+ var angles := source_data.reference_angles + Vector2(adjustment - solution) * STEP_ANGLE + look_offset
  var basis := Basis.from_euler(Vector3(angles.y, angles.x, 0))
- var inverse := Transform3D(basis, basis * Vector3(0, 0, source_data.orbit_radius)).affine_inverse()
- var points := PackedVector3Array()
- for point in source_data.positions:
-  var projected: Vector3 = inverse * point
-  points.append(projected * (30.0 / -projected.z))
- data.positions = points
+ camera.transform = Transform3D(basis, basis * Vector3(0, 0, source_data.orbit_radius))
+ data.positions = source_data.positions.duplicate()
  dial_label.text = "水平 %+d     垂直 %+d" % [adjustment.x, adjustment.y]
  lines.queue_redraw()
 func refresh_buttons() -> void:
@@ -100,8 +98,17 @@ func refresh_buttons() -> void:
  next.text = "寻找鲸鱼 →" if data.id == "bird" else "重访飞鸟 →"
  $UI/Album.text = "观测册 · %d / 2" % (int(ObservatoryState.collected.bird) + int(ObservatoryState.collected.whale))
 func _unhandled_input(event: InputEvent) -> void:
- if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-  return_requested.emit()
+ if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
+  look_offset = (look_offset + event.relative * Vector2(-0.003, -0.003)).clamp(Vector2(-0.6, -0.6), Vector2(0.6, 0.6))
+  checker.elapsed = 0.0
+  update_layout()
+ elif event is InputEventKey and event.pressed and not event.echo:
+  match event.keycode:
+   KEY_ESCAPE: return_requested.emit()
+   KEY_LEFT: adjust(Vector2i(-1, 0))
+   KEY_RIGHT: adjust(Vector2i(1, 0))
+   KEY_UP: adjust(Vector2i(0, -1))
+   KEY_DOWN: adjust(Vector2i(0, 1))
 func _process(delta: float) -> void:
  if not data: return
  checker.step(camera,data,delta)
@@ -110,7 +117,7 @@ func _process(delta: float) -> void:
  field.set_brightness(0.95 + checker.attraction*0.4 + lines.strength*2.2)
  capture.visible = aligned and not is_capturing
  if not checker.completed:
-  hint.text = "观测册  /  " + data.title + "\n" + ("轮廓已对齐，等待星光相连……" if checker.elapsed > 0.05 else data.hint + "\n点击按钮寻找完整轮廓，对准后停留片刻。")
+  hint.text = "观测册  /  " + data.title + "\n" + ("轮廓已对齐，等待星光相连……" if checker.elapsed > 0.05 else data.hint + "\n转动望远镜寻找完整轮廓，对准后停留片刻。")
  lines.queue_redraw()
 func found() -> void:
  ObservatoryState.discovered[data.id] = true

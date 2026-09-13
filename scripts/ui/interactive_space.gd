@@ -15,6 +15,8 @@ var target_x := 250.0
 var background_texture: Texture2D
 var object_buttons: Array[Button] = []
 var name_label: Label
+var speech_text := ""
+var speech_progress := 0.0
 var cue_label: Label
 var detail_label: Label
 var interact_button: Button
@@ -259,6 +261,12 @@ func _conversation_event_id(resident_id: String) -> String:
 
 
 func _process(_delta: float) -> void:
+	if is_instance_valid(cue_label) and room_dialogue.visible:
+		if speech_text != cue_label.text:
+			speech_text = cue_label.text
+			speech_progress = 0.0
+		speech_progress += _delta * 28.0
+		cue_label.visible_characters = int(speech_progress)
 	if not is_instance_valid(stage): return
 	stage.enabled = not is_instance_valid(pocket_panel) and not is_instance_valid(notes_overlay) and not SceneRouter.transitioning and not room_dialogue.visible
 	avatar_x = stage.player_x
@@ -268,10 +276,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	if is_instance_valid(pocket_panel) or is_instance_valid(notes_overlay) or SceneRouter.transitioning: return
 	if not event is InputEventKey or not event.pressed or event.echo: return
 	if room_dialogue.visible:
-		if event.keycode in [KEY_E, KEY_ESCAPE, KEY_ENTER]: room_dialogue.hide()
+		if event.keycode in [KEY_E, KEY_ESCAPE, KEY_ENTER]:
+			if event.keycode != KEY_ESCAPE and speech_progress < cue_label.text.length():
+				speech_progress = cue_label.text.length()
+				cue_label.visible_characters = -1
+			else: room_dialogue.hide()
 		get_viewport().set_input_as_handled()
 		return
-	if event.keycode == KEY_E:
+	if event.keycode == KEY_J:
+		SceneRouter.journal()
+	elif event.keycode == KEY_E:
 		var nearest: Dictionary = stage.nearest()
 		match str(nearest.get("kind", "")):
 			"exit": SceneRouter.leave_space()

@@ -12,10 +12,13 @@ var indoor := false
 var walking := false
 var facing := 1.0
 var phase := 0.0
+var velocity := 0.0
+var gait_weight := 0.0
 var places: Array[Dictionary] = []
 var hotspots: Array[Dictionary] = []
 var room_name := ""
 var room_kind := ""
+var walk_limit := INF
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -29,15 +32,20 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func move_player(axis: float, delta: float, hurry := false) -> void:
-	walking = enabled and not is_zero_approx(axis)
+	var target := axis * SPEED * (1.6 if hurry else 1.0) if enabled else 0.0
+	velocity = move_toward(velocity, target, (1150.0 if axis else 1800.0) * delta)
+	if not enabled: velocity = 0.0
+	walking = absf(velocity) > 1.0
 	if walking:
-		facing = signf(axis)
-		phase += delta * (11.0 if hurry else 7.5)
-		var previous := player_x
-		player_x = clampf(player_x + axis * SPEED * (1.6 if hurry else 1.0) * delta, 80.0, world_width - 80.0)
-		if not is_equal_approx(previous, player_x):
-			moved.emit(player_x)
-	camera_x = clampf(player_x - 710.0, 0.0, maxf(0.0, world_width - 1600.0))
+		facing = move_toward(facing, signf(velocity), delta * 12.0)
+	var previous := player_x
+	player_x = clampf(player_x + velocity * delta, 80.0, minf(world_width - 80.0, walk_limit))
+	var distance := absf(player_x - previous)
+	phase += distance / 30.0
+	gait_weight = move_toward(gait_weight, minf(absf(velocity) / SPEED, 1.0) if distance > 0.0 else 0.0, delta * 8.0)
+	if distance > 0.0: moved.emit(player_x)
+	var camera_target := clampf(player_x - 710.0, 0.0, maxf(0.0, world_width - 1600.0))
+	camera_x = lerpf(camera_x, camera_target, 1.0 - exp(-5.0 * delta)) if delta > 0.0 else camera_target
 
 func nearest() -> Dictionary:
 	var result: Dictionary = {}
@@ -67,13 +75,17 @@ func _draw() -> void:
 		var kind := str(item.get("kind", ""))
 		if kind == "person" or kind == "event":
 			_draw_person(Vector2(x, 714), Color("8a958a"), 0.0, -1.0)
-		elif kind == "bench":
+		elif kind in ["bench", "wait_open"]:
 			draw_rect(Rect2(x - 40, 679, 80, 8), Color("9a7e60"))
 			draw_line(Vector2(x - 30, 687), Vector2(x - 30, 715), Color("776b5f"), 4)
 			draw_line(Vector2(x + 30, 687), Vector2(x + 30, 715), Color("776b5f"), 4)
 		elif indoor and kind == "object":
 			_draw_furniture(x, str(item.get("prop", "table")))
-	_draw_person(Vector2(player_x - camera_x, 713), Color("d69b71") if GameState.current_role == "A" else Color("7da8b5"), sin(phase) if walking else 0.0, facing)
+	_draw_person(Vector2(player_x - camera_x, 713), Color("d69b71") if GameState.current_role == "A" else Color("7da8b5"), sin(phase) * gait_weight, facing)
+	if is_finite(walk_limit):
+		var gate_x := walk_limit - camera_x + 18
+		draw_line(Vector2(gate_x, 640), Vector2(gate_x, 718), Color("40544e"), 7)
+		draw_line(Vector2(gate_x, 655), Vector2(gate_x + 145, 680), Color("c6b798"), 4)
 	var near := nearest()
 	if enabled and not near.is_empty():
 		var text := "E  ·  " + str(near.get("label", "互动"))
@@ -289,11 +301,12 @@ func _draw_furniture(x: float, prop: String) -> void:
 		draw_line(Vector2(x + side * 50, 657), Vector2(x + side * 50, 718), Color("272c2d"), 6)
 
 func _draw_person(at: Vector2, coat: Color, stride: float, direction: float) -> void:
-	var step := stride * 13.0
+	var step := stride * 22.0
+	at.y -= absf(stride) * 2.5
 	draw_set_transform(at)
 	draw_colored_polygon(PackedVector2Array([Vector2(-30, 4), Vector2(30, 4), Vector2(55, 10), Vector2(-18, 10)]), Color("070e13", 0.5))
-	draw_line(Vector2(-7, -39), Vector2(-11 + step, 0), Color("19272c"), 10, true)
-	draw_line(Vector2(7, -39), Vector2(14 - step, 0), Color("213138"), 10, true)
+	draw_polyline(PackedVector2Array([Vector2(-7, -39), Vector2(-8 + step * 0.35, -20), Vector2(-11 + step, -maxf(0.0, stride) * 8)]), Color("19272c"), 9, true)
+	draw_polyline(PackedVector2Array([Vector2(7, -39), Vector2(9 - step * 0.35, -19), Vector2(14 - step, -maxf(0.0, -stride) * 8)]), Color("213138"), 9, true)
 	draw_colored_polygon(PackedVector2Array([Vector2(-13, -89), Vector2(12, -89), Vector2(20, -36), Vector2(-19, -36)]), coat)
 	draw_line(Vector2(direction * 10, -82), Vector2(direction * 19 - step * 0.4, -50), coat.darkened(0.18), 8, true)
 	draw_colored_polygon(PackedVector2Array([Vector2(-10, -114), Vector2(9, -117), Vector2(12, -97), Vector2(3, -89), Vector2(-10, -96)]), Color("c2a68a"))

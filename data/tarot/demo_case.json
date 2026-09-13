@@ -6,7 +6,7 @@
     {"id": "woman", "label": "女人", "tone": "ember"},
     {"id": "empty_envelope", "label": "空信封", "tone": "bone"},
     {"id": "recipient", "label": "收信人", "tone": "cyan"},
-    {"id": "night_market", "label": "夜市", "tone": "indigo"}
+    {"id": "night_market", "label": "饭店", "tone": "indigo"}
   ],
   "relations": [
     {"id": "knows", "label": "认识"},
@@ -28,8 +28,8 @@
       "fact": ""
     },
     "night_market|before|recipient": {
-      "response": "确认：夜市先出现，收信人才到达。",
-      "fact": "收信人在夜市结束前不会出现。"
+      "response": "确认：饭店先出现，收信人才到达。",
+      "fact": "收信人在饭店结束前不会出现。"
     }
   }
 }

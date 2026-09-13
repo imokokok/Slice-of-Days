@@ -118,7 +118,7 @@ func switch_to_role(role: String, day := -1, reset_to_schedule_start := false) -
 	if reset_to_schedule_start:
 		var schedule := schedule_for(role, current_day)
 		current_minute = int(schedule.get("start", 9 * 60))
-		current_location = "residence"
+		current_location = "residence" if role == "A" else "dorm"
 		for fact in schedule.get("opening_facts", []):
 			add_fact(str(fact), false)
 	refresh_appointments()
@@ -507,6 +507,10 @@ func load_save_data(data: Dictionary) -> void:
 		_load_role_state(str(data.get("current_role", "A")))
 	else:
 		_migrate_legacy_save(data)
+	var location_aliases := {"cafeteria":"night_market", "theatre":"print_shop", "studio":"print_shop", "old_station":"bus_stop", "court":"town_entrance"}
+	current_location = str(location_aliases.get(current_location, current_location))
+	shared_state["chapter_start_role"] = "A"
+	shared_state["chapter_index"] = (current_day - 1) * 2 + (1 if current_role == "B" else 0)
 	commit_active_role_state()
 	state_changed.emit()
 

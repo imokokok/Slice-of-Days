@@ -28,9 +28,9 @@ func run() -> void:
 	await process_frame
 	check(str(interior.space.get("id", "")) == "record_shop", "Active interior did not resolve from the router")
 	check(interior.objects.size() == 2, "Record shop should expose timeline and pressing-table hotspots")
-	check(interior.object_buttons.size() == interior.objects.size(), "Every interior object should have a spatial hotspot")
+	check(interior.stage.hotspots.filter(func(item): return item.get("kind") == "object").size() == interior.objects.size(), "Every interior object should have a spatial hotspot")
 	interior._select_object(1)
-	check(interior.selected_index == 1, "Interior hotspot selection should move between objects")
+	check(interior.selected_index == 1, "Interior object index should select its existing gameplay binding")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("/private/tmp/solmere-interactive-space.png")

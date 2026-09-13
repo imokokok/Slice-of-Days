@@ -413,7 +413,7 @@
           "三份记录已经展开。现在决定建立索引，还是诚实地留下缺口。"
         ],
         "tokens": [
-          {"id": "undated_photo", "label": "没有日期的港口照片", "detail": "背面只写着‘风很大’"},
+          {"id": "undated_photo", "label": "没有日期的停车区域照片", "detail": "背面只写着‘风很大’"},
           {"id": "tide_log", "label": "旧潮汐记录", "detail": "其中一天的时间比车站钟慢十一分钟"},
           {"id": "station_ticket", "label": "停止使用的车票", "detail": "终点站名称被折痕遮住"},
           {"id": "bus_manifest", "label": "末班车行车单", "detail": "记录了一次没有乘客的停靠"},
@@ -428,8 +428,8 @@
           "cost": {"minutes": 45},
           "result_text": "三份记录被一条新索引连接起来。它没有证明故事，却让后来的人能够重新检查。",
           "results": {
-            "facts": ["公共档案里，旧车站、港口照片与十一分钟误差之间存在一条可追溯索引。"],
-            "artifacts": [{"collection": "archives", "shared": true, "data": {"id": "station_port_cross_index", "title": "旧站与港口交叉索引", "kind": "archive_index"}}],
+            "facts": ["公共档案里，公交站、停车区域照片与十一分钟误差之间存在一条可追溯索引。"],
+            "artifacts": [{"collection": "archives", "shared": true, "data": {"id": "station_port_cross_index", "title": "旧站与停车区域交叉索引", "kind": "archive_index"}}],
             "journal_entries": [{"id": "public_archive_cross_index", "kind": "research", "text": "把三份不同来源的记录连成了一条仍可被复查的索引。"}]
           }
         },

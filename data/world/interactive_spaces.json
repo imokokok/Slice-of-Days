@@ -1,5 +1,5 @@
 {
-  "_note": "街道—室内—物件近景的统一空间入口。所有坐标以 1600x900 设计尺寸为基准。",
+  "_note": "仅九个室内。户外棋摊、菜摊和观景台的玩法由street_objects直接触发。",
   "spaces": [
     {
       "id": "restaurant",
@@ -11,8 +11,14 @@
       "background_path": "res://art/locations/night_market/night_market_restaurant_shift_v01.png",
       "interior_note": "推门后，出餐口、备料台和市场的人声仍在同一个空间里。",
       "objects": [
-        {"id": "prep_table", "name": "料理操作台", "detail": "靠近台面，组合今日真正能用上的材料。", "kind": "module", "module_id": "cooking", "icon": "锅"},
-        {"id": "market_memory", "name": "摊位旁的争执", "detail": "听见同一句话背后的两种生活经验。", "kind": "module", "module_id": "translation", "icon": "话"}
+        {
+          "id": "prep_table",
+          "name": "料理操作台",
+          "detail": "靠近台面，组合今日真正能用上的材料。",
+          "kind": "module",
+          "module_id": "cooking",
+          "icon": "锅"
+        }
       ]
     },
     {
@@ -25,7 +31,13 @@
       "background_path": "res://art/reference/workbench-direction-warm-v2.png",
       "interior_note": "烛光只照亮桌面。牌不是答案，而是允许你换一种问法。",
       "objects": [
-        {"id": "tarot_table", "name": "烛光牌桌", "detail": "进入完整的 Solmere 塔罗海龟汤。", "kind": "tarot", "icon": "牌"}
+        {
+          "id": "tarot_table",
+          "name": "烛光牌桌",
+          "detail": "进入完整的 Solmere 塔罗海龟汤。",
+          "kind": "tarot",
+          "icon": "牌"
+        }
       ]
     },
     {
@@ -38,8 +50,21 @@
       "background_path": "res://art/locations/record_store/record_store_rain_session_v01.png",
       "interior_note": "唱片架在左边，压片台在右边；雨声和公交刹车已经等在时间线上。",
       "objects": [
-        {"id": "sound_timeline", "name": "采样时间线", "detail": "按来源与授权范围完成一段可交付短曲。", "kind": "module", "module_id": "sound_sampling", "icon": "声"},
-        {"id": "pressing_table", "name": "唱片制作台", "detail": "进入完整唱片工坊：编曲、封面、压片与唱片架。", "kind": "record_shop", "icon": "碟"}
+        {
+          "id": "sound_timeline",
+          "name": "采样时间线",
+          "detail": "按来源与授权范围完成一段可交付短曲。",
+          "kind": "module",
+          "module_id": "sound_sampling",
+          "icon": "声"
+        },
+        {
+          "id": "pressing_table",
+          "name": "唱片制作台",
+          "detail": "进入完整唱片工坊：编曲、封面、压片与唱片架。",
+          "kind": "record_shop",
+          "icon": "碟"
+        }
       ]
     },
     {
@@ -52,73 +77,129 @@
       "background_path": "res://art/locations/library/library_letter_revision_v01.png",
       "interior_note": "纸张、刻刀、句子碎片和火漆都留在桌上。完整的拼贴书信原型已经接入。",
       "objects": [
-        {"id": "letter_desk", "name": "书写工作台", "detail": "裁切纸张、拼贴句子、折叠信件并封上火漆。", "kind": "module", "module_id": "ghostwriting", "icon": "信"}
-      ]
-    },
-    {
-      "id": "chess_club",
-      "location_id": "park",
-      "sign": "CHESS",
-      "name": "河岸棋社",
-      "tagline": "在一盘棋里，看见更宽广的自己。",
-      "facade_color": "#71806b",
-      "background_path": "res://extensions/elder_board/assets/background.jpg",
-      "interior_note": "老人把棋盘留在窗边。围棋、五子棋、国际象棋和共享教棋都仍然可玩。",
-      "objects": [
-        {"id": "chess_board", "name": "窗边棋盘", "detail": "坐下对弈，或把自己会的规则教给老棋友。", "kind": "module", "module_id": "chess", "icon": "棋"}
-      ]
-    },
-    {
-      "id": "observatory",
-      "location_id": "park",
-      "sign": "LOOKOUT",
-      "name": "夜海观景台",
-      "tagline": "抬头看，也别忘记脚下温柔的答案。",
-      "facade_color": "#496475",
-      "background_path": "res://extensions/observatory/assets/background/observatory_scene_hd.png",
-      "interior_note": "走到露台尽头，再靠近望远镜。固定星图会在正确视角下连接起来。",
-      "objects": [
-        {"id": "telescope", "name": "望远镜", "detail": "调整水平与垂直视角，寻找飞鸟与鲸鱼星座。", "kind": "module", "module_id": "contemplation", "icon": "星"}
+        {
+          "id": "letter_desk",
+          "name": "书写工作台",
+          "detail": "裁切纸张、拼贴句子、折叠信件并封上火漆。",
+          "kind": "module",
+          "module_id": "ghostwriting",
+          "icon": "信"
+        }
       ]
     },
     {
       "id": "print_studio",
       "location_id": "print_shop",
       "sign": "PHOTO",
-      "name": "余光照相馆",
+      "name": "社区中心",
       "tagline": "把没有说完的部分留在画面里。",
       "facade_color": "#b17b55",
       "background_path": "res://art/locations/print_shop/print_shop_morning_v01.png",
       "interior_note": "相纸、裁切线与窗外的光组成一个临时暗房。",
       "objects": [
-        {"id": "photo_table", "name": "摄影工作台", "detail": "选择焦点与留白，把证据显影进个人相册。", "kind": "module", "module_id": "photography", "icon": "影"}
-      ]
-    },
-    {
-      "id": "old_station_hall",
-      "location_id": "old_station",
-      "sign": "STATION",
-      "name": "旧车站候车厅",
-      "tagline": "下一段旅程，也会在某个转角等你。",
-      "facade_color": "#65717a",
-      "background_path": "res://art/locations/old_station/old_station_long_evening_v01.png",
-      "interior_note": "时刻表仍亮着。靠近旧钟，空间里那十一分钟的误差会被放大。",
-      "objects": [
-        {"id": "station_clock", "name": "退回的旧钟", "detail": "改变观察角度，让不可能的空间关系成立。", "kind": "module", "module_id": "optical_illusion", "icon": "钟"}
+        {
+          "id": "photo_table",
+          "name": "摄影工作台",
+          "detail": "选择焦点与留白，把证据显影进个人相册。",
+          "kind": "module",
+          "module_id": "photography",
+          "icon": "影"
+        },
+        {
+          "id": "station_clock",
+          "name": "退回的旧钟",
+          "detail": "改变观察角度，让不可能的空间关系成立。",
+          "kind": "module",
+          "module_id": "optical_illusion",
+          "icon": "钟"
+        }
       ]
     },
     {
       "id": "public_archive",
       "location_id": "library",
       "sign": "ARCHIVES",
-      "name": "Solmere公共档案室",
+      "name": "书店",
       "tagline": "缺失不是空白，也不该被方便地补成答案。",
       "facade_color": "#728078",
       "background_path": "res://art/locations/library/library_letter_revision_v01.png",
       "interior_note": "照片、旧票、潮汐表和声音目录分属不同编号。阅览架只负责让来源彼此可见。",
       "objects": [
-        {"id": "cross_index_desk", "name": "交叉索引阅览架", "detail": "展开三份记录，核对来源并决定建立连接或保留缺口。", "kind": "module", "module_id": "archives", "icon": "档"}
+        {
+          "id": "cross_index_desk",
+          "name": "交叉索引阅览架",
+          "detail": "展开三份记录，核对来源并决定建立连接或保留缺口。",
+          "kind": "module",
+          "module_id": "archives",
+          "icon": "档"
+        },
+        {
+          "id": "book_notes",
+          "name": "写下最喜欢的一本书",
+          "kind": "book_notes",
+          "detail": "便利贴会留在这面墙上。"
+        }
       ]
+    },
+    {
+      "id": "grocery",
+      "location_id": "cafe",
+      "name": "杂货店",
+      "objects": [
+        {
+          "id": "shelf",
+          "name": "看看货架上的日用品",
+          "kind": "observe",
+          "detail": "肥皂、火柴和散装糖。柜台下压着一张还没取走的清单。"
+        }
+      ],
+      "sign": "GROCERY",
+      "tagline": "杂货店",
+      "interior_note": "肥皂、火柴和散装糖。柜台下压着一张还没取走的清单。"
+    },
+    {
+      "id": "home_a",
+      "location_id": "residence",
+      "name": "A的家",
+      "objects": [
+        {
+          "id": "desk",
+          "name": "桌上的照片和票根",
+          "kind": "journal",
+          "detail": "便签和照片散落在桌面。"
+        },
+        {
+          "id": "bed",
+          "name": "躺下睡觉",
+          "kind": "sleep",
+          "detail": "关灯，让今天结束。"
+        }
+      ],
+      "sign": "HOME_A",
+      "tagline": "A的家",
+      "interior_note": "便签和照片散落在桌面。 关灯，让今天结束。"
+    },
+    {
+      "id": "home_b",
+      "location_id": "dorm",
+      "name": "B的家",
+      "objects": [
+        {
+          "id": "desk",
+          "name": "桌上的笔记本",
+          "kind": "journal",
+          "detail": "笔记本整齐地放在地图旁。"
+        },
+        {
+          "id": "bed",
+          "name": "躺下睡觉",
+          "kind": "sleep",
+          "detail": "关灯，让今天结束。"
+        }
+      ],
+      "sign": "HOME_B",
+      "tagline": "B的家",
+      "interior_note": "笔记本整齐地放在地图旁。 关灯，让今天结束。"
     }
   ]
 }

@@ -120,10 +120,12 @@ func _test_external_extension_and_record_credit() -> void:
 
 
 func _test_event_and_relationship() -> void:
-	ChapterSystem.start_new_game("B")
+	ChapterSystem.start_new_game()
+	# Enter the authored second chapter for B-only data simulation.
+	ChapterSystem.advance_chapter()
 	GameState.current_day = 2
 	GameState.current_minute = 660
-	GameState.current_location = "cafeteria"
+	GameState.current_location = "night_market"
 	GameState.commit_active_role_state()
 	var result := EventSystem.trigger("b_d2_careful_questions")
 	_check(
@@ -172,7 +174,7 @@ func _test_appointment_lifecycle() -> void:
 		"day": 1,
 		"start": 600,
 		"end": 660,
-		"location": "studio",
+		"location": "print_shop",
 		"label": "Smoke meeting",
 	})
 	_check(GameState.appointment_status("smoke_meeting") == "scheduled", "A future appointment should begin scheduled")
@@ -323,8 +325,8 @@ func _test_save_roundtrip() -> void:
 	GameState.switch_to_role("B")
 	GameState.add_fact("smoke-test-b-fact")
 	var test_path := "user://smoke_test_save.json"
-	_check(SaveManager.path_for_slot(1) == SaveManager.SAVE_PATH, "Slot 1 should preserve the existing save path")
-	_check(SaveManager.path_for_slot(3).ends_with("solmere_save_3.json"), "Additional save slots should use separate files")
+	_check(SaveManager.path_for_slot(1) == ("user://walking_test_1.json" if OS.get_cmdline_user_args().has("--isolated-save") else SaveManager.SAVE_PATH), "Slot 1 should preserve the existing save path")
+	_check(SaveManager.path_for_slot(3).ends_with("walking_test_3.json" if OS.get_cmdline_user_args().has("--isolated-save") else "solmere_save_3.json"), "Additional save slots should use separate files")
 	_check(SaveManager.save_game(test_path), "Save should succeed")
 	GameState.begin_new_game("A")
 	_check(SaveManager.load_game(test_path), "Load should succeed")

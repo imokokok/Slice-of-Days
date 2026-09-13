@@ -19,18 +19,11 @@ var pending_slot := 1
 func _ready() -> void:
 	_build_menu()
 	_build_modal_shell()
-	var args := OS.get_cmdline_user_args()
-	if args.has("--capture-menu-role"):
-		_show_role_selection()
-		_capture.call_deferred("main-menu-role.png")
-	elif args.has("--capture-menu-slots"):
-		_show_slot_selection("new")
-		_capture.call_deferred("main-menu-slots.png")
-	elif args.has("--capture-menu-settings"):
-		_show_settings()
-		_capture.call_deferred("main-menu-settings.png")
-	elif args.has("--capture-menu"):
-		_capture.call_deferred("main-menu.png")
+	if OS.get_cmdline_user_args().has("--fresh-preview"):
+		_on_new_game_pressed()
+	elif OS.get_cmdline_user_args().has("--live-preview"):
+		if SaveManager.load_latest(): SceneRouter.town_day()
+		else: _on_new_game_pressed()
 
 
 func _draw() -> void:
@@ -61,7 +54,7 @@ func _build_menu() -> void:
 	var quit := _make_button(self, "退出", Vector2(92, 574), Vector2(260, 52), "regular")
 
 	continue_button.disabled = not SaveManager.has_any_save()
-	continue_button.pressed.connect(_show_slot_selection.bind("continue"))
+	continue_button.pressed.connect(_continue_latest)
 	new_game.pressed.connect(_on_new_game_pressed)
 	settings.pressed.connect(_show_settings)
 	credits.pressed.connect(_show_credits)
@@ -96,81 +89,11 @@ func _build_modal_shell() -> void:
 
 
 func _on_new_game_pressed() -> void:
-	_show_slot_selection("new")
-
-
-func _show_slot_selection(mode: String) -> void:
-	_prepare_modal()
-	var is_continue := mode == "continue"
-	_make_label(modal_panel, "选择要继续的旅程" if is_continue else "选择新旅程的存档位", Vector2(34, 24), Vector2(522, 40), 25, INK)
-	for slot_index in range(1, SaveManager.SLOT_COUNT + 1):
-		var summary := SaveManager.slot_summary(slot_index)
-		var button := _make_button(
-			modal_panel,
-			_slot_summary_text(summary),
-			Vector2(34, 76 + (slot_index - 1) * 92),
-			Vector2(522, 74),
-			"teal" if bool(summary.get("exists", false)) else "regular"
-		)
-		button.disabled = is_continue and not bool(summary.get("exists", false))
-		if not button.disabled:
-			if is_continue:
-				button.pressed.connect(_continue_game.bind(slot_index))
-			else:
-				button.pressed.connect(_select_new_game_slot.bind(slot_index))
-	var close := _make_button(modal_panel, "返回", Vector2(200, 382), Vector2(190, 46), "regular")
-	close.pressed.connect(_hide_modal)
-
-
-func _slot_summary_text(summary: Dictionary) -> String:
-	var slot := int(summary.get("slot", 1))
-	if not bool(summary.get("exists", false)):
-		return "存档 %d\n空白旅程" % slot
-	var minute := int(summary.get("minute", 540))
-	return "存档 %d  ·  第%d天 %02d:%02d  ·  %s视角\nA认可 %d/12  ·  B认可 %d/12" % [
-		slot,
-		int(summary.get("day", 1)),
-		minute / 60,
-		minute % 60,
-		str(summary.get("role", "A")),
-		int(summary.get("a_confirmed", 0)),
-		int(summary.get("b_confirmed", 0)),
-	]
-
-
-func _select_new_game_slot(slot: int) -> void:
-	pending_slot = slot
-	SaveManager.set_active_slot(slot)
-	if SaveManager.has_slot(slot):
-		_show_overwrite_confirmation()
-	else:
-		_show_role_selection()
-
-
-func _show_overwrite_confirmation() -> void:
-	_prepare_modal()
-	_make_label(modal_panel, "开启新的旅程？", Vector2(34, 30), Vector2(522, 42), 27, INK)
-	var body := _make_label(modal_panel, "存档 %d 已有旅程。开始新游戏后，自动保存会覆盖这个存档位。\n你确定要继续吗？" % pending_slot, Vector2(34, 91), Vector2(522, 82), 17, MUTED)
-	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var yes := _make_button(modal_panel, "继续", Vector2(92, 224), Vector2(190, 52), "primary")
-	var no := _make_button(modal_panel, "取消", Vector2(308, 224), Vector2(190, 52), "regular")
-	yes.pressed.connect(_show_role_selection)
-	no.pressed.connect(_hide_modal)
-
-
-func _show_role_selection() -> void:
-	_prepare_modal()
-	_make_label(modal_panel, "选择最先体验的视角", Vector2(34, 28), Vector2(522, 42), 27, INK)
-	var body := _make_label(modal_panel, "之后会在两个人的平行七天之间切换。", Vector2(34, 78), Vector2(522, 34), 16, MUTED)
-	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var a := _make_button(modal_panel, "先从 A 开始", Vector2(54, 143), Vector2(226, 76), "primary")
-	var b := _make_button(modal_panel, "先从 B 开始", Vector2(310, 143), Vector2(226, 76), "teal")
-	var cancel := _make_button(modal_panel, "返回", Vector2(200, 254), Vector2(190, 46), "regular")
-	a.tooltip_text = "先行动，再从结果调整"
-	b.tooltip_text = "先确认时间、路线和费用"
-	a.pressed.connect(_start_role.bind("A"))
-	b.pressed.connect(_start_role.bind("B"))
-	cancel.pressed.connect(_hide_modal)
+	# Allocate automatically; preserve older journeys without showing empty slot UI.
+	if not SaveManager.prepare_new_journey(): return
+	ChapterSystem.start_new_game()
+	SaveManager.save_game()
+	SceneRouter.town_day()
 
 
 func _show_settings() -> void:
@@ -244,16 +167,10 @@ func _toggle_reduced_motion() -> void:
 	_show_settings()
 
 
-func _start_role(role: String) -> void:
-	SaveManager.set_active_slot(pending_slot)
-	ChapterSystem.start_new_game(role)
-	SaveManager.save_game()
-	SceneRouter.town_day()
 
 
-func _continue_game(slot: int) -> void:
-	if SaveManager.load_slot(slot):
-		SceneRouter.town_day()
+
+
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -333,3 +250,7 @@ func _capture(filename: String) -> void:
 	await RenderingServer.frame_post_draw
 	get_viewport().get_texture().get_image().save_png(ProjectSettings.globalize_path("res://captures/%s" % filename))
 	get_tree().quit()
+
+func _continue_latest() -> void:
+	if SaveManager.load_latest():
+		SceneRouter.town_day()

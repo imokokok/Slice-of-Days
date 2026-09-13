@@ -27,7 +27,7 @@ func _simulate_a_route() -> void:
 	_choice_event("a_d1_print_help", "lend_phone")
 	_context(1, 700, "cafe")
 	_event("a_d1_mossner_coffee")
-	_context(1, 900, "theatre")
+	_context(1, 900, "print_shop")
 	_event("a_d1_theatre_rehearsal")
 	_context(1, 1080, "park")
 	_module_event("a_d1_evening_photo", "photography", "photograph_people")
@@ -57,15 +57,17 @@ func _simulate_a_route() -> void:
 
 
 func _simulate_b_route() -> void:
-	ChapterSystem.start_new_game("B")
-	_context(1, 660, "cafeteria")
+	ChapterSystem.start_new_game()
+	# Enter the authored second chapter for B-only data simulation.
+	ChapterSystem.advance_chapter()
+	_context(1, 660, "night_market")
 	_choice_event("b_d1_cafeteria_observe", "record_boundary")
 	_context(1, 1080, "library")
 	_event("b_d1_library_wait")
 	_context(1, 1200, "residence")
 	_event("b_d1_notebook_anomaly")
 
-	_context(2, 660, "cafeteria")
+	_context(2, 660, "night_market")
 	_event("b_d2_careful_questions")
 	_context(2, 1140, "tarot_stall")
 	var tarot_event := EventSystem.trigger("b_d2_tarot_deduction")
@@ -92,9 +94,9 @@ func _simulate_b_route() -> void:
 	_choice_module_event("b_d3_sound_session", "mark_permissions", "sound_sampling", "planned_route")
 	_choice_event("b_d3_hinge_isolate", "keep_private_copy")
 
-	_context(4, 840, "old_station")
+	_context(4, 840, "bus_stop")
 	_choice_event("b_d4_missed_window", "record_the_absence")
-	_context(4, 1080, "theatre")
+	_context(4, 1080, "print_shop")
 	_event("b_d4_salvage_rehearsal")
 
 	_context(5, 840, "library")

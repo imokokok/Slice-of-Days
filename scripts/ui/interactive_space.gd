@@ -21,6 +21,9 @@ var interact_button: Button
 var talk_button: Button
 var people: Array[String] = []
 var pocket_panel: Control
+var stage: Control
+var room_dialogue: Panel
+var notes_overlay: Control
 
 
 func _ready() -> void:
@@ -29,19 +32,27 @@ func _ready() -> void:
 		SceneRouter.leave_space()
 		return
 	objects = space.get("objects", [])
-	var background_path := str(space.get("background_path", ""))
-	if not background_path.is_empty() and ResourceLoader.exists(background_path):
-		var loaded = load(background_path)
-		if loaded is Texture2D:
-			background_texture = loaded
 	people = ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
+	if SceneRouter.active_space_id in ["home_a", "home_b"]: people.clear()
 	_build_theme()
+	stage = preload("res://scripts/ui/walk_stage.gd").new()
+	stage.indoor = true
+	stage.world_width = 1600
+	stage.player_x = 175
+	stage.player_x = float(SceneRouter.room_positions.get(SceneRouter.active_space_id, 175.0))
+	stage.moved.connect(func(x: float) -> void: SceneRouter.room_positions[SceneRouter.active_space_id] = x)
+	stage.room_name = str(space.get("name", ""))
+	stage.room_kind = str(space.get("id", ""))
+	add_child(stage)
 	_build_ui()
-	if not objects.is_empty():
-		_select_object(0)
+	stage.hotspots.append({"x":90, "kind":"exit", "label":"回到街道"})
+	for index in objects.size():
+		stage.hotspots.append({"x":_hotspot_x(index), "kind":"object", "index":index, "prop":"bed" if str(objects[index].get("kind", "")) == "sleep" else "table", "label":str(objects[index].get("name", ""))})
+	for index in mini(people.size(), 3):
+		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
+		stage.hotspots.append({"x":920 + index * 180, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", "居民"))})
 	WorldSound.set_active(true)
 	WorldSound.set_location(GameState.current_location)
-	queue_redraw()
 
 
 func _load_active_space() -> void:
@@ -69,48 +80,14 @@ func _build_theme() -> void:
 
 
 func _build_ui() -> void:
-	var header := _panel(self, Vector2(26, 22), Vector2(1548, 82), Color(CREAM, 0.94), Color(TERRACOTTA, 0.7), 12)
-	_label(header, str(space.get("sign", "INTERIOR")), Vector2(24, 12), Vector2(220, 26), 14, SEA)
-	_label(header, str(space.get("name", "室内")), Vector2(24, 34), Vector2(560, 36), 27, INK)
-	var time_text := "第 %d 天  %s  ·  %s视角" % [GameState.current_day, GameState.clock_text(), GameState.current_role]
-	_label(header, time_text, Vector2(850, 26), Vector2(440, 30), 16, MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
-	var leave := _button(header, "推门回到街道", Vector2(1310, 18), Vector2(210, 46), "quiet")
-	leave.pressed.connect(SceneRouter.leave_space)
-
-	var room_note := _panel(self, Vector2(54, 126), Vector2(580, 90), Color(INK, 0.78), Color(CREAM, 0.25), 10)
-	var room_text := str(space.get("interior_note", ""))
-	var memory_text := _room_memory_text()
-	if not memory_text.is_empty():
-		room_text += "\n" + memory_text
-	var note := _label(room_note, room_text, Vector2(20, 12), Vector2(540, 68), 14, CREAM)
-	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-
-	var people_text := "此刻在场：%s" % _resident_names()
-	var people_label := _label(self, people_text, Vector2(920, 130), Vector2(600, 32), 15, Color(CREAM, 0.92), HORIZONTAL_ALIGNMENT_RIGHT)
-	people_label.add_theme_color_override("font_shadow_color", Color(INK, 0.8))
-	people_label.add_theme_constant_override("shadow_offset_x", 1)
-	people_label.add_theme_constant_override("shadow_offset_y", 2)
-
-	for index in objects.size():
-		var item: Dictionary = objects[index]
-		var x := _hotspot_x(index)
-		var button := _button(self, "%s  %s" % [str(item.get("icon", "·")), str(item.get("name", "物件"))], Vector2(x - 105, 520), Vector2(210, 56), "hotspot")
-		button.tooltip_text = str(item.get("detail", ""))
-		button.pressed.connect(_select_object.bind(index))
-		button.focus_entered.connect(_select_object.bind(index))
-		object_buttons.append(button)
-
-	var dialogue := _panel(self, Vector2(175, 690), Vector2(1250, 174), Color(CREAM, 0.96), Color(TERRACOTTA, 0.85), 12)
-	name_label = _label(dialogue, "物件", Vector2(28, 18), Vector2(340, 26), 15, TERRACOTTA)
-	cue_label = _label(dialogue, "", Vector2(28, 47), Vector2(770, 37), 25, INK)
-	detail_label = _label(dialogue, "", Vector2(28, 90), Vector2(820, 58), 15, MUTED)
-	detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	talk_button = _button(dialogue, "和在场居民聊聊", Vector2(846, 54), Vector2(174, 64), "quiet")
-	talk_button.pressed.connect(_talk_to_resident)
-	talk_button.disabled = people.is_empty()
-	interact_button = _button(dialogue, "靠近并使用", Vector2(1034, 54), Vector2(171, 64), "primary")
-	interact_button.pressed.connect(_open_selected)
-	_label(self, "A/D 或 ←/→ 选择物件   ·   E 互动   ·   T 对话   ·   Esc 返回街道", Vector2(450, 868), Vector2(700, 24), 13, Color(CREAM, 0.88), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(self, str(space.get("name", "")), Vector2(42, 18), Vector2(1000, 42), 25, Color("eadac1"))
+	var dialogue := _panel(self, Vector2(390, 305), Vector2(820, 255), Color("17232b", 0.94), Color("566566"), 2)
+	room_dialogue = dialogue
+	room_dialogue.hide()
+	name_label = _label(dialogue, "", Vector2(20, 10), Vector2(775, 28), 16, Color("d0b28a"))
+	cue_label = _label(dialogue, "", Vector2(20, 35), Vector2(775, 136), 20, Color("ebdfc7"))
+	detail_label = _label(dialogue, "", Vector2(20, 188), Vector2(775, 38), 15, Color("aab7b1"))
+	cue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 
 func _resident_names() -> String:
@@ -155,29 +132,37 @@ func _hotspot_x(index: int) -> float:
 
 
 func _select_object(index: int) -> void:
-	if index < 0 or index >= objects.size():
-		return
+	if index < 0 or index >= objects.size(): return
 	selected_index = index
-	target_x = _hotspot_x(index)
 	var item: Dictionary = objects[index]
-	name_label.text = "%s  ·  %s" % [str(space.get("name", "室内")), str(item.get("icon", "物"))]
-	cue_label.text = str(item.get("name", "物件"))
+	name_label.text = str(space.get("name", ""))
+	cue_label.text = str(item.get("name", ""))
 	detail_label.text = str(item.get("detail", ""))
-	interact_button.text = "靠近并进入" if str(item.get("kind", "module")) != "record_shop" else "靠近制作台"
-	for button_index in object_buttons.size():
-		_style_button(object_buttons[button_index], "hotspot_active" if button_index == selected_index else "hotspot")
-	queue_redraw()
 
 
 func _open_selected() -> void:
-	if objects.is_empty():
+	if objects.is_empty() or absf(stage.player_x - _hotspot_x(selected_index)) > stage.REACH:
 		return
 	var item: Dictionary = objects[selected_index]
+	if str(item.get("kind", "")) == "journal":
+		SceneRouter.journal()
+		return
+	if str(item.get("kind", "")) == "observe":
+		room_dialogue.show()
+		cue_label.text = str(item.get("detail", ""))
+		return
+	if str(item.get("kind", "")) == "book_notes":
+		_show_book_notes()
+		return
+	if str(item.get("kind", "")) == "sleep":
+		ChapterSystem.sleep_at_home()
+		return
 	var module_id := str(item.get("module_id", ""))
 	if not module_id.is_empty():
 		var metadata: Dictionary = GameplayModuleSystem.modules.get(module_id, {})
 		var direct_minutes := int(metadata.get("direct_time_minutes", 0))
 		if direct_minutes > 0 and not GameState.can_fit_now(direct_minutes):
+			room_dialogue.show()
 			name_label.text = "时间提醒"
 			cue_label.text = "这段经历需要完整的 %d 分钟" % direct_minutes
 			detail_label.text = "当前时间块放不下它。返回街道推进到下一个可行动时段后再来。"
@@ -206,9 +191,12 @@ func _open_record_shop() -> void:
 
 
 func _talk_to_resident() -> void:
+	room_dialogue.show()
 	if people.is_empty():
 		return
-	var resident_id := _next_conversation_resident()
+	var nearest: Dictionary = stage.nearest()
+	if str(nearest.get("kind", "")) != "person": return
+	var resident_id := str(nearest.id)
 	var event_id := _conversation_event_id(resident_id)
 	if GameState.has_event(event_id):
 		name_label.text = "室内对话"
@@ -244,9 +232,7 @@ func _talk_to_resident() -> void:
 	SaveManager.save_game()
 	name_label.text = resident_name.to_upper()
 	cue_label.text = "“%s”" % line
-	detail_label.text = "%s · 20 分钟 · 这次相处已进入关系与日记记录。" % activity_text
-	talk_button.text = "继续和另一位居民聊" if _has_unspoken_resident() else "今天的室内对话已记录"
-	talk_button.disabled = not _has_unspoken_resident()
+	detail_label.text = "E · 继续"
 
 
 func _next_conversation_resident() -> String:
@@ -272,58 +258,63 @@ func _conversation_event_id(resident_id: String) -> String:
 	]
 
 
-func _process(delta: float) -> void:
-	if absf(avatar_x - target_x) > 0.5:
-		avatar_x = move_toward(avatar_x, target_x, delta * 650.0)
-		queue_redraw()
-
-
-func _draw() -> void:
-	if background_texture != null:
-		draw_texture_rect(background_texture, Rect2(Vector2.ZERO, Vector2(1600, 900)), false)
-	else:
-		draw_rect(Rect2(Vector2.ZERO, Vector2(1600, 900)), Color("708087"))
-	draw_rect(Rect2(Vector2.ZERO, Vector2(1600, 900)), Color(0.12, 0.12, 0.13, 0.32))
-	draw_rect(Rect2(0, 580, 1600, 320), Color(0.14, 0.12, 0.11, 0.36))
-	draw_line(Vector2(0, 665), Vector2(1600, 665), Color(CREAM, 0.35), 2)
-	for index in objects.size():
-		var x := _hotspot_x(index)
-		draw_line(Vector2(x, 580), Vector2(x, 650), Color(CREAM, 0.24), 2)
-		draw_circle(Vector2(x, 650), 7, TERRACOTTA if index == selected_index else Color(CREAM, 0.65))
-	_draw_people()
-	_draw_avatar(Vector2(avatar_x, 642), TERRACOTTA if GameState.current_role == "A" else SEA)
-
-
-func _draw_people() -> void:
-	for index in mini(people.size(), 4):
-		var x := 930.0 + index * 92.0
-		_draw_avatar(Vector2(x, 640), Color(INK, 0.82), 0.82)
-
-
-func _draw_avatar(at: Vector2, color: Color, scale_value := 1.0) -> void:
-	draw_circle(at + Vector2(0, -58) * scale_value, 13 * scale_value, color)
-	draw_line(at + Vector2(0, -44) * scale_value, at + Vector2(0, -10) * scale_value, color, 12 * scale_value, true)
-	draw_line(at + Vector2(0, -34) * scale_value, at + Vector2(-16, -17) * scale_value, color, 6 * scale_value, true)
-	draw_line(at + Vector2(0, -34) * scale_value, at + Vector2(17, -21) * scale_value, color, 6 * scale_value, true)
-	draw_line(at + Vector2(0, -12) * scale_value, at + Vector2(-12, 16) * scale_value, color, 7 * scale_value, true)
-	draw_line(at + Vector2(0, -12) * scale_value, at + Vector2(14, 16) * scale_value, color, 7 * scale_value, true)
+func _process(_delta: float) -> void:
+	if not is_instance_valid(stage): return
+	stage.enabled = not is_instance_valid(pocket_panel) and not is_instance_valid(notes_overlay) and not SceneRouter.transitioning and not room_dialogue.visible
+	avatar_x = stage.player_x
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if is_instance_valid(pocket_panel):
+	if is_instance_valid(pocket_panel) or is_instance_valid(notes_overlay) or SceneRouter.transitioning: return
+	if not event is InputEventKey or not event.pressed or event.echo: return
+	if room_dialogue.visible:
+		if event.keycode in [KEY_E, KEY_ESCAPE, KEY_ENTER]: room_dialogue.hide()
+		get_viewport().set_input_as_handled()
 		return
-	if not event is InputEventKey or not event.pressed or event.echo:
-		return
-	if event.keycode in [KEY_A, KEY_LEFT]:
-		_select_object(maxi(0, selected_index - 1))
-	elif event.keycode in [KEY_D, KEY_RIGHT]:
-		_select_object(mini(objects.size() - 1, selected_index + 1))
-	elif event.keycode in [KEY_E, KEY_ENTER, KEY_SPACE]:
-		_open_selected()
-	elif event.keycode == KEY_T:
-		_talk_to_resident()
+	if event.keycode == KEY_E:
+		var nearest: Dictionary = stage.nearest()
+		match str(nearest.get("kind", "")):
+			"exit": SceneRouter.leave_space()
+			"person": _talk_to_resident()
+			"object":
+				_select_object(int(nearest.index))
+				_open_selected()
 	elif event.keycode == KEY_ESCAPE:
-		SceneRouter.leave_space()
+		name_label.text = ""
+		cue_label.text = ""
+		detail_label.text = ""
+	get_viewport().set_input_as_handled()
+
+func _show_book_notes() -> void:
+	if is_instance_valid(notes_overlay): return
+	notes_overlay = _panel(self, Vector2(230, 180), Vector2(1140, 600), Color("f0e5ce"), Color("738376"), 8)
+	_label(notes_overlay, "书店的便利贴墙", Vector2(32, 24), Vector2(1030, 45), 28, INK)
+	var input := LineEdit.new()
+	input.position = Vector2(32, 90)
+	input.size = Vector2(780, 48)
+	input.max_length = 80
+	input.placeholder_text = "写下你最喜欢的一本书……"
+	notes_overlay.add_child(input)
+	var note_text := _label(notes_overlay, "", Vector2(32, 174), Vector2(1060, 325), 21, INK)
+	note_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var refresh := func() -> void:
+		var notes: Array = GameState.shared_state.get("bookstore_notes", [])
+		note_text.text = "还没有留下书名。" if notes.is_empty() else "\n\n".join(notes.slice(maxi(0, notes.size() - 7)))
+	var submit := _button(notes_overlay, "贴上去", Vector2(842, 90), Vector2(260, 48), "primary")
+	submit.pressed.connect(func() -> void:
+		var title := input.text.strip_edges()
+		if title.is_empty(): return
+		var notes: Array = GameState.shared_state.get("bookstore_notes", [])
+		if not notes.has(title): notes.append(title)
+		GameState.shared_state["bookstore_notes"] = notes
+		SaveManager.save_game()
+		input.clear()
+		refresh.call())
+	var reload := _button(notes_overlay, "刷新", Vector2(600, 528), Vector2(220, 45), "quiet")
+	reload.pressed.connect(refresh)
+	var close := _button(notes_overlay, "收起", Vector2(852, 528), Vector2(250, 45), "quiet")
+	close.pressed.connect(func() -> void: notes_overlay.queue_free())
+	refresh.call()
 
 
 func _panel(parent: Node, at: Vector2, panel_size: Vector2, color: Color, border: Color, radius: int) -> Panel:

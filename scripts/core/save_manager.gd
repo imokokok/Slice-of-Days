@@ -10,6 +10,8 @@ var active_slot := 1
 
 func path_for_slot(slot: int) -> String:
 	var safe_slot := clampi(slot, 1, SLOT_COUNT)
+	if OS.get_cmdline_user_args().has("--isolated-save"):
+		return "user://walking_test_%d.json" % safe_slot
 	return SAVE_PATH if safe_slot == 1 else "user://solmere_save_%d.json" % safe_slot
 
 
@@ -78,7 +80,7 @@ func load_slot(slot: int) -> bool:
 func slot_summary(slot: int) -> Dictionary:
 	var path := path_for_slot(slot)
 	if not FileAccess.file_exists(path):
-		if slot == 1:
+		if slot == 1 and not OS.get_cmdline_user_args().has("--isolated-save"):
 			for candidate in _legacy_candidates():
 				if FileAccess.file_exists(candidate):
 					path = candidate
@@ -117,3 +119,29 @@ func _legacy_candidates() -> Array[String]:
 		previous_dir.path_join("solmere_save.json"),
 		previous_dir.path_join("vertical_slice_save.json"),
 	]
+
+func prepare_new_journey() -> bool:
+	for slot in range(1, SLOT_COUNT + 1):
+		if not has_slot(slot):
+			set_active_slot(slot)
+			return true
+	# All three legacy slots occupied: archive the oldest before reusing it.
+	var oldest := 1
+	for slot in range(2, SLOT_COUNT + 1):
+		if int(slot_summary(slot).get("modified", 0)) < int(slot_summary(oldest).get("modified", 0)):
+			oldest = slot
+	var source := path_for_slot(oldest)
+	var archive := "user://journey_archive_%d_%d.json" % [int(Time.get_unix_time_from_system()), Time.get_ticks_usec()]
+	if DirAccess.copy_absolute(ProjectSettings.globalize_path(source), ProjectSettings.globalize_path(archive)) != OK:
+		push_error("Could not archive the previous journey")
+		return false
+	set_active_slot(oldest)
+	return true
+
+func load_latest() -> bool:
+	var slots: Array[int] = [1, 2, 3]
+	slots.sort_custom(func(a: int, b: int) -> bool:
+		return int(slot_summary(a).get("modified", 0)) > int(slot_summary(b).get("modified", 0)))
+	for slot in slots:
+		if has_slot(slot) and load_slot(slot): return true
+	return false

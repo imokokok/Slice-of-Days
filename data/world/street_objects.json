@@ -1,0 +1,29 @@
+{
+  "objects": [
+    {
+      "id": "chess_board",
+      "name": "坐下和老棋友下一局",
+      "detail": "坐下对弈，或把自己会的规则教给老棋友。",
+      "kind": "module",
+      "module_id": "chess",
+      "icon": "棋",
+      "location_id": "chess_stall"
+    },
+    {
+      "id": "telescope",
+      "name": "走到望远镜前",
+      "detail": "调整水平与垂直视角，寻找飞鸟与鲸鱼星座。",
+      "kind": "module",
+      "module_id": "contemplation",
+      "icon": "星",
+      "location_id": "park"
+    },
+    {
+      "id": "vegetable_memory",
+      "location_id": "produce_stall",
+      "kind": "module",
+      "module_id": "translation",
+      "name": "听听摊主的话"
+    }
+  ]
+}

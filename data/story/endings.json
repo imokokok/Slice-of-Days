@@ -131,7 +131,7 @@
       "priority": 74,
       "module_id": "optical_illusion",
       "module_choice_id": "preserve_contradiction",
-      "text": "旧车站的模型同时保留了{selected_joined}；它们只在那个观察角度短暂相连。"
+      "text": "公交站的模型同时保留了{selected_joined}；它们只在那个观察角度短暂相连。"
     },
     {
       "id": "photographed_reflection",
@@ -161,7 +161,7 @@
       "category": "chess",
       "priority": 68,
       "artifact_id": "elder_board_match",
-      "text": "河岸棋社仍留着那盘窗边棋局；没有走完的停顿也算在棋谱里。"
+      "text": "下棋摊仍留着那盘窗边棋局；没有走完的停顿也算在棋谱里。"
     },
     {
       "id": "night_constellation",
@@ -199,7 +199,7 @@
       "priority": 84,
       "role": "B",
       "choice_key": "b_d4_missed_window/wait_the_extra_eleven",
-      "text": "旧车站多出来的十一分钟没有带来任何人，但仍被算进了这七天。"
+      "text": "公交站多出来的十一分钟没有带来任何人，但仍被算进了这七天。"
     },
     {
       "id": "asked_again",
@@ -238,14 +238,14 @@
       "category": "schedule",
       "priority": 55,
       "journal_id": "missed_shared_d5_studio_blocking",
-      "text": "摄影棚那一页被划掉了，没有被改写成另一场补偿。"
+      "text": "社区中心那一页被划掉了，没有被改写成另一场补偿。"
     },
     {
       "id": "shared_port_roomtone",
       "category": "public_work",
       "priority": 50,
       "artifact_id": "port_roomtone",
-      "text": "港口货栈的底噪同时出现在两个人的公共记录里。"
+      "text": "停车区域货栈的底噪同时出现在两个人的公共记录里。"
     }
   ]
 }

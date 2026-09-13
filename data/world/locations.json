@@ -1,22 +1,185 @@
 {
+  "_note": "场景范围严格依据《场景需求表(1).docx》：15个地点，9个室内，6个仅外部。旧ID保留以兼容叙事存档。",
   "locations": [
-    {"id": "town_entrance", "name": "小镇入口", "subtitle": "两个人在不同的时刻拍下几乎一样的照片", "position": [115, 230], "map_visible": true},
-    {"id": "print_shop", "name": "打印店", "subtitle": "文件、海报和临时借用的手机在这里经过", "position": [340, 265], "map_visible": true},
-    {"id": "cafeteria", "name": "学院食堂", "subtitle": "课程表与赶时间的午饭在这里重叠", "position": [600, 235], "map_visible": true},
-    {"id": "theatre", "name": "剧场", "subtitle": "排练、道具和临时帮忙总比演出先发生", "position": [850, 230], "map_visible": true},
-    {"id": "residence", "name": "临时住所", "subtitle": "一间只够放下一张床和七天计划的房间", "position": [150, 575], "map_visible": true},
-    {"id": "library", "name": "公共图书馆", "subtitle": "档案、代写者和无人归还的借阅卡", "position": [350, 430], "map_visible": true},
-    {"id": "cafe", "name": "咖啡馆", "subtitle": "白天的传闻在这里被反复加热", "position": [565, 545], "map_visible": true},
-    {"id": "bus_stop", "name": "巴士站", "subtitle": "路线不多，错过一次就会改变一天", "position": [755, 405], "map_visible": true},
-    {"id": "park", "name": "河岸公园", "subtitle": "傍晚以后，影子比人先到达", "position": [960, 515], "map_visible": true},
-    {"id": "night_market", "name": "夜市", "subtitle": "食物、声音和误会组成的临时街区", "position": [1030, 335], "map_visible": true},
-    {"id": "tarot_stall", "name": "塔拉牌摊", "subtitle": "把零散事实放上桌面，关系才会显形", "position": [1110, 580], "map_visible": true},
-    {"id": "dorm", "name": "学院宿舍", "subtitle": "居民生活区，暂不作为公开地图节点", "position": [0, 0], "map_visible": false},
-    {"id": "court", "name": "球场", "subtitle": "训练和比赛使用的公共场地", "position": [0, 0], "map_visible": false},
-    {"id": "record_store", "name": "唱片店", "subtitle": "声音采样、授权和棋局都可能在这里停留", "position": [870, 330], "map_visible": false, "district_visible": true},
-    {"id": "old_station", "name": "旧车站", "subtitle": "铁路改线以后仍替没有抵达的人保留一点旧时间", "position": [980, 245], "map_visible": false, "district_visible": true, "background_path": "res://art/locations/old_station/old_station_long_evening_v01.png"},
-    {"id": "port", "name": "港口", "subtitle": "旧货栈和新工作室挤在同一片海风里", "position": [1110, 300], "map_visible": false, "district_visible": true},
-    {"id": "studio", "name": "摄影棚", "subtitle": "传媒项目把镇上的人不断重新聚到一起", "position": [705, 330], "map_visible": false, "district_visible": true},
-    {"id": "handcraft_shop", "name": "手作店", "subtitle": "纸张、裁切工具和没有写完的句子", "position": [470, 390], "map_visible": false, "district_visible": true}
+    {
+      "id": "town_entrance",
+      "name": "小镇街道公共区域",
+      "interior": false,
+      "kind": "street",
+      "street_index": 0,
+      "subtitle": "小镇街道公共区域",
+      "position": [
+        450,
+        718
+      ]
+    },
+    {
+      "id": "residence",
+      "name": "A的家",
+      "interior": true,
+      "kind": "home_a",
+      "street_index": 1,
+      "subtitle": "A的家",
+      "position": [
+        1350,
+        718
+      ]
+    },
+    {
+      "id": "print_shop",
+      "name": "社区中心",
+      "interior": true,
+      "kind": "community",
+      "street_index": 2,
+      "subtitle": "社区中心",
+      "position": [
+        2250,
+        718
+      ]
+    },
+    {
+      "id": "night_market",
+      "name": "饭店",
+      "interior": true,
+      "kind": "restaurant",
+      "street_index": 3,
+      "subtitle": "饭店",
+      "position": [
+        3150,
+        718
+      ]
+    },
+    {
+      "id": "produce_stall",
+      "name": "卖菜兼罐头摊",
+      "interior": false,
+      "kind": "produce",
+      "street_index": 4,
+      "subtitle": "卖菜兼罐头摊",
+      "position": [
+        4050,
+        718
+      ]
+    },
+    {
+      "id": "cafe",
+      "name": "杂货店",
+      "interior": true,
+      "kind": "grocery",
+      "street_index": 5,
+      "subtitle": "杂货店",
+      "position": [
+        4950,
+        718
+      ]
+    },
+    {
+      "id": "handcraft_shop",
+      "name": "邮局 / 书信事务所",
+      "interior": true,
+      "kind": "post",
+      "street_index": 6,
+      "subtitle": "邮局 / 书信事务所",
+      "position": [
+        5850,
+        718
+      ]
+    },
+    {
+      "id": "library",
+      "name": "书店",
+      "interior": true,
+      "kind": "bookstore",
+      "street_index": 7,
+      "subtitle": "书店",
+      "position": [
+        6750,
+        718
+      ]
+    },
+    {
+      "id": "record_store",
+      "name": "唱片店",
+      "interior": true,
+      "kind": "records",
+      "street_index": 8,
+      "subtitle": "唱片店",
+      "position": [
+        7650,
+        718
+      ]
+    },
+    {
+      "id": "tarot_stall",
+      "name": "塔罗店",
+      "interior": true,
+      "kind": "tarot",
+      "street_index": 9,
+      "subtitle": "塔罗店",
+      "position": [
+        8550,
+        718
+      ]
+    },
+    {
+      "id": "dorm",
+      "name": "B的家",
+      "interior": true,
+      "kind": "home_b",
+      "street_index": 10,
+      "subtitle": "B的家",
+      "position": [
+        9450,
+        718
+      ]
+    },
+    {
+      "id": "chess_stall",
+      "name": "下棋摊",
+      "interior": false,
+      "kind": "chess",
+      "street_index": 11,
+      "subtitle": "下棋摊",
+      "position": [
+        10350,
+        718
+      ]
+    },
+    {
+      "id": "bus_stop",
+      "name": "公交站",
+      "interior": false,
+      "kind": "bus",
+      "street_index": 12,
+      "subtitle": "公交站",
+      "position": [
+        11250,
+        718
+      ]
+    },
+    {
+      "id": "port",
+      "name": "停车区域",
+      "interior": false,
+      "kind": "parking",
+      "street_index": 13,
+      "subtitle": "停车区域",
+      "position": [
+        12150,
+        718
+      ]
+    },
+    {
+      "id": "park",
+      "name": "观景台",
+      "interior": false,
+      "kind": "lookout",
+      "street_index": 14,
+      "subtitle": "观景台",
+      "position": [
+        13050,
+        718
+      ]
+    }
   ]
 }

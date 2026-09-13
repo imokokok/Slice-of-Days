@@ -29,7 +29,7 @@ func _build_ui() -> void:
 	var job_title := CharacterSystem.job_title(GameState.current_role)
 	_label(self, "%s · 第 %d 天 · %s · %d元 · 认可 %d/12" % [job_title, GameState.current_day, GameState.clock_text(), GameState.money, GameState.residency_confirmations], Vector2(48, 70), Vector2(850, 28), 15, MUTED)
 	var back := _button(self, "返回小镇", Vector2(1380, 28), Vector2(170, 44), TERRACOTTA)
-	back.pressed.connect(SceneRouter.town_day)
+	back.pressed.connect(SceneRouter.return_from_gameplay)
 
 	_text_panel(Vector2(38, 125), Vector2(355, 710), "已知事实", _fact_text())
 	_text_panel(Vector2(420, 125), Vector2(355, 710), "居民关系", _relationship_text())

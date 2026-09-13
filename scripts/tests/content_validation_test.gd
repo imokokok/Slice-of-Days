@@ -280,7 +280,7 @@ func _validate_module_scenes(modules: Array) -> void:
 
 func _validate_interactive_spaces(rows: Array, location_ids: Array[String], module_ids: Array[String]) -> void:
 	var space_ids := _unique_ids(rows, "interactive space")
-	if space_ids.size() < 9:
+	if space_ids.size() != 9:
 		failures.append("the town should expose all nine interactive interiors")
 	for space in rows:
 		var space_id := str(space.get("id", ""))
@@ -300,7 +300,7 @@ func _validate_interactive_spaces(rows: Array, location_ids: Array[String], modu
 			else:
 				object_ids.append(object_id)
 			var kind := str(item.get("kind", "module"))
-			if not ["module", "tarot", "record_shop"].has(kind):
+			if not ["module", "tarot", "record_shop", "observe", "journal", "sleep", "book_notes"].has(kind):
 				failures.append("interactive object %s/%s uses unsupported kind %s" % [space_id, object_id, kind])
 			var module_id := str(item.get("module_id", ""))
 			if kind == "module" and not module_ids.has(module_id):

@@ -5,7 +5,8 @@ signal chapter_completed(chapter: Dictionary)
 signal journey_completed
 
 
-func start_new_game(start_role: String = "A") -> void:
+func start_new_game(_start_role: String = "A") -> void:
+	var start_role := "A"
 	GameState.begin_new_game(start_role)
 	GameState.shared_state["chapter_index"] = 0
 	GameState.shared_state["chapter_start_role"] = start_role if ["A", "B"].has(start_role) else "A"
@@ -15,13 +16,17 @@ func start_new_game(start_role: String = "A") -> void:
 	GameState.shared_state["game_complete"] = false
 	var chapter := current_chapter()
 	GameState.switch_to_role(str(chapter.get("role", start_role)), int(chapter.get("day", 1)), true)
+	GameState.current_location = "town_entrance"
+	GameState.shared_state["street_layout_version"] = 3
+	GameState.shared_state["street_positions"] = {"A_1":150.0}
+	GameState.commit_active_role_state()
 	chapter_started.emit(chapter)
 
 
 func chapter_sequence() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	var total_days := int(GameState.calendar_data.get("total_days", 7))
-	var first_role := str(GameState.shared_state.get("chapter_start_role", "A"))
+	var first_role := "A"
 	var role_order := [first_role, "B" if first_role == "A" else "A"]
 	for day in range(1, total_days + 1):
 		for role in role_order:
@@ -153,3 +158,13 @@ func journey_audit() -> Dictionary:
 		"B": residency_audit("B"),
 		"game_complete": bool(GameState.shared_state.get("game_complete", false)),
 	}
+
+func sleep_at_home() -> bool:
+	if SceneRouter.active_space_id != ("home_a" if GameState.current_role == "A" else "home_b") or GameState.current_location not in ["residence", "dorm"]:
+		return false
+	if bool(GameState.shared_state.get("sleep_pending", false)): return false
+	GameState.shared_state["sleep_pending"] = true
+	GameState.commit_active_role_state()
+	SaveManager.save_game()
+	SceneRouter.chapter_transition()
+	return true

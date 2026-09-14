@@ -44,10 +44,27 @@ func has_save(path := "") -> bool:
 
 func save_game(path := "") -> bool:
 	var target_path := path_for_slot(active_slot) if str(path).is_empty() else str(path)
-	var file := FileAccess.open(target_path, FileAccess.WRITE)
+	var temporary_path := target_path + ".tmp"
+	var file := FileAccess.open(temporary_path, FileAccess.WRITE)
 	if file == null:
 		return false
-	file.store_string(JSON.stringify(GameState.to_save_data(), "\t"))
+	var payload := JSON.stringify(GameState.to_save_data(), "\t")
+	file.store_string(payload)
+	file.flush()
+	file = null
+	# Never replace a good save with a truncated or otherwise invalid payload.
+	var written = JSON.parse_string(FileAccess.get_file_as_string(temporary_path))
+	if typeof(written) != TYPE_DICTIONARY:
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(temporary_path))
+		push_error("Could not validate the temporary save file")
+		return false
+	var temporary_absolute := ProjectSettings.globalize_path(temporary_path)
+	var target_absolute := ProjectSettings.globalize_path(target_path)
+	var rename_error := DirAccess.rename_absolute(temporary_absolute, target_absolute)
+	if rename_error != OK:
+		DirAccess.remove_absolute(temporary_absolute)
+		push_error("Could not atomically replace save file: %s" % error_string(rename_error))
+		return false
 	return true
 
 

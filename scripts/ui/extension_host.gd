@@ -14,6 +14,7 @@ var completion_ready := false
 
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	module_id = GameplayModuleSystem.pending_module_id()
 	metadata = GameplayModuleSystem.modules.get(module_id, {})
 	var scene_path := str(metadata.get("extension_scene_path", ""))

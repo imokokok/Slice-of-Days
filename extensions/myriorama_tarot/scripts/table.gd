@@ -64,6 +64,8 @@ func _ready() -> void:
 	var font: Font
 	if FileAccess.file_exists("res://extensions/myriorama_tarot/assets/chinese.ttc"):
 		font = load("res://extensions/myriorama_tarot/assets/chinese.ttc")
+	elif DisplayServer.get_name() == "headless":
+		font = ThemeDB.fallback_font
 	else:
 		var system_font := SystemFont.new()
 		system_font.font_names = PackedStringArray(["Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Noto Sans SC", "sans-serif"])

@@ -41,7 +41,7 @@ const ENDING := [
 ]
 
 var market_texture: Texture2D
-var emoji_font: SystemFont
+var emoji_font: Font
 var clock_time := 0.0
 var chapter := 0
 var lines: Array = []
@@ -62,9 +62,13 @@ var tense: Array[bool] = [false, false]
 func _ready() -> void:
 	super._ready()
 	market_texture = preload("res://scripts/ui/scene_atlas.gd").plate({"pages":[33,34,35]})
-	emoji_font = SystemFont.new()
-	emoji_font.font_names = PackedStringArray(["Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji"])
-	emoji_font.disable_embedded_bitmaps = false
+	if DisplayServer.get_name() == "headless":
+		emoji_font = ThemeDB.fallback_font
+	else:
+		var emoji_system_font := SystemFont.new()
+		emoji_system_font.font_names = PackedStringArray(["Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji"])
+		emoji_system_font.disable_embedded_bitmaps = false
+		emoji_font = emoji_system_font
 	_reset()
 
 

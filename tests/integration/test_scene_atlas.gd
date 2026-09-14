@@ -27,6 +27,12 @@ func run() -> void:
 	for item in current_scene.street.hotspots:
 		if item.kind == "door": door = item
 	check(not door.is_empty() and float(door.get("x",0)) == 2720,"Restaurant interaction aligns with its pictured door")
+	var street = current_scene.street
+	street.player_x = 1595.0
+	street.move_player(0, 0)
+	var camera_before: float = street.camera_x
+	street.move_player(1, 0.1)
+	check(street.player_x > 1600 and absf(street.camera_x - camera_before) < 30, "Camera follows smoothly across a scene boundary")
 	state.current_minute = 1259
 	check(Atlas.street("park").pages[0] == 70,"Closed lookout uses its exterior gate")
 	state.current_minute = 1260

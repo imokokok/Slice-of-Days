@@ -27,6 +27,24 @@ func run() -> void:
 	check(sky is Node3D and sky.camera is Camera3D, "Telescope must directly enter real 3D")
 	check(sky.data.positions == sky.source_data.positions, "Authored star depth must remain intact")
 	var before: Transform3D = sky.camera.transform
+	# Dispatch through the actual viewport and host UI, not directly to the controller.
+	var press := InputEventMouseButton.new()
+	press.position = Vector2(650, 350)
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	root.push_input(press, true)
+	var motion := InputEventMouseMotion.new()
+	motion.position = Vector2(650, 350)
+	motion.relative = Vector2(45, 20)
+	motion.button_mask = MOUSE_BUTTON_MASK_LEFT
+	root.push_input(motion, true)
+	press.pressed = false
+	root.push_input(press, true)
+	await process_frame
+	check(not sky.camera.transform.is_equal_approx(before), "Dragging through the host UI rotates the real 3D camera")
+	check(sky.data.positions == sky.source_data.positions, "Mouse dragging preserves world-space star depth")
+	check(not sky.has_node("UI/Adjustment"), "Mouse sky has no directional button panel")
+	before = sky.camera.transform
 	sky.adjust(Vector2i(1, 0))
 	check(not sky.camera.transform.is_equal_approx(before), "Telescope controls must rotate the 3D camera")
 	sky.adjustment = sky.solution

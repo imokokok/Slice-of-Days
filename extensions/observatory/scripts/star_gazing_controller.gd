@@ -9,7 +9,6 @@ var data: ConstellationData
 var adjustment := Vector2i.ZERO
 var look_offset := Vector2.ZERO
 var solution := Vector2i.ZERO
-var dial_label: Label
 var reveal_tween: Tween
 var is_capturing := false
 @onready var camera := $Camera3D
@@ -30,31 +29,21 @@ func _ready() -> void:
  build_controls()
  select_constellation(WHALE if ObservatoryState.discovered.bird and not ObservatoryState.discovered.whale else BIRD)
 func build_controls() -> void:
- var panel := VBoxContainer.new()
- panel.name = "Adjustment"
- $UI.add_child(panel)
- panel.anchor_left = 0.5
- panel.anchor_right = 0.5
- panel.anchor_top = 1.0
- panel.anchor_bottom = 1.0
- panel.offset_left = -230
- panel.offset_right = 230
- panel.offset_top = -190
- panel.offset_bottom = -25
- dial_label = Label.new()
- dial_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
- panel.add_child(dial_label)
- for axis in 2:
-  var row := HBoxContainer.new()
-  row.alignment = BoxContainer.ALIGNMENT_CENTER
-  panel.add_child(row)
-  for direction in [-1, 1]:
-   var button := Button.new()
-   button.text = (["水平 −", "水平 +"] if axis == 0 else ["垂直 −", "垂直 +"])[0 if direction < 0 else 1]
-   button.custom_minimum_size = Vector2(190, 48)
-   button.pressed.connect(adjust.bind(Vector2i(direction, 0) if axis == 0 else Vector2i(0, direction)))
-   row.add_child(button)
- $UI/Instructions.text = "拖动星空转动望远镜 · 方向键微调 · 对准后停留 1.25 秒 · ESC 返回"
+ var surface := Control.new()
+ surface.name = "SkyDrag"
+ $UI.add_child(surface)
+ $UI.move_child(surface, 0)
+ surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ surface.mouse_default_cursor_shape = Control.CURSOR_DRAG
+ surface.gui_input.connect(_sky_input)
+ $UI/Instructions.text = "按住鼠标左键拖动，转动望远镜 · 方向键微调 · 对准后停留片刻 · ESC 返回"
+func _sky_input(event: InputEvent) -> void:
+ if is_capturing: return
+ if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
+  look_offset = (look_offset + event.relative * Vector2(-0.003, -0.003)).clamp(Vector2(-0.6, -0.6), Vector2(0.6, 0.6))
+  checker.elapsed = 0.0
+  update_layout()
+  $UI/SkyDrag.accept_event()
 func select_constellation(value: ConstellationData) -> void:
  if reveal_tween: reveal_tween.kill()
  source_data = value
@@ -89,7 +78,6 @@ func update_layout() -> void:
  var basis := Basis.from_euler(Vector3(angles.y, angles.x, 0))
  camera.transform = Transform3D(basis, basis * Vector3(0, 0, source_data.orbit_radius))
  data.positions = source_data.positions.duplicate()
- dial_label.text = "水平 %+d     垂直 %+d" % [adjustment.x, adjustment.y]
  lines.queue_redraw()
 func refresh_buttons() -> void:
  capture.visible = checker.completed and checker.error < data.error_threshold * 3.0
@@ -98,11 +86,7 @@ func refresh_buttons() -> void:
  next.text = "寻找鲸鱼 →" if data.id == "bird" else "重访飞鸟 →"
  $UI/Album.text = "观测册 · %d / 2" % (int(ObservatoryState.collected.bird) + int(ObservatoryState.collected.whale))
 func _unhandled_input(event: InputEvent) -> void:
- if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
-  look_offset = (look_offset + event.relative * Vector2(-0.003, -0.003)).clamp(Vector2(-0.6, -0.6), Vector2(0.6, 0.6))
-  checker.elapsed = 0.0
-  update_layout()
- elif event is InputEventKey and event.pressed and not event.echo:
+ if event is InputEventKey and event.pressed and not event.echo:
   match event.keycode:
    KEY_ESCAPE: return_requested.emit()
    KEY_LEFT: adjust(Vector2i(-1, 0))

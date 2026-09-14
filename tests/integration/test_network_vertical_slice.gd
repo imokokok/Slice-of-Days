@@ -137,5 +137,19 @@ func run() -> void:
 	legacy.role_states.B.known_facts = ["旧存档里的私人记录"]
 	state.load_save_data(legacy)
 	check(state.current_day == 2 and state.current_role == "B" and state.money == 73 and state.known_facts.has("旧存档里的私人记录"), "V3 migration preserves old money and memories while aligning the day")
+	var legacy_flat := {
+		"save_version": 2,
+		"current_role": "A",
+		"current_day": 3,
+		"current_minute": 735,
+		"money": 91,
+		"current_location": "cafeteria",
+		"completed_events": ["legacy_event"],
+		"known_facts": ["真实旧结构里的记录"],
+	}
+	state.load_save_data(legacy_flat)
+	check(state.current_day == 4 and state.current_role == "A", "Flat legacy saves align to the next authored day for their role")
+	check(state.current_minute == 735 and state.money == 91 and state.current_location == "night_market", "Flat legacy saves preserve time, money and aliased locations")
+	check(state.has_event("legacy_event") and state.known_facts.has("真实旧结构里的记录"), "Flat legacy saves preserve progress and knowledge")
 	print("NETWORK VERTICAL SLICE PASS" if failures == 0 else "NETWORK VERTICAL SLICE FAIL: %d" % failures)
 	quit(failures)

@@ -4,6 +4,7 @@ signal moved(world_x: float)
 
 const SPEED := 300.0
 const REACH := 85.0
+const ACTOR_BASE_HEIGHT := 121.0
 const Atlas = preload("res://scripts/ui/scene_atlas.gd")
 var player_x := 500.0
 var world_width := 1800.0
@@ -22,7 +23,6 @@ var hotspots: Array[Dictionary] = []
 var room_name := ""
 var room_kind := ""
 var walk_limit := INF
-var scene_fade := 0.0
 
 func _ready() -> void:
 	WorldSound.set_indoor(indoor)
@@ -30,7 +30,6 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func _process(delta: float) -> void:
-	scene_fade = maxf(0.0, scene_fade - delta)
 	var axis := 0.0
 	if enabled and DisplayServer.window_is_focused():
 		axis = float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT))
@@ -55,11 +54,7 @@ func move_player(axis: float, delta: float, hurry := false) -> void:
 	gait_weight = move_toward(gait_weight, minf(absf(velocity) / SPEED, 1.0) if distance > 0.0 else 0.0, delta * 8.0)
 	if distance > 0.0: moved.emit(player_x)
 	var camera_target := clampf(player_x - composition_anchor, 0.0, maxf(0.0, world_width - 1600.0))
-	if not indoor and not places.is_empty():
-		camera_target = clampf(floorf(player_x / 1600.0) * 1600.0,0.0,maxf(0.0,world_width-1600.0))
-		if not is_equal_approx(camera_x,camera_target) and delta > 0.0: scene_fade = 0.22
-		camera_x = camera_target
-	else: camera_x = lerpf(camera_x, camera_target, 1.0 - exp(-5.0 * delta)) if delta > 0.0 else camera_target
+	camera_x = lerpf(camera_x, camera_target, 1.0 - exp(-5.0 * delta)) if delta > 0.0 else camera_target
 
 func nearest() -> Dictionary:
 	var result: Dictionary = {}
@@ -111,7 +106,6 @@ func _draw() -> void:
 		elif indoor and kind == "object" and not illustrated:
 			_draw_furniture(x, str(item.get("prop", "table")))
 	_draw_person(Vector2(player_x - camera_x, ground), Color("d69b71") if GameState.current_role == "A" else Color("7da8b5"), sin(phase) * gait_weight, facing, sitting)
-	if scene_fade > 0.0: draw_rect(Rect2(0,70,1600,830),Color("15202b",scene_fade/0.22))
 	if is_finite(walk_limit) and not illustrated:
 		var gate_x := walk_limit - camera_x + 18
 		draw_line(Vector2(gate_x, 640), Vector2(gate_x, 718), Color("40544e"), 7)
@@ -122,8 +116,8 @@ func _draw() -> void:
 		var font := ThemeDB.fallback_font
 		var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 21).x
 		var x := clampf(float(near.x) - camera_x - width / 2.0, 32.0, 1568.0 - width)
-		draw_rect(Rect2(x - 16, 538, width + 32, 46), Color("10161c", 0.94))
-		draw_string(font, Vector2(x, 568), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color("f5e8d0"))
+		draw_rect(Rect2(x - 16, ground - _actor_height() - 64, width + 32, 46), Color("10161c", 0.94))
+		draw_string(font, Vector2(x, ground - _actor_height() - 34), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color("f5e8d0"))
 	# Letterbox framing keeps the world visually separate from optional overlays.
 	draw_rect(Rect2(0, 0, 1600, 70), Color("10161c",0.72))
 
@@ -134,11 +128,20 @@ func _draw_atlas() -> bool:
 		draw_texture_rect(texture,Rect2(0,0,1600,900),false)
 		return true
 	if places.is_empty(): return false
-	for place in places:
-		var left := float(place.x) - 800.0 - camera_x
-		if left > 1600 or left + 1600 < 0: continue
+	for i in places.size():
+		var place: Dictionary = places[i]
+		var left := float(place.x) - 880.0 - camera_x
+		if left > 1600 or left + 1760 < 0: continue
 		var texture := Atlas.plate(Atlas.street(str(place.id)))
-		if texture != null: draw_texture_rect(texture,Rect2(left,0,1600,900),false)
+		if texture == null: continue
+		# Overlap neighboring plates by 160px. Only the incoming left edge
+		# fades, so an opaque previous plate always remains underneath.
+		if i == 0:
+			draw_texture_rect(texture,Rect2(left,0,1760,900),false)
+		else:
+			var edge_uv := 160.0 / 1760.0
+			draw_polygon(PackedVector2Array([Vector2(left,0),Vector2(left+160,0),Vector2(left+160,900),Vector2(left,900)]),PackedColorArray([Color(1,1,1,0),Color.WHITE,Color.WHITE,Color(1,1,1,0)]),PackedVector2Array([Vector2.ZERO,Vector2(edge_uv,0),Vector2(edge_uv,1),Vector2(0,1)]),texture)
+			draw_texture_rect_region(texture,Rect2(left+160,0,1600,900),Rect2(texture.get_width()*edge_uv,0,texture.get_width()*(1.0-edge_uv),texture.get_height()))
 	return true
 
 func _draw_street(night: bool) -> void:
@@ -344,13 +347,21 @@ func _draw_furniture(x: float, prop: String) -> void:
 	for side in [-1, 1]:
 		draw_line(Vector2(x + side * 50, 657), Vector2(x + side * 50, 718), Color("272c2d"), 6)
 
+func _actor_height() -> float:
+	# Match the illustrated furniture: outdoor doors ~290 high, indoor tables ~145.
+	# Interior close-ups and the terrace use a larger world-to-screen scale.
+	if indoor: return 320.0
+	if GameState.current_location == "park" and GameState.current_minute >= 1260: return 330.0
+	return 240.0
+
 func _draw_person(at: Vector2, coat: Color, stride: float, direction: float, seated := false) -> void:
+	var actor_scale := _actor_height() / ACTOR_BASE_HEIGHT
 	var step := stride * 22.0
 	at.y -= absf(stride) * 2.5
-	draw_set_transform(at)
+	draw_set_transform(at,0,Vector2.ONE * actor_scale)
 	draw_colored_polygon(PackedVector2Array([Vector2(-30, 4), Vector2(30, 4), Vector2(55, 10), Vector2(-18, 10)]), Color("070e13", 0.5))
-	if seated: at.y += 14.0
-	draw_set_transform(at,0,Vector2((1.0 if direction >= 0.0 else -1.0)*maxf(0.16,absf(direction)),1.0))
+	if seated: at.y += 14.0 * actor_scale
+	draw_set_transform(at,0,Vector2((1.0 if direction >= 0.0 else -1.0)*maxf(0.16,absf(direction)),1.0)*actor_scale)
 	if seated:
 		draw_polyline(PackedVector2Array([Vector2(-9,-48),Vector2(21,-48),Vector2(26,-14)]),Color("19272c"),9,true)
 		draw_polyline(PackedVector2Array([Vector2(5,-46),Vector2(35,-43),Vector2(37,-14)]),Color("213138"),9,true)

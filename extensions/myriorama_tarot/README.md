@@ -58,19 +58,19 @@
 - `shaders/`：纸牌表面、侧边阴影配合，以及桌布织纹材质。
 - `assets/deck.json`、`assets/cards/`：18 张卡的数据和36张图。
 
-自动化自测：Godot 命令后添加 `--headless --path <工程目录> -- --smoke-test`。不会读写玩家存档。
+自动化自测从 Solmere 仓库根目录运行，不会读写玩家存档。
 
 背景等比铺满和界面布局参考官方 [TextureRect 文档](https://docs.godotengine.org/en/stable/classes/class_texturerect.html)、[Control 文档](https://docs.godotengine.org/en/stable/classes/class_control.html)。
-# GitHub 协作运行说明
+# Solmere 集成运行说明
 
-这是独立的万景塔罗海龟汤原型，不覆盖主游戏的 Solmere 塔罗系统。请在 Godot 中单独导入本目录的 `project.godot`。上级 `prototypes/.gdignore` 让主项目不扫描这里的脚本。
+本原型已经作为 `extensions/myriorama_tarot` 接入 Solmere，并通过主项目的扩展宿主启动。目录内不再包含独立的 `project.godot`。
 
 已在 Godot 4.7.2 Compatibility 模式验证。仓库根目录下可运行：
 
 ```sh
-godot --editor --path prototypes/myriorama-tarot --import --quit
-godot --path prototypes/myriorama-tarot
-godot --headless --path prototypes/myriorama-tarot -- --smoke-test
+godot --path . extensions/myriorama_tarot/main.tscn
+godot --headless --path . extensions/myriorama_tarot/main.tscn -- --smoke-test --isolated-save
+godot --headless --path . --script tests/integration/test_myriorama_entry.gd -- --isolated-save
 ```
 
 自动测试不读取或覆盖玩家存档。Windows 也可运行 `打开试玩.ps1 -GodotPath <已安装的Godot可执行文件>`。字体及素材授权注意事项见 `ASSET_NOTES.md`。

@@ -40,11 +40,11 @@ func _test_calendar_and_role_isolation() -> void:
 	_check(GameState.spend_money(20), "A should be able to spend money")
 	GameState.add_fact("A-only fact")
 	_check(GameState.switch_to_role("B"), "Switching to B should succeed")
-	_check(GameState.money == 45, "B should keep an independent budget")
+	_check(GameState.money == 160, "B should keep the configured independent budget")
 	_check(not GameState.known_facts.has("A-only fact"), "B should not inherit A's private facts")
 	GameState.add_fact("B-only fact")
 	_check(GameState.switch_to_role("A"), "Switching back to A should succeed")
-	_check(GameState.money == 160, "A's budget should survive the role switch")
+	_check(GameState.money == 280, "A's budget should survive the role switch")
 	_check(GameState.known_facts.has("A-only fact"), "A's facts should survive the role switch")
 	_check(not GameState.known_facts.has("B-only fact"), "A should not inherit B's private facts")
 
@@ -65,7 +65,7 @@ func _test_schedule_and_route() -> void:
 		ScheduleSystem.residents_at("park", 1, 1260).has("xia_touming"),
 		"Xia should be present in the park on day 1 at 21:00"
 	)
-	var known_activity := ScheduleSystem.activity_by_id("zhou_cafeteria")
+	var known_activity := ScheduleSystem.activity_by_id("zhou_xiaoliu_current_0")
 	_check(str(known_activity.get("resident_name", "")) == "周晓六", "Known schedules should resolve to readable resident data")
 	GameState.current_location = "residence"
 	GameState.current_minute = 540
@@ -77,7 +77,7 @@ func _test_schedule_and_route() -> void:
 
 func _test_core_resident_profiles() -> void:
 	_check(ResidentProfileSystem.profiles.size() == 12, "The core resident layer should load exactly 12 profiles")
-	_check(ResidentProfileSystem.town_role("mossner") == "剧作人和临时邀约的发起者", "A core resident profile should expose its town role")
+	_check(ResidentProfileSystem.town_role("mossner") == "邮局 / 书信事务所老板", "A core resident profile should expose its current town role")
 	var a_line := ResidentProfileSystem.ambient_line("jiu", "A", 0)
 	var b_line := ResidentProfileSystem.ambient_line("jiu", "B", 0)
 	_check(not a_line.is_empty() and not b_line.is_empty() and a_line != b_line, "A and B should receive distinct ambient lines from a core resident")
@@ -210,10 +210,10 @@ func _test_chapter_progression() -> void:
 	_check(ChapterSystem.has_seen_opening(), "The current chapter opening should persist as seen")
 	var next := ChapterSystem.advance_chapter()
 	_check(bool(next.get("ok", false)), "Advancing the first chapter should succeed")
-	_check(GameState.current_role == "B" and GameState.current_day == 1, "The second chapter should switch to B on day 1")
+	_check(GameState.current_role == "B" and GameState.current_day == 2, "The second chapter should switch to B on day 2")
 	_check(not ChapterSystem.has_seen_opening(), "The next role should have its own unseen opening")
 	ChapterSystem.advance_chapter()
-	_check(GameState.current_role == "A" and GameState.current_day == 2, "The third chapter should begin A's day 2")
+	_check(GameState.current_role == "B" and GameState.current_day == 3, "The third chapter should continue with B on day 3")
 
 
 func _test_gameplay_module_state() -> void:
@@ -328,10 +328,14 @@ func _test_save_roundtrip() -> void:
 	_check(SaveManager.path_for_slot(1) == ("user://walking_test_1.json" if OS.get_cmdline_user_args().has("--isolated-save") else SaveManager.SAVE_PATH), "Slot 1 should preserve the existing save path")
 	_check(SaveManager.path_for_slot(3).ends_with("walking_test_3.json" if OS.get_cmdline_user_args().has("--isolated-save") else "solmere_save_3.json"), "Additional save slots should use separate files")
 	_check(SaveManager.save_game(test_path), "Save should succeed")
+	GameState.add_fact("second-atomic-save")
+	_check(SaveManager.save_game(test_path), "Replacing an existing save should succeed atomically")
+	_check(not FileAccess.file_exists(test_path + ".tmp"), "Successful saves must not leave a temporary file")
 	GameState.begin_new_game("A")
 	_check(SaveManager.load_game(test_path), "Load should succeed")
 	_check(GameState.current_role == "B", "The active role should survive save/load")
 	_check(GameState.known_facts.has("smoke-test-b-fact"), "B's facts should survive save/load")
+	_check(GameState.known_facts.has("second-atomic-save"), "The atomically replaced save should contain the latest state")
 	GameState.switch_to_role("A")
 	_check(GameState.known_facts.has("smoke-test-fact"), "A's facts should survive save/load")
 	_check(GameState.has_choice("smoke-event/smoke-choice"), "A's key choices should survive save/load")

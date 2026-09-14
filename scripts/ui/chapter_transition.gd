@@ -32,6 +32,8 @@ func _ready() -> void:
 			add_child(choice)
 		return
 	words.text = "灯熄了。海还醒着。" if next.is_empty() else "灯熄了。\n另一扇窗，正透进清晨。"
+	if bool(GameState.shared_state.get("midnight_rest", false)):
+		words.text = "夜深了，小镇渐渐安静下来。" if next.is_empty() else "夜深了，小镇渐渐安静下来。\n醒来时，又是新的一天。"
 	add_child(words)
 	words.modulate.a = 0.0
 	var fade := create_tween()
@@ -44,6 +46,7 @@ func _continue_journey() -> void:
 	if continuing: return
 	continuing = true
 	GameState.shared_state.erase("sleep_pending")
+	GameState.shared_state.erase("midnight_rest")
 	ChapterSystem.mark_transition_complete(str(ChapterSystem.transition_context().get("transition_id", "")))
 	var result := ChapterSystem.advance_chapter()
 	SaveManager.save_game()

@@ -171,3 +171,17 @@ func sleep_at_home() -> bool:
 	SaveManager.save_game()
 	SceneRouter.chapter_transition()
 	return true
+
+
+func _process(_delta: float) -> void:
+	if GameState.current_minute < 1439 or SceneRouter.transitioning: return
+	if bool(GameState.shared_state.get("sleep_pending", false)) or bool(GameState.shared_state.get("game_complete", false)): return
+	var scene := get_tree().current_scene
+	if scene == null or scene.scene_file_path not in [SceneRouter.TOWN_DAY, SceneRouter.INTERACTIVE_SPACE]: return
+	# Finish any minigame/transition before ending the day on return to exploration.
+	GameState.shared_state["sleep_pending"] = true
+	GameState.shared_state["midnight_rest"] = true
+	GameState.clock_remainder = 0.0
+	GameState.commit_active_role_state()
+	SaveManager.save_game()
+	SceneRouter.chapter_transition()

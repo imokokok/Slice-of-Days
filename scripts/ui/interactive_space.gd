@@ -89,6 +89,8 @@ func _build_theme() -> void:
 
 
 func _build_ui() -> void:
+	var home_button := _button(self, "回到主页", Vector2(1445, 15), Vector2(123, 40), "secondary")
+	home_button.pressed.connect(_return_home)
 	_label(self, str(space.get("name", "")), Vector2(42, 18), Vector2(1000, 42), 25, Color("eadac1"))
 	var dialogue := _panel(self, Vector2(390, 305), Vector2(820, 255), Color("17232b", 0.94), Color("566566"), 2)
 	room_dialogue = dialogue
@@ -443,3 +445,16 @@ func _object_hint(index: int) -> String:
 	var item: Dictionary = objects[index]
 	var hint := GameplayModuleSystem.time_hint(str(item.get("module_id","")))
 	return str(item.get("name","")) + (" · " + hint if not hint.is_empty() else "")
+
+
+func _return_home() -> void:
+	if SceneRouter.transitioning or is_instance_valid(pocket_panel) or is_instance_valid(notes_overlay): return
+	SceneRouter.room_positions[SceneRouter.active_space_id] = stage.player_x
+	GameState.commit_active_role_state()
+	if not SaveManager.save_or_report("回到主页前保存失败"):
+		name_label.text = "暂时无法返回"
+		cue_label.text = "进度还没保存成功，请稍后再试。"
+		detail_label.text = "E · 继续"
+		room_dialogue.show()
+		return
+	SceneRouter.main_menu()

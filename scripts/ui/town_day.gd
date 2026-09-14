@@ -119,7 +119,7 @@ func _build_ui() -> void:
 	var notes := _button(self, "Pocket" if GameState.current_role == "A" else "日程本", Vector2(1395, 15), Vector2(78, 40), "quiet")
 	notes.tooltip_text = "J · 打开随身本"
 	notes.pressed.connect(_open_journal)
-	var menu := _button(self, "菜单", Vector2(1488, 15), Vector2(80, 40), "quiet")
+	var menu := _button(self, "回到主页", Vector2(1480, 15), Vector2(106, 40), "quiet")
 	menu.pressed.connect(_return_to_menu)
 	_build_event_modal()
 

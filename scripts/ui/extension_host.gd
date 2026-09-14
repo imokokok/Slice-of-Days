@@ -82,9 +82,9 @@ func _build_host_bar() -> void:
 	complete_button = _button(panel, "完成并返回", Vector2(564, 19), Vector2(170, 50), true)
 	complete_button.disabled = true
 	complete_button.pressed.connect(_complete)
-	if module_id in ["contemplation", "tarot"]:
+	if module_id in ["contemplation", "tarot", "ghostwriting"]:
 		panel.position = Vector2(1210, 92)
-		if module_id == "tarot": panel.position.y = 0
+		if module_id in ["tarot", "ghostwriting"]: panel.position.y = 0
 		panel.size = Vector2(360, 60)
 		title.hide()
 		status_label.hide()

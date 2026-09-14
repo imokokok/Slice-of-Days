@@ -139,15 +139,6 @@ func label_at(text: String, rect: Rect2, size: int = 18, color: Color = INK) -> 
 	ui.add_child(node)
 	return node
 
-func info_card(rect: Rect2) -> ColorRect:
-	var card := ColorRect.new()
-	card.position = rect.position
-	card.size = rect.size
-	card.color = Color("f7efdc")
-	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ui.add_child(card)
-	return card
-
 func button(text: String, rect: Rect2, action: Callable, active: bool = false) -> Button:
 	var node := Button.new()
 	node.text = text
@@ -177,12 +168,12 @@ func build_ui() -> void:
 		child.queue_free()
 	label_at("海盐书信事务所",Rect2(54,27,600,42),30)
 	label_at("COLLAGE LETTER   /   把捡到的语言，寄给某个人",Rect2(56,73,700,30),14)
-	button("声音" if not audio.muted else "静音",Rect2(1220,39,70,34),func(): audio.toggle(); build_ui())
-	button("操作说明",Rect2(1300,39,94,34),func(): help_open = not help_open; build_ui())
+	button("声音" if not audio.muted else "静音",Rect2(950,39,70,34),func(): audio.toggle(); build_ui())
+	button("操作说明",Rect2(1030,39,94,34),func(): help_open = not help_open; build_ui())
 	phase_label = label_at(phase_title(),Rect2(760,39,440,34),18,RUST)
 	status_label = label_at(hint,Rect2(58,851,1320,30),16)
 	if stage in ["DIALOGUE","WORKBENCH","END"]:
-		button("海边 · 漂流瓶邮局",Rect2(1190,78,204,30),open_bottles)
+		button("海边 · 漂流瓶邮局",Rect2(930,78,194,30),open_bottles)
 	if stage == "WORKBENCH":
 		var names := ["移动","刻刀 · 方框","刻刀 · 自由","胶带","手写"]
 		var ids := ["move","rect","free","tape","pen"]
@@ -207,9 +198,6 @@ func build_ui() -> void:
 		label_at("相册 / "+str(materials[album_source].title),Rect2(1070,151,325,28),16)
 		label_at("旧车票 / 私人素材",Rect2(1072,450,180,28),14)
 		label_at("TO / "+("很久没见的朋友" if letter_mode=="npc" else ("海上的某个人" if letter_mode=="bottle" else "回复 #"+str(reply_parent.get("id",0)))),Rect2(483,184,480,30),14,Color("9a9787"))
-		if letter_mode == "npc":
-			info_card(Rect2(435,738,740,46))
-			label_at("林舟的委托  ·  写给多年未见的朋友；别直说“我想你”，别写成告别，并放入旧车票。",Rect2(451,748,710,28),16,RUST)
 		if tool == "pen":
 			entry = LineEdit.new()
 			entry.position = Vector2(481,716)
@@ -315,6 +303,8 @@ func _draw() -> void:
 			var tip:=get_local_mouse_position()
 			draw_line(tip+Vector2(7,-9),tip+Vector2(27,-40),Color("735e4c"),8,true)
 			draw_colored_polygon(PackedVector2Array([tip,tip+Vector2(5,-20),tip+Vector2(12,-12)]),Color("e5e9db"))
+		if letter_mode == "npc":
+			draw_commission_card()
 	elif stage == "DIALOGUE":
 		paper(Rect2(506,234,805,475),Color("f4eddb"))
 		draw_circle(Vector2(293,349),76,Color("b77758"))
@@ -400,6 +390,8 @@ func draw_envelope() -> void:
 	text_at("给  /  很久没见的朋友",Vector2(543,589),19,Color("776c57"))
 
 func draw_wax_tools() -> void:
+	paper(Rect2(55,215,350,520),Color("f7efdc"))
+	paper(Rect2(1035,215,340,520),Color("f7efdc"))
 	paper(Rect2(376,135,720,58),Color("f7efdc"))
 	text_at(["点一下火柴，点亮蜡烛。","把蜡粒拖进金属小勺。","把小勺拖到烛火上，等待蜡融化。","将小勺拖到信封封口，缓缓倒下。","将印章拖到火漆上。","按住火漆 1 秒，再松开印章。","火漆正在冷却……"][mini(wax_step,6)],Vector2(401,173),22)
 	draw_rect(Rect2(133,489,54,110),Color("f2e3b7"))
@@ -431,6 +423,15 @@ func draw_wax_tools() -> void:
 			for i in 3:
 				draw_circle(spoon+Vector2(-12+i*11,-4),5*(1-wax_progress),Color("c17456"))
 	text_at("金属小勺",Vector2(283,320),17)
+	if wax_step == 1:
+		draw_arc(Vector2(328,371),47,0,TAU,48,RUST,4,true)
+		text_at("松到勺中",Vector2(276,429),17,RUST)
+	elif wax_step == 2:
+		draw_arc(Vector2(160,432),44,0,TAU,48,RUST,4,true)
+		text_at("移到火焰上",Vector2(105,389),17,RUST)
+	elif wax_step == 3:
+		draw_arc(Vector2(720,474),55,0,TAU,48,RUST,4,true)
+		text_at("倒在封口处",Vector2(665,552),17,RUST)
 	var stamp := Vector2(1170,460)
 	if stage_drag == "stamp":
 		stamp = get_local_mouse_position()
@@ -445,6 +446,18 @@ func draw_wax_tools() -> void:
 	if wax_step in [2,5,6]:
 		draw_rect(Rect2(527,712,386,5),Color("b4aa90"))
 		draw_rect(Rect2(527,712,386*minf(wax_progress,1),5),RUST)
+
+func draw_commission_card() -> void:
+	var ticket := false
+	var station_photo := false
+	for piece in pieces_root.get_children():
+		if LETTER.has_point(piece.position):
+			ticket = ticket or piece.source_id == 3
+			station_photo = station_photo or piece.source_id == 4
+	paper(Rect2(435,738,740,46),Color("f7efdc"))
+	var ticket_state := "已放入" if ticket else "待放入"
+	var photo_state := "已回应" if station_photo else "可选"
+	text_at("林舟的委托  ·  旧车票：%s  ·  公交站画面：%s  ·  别直说“我想你”，别写成告别。" % [ticket_state,photo_state],Vector2(451,768),16,RUST)
 
 func draw_ellipse_custom(center: Vector2, radius: Vector2, color: Color) -> void:
 	var points := PackedVector2Array()

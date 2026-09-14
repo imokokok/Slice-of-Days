@@ -29,6 +29,10 @@ v5 存档新增随身物品、收支记录与固定工作状态，并兼容 v4/v
 
 使用 Godot 4.7.2，在仓库目录运行：
 
+### 协作原型：万景塔罗海龟汤
+
+新增独立原型 [prototypes/myriorama-tarot](prototypes/myriorama-tarot/README.md)，含18种有效牌、逐张抽牌、离线提问库、万景入门与完整真相判断。请单独导入该目录的 `project.godot`；不会替换主游戏的 Solmere 塔罗场景。测试及素材说明见原型 README。
+
 ```bash
 godot --headless --path . scenes/content_validation_test.tscn -- --isolated-save
 godot --headless --path . scenes/system_smoke_test.tscn -- --isolated-save

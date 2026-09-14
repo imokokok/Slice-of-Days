@@ -356,11 +356,9 @@ func _draw_furniture(x: float, prop: String) -> void:
 		draw_line(Vector2(x + side * 50, 657), Vector2(x + side * 50, 718), Color("272c2d"), 6)
 
 func _actor_height() -> float:
-	# Double the established scene-relative height at the user's request.
-	# Keep the same foot anchor and relative scale between streets and close-ups.
-	if indoor: return 640.0
-	if GameState.current_location == "park" and GameState.current_minute >= 1260: return 660.0
-	return 480.0
+	# Use each illustration's door opening as the scale reference.
+	var scene_row := Atlas.room(room_kind) if indoor else Atlas.street(GameState.current_location)
+	return float(scene_row.get("door_height", 300.0)) * 0.8
 
 func _draw_person(at: Vector2, coat: Color, stride: float, direction: float, seated := false) -> void:
 	var actor_scale := _actor_height() / ACTOR_BASE_HEIGHT

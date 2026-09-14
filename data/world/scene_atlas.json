@@ -9,7 +9,8 @@
         3
       ],
       "door_x": 800,
-      "bench_x": 1370
+      "bench_x": 1370,
+      "door_height": 230
     },
     "night_market": {
       "pages": [
@@ -18,7 +19,8 @@
         6
       ],
       "door_x": 1120,
-      "bench_x": 790
+      "bench_x": 790,
+      "door_height": 325
     },
     "produce_stall": {
       "pages": [
@@ -27,7 +29,8 @@
         35
       ],
       "door_x": 820,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 270
     },
     "handcraft_shop": {
       "pages": [
@@ -36,7 +39,8 @@
         23
       ],
       "door_x": 920,
-      "bench_x": 590
+      "bench_x": 590,
+      "door_height": 300
     },
     "cafe": {
       "pages": [
@@ -45,7 +49,8 @@
         41
       ],
       "door_x": 420,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 350
     },
     "residence": {
       "pages": [
@@ -54,7 +59,8 @@
         44
       ],
       "door_x": 810,
-      "bench_x": 650
+      "bench_x": 650,
+      "door_height": 280
     },
     "dorm": {
       "pages": [
@@ -63,7 +69,8 @@
         50
       ],
       "door_x": 1170,
-      "bench_x": 1380
+      "bench_x": 1380,
+      "door_height": 315
     },
     "tarot_stall": {
       "pages": [
@@ -72,7 +79,8 @@
         56
       ],
       "door_x": 1070,
-      "bench_x": 740
+      "bench_x": 740,
+      "door_height": 325
     },
     "chess_stall": {
       "pages": [
@@ -81,7 +89,8 @@
         65
       ],
       "door_x": 770,
-      "bench_x": 1150
+      "bench_x": 1150,
+      "door_height": 360
     },
     "park": {
       "pages": [
@@ -90,7 +99,8 @@
         72
       ],
       "door_x": 1140,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 300
     },
     "bus_stop": {
       "pages": [
@@ -99,7 +109,8 @@
         75
       ],
       "door_x": 810,
-      "bench_x": 790
+      "bench_x": 790,
+      "door_height": 320
     },
     "port": {
       "pages": [
@@ -108,7 +119,8 @@
         78
       ],
       "door_x": 800,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 320
     },
     "record_store": {
       "pages": [
@@ -117,7 +129,8 @@
         81
       ],
       "door_x": 995,
-      "bench_x": 1450
+      "bench_x": 1450,
+      "door_height": 340
     },
     "print_shop": {
       "pages": [
@@ -126,7 +139,8 @@
         90
       ],
       "door_x": 1160,
-      "bench_x": 820
+      "bench_x": 820,
+      "door_height": 300
     },
     "library": {
       "pages": [
@@ -135,7 +149,8 @@
         96
       ],
       "door_x": 1110,
-      "bench_x": 1390
+      "bench_x": 1390,
+      "door_height": 350
     }
   },
   "rooms": {
@@ -146,7 +161,8 @@
         9
       ],
       "door_x": 800,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 440
     },
     "letter_office": {
       "pages": [
@@ -155,7 +171,8 @@
         26
       ],
       "door_x": 800,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 460
     },
     "grocery": {
       "pages": [
@@ -164,7 +181,8 @@
         41
       ],
       "door_x": 800,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 350
     },
     "home_a": {
       "pages": [
@@ -173,7 +191,8 @@
         47
       ],
       "door_x": 800,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 470
     },
     "home_b": {
       "pages": [
@@ -182,7 +201,8 @@
         53
       ],
       "door_x": 800,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 480
     },
     "tarot_shop": {
       "pages": [
@@ -191,7 +211,8 @@
         59
       ],
       "door_x": 800,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 460
     },
     "record_shop": {
       "pages": [
@@ -200,7 +221,8 @@
         84
       ],
       "door_x": 800,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 580
     },
     "print_studio": {
       "pages": [
@@ -209,7 +231,8 @@
         93
       ],
       "door_x": 800,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 420
     },
     "public_archive": {
       "pages": [
@@ -218,7 +241,8 @@
         99
       ],
       "door_x": 800,
-      "bench_x": null
+      "bench_x": null,
+      "door_height": 440
     }
   },
   "room_objects": {
@@ -262,7 +286,8 @@
       68
     ],
     "door_x": 1340,
-    "bench_x": 850
+    "bench_x": 850,
+    "door_height": 270
   },
   "pages": [
     {

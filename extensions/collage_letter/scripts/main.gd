@@ -168,12 +168,12 @@ func build_ui() -> void:
 		child.queue_free()
 	label_at("海盐书信事务所",Rect2(54,27,600,42),30)
 	label_at("COLLAGE LETTER   /   把捡到的语言，寄给某个人",Rect2(56,73,700,30),14)
-	button("声音" if not audio.muted else "静音",Rect2(950,39,70,34),func(): audio.toggle(); build_ui())
-	button("操作说明",Rect2(1030,39,94,34),func(): help_open = not help_open; build_ui())
+	button("声音" if not audio.muted else "静音",Rect2(1220,39,70,34),func(): audio.toggle(); build_ui())
+	button("操作说明",Rect2(1300,39,94,34),func(): help_open = not help_open; build_ui())
 	phase_label = label_at(phase_title(),Rect2(760,39,440,34),18,RUST)
 	status_label = label_at(hint,Rect2(58,851,1320,30),16)
 	if stage in ["DIALOGUE","WORKBENCH","END"]:
-		button("海边 · 漂流瓶邮局",Rect2(930,78,194,30),open_bottles)
+		button("海边 · 漂流瓶邮局",Rect2(1190,78,204,30),open_bottles)
 	if stage == "WORKBENCH":
 		var names := ["移动","刻刀 · 方框","刻刀 · 自由","胶带","手写"]
 		var ids := ["move","rect","free","tape","pen"]
@@ -592,9 +592,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	queue_redraw()
 
 func _event_position(event: InputEventMouse) -> Vector2:
-	# Input events arrive in viewport coordinates. The extension host offsets this
-	# Node2D by 80 px, so convert through the complete canvas transform before
-	# testing visual drop targets.
+	# Input events arrive in viewport coordinates. Convert through the canvas
+	# transform so visual drop targets also work when embedded or transformed.
 	return get_global_transform_with_canvas().affine_inverse() * event.position
 
 func roughen(poly: PackedVector2Array) -> PackedVector2Array:

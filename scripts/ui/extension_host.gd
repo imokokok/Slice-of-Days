@@ -4,6 +4,8 @@ const CREAM := Color("fff6e5")
 const INK := Color("332b28")
 const TERRACOTTA := Color("b85f45")
 const SEA := Color("557a80")
+const LETTER_DESIGN_SIZE := Vector2i(1440, 900)
+const LETTER_HOST_BAR_HEIGHT := 72.0
 
 var module_id := ""
 var metadata: Dictionary = {}
@@ -11,6 +13,9 @@ var experience: Node
 var complete_button: Button
 var status_label: Label
 var completion_ready := false
+var letter_container: SubViewportContainer
+var letter_viewport: SubViewport
+var host_panel: Panel
 
 
 func _ready() -> void:
@@ -26,22 +31,48 @@ func _ready() -> void:
 		call_deferred("_fail_and_return", "扩展场景无法读取，已安全返回。")
 		return
 	experience = packed.instantiate()
-	add_child(experience)
+	if module_id == "ghostwriting":
+		# The letter uses both Node2D drawing and CanvasLayers. A Node2D offset
+		# moves only its drawing, leaving controls and capture coordinates behind.
+		letter_container = SubViewportContainer.new()
+		letter_container.name = "LetterContainer"
+		letter_container.stretch = false
+		letter_container.mouse_filter = Control.MOUSE_FILTER_STOP
+		letter_container.size = Vector2(LETTER_DESIGN_SIZE)
+		add_child(letter_container)
+		letter_viewport = SubViewport.new()
+		letter_viewport.name = "LetterViewport"
+		letter_viewport.size = LETTER_DESIGN_SIZE
+		letter_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+		letter_container.add_child(letter_viewport)
+		letter_viewport.add_child(experience)
+		resized.connect(_fit_experience)
+	else:
+		add_child(experience)
 	if module_id == "contemplation":
 		experience.return_requested.connect(_cancel)
 		ObservatoryAudio.set_stargazing(true)
 	_fit_experience()
 	_build_host_bar()
+	_fit_experience()
 
 
 func _fit_experience() -> void:
+	if module_id == "ghostwriting" and is_instance_valid(letter_container):
+		var available := Vector2(size.x, maxf(1.0, size.y - LETTER_HOST_BAR_HEIGHT))
+		var fit := maxf(0.01, minf(available.x / LETTER_DESIGN_SIZE.x, available.y / LETTER_DESIGN_SIZE.y))
+		letter_container.scale = Vector2.ONE * fit
+		letter_container.position = Vector2((size.x - LETTER_DESIGN_SIZE.x * fit) * 0.5,
+			LETTER_HOST_BAR_HEIGHT + (available.y - LETTER_DESIGN_SIZE.y * fit) * 0.5)
+		if is_instance_valid(host_panel):
+			host_panel.position = Vector2.ZERO
+			host_panel.size = Vector2(size.x, LETTER_HOST_BAR_HEIGHT - 4)
+		return
 	if experience is Control:
 		experience.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		if module_id == "tarot": experience.offset_top = 60
 	if experience is Node2D:
-		if module_id == "ghostwriting":
-			experience.position = Vector2(80, 0)
-		elif module_id == "translation":
+		if module_id == "translation":
 			experience.scale = Vector2(0.9, 0.9)
 			experience.position = Vector2(80, 0)
 
@@ -51,6 +82,7 @@ func _build_host_bar() -> void:
 	layer.layer = 500
 	add_child(layer)
 	var panel := Panel.new()
+	host_panel = panel
 	panel.position = Vector2(825, 12)
 	panel.size = Vector2(755, 88)
 	var style := StyleBoxFlat.new()
@@ -82,9 +114,19 @@ func _build_host_bar() -> void:
 	complete_button = _button(panel, "完成并返回", Vector2(564, 19), Vector2(170, 50), true)
 	complete_button.disabled = true
 	complete_button.pressed.connect(_complete)
-	if module_id in ["contemplation", "tarot", "ghostwriting"]:
+	if module_id == "ghostwriting":
+		title.position = Vector2(18, 5)
+		status_label.position = Vector2(18, 32)
+		status_label.size = Vector2(700, 26)
+		leave.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+		leave.position = Vector2(panel.size.x - 345, 9)
+		leave.size = Vector2(145, 48)
+		complete_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+		complete_button.position = Vector2(panel.size.x - 186, 9)
+		complete_button.size = Vector2(170, 48)
+	if module_id in ["contemplation", "tarot"]:
 		panel.position = Vector2(1210, 92)
-		if module_id in ["tarot", "ghostwriting"]: panel.position.y = 0
+		if module_id == "tarot": panel.position.y = 0
 		panel.size = Vector2(360, 60)
 		title.hide()
 		status_label.hide()
@@ -165,6 +207,8 @@ func _complete() -> void:
 
 
 func _cancel() -> void:
+	if module_id == "ghostwriting" and is_instance_valid(experience) and experience.has_method("save_game"):
+		experience.save_game()
 	var preserved_extension_state: Dictionary = {}
 	var preserved_key := ""
 	if module_id == "tarot" and is_instance_valid(experience) and experience.has_method("save_session"):

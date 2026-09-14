@@ -4,6 +4,7 @@ signal moved(world_x: float)
 
 const SPEED := 300.0
 const REACH := 85.0
+const Atlas = preload("res://scripts/ui/scene_atlas.gd")
 var player_x := 500.0
 var world_width := 1800.0
 var camera_x := 0.0
@@ -21,6 +22,7 @@ var hotspots: Array[Dictionary] = []
 var room_name := ""
 var room_kind := ""
 var walk_limit := INF
+var scene_fade := 0.0
 
 func _ready() -> void:
 	WorldSound.set_indoor(indoor)
@@ -28,6 +30,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func _process(delta: float) -> void:
+	scene_fade = maxf(0.0, scene_fade - delta)
 	var axis := 0.0
 	if enabled and DisplayServer.window_is_focused():
 		axis = float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT))
@@ -52,7 +55,11 @@ func move_player(axis: float, delta: float, hurry := false) -> void:
 	gait_weight = move_toward(gait_weight, minf(absf(velocity) / SPEED, 1.0) if distance > 0.0 else 0.0, delta * 8.0)
 	if distance > 0.0: moved.emit(player_x)
 	var camera_target := clampf(player_x - composition_anchor, 0.0, maxf(0.0, world_width - 1600.0))
-	camera_x = lerpf(camera_x, camera_target, 1.0 - exp(-5.0 * delta)) if delta > 0.0 else camera_target
+	if not indoor and not places.is_empty():
+		camera_target = clampf(floorf(player_x / 1600.0) * 1600.0,0.0,maxf(0.0,world_width-1600.0))
+		if not is_equal_approx(camera_x,camera_target) and delta > 0.0: scene_fade = 0.22
+		camera_x = camera_target
+	else: camera_x = lerpf(camera_x, camera_target, 1.0 - exp(-5.0 * delta)) if delta > 0.0 else camera_target
 
 func nearest() -> Dictionary:
 	var result: Dictionary = {}
@@ -67,14 +74,19 @@ func nearest() -> Dictionary:
 func _draw() -> void:
 	var night := GameState.current_minute >= 1080
 	draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
-	if indoor:
+	var illustrated := _draw_atlas()
+	var ground := 805.0 if not indoor and GameState.current_location == "park" and GameState.current_minute >= 1260 else 713.0
+	if illustrated:
+		pass
+	elif indoor:
 		_draw_room()
 	else:
 		_draw_street(night)
-	draw_rect(Rect2(0, 718, 1600, 182), Color("d2c29e"))
-	for i in range(5):
-		draw_line(Vector2(0, 750 + i * 36), Vector2(1600, 750 + i * 36), Color("819084", 0.16), 1)
-	draw_line(Vector2(0, 718), Vector2(1600, 718), Color("8d9b96"), 2)
+	if not illustrated:
+		draw_rect(Rect2(0, 718, 1600, 182), Color("d2c29e"))
+		for i in range(5):
+			draw_line(Vector2(0, 750 + i * 36), Vector2(1600, 750 + i * 36), Color("819084", 0.16), 1)
+		draw_line(Vector2(0, 718), Vector2(1600, 718), Color("8d9b96"), 2)
 	for item in hotspots:
 		var x := float(item.get("x", 0)) - camera_x
 		if x < -120 or x > 1720:
@@ -83,23 +95,24 @@ func _draw() -> void:
 		if kind == "person" or kind == "event":
 			var shades := [Color("324b62"),Color("567363"),Color("76554c"),Color("ada16b")]
 			var shade: Color = shades[absi(str(item.get("id", "")).hash()) % shades.size()]
-			_draw_person(Vector2(x, 714), shade, 0.0, -1.0)
-		elif kind == "echo":
+			_draw_person(Vector2(x, ground), shade, 0.0, -1.0)
+		elif kind == "echo" and not illustrated:
 			draw_rect(Rect2(x-55,572,110,118),Color("4c4937"))
 			draw_rect(Rect2(x-49,580,98,102),Color("203f43"))
 			draw_string(ThemeDB.fallback_font,Vector2(x-35,615),"今日的菜",HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("f1e6c6"))
-		elif kind == "roads":
+		elif kind == "roads" and not illustrated:
 			draw_line(Vector2(x, 625),Vector2(x,715),Color("557052"),5)
 			draw_colored_polygon(PackedVector2Array([Vector2(x-45,627),Vector2(x+35,627),Vector2(x+55,642),Vector2(x+35,657),Vector2(x-45,657)]),Color("efd39a"))
 			draw_string(ThemeDB.fallback_font,Vector2(x-35,649),"小镇路口",HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("245664"))
-		elif kind in ["bench", "wait_open"]:
+		elif kind == "wait_open" or (kind == "bench" and not illustrated):
 			draw_rect(Rect2(x - 40, 679, 80, 8), Color("9a7e60"))
 			draw_line(Vector2(x - 30, 687), Vector2(x - 30, 715), Color("776b5f"), 4)
 			draw_line(Vector2(x + 30, 687), Vector2(x + 30, 715), Color("776b5f"), 4)
-		elif indoor and kind == "object":
+		elif indoor and kind == "object" and not illustrated:
 			_draw_furniture(x, str(item.get("prop", "table")))
-	_draw_person(Vector2(player_x - camera_x, 713), Color("d69b71") if GameState.current_role == "A" else Color("7da8b5"), sin(phase) * gait_weight, facing, sitting)
-	if is_finite(walk_limit):
+	_draw_person(Vector2(player_x - camera_x, ground), Color("d69b71") if GameState.current_role == "A" else Color("7da8b5"), sin(phase) * gait_weight, facing, sitting)
+	if scene_fade > 0.0: draw_rect(Rect2(0,70,1600,830),Color("15202b",scene_fade/0.22))
+	if is_finite(walk_limit) and not illustrated:
 		var gate_x := walk_limit - camera_x + 18
 		draw_line(Vector2(gate_x, 640), Vector2(gate_x, 718), Color("40544e"), 7)
 		draw_line(Vector2(gate_x, 655), Vector2(gate_x + 145, 680), Color("c6b798"), 4)
@@ -112,7 +125,21 @@ func _draw() -> void:
 		draw_rect(Rect2(x - 16, 538, width + 32, 46), Color("10161c", 0.94))
 		draw_string(font, Vector2(x, 568), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color("f5e8d0"))
 	# Letterbox framing keeps the world visually separate from optional overlays.
-	draw_rect(Rect2(0, 0, 1600, 70), Color("10161c"))
+	draw_rect(Rect2(0, 0, 1600, 70), Color("10161c",0.72))
+
+func _draw_atlas() -> bool:
+	if indoor:
+		var texture := Atlas.plate(Atlas.room(room_kind))
+		if texture == null: return false
+		draw_texture_rect(texture,Rect2(0,0,1600,900),false)
+		return true
+	if places.is_empty(): return false
+	for place in places:
+		var left := float(place.x) - 800.0 - camera_x
+		if left > 1600 or left + 1600 < 0: continue
+		var texture := Atlas.plate(Atlas.street(str(place.id)))
+		if texture != null: draw_texture_rect(texture,Rect2(left,0,1600,900),false)
+	return true
 
 func _draw_street(night: bool) -> void:
 	_draw_sea(night)

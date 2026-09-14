@@ -61,7 +61,7 @@ var tense: Array[bool] = [false, false]
 
 func _ready() -> void:
 	super._ready()
-	market_texture = load("res://extensions/hear_you/assets/market-painted.png")
+	market_texture = preload("res://scripts/ui/scene_atlas.gd").plate({"pages":[33,34,35]})
 	emoji_font = SystemFont.new()
 	emoji_font.font_names = PackedStringArray(["Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji"])
 	emoji_font.disable_embedded_bitmaps = false

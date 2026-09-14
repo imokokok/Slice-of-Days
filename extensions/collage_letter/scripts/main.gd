@@ -272,7 +272,8 @@ func say(text: String) -> void:
 func _draw() -> void:
 	if not font:
 		return
-	draw_rect(Rect2(0,0,1440,900),Color("cec2a8"))
+	var backdrop := preload("res://scripts/ui/scene_atlas.gd").plate({"pages":[30,31,32]})
+	draw_texture_rect(backdrop,Rect2(0,0,1440,900),false)
 	draw_rect(Rect2(0,0,1440,114),Color("e9e2d2"))
 	draw_line(Vector2(50,113),Vector2(1390,113),Color("b6ab92"),1)
 	var rng := RandomNumberGenerator.new()

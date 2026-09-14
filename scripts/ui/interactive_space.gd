@@ -132,9 +132,7 @@ func _room_memory_text() -> String:
 
 
 func _hotspot_x(index: int) -> float:
-	if objects.size() <= 1:
-		return 800.0
-	return 300.0 + float(index) * 1000.0 / float(objects.size() - 1)
+	return preload("res://scripts/ui/scene_atlas.gd").object_x(str(space.id),index)
 
 
 func _select_object(index: int) -> void:

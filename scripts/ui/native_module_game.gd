@@ -42,6 +42,10 @@ func _ready() -> void:
 		var loaded = load(background_path)
 		if loaded is Texture2D:
 			background_texture = loaded
+	var atlas_pages := {"cooking":16,"sound_sampling":85,"photography":91,"optical_illusion":91,"archives":97}
+	if atlas_pages.has(module_id):
+		var first := int(atlas_pages[module_id])
+		background_texture = preload("res://scripts/ui/scene_atlas.gd").plate({"pages":[first,first+1,first+2]})
 	_build_theme()
 	_build_ui()
 	_update_state()

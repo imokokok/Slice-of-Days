@@ -23,7 +23,8 @@ var pocket_opening := false
 var interactive_spaces: Array[Dictionary] = []
 var street: Control
 var street_order: Array[String] = []
-const BLOCK_WIDTH := 900.0
+const BLOCK_WIDTH := 1600.0
+const Atlas = preload("res://scripts/ui/scene_atlas.gd")
 var outdoor_objects: Array = []
 var current_index := -1
 var segment_id := ""
@@ -43,14 +44,19 @@ func _ready() -> void:
 	street = preload("res://scripts/ui/walk_stage.gd").new()
 	add_child(street)
 	backdrop = street
-	street.world_width = maxf(1800.0, street_order.size() * BLOCK_WIDTH)
+	street.world_width = street_order.size() * BLOCK_WIDTH
 	street.composition_anchor = float(segment.anchor)
 	for index in street_order.size():
-		street.places.append({"id": street_order[index], "name": _location_name(street_order[index]), "kind":locations[street_order[index]].kind, "interior":locations[street_order[index]].interior, "x": index * BLOCK_WIDTH + 450.0})
+		street.places.append({"id": street_order[index], "name": _location_name(street_order[index]), "kind":locations[street_order[index]].kind, "interior":locations[street_order[index]].interior, "x": index * BLOCK_WIDTH + 800.0})
 	var saved: Dictionary = GameState.shared_state.get("street_positions", {})
-	if int(GameState.shared_state.get("street_layout_version", 0)) != 4: saved = {}
+	var layout := int(GameState.shared_state.get("street_layout_version",0))
+	if layout == 4:
+		for saved_key in saved: saved[saved_key] = float(saved[saved_key]) * BLOCK_WIDTH / 900.0
+	elif layout != 5: saved = {}
+	GameState.shared_state["street_positions"] = saved
+	GameState.shared_state["street_layout_version"] = 5
 	var key := "%s_%d_%s" % [GameState.current_role, GameState.current_day, segment_id]
-	var default_x := maxi(0, street_order.find(GameState.current_location)) * BLOCK_WIDTH + 610.0
+	var default_x := maxi(0, street_order.find(GameState.current_location)) * BLOCK_WIDTH + 300.0
 	street.player_x = float(saved.get(key, default_x))
 	if str(GameState.shared_state.get("map_arrival", "")) == GameState.current_location:
 		street.player_x = default_x
@@ -118,7 +124,7 @@ func _refresh() -> void:
 	location_title.text = _location_name(GameState.current_location)
 	clock_label.text = "%s · 第%d天 · %s" % [GameState.current_role,GameState.current_day,GameState.clock_text()]
 	if GameState.current_day == 6 and GameState.current_minute >= 1260: clock_label.text += " · 确认%d/12" % GameState.residency_confirmations
-	street.walk_limit = street_order.find("park") * BLOCK_WIDTH + 180 if GameState.current_minute < 1260 and street_order.has("park") else INF
+	street.walk_limit = street_order.find("park") * BLOCK_WIDTH + 1060 if GameState.current_minute < 1260 and street_order.has("park") else INF
 	if street.player_x > street.walk_limit:
 		street.player_x = street.walk_limit
 		street.move_player(0, 0)
@@ -432,7 +438,7 @@ func _on_walk(x: float) -> void:
 	_refresh()
 
 func _remember_position() -> void:
-	GameState.shared_state["street_layout_version"] = 4
+	GameState.shared_state["street_layout_version"] = 5
 	var positions: Dictionary = GameState.shared_state.get("street_positions", {})
 	positions["%s_%d_%s" % [GameState.current_role, GameState.current_day, segment_id]] = street.player_x
 	GameState.shared_state["street_positions"] = positions
@@ -440,16 +446,17 @@ func _remember_position() -> void:
 func _rebuild_hotspots() -> void:
 	street.hotspots.clear()
 	for index in street_order.size():
-		if street_order[index] != "park" or GameState.current_minute >= 1260:
-			street.hotspots.append({"x":index*BLOCK_WIDTH+790,"kind":"bench","label":"坐一会"})
+		var bench = Atlas.street(street_order[index]).get("bench_x")
+		if bench != null:
+			street.hotspots.append({"x":index*BLOCK_WIDTH+float(bench),"kind":"bench","label":"坐一会"})
 	if street.sitting:
 		street.hotspots.append({"x":street.player_x,"kind":"bench","label":"长椅"})
 	street.hotspots.append({"x":100, "kind":"roads", "label":"路口 · 查看去向"})
 	street.hotspots.append({"x":street.world_width - 110, "kind":"roads", "label":"路口 · 查看去向"})
-	var center := current_index * BLOCK_WIDTH + 450.0
+	var center := current_index * BLOCK_WIDTH + float(Atlas.street(GameState.current_location).get("door_x",800))
 	if GameState.current_location == "park" and GameState.current_minute < 1260:
-		street.hotspots.append({"x":center - 285, "kind":"closed", "label":"观景台 · 21:00 开放"})
-		street.hotspots.append({"x":135.0, "kind":"wait_open", "label":"坐下等到 21:00"})
+		street.hotspots.append({"x":1060.0, "kind":"closed", "label":"观景台 · 21:00 开放"})
+		street.hotspots.append({"x":930.0, "kind":"wait_open", "label":"坐下等到 21:00"})
 		return
 	var hours: Array = locations.get(GameState.current_location,{}).get("hours",[])
 	var open_now := hours.is_empty() or hours.any(func(h: Array) -> bool: return GameState.current_minute >= int(h[0]) and GameState.current_minute < int(h[1]))
@@ -475,7 +482,7 @@ func _rebuild_hotspots() -> void:
 	var people := ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
 	for index in mini(people.size(), 3):
 		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
-		street.hotspots.append({"x":center + 190 + index * 110, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
+		street.hotspots.append({"x":current_index*BLOCK_WIDTH + 450 + index * 150, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
 	street.queue_redraw()
 
 func _interact() -> void:

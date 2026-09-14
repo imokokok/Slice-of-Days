@@ -27,7 +27,7 @@ func run() -> void:
 	change_scene_to_file("res://scenes/town_day.tscn")
 	await settle()
 	check(current_scene.street.player_x == 150, "A starts at left edge")
-	check(current_scene.street.world_width < 4000 and not current_scene.street_order.has("park"), "Public street cannot run through the entire town")
+	check(current_scene.street_order.size() == 3 and current_scene.street.world_width == 4800 and not current_scene.street_order.has("park"), "Public street remains a three-location branch with full-width illustrated scenes")
 	var bus: Dictionary = travel.route("residence","park","bus","A",545)
 	var taxi: Dictionary = travel.route("residence","park","taxi","A",545)
 	check(bus.available and taxi.available and bus.cost < taxi.cost and bus.minutes > taxi.minutes, "Transit offers real time/money tradeoff")

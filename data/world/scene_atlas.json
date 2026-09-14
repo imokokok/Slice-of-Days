@@ -1,0 +1,764 @@
+{
+  "source": "SOLMERE_全场景参考图册.pdf",
+  "street_width": 1600,
+  "street": {
+    "town_entrance": {
+      "pages": [
+        1,
+        2,
+        3
+      ],
+      "door_x": 800,
+      "bench_x": 1370
+    },
+    "night_market": {
+      "pages": [
+        4,
+        5,
+        6
+      ],
+      "door_x": 1120,
+      "bench_x": 790
+    },
+    "produce_stall": {
+      "pages": [
+        33,
+        34,
+        35
+      ],
+      "door_x": 820,
+      "bench_x": null
+    },
+    "handcraft_shop": {
+      "pages": [
+        21,
+        22,
+        23
+      ],
+      "door_x": 920,
+      "bench_x": 590
+    },
+    "cafe": {
+      "pages": [
+        39,
+        40,
+        41
+      ],
+      "door_x": 420,
+      "bench_x": null
+    },
+    "residence": {
+      "pages": [
+        42,
+        43,
+        44
+      ],
+      "door_x": 810,
+      "bench_x": 650
+    },
+    "dorm": {
+      "pages": [
+        48,
+        49,
+        50
+      ],
+      "door_x": 1170,
+      "bench_x": 1380
+    },
+    "tarot_stall": {
+      "pages": [
+        54,
+        55,
+        56
+      ],
+      "door_x": 1070,
+      "bench_x": 740
+    },
+    "chess_stall": {
+      "pages": [
+        63,
+        64,
+        65
+      ],
+      "door_x": 770,
+      "bench_x": 1150
+    },
+    "park": {
+      "pages": [
+        70,
+        71,
+        72
+      ],
+      "door_x": 1140,
+      "bench_x": null
+    },
+    "bus_stop": {
+      "pages": [
+        73,
+        74,
+        75
+      ],
+      "door_x": 810,
+      "bench_x": 790
+    },
+    "port": {
+      "pages": [
+        76,
+        77,
+        78
+      ],
+      "door_x": 800,
+      "bench_x": null
+    },
+    "record_store": {
+      "pages": [
+        79,
+        80,
+        81
+      ],
+      "door_x": 995,
+      "bench_x": 1450
+    },
+    "print_shop": {
+      "pages": [
+        88,
+        89,
+        90
+      ],
+      "door_x": 1160,
+      "bench_x": 820
+    },
+    "library": {
+      "pages": [
+        94,
+        95,
+        96
+      ],
+      "door_x": 1110,
+      "bench_x": 1390
+    }
+  },
+  "rooms": {
+    "restaurant": {
+      "pages": [
+        7,
+        8,
+        9
+      ],
+      "door_x": 800,
+      "bench_x": null
+    },
+    "letter_office": {
+      "pages": [
+        24,
+        25,
+        26
+      ],
+      "door_x": 800,
+      "bench_x": null
+    },
+    "grocery": {
+      "pages": [
+        39,
+        40,
+        41
+      ],
+      "door_x": 800,
+      "bench_x": null
+    },
+    "home_a": {
+      "pages": [
+        45,
+        46,
+        47
+      ],
+      "door_x": 800,
+      "bench_x": null
+    },
+    "home_b": {
+      "pages": [
+        51,
+        52,
+        53
+      ],
+      "door_x": 800,
+      "bench_x": null
+    },
+    "tarot_shop": {
+      "pages": [
+        57,
+        58,
+        59
+      ],
+      "door_x": 800,
+      "bench_x": null
+    },
+    "record_shop": {
+      "pages": [
+        82,
+        83,
+        84
+      ],
+      "door_x": 800,
+      "bench_x": null
+    },
+    "print_studio": {
+      "pages": [
+        91,
+        92,
+        93
+      ],
+      "door_x": 800,
+      "bench_x": null
+    },
+    "public_archive": {
+      "pages": [
+        97,
+        98,
+        99
+      ],
+      "door_x": 800,
+      "bench_x": null
+    }
+  },
+  "room_objects": {
+    "restaurant": [
+      1180
+    ],
+    "letter_office": [
+      1120
+    ],
+    "grocery": [
+      820
+    ],
+    "home_a": [
+      630,
+      1170
+    ],
+    "home_b": [
+      530,
+      1230
+    ],
+    "tarot_shop": [
+      800
+    ],
+    "record_shop": [
+      1220,
+      680
+    ],
+    "print_studio": [
+      740,
+      1250
+    ],
+    "public_archive": [
+      550,
+      1330
+    ]
+  },
+  "lookout_open": {
+    "pages": [
+      66,
+      67,
+      68
+    ],
+    "door_x": 1340,
+    "bench_x": 850
+  },
+  "pages": [
+    {
+      "page": 1,
+      "caption": "小镇街道公共区域 / 主街全景 / 白天\n01A  |  01 / 99",
+      "image": "res://art/scene_atlas/01.jpg"
+    },
+    {
+      "page": 2,
+      "caption": "小镇街道公共区域 / 主街全景 / 黄昏\n01A  |  02 / 99",
+      "image": "res://art/scene_atlas/02.jpg"
+    },
+    {
+      "page": 3,
+      "caption": "小镇街道公共区域 / 主街全景 / 晚上\n01A  |  03 / 99",
+      "image": "res://art/scene_atlas/03.jpg"
+    },
+    {
+      "page": 4,
+      "caption": "饭店 / 饭店门面 / 白天\n02A  |  04 / 99",
+      "image": "res://art/scene_atlas/04.jpg"
+    },
+    {
+      "page": 5,
+      "caption": "饭店 / 饭店门面 / 黄昏\n02A  |  05 / 99",
+      "image": "res://art/scene_atlas/05.jpg"
+    },
+    {
+      "page": 6,
+      "caption": "饭店 / 饭店门面 / 晚上\n02A  |  06 / 99",
+      "image": "res://art/scene_atlas/06.jpg"
+    },
+    {
+      "page": 7,
+      "caption": "饭店 / 饭店室内探索 / 白天\n02B  |  07 / 99",
+      "image": "res://art/scene_atlas/07.jpg"
+    },
+    {
+      "page": 8,
+      "caption": "饭店 / 饭店室内探索 / 黄昏\n02B  |  08 / 99",
+      "image": "res://art/scene_atlas/08.jpg"
+    },
+    {
+      "page": 9,
+      "caption": "饭店 / 饭店室内探索 / 晚上\n02B  |  09 / 99",
+      "image": "res://art/scene_atlas/09.jpg"
+    },
+    {
+      "page": 10,
+      "caption": "饭店 / 厨房操作台近景 / 白天\n食材不用画；冰箱与高柜内部留空。\n02C  |  10 / 99",
+      "image": "res://art/scene_atlas/10.jpg"
+    },
+    {
+      "page": 11,
+      "caption": "饭店 / 厨房操作台近景 / 黄昏\n食材不用画；冰箱与高柜内部留空。\n02C  |  11 / 99",
+      "image": "res://art/scene_atlas/11.jpg"
+    },
+    {
+      "page": 12,
+      "caption": "饭店 / 厨房操作台近景 / 晚上\n食材不用画；冰箱与高柜内部留空。\n02C  |  12 / 99",
+      "image": "res://art/scene_atlas/12.jpg"
+    },
+    {
+      "page": 13,
+      "caption": "饭店 / 菜单与宣传工作台 / 白天\n02D  |  13 / 99",
+      "image": "res://art/scene_atlas/13.jpg"
+    },
+    {
+      "page": 14,
+      "caption": "饭店 / 菜单与宣传工作台 / 黄昏\n02D  |  14 / 99",
+      "image": "res://art/scene_atlas/14.jpg"
+    },
+    {
+      "page": 15,
+      "caption": "饭店 / 菜单与宣传工作台 / 晚上\n02D  |  15 / 99",
+      "image": "res://art/scene_atlas/15.jpg"
+    },
+    {
+      "page": 16,
+      "caption": "饭店 / 厨房与拼贴桌全景 / 白天\n食材不用画；冰箱与高柜内部留空。\n02E  |  16 / 99",
+      "image": "res://art/scene_atlas/16.jpg"
+    },
+    {
+      "page": 17,
+      "caption": "饭店 / 厨房与拼贴桌全景 / 黄昏\n食材不用画；冰箱与高柜内部留空。\n02E  |  17 / 99",
+      "image": "res://art/scene_atlas/17.jpg"
+    },
+    {
+      "page": 18,
+      "caption": "饭店 / 厨房与拼贴桌全景 / 晚上\n食材不用画；冰箱与高柜内部留空。\n02E  |  18 / 99",
+      "image": "res://art/scene_atlas/18.jpg"
+    },
+    {
+      "page": 19,
+      "caption": "饭店 / 冰箱打开内部 / 白天\n食材不用画；冰箱与高柜内部留空。\n02F  |  19 / 99",
+      "image": "res://art/scene_atlas/19.jpg"
+    },
+    {
+      "page": 20,
+      "caption": "饭店 / 高柜打开内部 / 白天\n食材不用画；冰箱与高柜内部留空。\n02G  |  20 / 99",
+      "image": "res://art/scene_atlas/20.jpg"
+    },
+    {
+      "page": 21,
+      "caption": "邮局与书信事务所 / 邮局门面 / 白天\n03A  |  21 / 99",
+      "image": "res://art/scene_atlas/21.jpg"
+    },
+    {
+      "page": 22,
+      "caption": "邮局与书信事务所 / 邮局门面 / 黄昏\n03A  |  22 / 99",
+      "image": "res://art/scene_atlas/22.jpg"
+    },
+    {
+      "page": 23,
+      "caption": "邮局与书信事务所 / 邮局门面 / 晚上\n03A  |  23 / 99",
+      "image": "res://art/scene_atlas/23.jpg"
+    },
+    {
+      "page": 24,
+      "caption": "邮局与书信事务所 / 邮局室内 / 白天\n03B  |  24 / 99",
+      "image": "res://art/scene_atlas/24.jpg"
+    },
+    {
+      "page": 25,
+      "caption": "邮局与书信事务所 / 邮局室内 / 黄昏\n03B  |  25 / 99",
+      "image": "res://art/scene_atlas/25.jpg"
+    },
+    {
+      "page": 26,
+      "caption": "邮局与书信事务所 / 邮局室内 / 晚上\n03B  |  26 / 99",
+      "image": "res://art/scene_atlas/26.jpg"
+    },
+    {
+      "page": 27,
+      "caption": "邮局与书信事务所 / 书信与拼贴桌面 / 白天\n03C  |  27 / 99",
+      "image": "res://art/scene_atlas/27.jpg"
+    },
+    {
+      "page": 28,
+      "caption": "邮局与书信事务所 / 书信与拼贴桌面 / 黄昏\n03C  |  28 / 99",
+      "image": "res://art/scene_atlas/28.jpg"
+    },
+    {
+      "page": 29,
+      "caption": "邮局与书信事务所 / 书信与拼贴桌面 / 晚上\n03C  |  29 / 99",
+      "image": "res://art/scene_atlas/29.jpg"
+    },
+    {
+      "page": 30,
+      "caption": "邮局与书信事务所 / 拼贴诗编辑桌面 / 白天\n03D  |  30 / 99",
+      "image": "res://art/scene_atlas/30.jpg"
+    },
+    {
+      "page": 31,
+      "caption": "邮局与书信事务所 / 拼贴诗编辑桌面 / 黄昏\n03D  |  31 / 99",
+      "image": "res://art/scene_atlas/31.jpg"
+    },
+    {
+      "page": 32,
+      "caption": "邮局与书信事务所 / 拼贴诗编辑桌面 / 晚上\n03D  |  32 / 99",
+      "image": "res://art/scene_atlas/32.jpg"
+    },
+    {
+      "page": 33,
+      "caption": "卖菜兼罐头摊 / 街边蔬果罐头摊 / 白天\n04A  |  33 / 99",
+      "image": "res://art/scene_atlas/33.jpg"
+    },
+    {
+      "page": 34,
+      "caption": "卖菜兼罐头摊 / 街边蔬果罐头摊 / 黄昏\n04A  |  34 / 99",
+      "image": "res://art/scene_atlas/34.jpg"
+    },
+    {
+      "page": 35,
+      "caption": "卖菜兼罐头摊 / 街边蔬果罐头摊 / 晚上\n04A  |  35 / 99",
+      "image": "res://art/scene_atlas/35.jpg"
+    },
+    {
+      "page": 36,
+      "caption": "卖菜兼罐头摊 / 罐头试吃与食材选择 / 白天\n04B  |  36 / 99",
+      "image": "res://art/scene_atlas/36.jpg"
+    },
+    {
+      "page": 37,
+      "caption": "卖菜兼罐头摊 / 罐头试吃与食材选择 / 黄昏\n04B  |  37 / 99",
+      "image": "res://art/scene_atlas/37.jpg"
+    },
+    {
+      "page": 38,
+      "caption": "卖菜兼罐头摊 / 罐头试吃与食材选择 / 晚上\n04B  |  38 / 99",
+      "image": "res://art/scene_atlas/38.jpg"
+    },
+    {
+      "page": 39,
+      "caption": "杂货店 / 杂货店门面与室内剖面 / 白天\n05A  |  39 / 99",
+      "image": "res://art/scene_atlas/39.jpg"
+    },
+    {
+      "page": 40,
+      "caption": "杂货店 / 杂货店门面与室内剖面 / 黄昏\n05A  |  40 / 99",
+      "image": "res://art/scene_atlas/40.jpg"
+    },
+    {
+      "page": 41,
+      "caption": "杂货店 / 杂货店门面与室内剖面 / 晚上\n05A  |  41 / 99",
+      "image": "res://art/scene_atlas/41.jpg"
+    },
+    {
+      "page": 42,
+      "caption": "A的家 / A住宅外观 / 白天\n06A  |  42 / 99",
+      "image": "res://art/scene_atlas/42.jpg"
+    },
+    {
+      "page": 43,
+      "caption": "A的家 / A住宅外观 / 黄昏\n06A  |  43 / 99",
+      "image": "res://art/scene_atlas/43.jpg"
+    },
+    {
+      "page": 44,
+      "caption": "A的家 / A住宅外观 / 晚上\n06A  |  44 / 99",
+      "image": "res://art/scene_atlas/44.jpg"
+    },
+    {
+      "page": 45,
+      "caption": "A的家 / A住宅室内 / 白天\n06B  |  45 / 99",
+      "image": "res://art/scene_atlas/45.jpg"
+    },
+    {
+      "page": 46,
+      "caption": "A的家 / A住宅室内 / 黄昏\n06B  |  46 / 99",
+      "image": "res://art/scene_atlas/46.jpg"
+    },
+    {
+      "page": 47,
+      "caption": "A的家 / A住宅室内 / 晚上\n06B  |  47 / 99",
+      "image": "res://art/scene_atlas/47.jpg"
+    },
+    {
+      "page": 48,
+      "caption": "B的家 / B住宅外观 / 白天\n07A  |  48 / 99",
+      "image": "res://art/scene_atlas/48.jpg"
+    },
+    {
+      "page": 49,
+      "caption": "B的家 / B住宅外观 / 黄昏\n07A  |  49 / 99",
+      "image": "res://art/scene_atlas/49.jpg"
+    },
+    {
+      "page": 50,
+      "caption": "B的家 / B住宅外观 / 晚上\n07A  |  50 / 99",
+      "image": "res://art/scene_atlas/50.jpg"
+    },
+    {
+      "page": 51,
+      "caption": "B的家 / B住宅室内 / 白天\n07B  |  51 / 99",
+      "image": "res://art/scene_atlas/51.jpg"
+    },
+    {
+      "page": 52,
+      "caption": "B的家 / B住宅室内 / 黄昏\n07B  |  52 / 99",
+      "image": "res://art/scene_atlas/52.jpg"
+    },
+    {
+      "page": 53,
+      "caption": "B的家 / B住宅室内 / 晚上\n07B  |  53 / 99",
+      "image": "res://art/scene_atlas/53.jpg"
+    },
+    {
+      "page": 54,
+      "caption": "塔罗店 / 塔罗店外观 / 白天\n08A  |  54 / 99",
+      "image": "res://art/scene_atlas/54.jpg"
+    },
+    {
+      "page": 55,
+      "caption": "塔罗店 / 塔罗店外观 / 黄昏\n08A  |  55 / 99",
+      "image": "res://art/scene_atlas/55.jpg"
+    },
+    {
+      "page": 56,
+      "caption": "塔罗店 / 塔罗店外观 / 晚上\n08A  |  56 / 99",
+      "image": "res://art/scene_atlas/56.jpg"
+    },
+    {
+      "page": 57,
+      "caption": "塔罗店 / 塔罗店室内与牌桌 / 白天\n08B  |  57 / 99",
+      "image": "res://art/scene_atlas/57.jpg"
+    },
+    {
+      "page": 58,
+      "caption": "塔罗店 / 塔罗店室内与牌桌 / 黄昏\n08B  |  58 / 99",
+      "image": "res://art/scene_atlas/58.jpg"
+    },
+    {
+      "page": 59,
+      "caption": "塔罗店 / 塔罗店室内与牌桌 / 晚上\n08B  |  59 / 99",
+      "image": "res://art/scene_atlas/59.jpg"
+    },
+    {
+      "page": 60,
+      "caption": "塔罗店 / 塔罗海龟汤牌桌 / 白天\n08C  |  60 / 99",
+      "image": "res://art/scene_atlas/60.jpg"
+    },
+    {
+      "page": 61,
+      "caption": "塔罗店 / 塔罗海龟汤牌桌 / 黄昏\n08C  |  61 / 99",
+      "image": "res://art/scene_atlas/61.jpg"
+    },
+    {
+      "page": 62,
+      "caption": "塔罗店 / 塔罗海龟汤牌桌 / 晚上\n08C  |  62 / 99",
+      "image": "res://art/scene_atlas/62.jpg"
+    },
+    {
+      "page": 63,
+      "caption": "下棋摊 / 公共树荫休息区 / 白天\n09A  |  63 / 99",
+      "image": "res://art/scene_atlas/63.jpg"
+    },
+    {
+      "page": 64,
+      "caption": "下棋摊 / 公共树荫休息区 / 黄昏\n09A  |  64 / 99",
+      "image": "res://art/scene_atlas/64.jpg"
+    },
+    {
+      "page": 65,
+      "caption": "下棋摊 / 公共树荫休息区 / 晚上\n09A  |  65 / 99",
+      "image": "res://art/scene_atlas/65.jpg"
+    },
+    {
+      "page": 66,
+      "caption": "观景台 / 私用观景台内部 / 白天\n10A  |  66 / 99",
+      "image": "res://art/scene_atlas/66.jpg"
+    },
+    {
+      "page": 67,
+      "caption": "观景台 / 私用观景台内部 / 黄昏\n10A  |  67 / 99",
+      "image": "res://art/scene_atlas/67.jpg"
+    },
+    {
+      "page": 68,
+      "caption": "观景台 / 私用观景台内部 / 晚上\n10A  |  68 / 99",
+      "image": "res://art/scene_atlas/68.jpg"
+    },
+    {
+      "page": 69,
+      "caption": "观景台 / 望远镜中的星空 / 晚上\n10B  |  69 / 99",
+      "image": "res://art/scene_atlas/69.jpg"
+    },
+    {
+      "page": 70,
+      "caption": "海边观景台 / 观景台外部入口建筑 / 白天\n10C  |  70 / 99",
+      "image": "res://art/scene_atlas/70.jpg"
+    },
+    {
+      "page": 71,
+      "caption": "海边观景台 / 观景台外部入口建筑 / 黄昏\n10C  |  71 / 99",
+      "image": "res://art/scene_atlas/71.jpg"
+    },
+    {
+      "page": 72,
+      "caption": "海边观景台 / 观景台外部入口建筑 / 晚上\n10C  |  72 / 99",
+      "image": "res://art/scene_atlas/72.jpg"
+    },
+    {
+      "page": 73,
+      "caption": "公交站 / 公交站与候车区 / 白天\n11A  |  73 / 99",
+      "image": "res://art/scene_atlas/73.jpg"
+    },
+    {
+      "page": 74,
+      "caption": "公交站 / 公交站与候车区 / 黄昏\n11A  |  74 / 99",
+      "image": "res://art/scene_atlas/74.jpg"
+    },
+    {
+      "page": 75,
+      "caption": "公交站 / 公交站与候车区 / 晚上\n11A  |  75 / 99",
+      "image": "res://art/scene_atlas/75.jpg"
+    },
+    {
+      "page": 76,
+      "caption": "停车区域 / 街边停车凹位 / 白天\n12A  |  76 / 99",
+      "image": "res://art/scene_atlas/76.jpg"
+    },
+    {
+      "page": 77,
+      "caption": "停车区域 / 街边停车凹位 / 黄昏\n12A  |  77 / 99",
+      "image": "res://art/scene_atlas/77.jpg"
+    },
+    {
+      "page": 78,
+      "caption": "停车区域 / 街边停车凹位 / 晚上\n12A  |  78 / 99",
+      "image": "res://art/scene_atlas/78.jpg"
+    },
+    {
+      "page": 79,
+      "caption": "唱片店 / 唱片店门面 / 白天\n13A  |  79 / 99",
+      "image": "res://art/scene_atlas/79.jpg"
+    },
+    {
+      "page": 80,
+      "caption": "唱片店 / 唱片店门面 / 黄昏\n13A  |  80 / 99",
+      "image": "res://art/scene_atlas/80.jpg"
+    },
+    {
+      "page": 81,
+      "caption": "唱片店 / 唱片店门面 / 晚上\n13A  |  81 / 99",
+      "image": "res://art/scene_atlas/81.jpg"
+    },
+    {
+      "page": 82,
+      "caption": "唱片店 / 唱片店室内 / 白天\n13B  |  82 / 99",
+      "image": "res://art/scene_atlas/82.jpg"
+    },
+    {
+      "page": 83,
+      "caption": "唱片店 / 唱片店室内 / 黄昏\n13B  |  83 / 99",
+      "image": "res://art/scene_atlas/83.jpg"
+    },
+    {
+      "page": 84,
+      "caption": "唱片店 / 唱片店室内 / 晚上\n13B  |  84 / 99",
+      "image": "res://art/scene_atlas/84.jpg"
+    },
+    {
+      "page": 85,
+      "caption": "唱片店 / 音乐制作与声音绘图台 / 白天\n13C  |  85 / 99",
+      "image": "res://art/scene_atlas/85.jpg"
+    },
+    {
+      "page": 86,
+      "caption": "唱片店 / 音乐制作与声音绘图台 / 黄昏\n13C  |  86 / 99",
+      "image": "res://art/scene_atlas/86.jpg"
+    },
+    {
+      "page": 87,
+      "caption": "唱片店 / 音乐制作与声音绘图台 / 晚上\n13C  |  87 / 99",
+      "image": "res://art/scene_atlas/87.jpg"
+    },
+    {
+      "page": 88,
+      "caption": "社区中心 / 社区中心外观 / 白天\n14A  |  88 / 99",
+      "image": "res://art/scene_atlas/88.jpg"
+    },
+    {
+      "page": 89,
+      "caption": "社区中心 / 社区中心外观 / 黄昏\n14A  |  89 / 99",
+      "image": "res://art/scene_atlas/89.jpg"
+    },
+    {
+      "page": 90,
+      "caption": "社区中心 / 社区中心外观 / 晚上\n14A  |  90 / 99",
+      "image": "res://art/scene_atlas/90.jpg"
+    },
+    {
+      "page": 91,
+      "caption": "社区中心 / 社区中心室内 / 白天\n14B  |  91 / 99",
+      "image": "res://art/scene_atlas/91.jpg"
+    },
+    {
+      "page": 92,
+      "caption": "社区中心 / 社区中心室内 / 黄昏\n14B  |  92 / 99",
+      "image": "res://art/scene_atlas/92.jpg"
+    },
+    {
+      "page": 93,
+      "caption": "社区中心 / 社区中心室内 / 晚上\n14B  |  93 / 99",
+      "image": "res://art/scene_atlas/93.jpg"
+    },
+    {
+      "page": 94,
+      "caption": "书店 / 独立书店门面 / 白天\n15A  |  94 / 99",
+      "image": "res://art/scene_atlas/94.jpg"
+    },
+    {
+      "page": 95,
+      "caption": "书店 / 独立书店门面 / 黄昏\n15A  |  95 / 99",
+      "image": "res://art/scene_atlas/95.jpg"
+    },
+    {
+      "page": 96,
+      "caption": "书店 / 独立书店门面 / 晚上\n15A  |  96 / 99",
+      "image": "res://art/scene_atlas/96.jpg"
+    },
+    {
+      "page": 97,
+      "caption": "书店 / 书店室内与阅读区 / 白天\n15B  |  97 / 99",
+      "image": "res://art/scene_atlas/97.jpg"
+    },
+    {
+      "page": 98,
+      "caption": "书店 / 书店室内与阅读区 / 黄昏\n15B  |  98 / 99",
+      "image": "res://art/scene_atlas/98.jpg"
+    },
+    {
+      "page": 99,
+      "caption": "书店 / 书店室内与阅读区 / 晚上\n15B  |  99 / 99",
+      "image": "res://art/scene_atlas/99.jpg"
+    }
+  ]
+}

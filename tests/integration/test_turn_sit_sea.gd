@@ -37,7 +37,7 @@ func run() -> void:
 	stage.player_x = stage.world_width - 80.0
 	town._on_walk(stage.player_x)
 	town._refresh()
-	check(str(stage.nearest().get("kind", "")) == "roads","Right edge road must not be hidden by the final bench")
+	check(not stage.hotspots.any(func(h: Dictionary) -> bool: return str(h.kind) == "roads"),"The joined street must never stop walking for a travel menu")
 	var sound = root.get_node("WorldSound")
 	check(sound.coast.stream != null and sound.coast.stream.loop_mode == AudioStreamWAV.LOOP_FORWARD,"Sea sound must be looped")
 	var pcm: PackedByteArray = sound.coast.stream.data

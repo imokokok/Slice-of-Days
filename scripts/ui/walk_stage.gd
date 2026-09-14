@@ -58,7 +58,9 @@ func move_player(axis: float, delta: float, hurry := false) -> void:
 	player_x = clampf(player_x + velocity * delta, 80.0, minf(world_width - 80.0, walk_limit))
 	var distance := absf(player_x - previous)
 	var previous_step := int(phase / PI)
-	phase += distance / 30.0
+	# Tie the gait to distance instead of time so feet do not skate when the
+	# character accelerates. A slightly longer step also keeps the walk relaxed.
+	phase += distance / 42.0
 	if int(phase / PI) != previous_step and enabled: WorldSound.play_footstep()
 	gait_weight = move_toward(gait_weight, minf(absf(velocity) / SPEED, 1.0) if distance > 0.0 else 0.0, delta * 8.0)
 	if distance > 0.0: moved.emit(player_x)
@@ -99,7 +101,7 @@ func _draw() -> void:
 		if kind == "person" or kind == "event":
 			var shades := [Color("324b62"),Color("567363"),Color("76554c"),Color("ada16b")]
 			var shade: Color = shades[absi(str(item.get("id", "")).hash()) % shades.size()]
-			_draw_person(Vector2(x, ground), shade, 0.0, -1.0)
+			_draw_person(Vector2(x, ground), shade, 0.0, 0.0, -1.0)
 		elif kind == "echo" and not illustrated:
 			draw_rect(Rect2(x-55,572,110,118),Color("4c4937"))
 			draw_rect(Rect2(x-49,580,98,102),Color("203f43"))
@@ -114,7 +116,7 @@ func _draw() -> void:
 			draw_line(Vector2(x + 30, 687), Vector2(x + 30, 715), Color("776b5f"), 4)
 		elif indoor and kind == "object" and not illustrated:
 			_draw_furniture(x, str(item.get("prop", "table")))
-	_draw_person(Vector2(player_x - camera_x, ground), Color("d69b71") if GameState.current_role == "A" else Color("7da8b5"), sin(phase) * gait_weight, facing, sitting)
+	_draw_person(Vector2(player_x - camera_x, ground), Color("48535c") if GameState.current_role == "A" else Color("5e9999"), phase, gait_weight, facing, sitting, GameState.current_role)
 	if is_finite(walk_limit) and not illustrated:
 		var gate_x := walk_limit - camera_x + 18
 		draw_line(Vector2(gate_x, 640), Vector2(gate_x, 718), Color("40544e"), 7)
@@ -377,22 +379,150 @@ func _target_actor_height() -> float:
 	var scene_row := Atlas.room(room_kind) if indoor else Atlas.street(GameState.current_location)
 	return float(scene_row.get("door_height", 300.0)) * 0.8
 
-func _draw_person(at: Vector2, coat: Color, stride: float, direction: float, seated := false) -> void:
+func _draw_person(at: Vector2, coat: Color, gait_phase: float, gait_strength: float, direction: float, seated := false, role := "") -> void:
 	var actor_scale := _actor_height() / ACTOR_BASE_HEIGHT
-	var step := stride * 22.0
-	at.y -= absf(stride) * 2.5
-	draw_set_transform(at,0,Vector2.ONE * actor_scale)
-	draw_colored_polygon(PackedVector2Array([Vector2(-30, 4), Vector2(30, 4), Vector2(55, 10), Vector2(-18, 10)]), Color("070e13", 0.5))
-	if seated: at.y += 14.0 * actor_scale
-	draw_set_transform(at,0,Vector2((1.0 if direction >= 0.0 else -1.0)*maxf(0.16,absf(direction)),1.0)*actor_scale)
+	var strength := clampf(gait_strength, 0.0, 1.0)
+	var bob := (1.0 - absf(cos(gait_phase))) * 2.0 * strength
+	var visual_direction := 1.0 if direction >= 0.0 else -1.0
+
+	# A soft, centered contact shadow makes the figure feel planted instead of
+	# floating over the backdrop.
+	draw_set_transform(at, 0.0, Vector2.ONE * actor_scale)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-27, 2), Vector2(-18, -1), Vector2(19, -1),
+		Vector2(34, 3), Vector2(20, 7), Vector2(-18, 7)
+	]), Color("071016", 0.34))
+
+	var body_origin := at + Vector2(0.0, -bob * actor_scale)
 	if seated:
-		draw_polyline(PackedVector2Array([Vector2(-9,-48),Vector2(21,-48),Vector2(26,-14)]),Color("19272c"),9,true)
-		draw_polyline(PackedVector2Array([Vector2(5,-46),Vector2(35,-43),Vector2(37,-14)]),Color("213138"),9,true)
+		body_origin.y += 14.0 * actor_scale
+	draw_set_transform(body_origin, 0.0, Vector2(visual_direction, 1.0) * actor_scale)
+
+	var skin := Color("caa98c")
+	var hair := Color("5a392d") if role == "A" else Color("273139")
+	var outline := Color("17242b")
+	var trouser_back := Color("30383d") if role == "A" else Color("29394a")
+	var trouser_front := Color("3e474c") if role == "A" else Color("35485d")
+	var shoe := Color("172328")
+	var coat_shadow := coat.darkened(0.22)
+	var coat_light := coat.lightened(0.12)
+	var shirt := Color("eee3cc")
+
+	# The protagonists keep the accessories from the character direction sheet:
+	# A carries a warm shoulder bag, while B has a compact dark backpack.
+	if role == "A":
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(-30, -68), Vector2(-18, -70), Vector2(-13, -45),
+			Vector2(-18, -36), Vector2(-34, -39), Vector2(-37, -55)
+		]), Color("a95537"))
+		draw_line(Vector2(-31, -66), Vector2(-16, -67), Color("d57a50"), 1.5, true)
+	elif role == "B":
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(-25, -82), Vector2(-15, -84), Vector2(-12, -49),
+			Vector2(-19, -42), Vector2(-31, -46), Vector2(-34, -70)
+		]), Color("2b3940"))
+		draw_line(Vector2(-27, -73), Vector2(-17, -75), Color("526067"), 1.4, true)
+
+	if seated:
+		# Bent thighs and shins retain a readable knee instead of forming a single
+		# angular zig-zag.
+		_draw_jointed_limb(Vector2(-5, -39), Vector2(18, -36), Vector2(27, -10), 9.0, trouser_back)
+		_draw_shoe(Vector2(30, -9), 1.0, shoe)
+		_draw_jointed_limb(Vector2(5, -40), Vector2(29, -34), Vector2(38, -10), 9.5, trouser_front)
+		_draw_shoe(Vector2(41, -9), 1.0, shoe)
 	else:
-		draw_polyline(PackedVector2Array([Vector2(-7, -39), Vector2(-8 + step * 0.35, -20), Vector2(-11 + step, -maxf(0.0, stride) * 8)]), Color("19272c"), 9, true)
-		draw_polyline(PackedVector2Array([Vector2(7, -39), Vector2(9 - step * 0.35, -19), Vector2(14 - step, -maxf(0.0, -stride) * 8)]), Color("213138"), 9, true)
-	draw_colored_polygon(PackedVector2Array([Vector2(-13, -89), Vector2(12, -89), Vector2(20, -36), Vector2(-19, -36)]), coat)
-	draw_line(Vector2(10, -82), Vector2(19 - step * 0.4, -50), coat.darkened(0.18), 8, true)
-	draw_colored_polygon(PackedVector2Array([Vector2(-10, -114), Vector2(9, -117), Vector2(12, -97), Vector2(3, -89), Vector2(-10, -96)]), Color("c2a68a"))
-	draw_colored_polygon(PackedVector2Array([Vector2(-12, -109), Vector2(-11, -119), Vector2(8, -121), Vector2(13, -112), Vector2(-2, -109), Vector2(-9, -99)]), Color("253039"))
+		_draw_walking_leg(gait_phase + PI, strength, -5.0, trouser_back, shoe)
+		_draw_walking_leg(gait_phase, strength, 5.0, trouser_front, shoe)
+
+	# Rear arm sits behind the torso. Its phase opposes the front leg, which is
+	# the natural counter-swing that the previous puppet-like gait was missing.
+	var rear_arm_swing := sin(gait_phase) * 13.0 * strength
+	_draw_jointed_limb(Vector2(-7, -78), Vector2(-13 - rear_arm_swing * 0.45, -60), Vector2(-8 - rear_arm_swing, -43), 7.5, coat_shadow)
+	draw_circle(Vector2(-8 - rear_arm_swing, -42), 3.8, skin)
+
+	# Neck, shoulders, waist and hips overlap as separate masses to give the
+	# silhouette depth. The inset shirt and lapel stop the coat reading as a card.
+	draw_rect(Rect2(-4, -96, 9, 11), skin)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-11, -88), Vector2(-18, -82), Vector2(-18, -52),
+		Vector2(-14, -38), Vector2(13, -38), Vector2(18, -52),
+		Vector2(16, -81), Vector2(9, -88)
+	]), outline)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-9, -87), Vector2(-16, -81), Vector2(-15, -53),
+		Vector2(-11, -40), Vector2(11, -40), Vector2(16, -53),
+		Vector2(14, -81), Vector2(7, -87)
+	]), coat)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-8, -86), Vector2(2, -83), Vector2(-1, -43),
+		Vector2(-11, -43), Vector2(-14, -55), Vector2(-14, -79)
+	]), coat_light)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-4, -87), Vector2(5, -87), Vector2(2, -72), Vector2(-1, -62), Vector2(-5, -74)
+	]), shirt)
+	draw_line(Vector2(1, -69), Vector2(2, -43), coat_shadow, 1.4, true)
+	draw_circle(Vector2(4, -58), 1.2, coat_shadow)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-11, -42), Vector2(11, -42), Vector2(8, -36), Vector2(-8, -36)
+	]), coat_shadow)
+	if role == "A":
+		draw_line(Vector2(4, -86), Vector2(-21, -43), Color("ce6d49"), 3.0, true)
+	elif role == "B":
+		draw_line(Vector2(-8, -83), Vector2(-17, -54), Color("34454c"), 2.5, true)
+
+	# Front arm is drawn last across the coat and follows the opposite gait phase.
+	var front_arm_swing := -sin(gait_phase) * 14.0 * strength
+	var elbow := Vector2(13 + front_arm_swing * 0.35, -63)
+	var hand := Vector2(11 + front_arm_swing, -44)
+	_draw_jointed_limb(Vector2(12, -80), elbow, hand, 8.0, coat.darkened(0.08))
+	draw_circle(hand, 4.0, skin)
+	draw_line(Vector2(10, -80), Vector2(4, -52), Color(coat_light, 0.55), 1.2, true)
+
+	# Rounded head, ear, nose and a layered hair shape make the profile feel like
+	# a person rather than a flat symbol while preserving the illustrated style.
+	draw_circle(Vector2(-3, -106), 14.0, hair)
+	draw_circle(Vector2(1, -103), 12.2, skin)
+	draw_circle(Vector2(-10, -102), 3.1, skin.darkened(0.08))
+	if role == "B":
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(-13, -108), Vector2(-9, -118), Vector2(2, -120),
+			Vector2(11, -115), Vector2(12, -107), Vector2(8, -98),
+			Vector2(4, -103), Vector2(-3, -99), Vector2(-10, -102)
+		]), hair)
+	else:
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(-12, -108), Vector2(-10, -116), Vector2(-4, -117),
+			Vector2(1, -120), Vector2(5, -117), Vector2(11, -115), Vector2(11, -106),
+			Vector2(5, -111), Vector2(-2, -109), Vector2(-8, -101)
+		]), hair)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(11, -106), Vector2(16, -102), Vector2(11, -99)
+	]), skin)
+	draw_circle(Vector2(8.2, -106), 1.15, Color("18242a"))
+	draw_circle(Vector2(8.0, -101.5), 2.0, Color("d98272", 0.45))
+	draw_line(Vector2(9, -97), Vector2(5, -96), skin.darkened(0.3), 1.0, true)
 	draw_set_transform(Vector2.ZERO)
+
+func _draw_walking_leg(cycle: float, strength: float, hip_x: float, trouser: Color, shoe: Color) -> void:
+	var swing := sin(cycle) * 13.0 * strength
+	var lift := maxf(0.0, cos(cycle)) * 7.0 * strength
+	var hip := Vector2(hip_x, -40)
+	var foot := Vector2(hip_x + swing, -lift)
+	var knee := Vector2(hip_x + swing * 0.42 + 3.5, -21 - lift * 0.25)
+	_draw_jointed_limb(hip, knee, foot, 10.5, trouser)
+	draw_line(hip + Vector2(1.5, 1), knee + Vector2(1.5, 0), Color(trouser.lightened(0.18), 0.55), 1.1, true)
+	draw_line(foot + Vector2(-3.5, -3), foot + Vector2(4.5, -3), trouser.lightened(0.14), 3.0, true)
+	_draw_shoe(foot + Vector2(2, 0), 1.0 - lift / 22.0, shoe)
+
+func _draw_jointed_limb(start: Vector2, joint: Vector2, finish: Vector2, width: float, color: Color) -> void:
+	draw_line(start, joint, color, width, true)
+	draw_circle(joint, width * 0.5, color)
+	draw_line(joint, finish, color, width * 0.88, true)
+	draw_circle(start, width * 0.5, color)
+
+func _draw_shoe(at: Vector2, flatten: float, color: Color) -> void:
+	var sole_y := maxf(2.2, 4.0 * flatten)
+	draw_colored_polygon(PackedVector2Array([
+		at + Vector2(-4, -sole_y), at + Vector2(4, -sole_y),
+		at + Vector2(9, 0), at + Vector2(8, 2.5), at + Vector2(-5, 2.5)
+	]), color)

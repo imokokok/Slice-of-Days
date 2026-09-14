@@ -25,6 +25,6 @@ func run() -> void:
 	state.completed_commitments.clear()
 	state.advance_world_clock(4.0)
 	state.advance_world_clock(0.1)
-	check(state.clock_text() == "20:00", "Natural time must reach the lookout opening")
+	check(state.clock_text() == "20:00", "Natural time must resume after A's reserved night run")
 	print("WORLD CLOCK PASS" if failures == 0 else "WORLD CLOCK FAIL")
 	quit(failures)

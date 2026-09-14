@@ -582,7 +582,7 @@ func _rebuild_hotspots() -> void:
 	var people := ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
 	for index in mini(people.size(), 3):
 		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
-		street.hotspots.append({"x":_world_x(current_index, 450 + index * 150), "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
+		street.hotspots.append({"x":_world_x(current_index, (850 if GameState.current_location == "cafe" else 450) + index * 150), "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
 	var hours: Array = locations.get(GameState.current_location,{}).get("hours",[])
 	var open_now := hours.is_empty() or hours.any(func(h: Array) -> bool: return GameState.current_minute >= int(h[0]) and GameState.current_minute < int(h[1]))
 	if not open_now:
@@ -592,6 +592,8 @@ func _rebuild_hotspots() -> void:
 		var own_home := "residence" if GameState.current_role == "A" else "dorm"
 		if GameState.current_location == own_home:
 			street.hotspots.append({"x":center, "kind":"home", "label":"回家"})
+	elif GameState.current_location == "cafe":
+		street.hotspots.append({"x":center, "kind":"shopkeeper", "id":"grocery", "label":"和杂货店老板说话"})
 	else:
 		var rooms := _spaces_at(GameState.current_location)
 		for i in rooms.size():
@@ -623,6 +625,7 @@ func _interact() -> void:
 		"door":
 			if not _guard_pocket_audio(): SceneRouter.enter_space(str(item.id))
 		"shop": _open_shop(str(item.id))
+		"shopkeeper": _talk_shopkeeper(str(item.id))
 		"invitation": _talk_nearby(str(item.id),"minigame_hook")
 		"module":
 			if _guard_pocket_audio(): return
@@ -643,6 +646,17 @@ func _talk_nearby(resident_id: String, topic := "greeting") -> void:
 	for item in street.hotspots:
 		if str(item.get("id","")) == resident_id and absf(float(item.x)-street.player_x) > 1.0: street.facing = signf(float(item.x)-street.player_x)
 	street.velocity = 0.0
+	add_child(conversation)
+
+func _talk_shopkeeper(shop_id: String) -> void:
+	if is_instance_valid(conversation): return
+	conversation = preload("res://scripts/ui/conversation_panel.gd").new()
+	conversation.shop_id = shop_id
+	conversation.purchase_requested.connect(_open_shop.bind(shop_id))
+	street.velocity = 0.0
+	for item in street.hotspots:
+		if item.kind == "shopkeeper" and absf(float(item.x) - street.player_x) > 1:
+			street.facing = signf(float(item.x) - street.player_x)
 	add_child(conversation)
 
 func _legacy_talk_nearby(resident_id: String) -> void:

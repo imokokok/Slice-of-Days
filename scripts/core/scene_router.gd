@@ -28,12 +28,6 @@ func go_to(path: String) -> void:
 	wash.color = Color("172f43", 0.0) if GameState.current_minute >= 1080 else Color("f0e0b7",0.0)
 	curtain.add_child(wash)
 	add_child(curtain)
-	var scene := get_tree().current_scene
-	if scene != null and not SettingsSystem.reduced_motion():
-		for child in scene.get_children():
-			if child.get_script() == load("res://scripts/ui/walk_stage.gd"):
-				child.pivot_offset = Vector2(child.player_x - child.camera_x, 580)
-				create_tween().tween_property(child, "scale", Vector2(1.08, 1.08), 0.28)
 	var fade := create_tween()
 	fade.tween_property(wash, "color:a", 0.95, 0.3)
 	await fade.finished

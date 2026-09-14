@@ -1,5 +1,8 @@
 extends Control
 signal closed
+signal purchase_requested
+var shop_id := ""
+var shop_name := ""
 var npc := ""
 var starting_topic := "greeting"
 var offer: Dictionary = {}
@@ -28,7 +31,16 @@ func _ready() -> void:
 	box.size = Vector2(874,290)
 	panel.add_child(box)
 	typewriter = bool(GameState.shared_state.get("typewriter",true))
-	_show_topic(starting_topic)
+	if shop_id.is_empty():
+		_show_topic(starting_topic)
+	else:
+		var catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/economy/shops.json"))
+		for shop in catalog.get("shops", []):
+			if str(shop.id) == shop_id:
+				shop_name = str(shop.get("owner_name", "店老板"))
+				lines.assign([str(shop.get("greeting", "今天想买点什么？"))])
+		if lines.is_empty(): lines.assign(["今天想买点什么？"])
+		_show_line()
 func _clear() -> void:
 	text_label = null
 	options.clear()
@@ -63,7 +75,7 @@ func _show_topic(topic: String) -> void:
 	_show_line()
 func _show_line() -> void:
 	_clear()
-	_label(str(ScheduleSystem.residents.get(npc,{}).get("display_name",npc)) + "     Space / Enter · 继续     T · 调整文字速度",18)
+	_label((shop_name if not shop_id.is_empty() else str(ScheduleSystem.residents.get(npc,{}).get("display_name",npc))) + "     Space / Enter · 继续     T · 调整文字速度",18)
 	text_label = _label(lines[index],25)
 	text_label.custom_minimum_size.y = 140
 	progress = 0.0
@@ -80,11 +92,26 @@ func _advance() -> void:
 	index += 1
 	if index < lines.size(): _show_line()
 	elif close_after_line: _close()
+	elif not shop_id.is_empty(): _shop_choices()
 	elif invite_after_chat:
 		invite_after_chat = false
 		_show_topic("minigame_hook")
 	elif not offer.is_empty(): _offer_choices()
 	else: _topics()
+
+func _shop_choices() -> void:
+	_clear()
+	_label(shop_name,18)
+	_label("你说……",25)
+	_button("“我看看，今天带些什么回去。”", func() -> void:
+		purchase_requested.emit()
+		_close())
+	_button("“先不买了，路过跟你打声招呼。”", func() -> void:
+		lines.assign(["好呀，慢慢逛。要找什么再叫我。"])
+		index = 0
+		close_after_line = true
+		_show_line())
+	options[0].grab_focus()
 func _topics(page := 0) -> void:
 	_clear()
 	_label("想怎么接这句话？    W / S 或 ↑ / ↓ 选择 · Enter 回应 · Esc 离开",19)

@@ -99,9 +99,9 @@ func _load_interactive_spaces() -> void:
 
 
 func _build_ui() -> void:
-	location_title = _label(self, "", Vector2(42, 18), Vector2(700, 35), 23, Color("e9dcc4"))
+	location_title = _label(self, "", Vector2(142, 18), Vector2(590, 35), 23, Color("e9dcc4"))
 	clock_label = _label(self, "", Vector2(750, 22), Vector2(340, 30), 17, Color("aab8b6"), HORIZONTAL_ALIGNMENT_RIGHT)
-	var map_button := _button(self, "地图", Vector2(1110, 15), Vector2(80, 40), "quiet")
+	var map_button := _button(self, "地图", Vector2(42, 15), Vector2(80, 40), "quiet")
 	map_button.pressed.connect(_open_map)
 	var tools := [{"id":"recorder", "label":"录音", "action":_open_pocket_recorder}, {"id":"camera", "label":"相机", "action":_open_pocket_camera}, {"id":"album", "label":"相册", "action":_open_pocket_album}]
 	for index in tools.size():

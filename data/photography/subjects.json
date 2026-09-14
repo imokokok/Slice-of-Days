@@ -1,0 +1,65 @@
+{
+  "_note": "随身相机的取景发现点。target 是快照中的归一化构图中心，不依赖电脑摄像头。",
+  "locations": {
+    "town_entrance": [
+      {"id":"entrance_blue_vine","name":"蓝花藤","category":"街角植物","note":"花藤从二楼垂下来，把店门和海风连在一起。","target":[0.50,0.48]},
+      {"id":"entrance_rooftops","name":"临海屋檐","category":"小镇风景","note":"屋檐一层压着一层，替街道收住午后的光。","target":[0.72,0.34]}
+    ],
+    "residence": [
+      {"id":"residence_window","name":"亮着的窗","category":"生活痕迹","note":"有人起得很早，窗帘还没来得及完全拉开。","target":[0.50,0.46]},
+      {"id":"residence_running_shoes","name":"门边跑鞋","category":"生活习惯","note":"鞋底的细沙记录着两段每天都会经过的海岸。","target":[0.28,0.68]}
+    ],
+    "print_shop": [
+      {"id":"print_shop_clock","name":"退回的旧钟","category":"社区旧物","note":"指针停住了，玻璃里的反光却还在走。","target":[0.50,0.46]},
+      {"id":"print_shop_paper","name":"晾晒相纸","category":"工作痕迹","note":"没有显影完全的部分，比清楚的部分更像记忆。","target":[0.72,0.56]}
+    ],
+    "night_market": [
+      {"id":"restaurant_lamp","name":"饭店门灯","category":"夜晚招牌","note":"灯一亮，路过的人就知道这里还能坐一会儿。","target":[0.50,0.40]},
+      {"id":"restaurant_table","name":"收拾到一半的桌","category":"生活痕迹","note":"杯沿和空椅子替刚离开的人保留了位置。","target":[0.73,0.64]}
+    ],
+    "produce_stall": [
+      {"id":"produce_crates","name":"叠起的菜筐","category":"市集物件","note":"不同成熟度的颜色被摊主排成一条缓慢的时间线。","target":[0.50,0.56]},
+      {"id":"produce_scale","name":"旧秤","category":"市集物件","note":"秤盘会晃一会儿，才肯给出一个数字。","target":[0.28,0.54]}
+    ],
+    "cafe": [
+      {"id":"grocery_list","name":"未取走的清单","category":"生活痕迹","note":"清单没有署名，只留下肥皂、火柴和散装糖。","target":[0.50,0.56]},
+      {"id":"grocery_jars","name":"玻璃糖罐","category":"店铺物件","note":"光穿过糖粒，在柜台上留下细小的亮斑。","target":[0.72,0.43]}
+    ],
+    "handcraft_shop": [
+      {"id":"post_seal","name":"火漆印","category":"书信物件","note":"被封住的话不会消失，只是换了一种等待。","target":[0.50,0.56]},
+      {"id":"post_letters","name":"待寄的信","category":"生活痕迹","note":"收件人的名字朝下，纸张仍知道它要去哪里。","target":[0.28,0.50]}
+    ],
+    "library": [
+      {"id":"library_note_wall","name":"便利贴墙","category":"公共记忆","note":"不同人的句子挤在一起，却没有互相覆盖。","target":[0.50,0.48]},
+      {"id":"library_ladder","name":"书架梯","category":"书店物件","note":"最高一格的书，总要借一点额外的勇气。","target":[0.73,0.47]}
+    ],
+    "record_store": [
+      {"id":"record_turntable","name":"唱针与转盘","category":"声音物件","note":"唱针落下之前，房间里有一秒完整的安静。","target":[0.50,0.55]},
+      {"id":"record_rain_window","name":"雨痕玻璃","category":"天气痕迹","note":"窗外的灯被雨水拉成长线，像一段还没剪好的声音。","target":[0.72,0.37]}
+    ],
+    "tarot_stall": [
+      {"id":"tarot_candle","name":"短了一截的蜡烛","category":"摊位物件","note":"蜡油记下谈话的长度，却记不住答案。","target":[0.50,0.50]},
+      {"id":"tarot_cards","name":"翻开的牌","category":"摊位物件","note":"图案只是入口，真正的问题仍在桌子另一边。","target":[0.30,0.60]}
+    ],
+    "dorm": [
+      {"id":"dorm_laptop","name":"亮着的电脑","category":"工作痕迹","note":"屏幕先醒来，今天的三段工作也跟着亮了。","target":[0.50,0.48]},
+      {"id":"dorm_calendar","name":"写满的日历","category":"生活习惯","note":"方格能保护时间，也会诚实地留下被打断的空隙。","target":[0.72,0.40]}
+    ],
+    "chess_stall": [
+      {"id":"chess_endgame","name":"未下完的棋局","category":"街角游戏","note":"黑白双方都少了几枚，仍没有谁愿意先收棋。","target":[0.50,0.56]},
+      {"id":"chess_empty_chair","name":"对面的空椅","category":"生活痕迹","note":"一把空椅子有时也是一种明确的约定。","target":[0.72,0.61]}
+    ],
+    "bus_stop": [
+      {"id":"bus_timetable","name":"末班时刻表","category":"交通物件","note":"最后一班车之后，距离会重新变得具体。","target":[0.50,0.48]},
+      {"id":"bus_bench","name":"站台长椅","category":"生活痕迹","note":"每一道磨损都来自一次不长不短的等待。","target":[0.27,0.61]}
+    ],
+    "port": [
+      {"id":"port_mirror","name":"后视镜里的海","category":"沿海风景","note":"海被收进很小的镜面，仍然没有尽头。","target":[0.50,0.44]},
+      {"id":"port_white_lines","name":"褪色停车线","category":"街道物件","note":"白线努力维持秩序，风却把细沙吹得到处都是。","target":[0.72,0.67]}
+    ],
+    "park": [
+      {"id":"park_telescope","name":"望向海面的镜筒","category":"观景物件","note":"镜筒把远处拉近，也让身边的人暂时离开画面。","target":[0.50,0.47]},
+      {"id":"park_horizon","name":"暮色海平线","category":"沿海风景","note":"天色每天都在重复变暗，从来没有完全相同。","target":[0.72,0.32]}
+    ]
+  }
+}

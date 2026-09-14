@@ -125,7 +125,7 @@ func travel(to_id: String, method: String) -> Dictionary:
 	if cost > 0 and GameState.money < cost:
 		return {"ok": false, "message": "余额不足。"}
 	if cost > 0:
-		GameState.spend_money(cost)
+		GameState.spend_money(cost, "%s前往%s" % [str(option.get("label", "交通")), location_name(to_id)])
 	if not GameState.use_free_time(duration):
 		return {"ok": false, "message": "当前空闲时段不足以完成这段路程。"}
 	if method == "friend":

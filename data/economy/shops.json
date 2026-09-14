@@ -1,0 +1,26 @@
+{
+  "shops": [
+    {
+      "id": "produce_stall",
+      "name": "BEETMAN 的菜与罐头摊",
+      "location_id": "produce_stall",
+      "items": [
+        {"id": "tomato", "name": "熟透的番茄", "price": 8, "minutes": 5, "description": "今天就适合下锅，买回去可带进饭店厨房。"},
+        {"id": "lemon", "name": "一袋柠檬", "price": 12, "minutes": 5, "description": "气味很亮，做菜或拍静物都能用上。"},
+        {"id": "herbs", "name": "窗台香草", "price": 6, "minutes": 5, "description": "份量不多，足够改变一道菜的方向。"},
+        {"id": "sea_beans", "name": "海盐豆罐头", "price": 15, "minutes": 5, "description": "耐放的当地罐头，适合留给被工作切碎的晚上。"}
+      ]
+    },
+    {
+      "id": "grocery",
+      "name": "杂货店柜台",
+      "location_id": "cafe",
+      "items": [
+        {"id": "bread", "name": "昨天的面包", "price": 5, "minutes": 5, "description": "便宜，但需要重新烘热或切碎处理。"},
+        {"id": "cheese", "name": "一小块奶酪", "price": 18, "minutes": 5, "description": "能让临时拼出来的菜单更稳定。"},
+        {"id": "soap", "name": "海盐肥皂", "price": 10, "minutes": 5, "description": "普通日用品，会留在随身物品清单。"},
+        {"id": "matches", "name": "一盒火柴", "price": 4, "minutes": 5, "description": "小镇杂货店最常见的消耗品。"}
+      ]
+    }
+  ]
+}

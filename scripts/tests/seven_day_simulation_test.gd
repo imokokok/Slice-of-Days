@@ -29,14 +29,14 @@ func _simulate_a_route() -> void:
 	_event("a_d1_mossner_coffee")
 	_context(1, 900, "print_shop")
 	_event("a_d1_theatre_rehearsal")
-	_context(1, 1260, "park")
+	_context(1, 1200, "park")
 	_module_event("a_d1_evening_photo", "photography", "photograph_people")
 
 	_context(2, 660, "night_market")
 	_module_event("a_d2_restaurant_shift", "cooking", "improvise")
 	_event("a_d2_restaurant_close")
 
-	_context(3, 1260, "park")
+	_context(3, 1200, "park")
 	_event("a_d3_social_chain")
 
 	_context(4, 600, "cafe")
@@ -49,7 +49,7 @@ func _simulate_a_route() -> void:
 	_context(5, 900, "produce_stall")
 	_module_event("a_d5_translation", "translation", "hold_both_meanings")
 
-	_context(6, 1260, "park")
+	_context(6, 1200, "park")
 	_choice_event("a_d6_last_full_block", "watch_stars")
 
 	var audit := ChapterSystem.residency_audit("A")
@@ -103,12 +103,12 @@ func _simulate_b_route() -> void:
 	_module_event("b_d5_ghostwriting", "ghostwriting", "listen_then_cut")
 	_context(5, 1080, "library")
 	_choice_event("b_d5_letter_revision_listen", "preserve_client_voice")
-	_context(5, 1260, "park")
+	_context(5, 1200, "park")
 	_module_event("b_d5_resume_chess", "chess", "finish_game")
 
 	_context(6, 1080, "library")
 	_event("b_d6_key_meeting")
-	_context(6, 1260, "park")
+	_context(6, 1200, "park")
 	_choice_event("b_d6_boundary_choice", "decline_kindly")
 
 	_context(7, 1080, "residence")

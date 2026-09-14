@@ -166,6 +166,10 @@ func sleep_at_home() -> bool:
 	if SceneRouter.active_space_id != ("home_a" if GameState.current_role == "A" else "home_b") or GameState.current_location not in ["residence", "dorm"]:
 		return false
 	if bool(GameState.shared_state.get("sleep_pending", false)): return false
+	var sleep_at := int(GameState.schedule_for(GameState.current_role, GameState.current_day).get("sleep_at", 1320))
+	if GameState.current_minute < sleep_at:
+		GameState.current_minute = sleep_at
+		GameState.clock_remainder = 0.0
 	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	GameState.shared_state["sleep_pending"] = true
 	GameState.commit_active_role_state()
@@ -177,7 +181,8 @@ func sleep_at_home() -> bool:
 
 
 func _process(_delta: float) -> void:
-	if GameState.current_minute < 1439 or SceneRouter.transitioning: return
+	var sleep_at := int(GameState.schedule_for(GameState.current_role, GameState.current_day).get("sleep_at", 1320))
+	if GameState.current_minute < sleep_at or SceneRouter.transitioning: return
 	if bool(GameState.shared_state.get("sleep_pending", false)) or bool(GameState.shared_state.get("game_complete", false)): return
 	var scene := get_tree().current_scene
 	if scene == null or scene.scene_file_path not in [SceneRouter.TOWN_DAY, SceneRouter.INTERACTIVE_SPACE]: return

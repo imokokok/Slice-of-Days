@@ -25,8 +25,8 @@ func reply(npc: String, topic: String) -> Array[String]:
 		"small_talk": lines = ["你听，街角又有人在试那段旋律。", "有时候只听到几个音，也会跟着哼一整天。"]
 		"personal_topic": lines = [str(row.get("personal","我今天想把手边这件事做完。")), "你呢？最近有没有什么一直惦记的事？"]
 		"town_info", "location_info":
-			lines = ["观景台在海边高处，从公共区域走过去大约四十五分钟。", "晚上九点才开放。可以从公交站坐车，先看一眼班次。"]
-			KnowledgeSystem.learn({"id":"lookout_hours","subject_id":"park","predicate":"opens_at","value":1260,"source_npc_id":npc,"confidence":1.0,"text":"观景台 · 21:00 开放 · 公共区域步行约45分钟"})
+			lines = ["观景台在海边高处，从公共区域走过去大约四十五分钟。", "晚上八点才开放。可以从公交站坐车，先看一眼班次。"]
+			KnowledgeSystem.learn({"id":"lookout_hours","subject_id":"park","predicate":"opens_at","value":1200,"source_npc_id":npc,"confidence":1.0,"text":"观景台 · 20:00 开放 · 公共区域步行约45分钟"})
 		"schedule_info":
 			if npc in ["zhou_xiaoliu","xanni"]:
 				lines.assign(["我一般十一点半过来，七点半左右收店。", "要去排练的话，我会早一点收设备。你要是看见我还在绕线，进来打个招呼就好。"] if npc == "xanni" else ["你想找 Xanni？她一般十一点半到唱片店，晚上七点半左右收店。", "我有时赶上她收线，就站门口等她一会儿。她一边绕线，还能一边跟你聊。"])
@@ -99,7 +99,7 @@ func accept_invitation(npc: String) -> Dictionary:
 
 func notebook_leads() -> Array:
 	var notes: Array = []
-	var prompts := {"cooking":"想听听厨房里的声音，去饭店找史勇奇聊聊今天的菜。", "ghostwriting":"去书信事务所见见 Mossner，问问桌上那封没写完的信。", "sound_sampling":"带着路上听到的声音，去唱片店跟 Xanni 聊聊。", "tarot":"去塔罗店找夏透明，听听那副旧牌的故事。", "chess":"傍晚去棋摊找闹闹，问问对面的位子有没有人。", "translation":"买菜时和 BEETMAN 聊聊，听说摊边有人把话说岔了。", "contemplation":"晚上九点以后去观景台，遇见余星晴就问问他在看哪片天空。"}
+	var prompts := {"cooking":"想听听厨房里的声音，去饭店找史勇奇聊聊今天的菜。", "ghostwriting":"去书信事务所见见 Mossner，问问桌上那封没写完的信。", "sound_sampling":"带着路上听到的声音，去唱片店跟 Xanni 聊聊。", "tarot":"去塔罗店找夏透明，听听那副旧牌的故事。", "chess":"傍晚去棋摊找闹闹，问问对面的位子有没有人。", "translation":"买菜时和 BEETMAN 聊聊，听说摊边有人把话说岔了。", "contemplation":"晚上八点以后去观景台，遇见余星晴就问问他在看哪片天空。"}
 	for offer in invitations:
 		var accepted := invitation_accepted(str(offer.module))
 		var name := str(ScheduleSystem.residents.get(str(offer.npc),{}).get("display_name",offer.npc))

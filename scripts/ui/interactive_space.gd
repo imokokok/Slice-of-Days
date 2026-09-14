@@ -51,7 +51,8 @@ func _ready() -> void:
 	_build_ui()
 	stage.hotspots.append({"x":90, "kind":"exit", "label":"回到街道"})
 	for index in objects.size():
-		stage.hotspots.append({"x":_hotspot_x(index), "kind":"object", "index":index, "prop":"bed" if str(objects[index].get("kind", "")) == "sleep" else "table", "label":_object_hint(index)})
+		var object_kind := str(objects[index].get("kind", ""))
+		stage.hotspots.append({"x":_hotspot_x(index), "kind":"object", "index":index, "prop":"bed" if object_kind == "sleep" else ("computer" if object_kind == "work" else "table"), "label":_object_hint(index)})
 	for index in mini(people.size(), 3):
 		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
 		stage.hotspots.append({"x":920 + index * 180, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", "居民"))})
@@ -166,6 +167,17 @@ func _open_selected() -> void:
 	if str(item.get("kind", "")) == "sleep":
 		ChapterSystem.sleep_at_home()
 		return
+	if str(item.get("kind", "")) == "shop":
+		_open_shop(str(item.get("shop_id", "")))
+		return
+	if str(item.get("kind", "")) == "work":
+		var result := GameState.complete_next_commitment()
+		room_dialogue.show()
+		name_label.text = "B的工作日程"
+		cue_label.text = str(result.get("message", ""))
+		detail_label.text = "余额 %d元 · Space / Enter 收起" % GameState.money
+		SaveManager.save_or_report("工作结算后保存失败")
+		return
 	var module_id := str(item.get("module_id", ""))
 	if str(item.get("kind","")) == "record_shop": module_id = "sound_sampling"
 	if str(item.get("kind","")) == "tarot": module_id = "tarot"
@@ -204,6 +216,17 @@ func _open_record_shop() -> void:
 		return
 	pocket_panel = load("res://scenes/town_sound/Recorder.tscn").instantiate()
 	pocket_panel.shop_mode = true
+	pocket_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(pocket_panel)
+	pocket_panel.tree_exited.connect(func() -> void:
+		pocket_panel = null
+		queue_redraw())
+
+
+func _open_shop(target_shop_id: String) -> void:
+	if is_instance_valid(pocket_panel): return
+	pocket_panel = preload("res://scripts/ui/shop_panel.gd").new()
+	pocket_panel.shop_id = target_shop_id
 	pocket_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(pocket_panel)
 	pocket_panel.tree_exited.connect(func() -> void:
@@ -301,7 +324,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if is_instance_valid(pocket_panel) or is_instance_valid(notes_overlay) or SceneRouter.transitioning: return
 	if not event is InputEventKey or not event.pressed or event.echo: return
 	if room_dialogue.visible:
-		if event.is_action_pressed("interact") or event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_accept"):
+		if event.is_action_pressed("dialogue_advance") or event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_accept"):
 			if not event.is_action_pressed("ui_cancel") and speech_progress < cue_label.text.length():
 				speech_progress = cue_label.text.length()
 				cue_label.visible_characters = -1

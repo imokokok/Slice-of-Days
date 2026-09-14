@@ -33,12 +33,12 @@ func run() -> void:
 	var camera_before: float = street.camera_x
 	street.move_player(1, 0.1)
 	check(street.player_x > 1600 and absf(street.camera_x - camera_before) < 30, "Camera follows smoothly across a scene boundary")
-	state.current_minute = 1259
+	state.current_minute = 1199
 	check(Atlas.street("park").pages[0] == 70,"Closed lookout uses its exterior gate")
-	state.current_minute = 1260
+	state.current_minute = 1200
 	check(Atlas.street("park").pages[0] == 66,"After nine, the lookout opens onto the sea terrace")
 	if OS.get_cmdline_user_args().has("--screenshots"):
-		for shot in [["town_entrance",540,""],["night_market",1050,"restaurant"],["record_store",1200,""],["park",1260,""]]:
+		for shot in [["town_entrance",540,""],["night_market",1050,"restaurant"],["record_store",1140,""],["park",1200,""]]:
 			state.current_location = shot[0]
 			state.current_minute = shot[1]
 			state.shared_state.map_arrival = shot[0]

@@ -11,10 +11,10 @@ func run() -> void:
 	var schedule = root.get_node("ScheduleSystem")
 	root.get_node("ChapterSystem").start_new_game()
 	for day in range(1, 8):
-		for minute in [1320, 1380, 1438]:
+		for minute in [1200, 1260, 1319]:
 			for place in ["town_entrance", "bus_stop", "record_store", "park"]:
-				check(not schedule.residents_at(place, day, minute).is_empty(), "Late-night encounter at " + place)
-	state.current_minute = 1350
+				check(not schedule.residents_at(place, day, minute).is_empty(), "Evening encounter at " + place)
+	state.current_minute = 1250
 	state.current_location = "record_store"
 	change_scene_to_file("res://scenes/town_day.tscn")
 	await create_timer(0.6).timeout
@@ -25,5 +25,5 @@ func run() -> void:
 	check(root.get_node("DialogueSystem").invitation_for("xanni").is_empty(), "After closing, Xanni chats without inviting the player into the shop game")
 	var lines = root.get_node("DialogueSystem").reply("xanni", "greeting")
 	check("".join(lines).contains("耳机"), "Night greeting reflects the current activity")
-	print("LATE NIGHT PEOPLE PASS" if failures == 0 else "LATE NIGHT PEOPLE FAIL")
+	print("EVENING PEOPLE PASS" if failures == 0 else "EVENING PEOPLE FAIL")
 	quit(failures)

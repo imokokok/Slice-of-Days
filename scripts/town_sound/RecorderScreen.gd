@@ -143,7 +143,7 @@ func _build_ui() -> void:
 			return
 		get_node("/root/SoundSettings").show_dialog()))
 	heading.add_child(_label("FIELD NOTES   /   01", 15))
-	column.add_child(_label("把今天听见的东西留下来。", 18))
+	column.add_child(_label("把今天听见的东西留下来。R 开始/停止 · Ctrl/Cmd+S 保存 · Esc 返回", 18))
 	tutorial_label = _label("")
 	tutorial_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(tutorial_label)
@@ -342,7 +342,11 @@ func _on_recorded(wav: AudioStreamWAV, warning: String) -> void:
 	set_compact(false)
 	draft = wav
 	waveform.set_audio(wav)
-	name_input.text = ""
+	var place := str(draft_context.get("location", "小镇"))
+	if has_node("/root/TravelSystem"):
+		place = TravelSystem.location_name(place)
+	var minute := int(draft_context.get("game_minute", 0))
+	name_input.text = "%s %02d:%02d" % [place, minute / 60, minute % 60]
 	status_label.text = warning if not warning.is_empty() else "录好了。听一听，给这段声音起个名字，再保存。"
 	meter.value = 0
 	_refresh_controls()
@@ -361,6 +365,10 @@ func _save_draft() -> void:
 		status_label.text = store.last_error + " 当前录音仍在，可重试。"
 		return
 	status_label.text = "已保存：「%s」 · %.2f 秒" % [metadata.name, metadata.duration]
+	if has_node("/root/GameState"):
+		GameState.add_artifact("samples", {"id": str(metadata.id), "title": str(metadata.name), "kind": "recording", "duration": float(metadata.duration), "location": str(metadata.get("location", ""))})
+		GameState.add_journal_entry({"id": "sample_%s" % str(metadata.id), "kind": "recording", "text": "在%s录下「%s」并保存在本机。" % [TravelSystem.location_name(str(metadata.get("location", GameState.current_location))), str(metadata.name)]})
+		SaveManager.save_or_report("录音后保存失败")
 	draft = null
 	draft_context.clear()
 	name_input.text = ""
@@ -515,3 +523,19 @@ func set_compact(value: bool) -> void:
 	compact_bar.visible = value
 	mouse_filter = Control.MOUSE_FILTER_IGNORE if value else Control.MOUSE_FILTER_STOP
 	queue_redraw()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event is InputEventKey or not event.pressed or event.echo:
+		return
+	if event.is_command_or_control_pressed() and event.keycode == KEY_S:
+		if draft != null and not recorder.capturing:
+			_save_draft()
+	elif event.is_action_pressed("open_recorder"):
+		if recorder.capturing:
+			_stop()
+		elif draft == null:
+			_start_recording()
+	elif event.is_action_pressed("ui_cancel"):
+		request_close()
+	get_viewport().set_input_as_handled()

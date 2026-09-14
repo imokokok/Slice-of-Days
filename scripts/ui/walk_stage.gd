@@ -75,7 +75,7 @@ func _draw() -> void:
 	var night := GameState.current_minute >= 1080
 	draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
 	var illustrated := _draw_atlas()
-	var ground := 805.0 if not indoor and GameState.current_location == "park" and GameState.current_minute >= 1260 else 713.0
+	var ground := 805.0 if not indoor and GameState.current_location == "park" and GameState.current_minute >= 1200 else 713.0
 	if illustrated:
 		pass
 	elif indoor:
@@ -117,7 +117,7 @@ func _draw() -> void:
 		draw_line(Vector2(gate_x, 655), Vector2(gate_x + 145, 680), Color("c6b798"), 4)
 	var near := nearest()
 	if enabled and not near.is_empty():
-		var text := "E  ·  " + str(near.get("label", "互动"))
+		var text := "E / F  ·  " + str(near.get("label", "互动"))
 		var font := ThemeDB.fallback_font
 		var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 21).x
 		var x := clampf(float(near.x) - camera_x - width / 2.0, 32.0, 1568.0 - width)
@@ -354,6 +354,11 @@ func _draw_furniture(x: float, prop: String) -> void:
 		draw_rect(Rect2(x - 94, 662, 188, 31), Color("c0b298"))
 		draw_rect(Rect2(x - 84, 650, 42, 13), Color("e6d9b9"))
 		draw_rect(Rect2(x - 34, 659, 130, 34), Color("638386"))
+	elif prop == "computer":
+		draw_rect(Rect2(x - 70, 647, 140, 12), Color("a89576"))
+		draw_rect(Rect2(x - 45, 585, 90, 58), Color("27363a"))
+		draw_rect(Rect2(x - 38, 592, 76, 43), Color("78a8aa"))
+		draw_rect(Rect2(x - 24, 659, 82, 10), Color("c8b99a"))
 	else:
 		draw_rect(Rect2(x - 60, 647, 120, 12), Color("a89576"))
 		draw_rect(Rect2(x - 26, 623, 48, 24), Color("bdae8f"))

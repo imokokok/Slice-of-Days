@@ -6,7 +6,7 @@ static func catalog() -> Dictionary:
 	if data.is_empty(): data = JSON.parse_string(FileAccess.get_file_as_string("res://data/world/scene_atlas.json"))
 	return data
 static func street(place: String) -> Dictionary:
-	if place == "park" and GameState.current_minute >= 1260: return catalog().lookout_open
+	if place == "park" and GameState.current_minute >= 1200: return catalog().lookout_open
 	return catalog().street.get(place,{})
 static func room(id: String) -> Dictionary:
 	return catalog().rooms.get(id,{})

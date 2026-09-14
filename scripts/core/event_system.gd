@@ -219,7 +219,7 @@ func trigger(event_id: String, choice_id: String = "") -> Dictionary:
 	if not launch_module.is_empty():
 		rollback_snapshot = GameState.to_save_data().duplicate(true)
 	if amount > 0:
-		GameState.spend_money(amount)
+		GameState.spend_money(amount, str(event.get("choice_text", event_id)))
 	if minutes > 0:
 		GameState.use_free_time(minutes)
 	apply_results(event_id, event.get("results", {}))
@@ -276,7 +276,7 @@ func apply_results(event_id: String, results: Dictionary) -> void:
 		GameplayModuleSystem.unlock(str(module_id))
 	var earnings := int(results.get("money", 0))
 	if earnings > 0:
-		GameState.earn_money(earnings)
+		GameState.earn_money(earnings, "完成%s" % event_id)
 
 
 func _choice_for(event: Dictionary, choice_id: String) -> Dictionary:

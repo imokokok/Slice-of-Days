@@ -32,6 +32,8 @@ var conversation: Control
 var dialogue_choices: Array[Button] = []
 var spoken_line: Label
 var speech_tween: Tween
+var wallet_label: Label
+var time_guidance_label: Label
 
 
 func _ready() -> void:
@@ -107,20 +109,24 @@ func _load_interactive_spaces() -> void:
 
 func _build_ui() -> void:
 	location_title = _label(self, "", Vector2(142, 18), Vector2(590, 35), 23, Color("e9dcc4"))
-	clock_label = _label(self, "", Vector2(750, 22), Vector2(340, 30), 17, Color("aab8b6"), HORIZONTAL_ALIGNMENT_RIGHT)
-	var map_button := _button(self, "地图", Vector2(42, 15), Vector2(80, 40), "quiet")
+	clock_label = _label(self, "", Vector2(720, 22), Vector2(330, 30), 17, Color("aab8b6"), HORIZONTAL_ALIGNMENT_RIGHT)
+	wallet_label = _label(self, "", Vector2(1060, 22), Vector2(145, 30), 17, Color("f1d08d"), HORIZONTAL_ALIGNMENT_RIGHT)
+	var guide_panel := _panel(self, Vector2(38, 80), Vector2(950, 48), Color("10161c", 0.82), Color("6d817c", 0.75))
+	time_guidance_label = _label(guide_panel, "", Vector2(16, 9), Vector2(918, 30), 16, Color("f0e3c7"))
+	var map_button := _button(self, "地图 M", Vector2(42, 15), Vector2(80, 40), "quiet")
 	map_button.pressed.connect(_open_map)
-	var tools := [{"id":"recorder", "label":"录音", "action":_open_pocket_recorder}, {"id":"camera", "label":"相机", "action":_open_pocket_camera}, {"id":"album", "label":"相册", "action":_open_pocket_album}]
+	var tools := [{"id":"recorder", "label":"R · 录音", "action":_open_pocket_recorder}, {"id":"camera", "label":"C · 相机", "action":_open_pocket_camera}, {"id":"album", "label":"P · 相册", "action":_open_pocket_album}]
 	for index in tools.size():
 		var button := _button(self, "", Vector2(1220 + index * 54, 15), Vector2(44, 40), "quiet")
 		button.icon = preload("res://scripts/town_sound/MediaTheme.gd").icon(str(tools[index].id))
 		button.tooltip_text = str(tools[index].label)
 		button.pressed.connect(tools[index].action)
 	var notes := _button(self, "Pocket" if GameState.current_role == "A" else "日程本", Vector2(1395, 15), Vector2(78, 40), "quiet")
-	notes.tooltip_text = "J · 打开随身本"
+	notes.tooltip_text = "J / Tab · 打开随身本"
 	notes.pressed.connect(_open_journal)
 	var menu := _button(self, "回到主页", Vector2(1480, 15), Vector2(106, 40), "quiet")
 	menu.pressed.connect(_return_to_menu)
+	_label(self, "R 录音 · C 拍照 · P 相册 · J / Tab 随身本", Vector2(1010, 88), Vector2(550, 28), 14, Color("f0e3c7"), HORIZONTAL_ALIGNMENT_RIGHT)
 	_build_event_modal()
 
 
@@ -130,12 +136,33 @@ func _refresh() -> void:
 	GameState.refresh_appointments()
 	location_title.text = _location_name(GameState.current_location)
 	clock_label.text = "%s · 第%d天 · %s" % [GameState.current_role,GameState.current_day,GameState.clock_text()]
-	if GameState.current_day == 6 and GameState.current_minute >= 1260: clock_label.text += " · 确认%d/12" % GameState.residency_confirmations
-	street.walk_limit = street_order.find("park") * BLOCK_WIDTH + 1060 if GameState.current_minute < 1260 and street_order.has("park") else INF
+	wallet_label.text = "钱包 %d元" % GameState.money
+	time_guidance_label.text = _time_guidance_text()
+	if GameState.current_day == 6 and GameState.current_minute >= 1200: clock_label.text += " · 确认%d/12" % GameState.residency_confirmations
+	street.walk_limit = street_order.find("park") * BLOCK_WIDTH + 1060 if GameState.current_minute < 1200 and street_order.has("park") else INF
 	if street.player_x > street.walk_limit:
 		street.player_x = street.walk_limit
 		street.move_player(0, 0)
 	_rebuild_hotspots()
+
+
+func _time_guidance_text() -> String:
+	var base := GameState.current_time_guidance()
+	if GameState.current_role != "B":
+		return base
+	var commitment := GameState.next_commitment()
+	if commitment.is_empty() or str(commitment.get("location", "")) == GameState.current_location:
+		return base
+	var return_by := int(commitment.get("return_by", commitment.get("start", 0)))
+	var shortest := 1 << 20
+	for method in ["walk", "bus", "taxi", "friend"]:
+		var quote := TravelSystem.route(GameState.current_location, str(commitment.get("location", "")), method, GameState.current_role, GameState.current_minute)
+		if bool(quote.get("available", false)):
+			shortest = mini(shortest, int(quote.get("minutes", 0)))
+	if shortest == 1 << 20:
+		return base + " · 当前路线已来不及，先打开地图"
+	var leave_by := return_by - shortest
+	return "%s空闲 %d分钟 · 路上至少%d分钟 · 最晚%s出发回家" % ["整块" if GameState.current_block_remaining() >= 90 else "碎片", GameState.current_block_remaining(), shortest, _minute_text(leave_by)]
 
 
 func _spaces_at(location_id: String) -> Array[Dictionary]:
@@ -190,7 +217,7 @@ func _open_pocket_camera() -> void:
 	pocket_opening = false
 	var camera = load("res://scripts/town_sound/PocketCamera.gd").new()
 	camera.source = frame
-	camera.context = {"location": GameState.current_location, "title": _location_name(GameState.current_location), "day": GameState.current_day}
+	camera.context = {"location": GameState.current_location, "title": _location_name(GameState.current_location), "day": GameState.current_day, "role": GameState.current_role, "game_minute": GameState.current_minute}
 	_show_pocket_panel(camera)
 
 
@@ -462,9 +489,9 @@ func _rebuild_hotspots() -> void:
 	street.hotspots.append({"x":80.0, "kind":"roads", "label":"路口 · 打开地图选择去向"})
 	street.hotspots.append({"x":street.world_width - 80.0, "kind":"roads", "label":"路口 · 打开地图选择去向"})
 	var center := current_index * BLOCK_WIDTH + float(Atlas.street(GameState.current_location).get("door_x",800))
-	if GameState.current_location == "park" and GameState.current_minute < 1260:
-		street.hotspots.append({"x":1060.0, "kind":"closed", "label":"观景台 · 21:00 开放"})
-		street.hotspots.append({"x":930.0, "kind":"wait_open", "label":"坐下等到 21:00"})
+	if GameState.current_location == "park" and GameState.current_minute < 1200:
+		street.hotspots.append({"x":1060.0, "kind":"closed", "label":"观景台 · 20:00 开放"})
+		street.hotspots.append({"x":930.0, "kind":"wait_open", "label":"坐下等到 20:00"})
 		return
 	# Outdoor residents remain available even after the shop closes.
 	var people := ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
@@ -488,6 +515,8 @@ func _rebuild_hotspots() -> void:
 		if str(item.get("location_id", "")) == GameState.current_location:
 			if str(item.get("kind","")) == "dialogue":
 				if not DialogueSystem.invitation_for(str(item.npc_id)).is_empty(): street.hotspots.append({"x":center,"kind":"invitation","id":str(item.npc_id),"label":str(item.name)})
+			elif str(item.get("kind", "")) == "shop":
+				street.hotspots.append({"x":center + 145.0, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
 			else: street.hotspots.append({"x":center, "kind":"module", "id":str(item.module_id), "label":str(item.name) + " · " + GameplayModuleSystem.time_hint(str(item.module_id))})
 	var available := EventSystem.available_events()
 	for index in available.size():
@@ -503,11 +532,12 @@ func _interact() -> void:
 	match str(item.kind):
 		"shop_closed": _show_line("", "门内很安静，桌上留着半杯咖啡。晚一点或明天再来。")
 		"roads": _open_map()
-		"closed": _show_line("", "观景台将在晚上九点开放。可以在旁边的长椅坐一会。")
+		"closed": _show_line("", "观景台将在晚上八点开放。可以在旁边的长椅坐一会。")
 		"wait_open": _sit_on_bench(item)
 		"home": SceneRouter.enter_space("home_a" if GameState.current_role == "A" else "home_b")
 		"door":
 			if not _guard_pocket_audio(): SceneRouter.enter_space(str(item.id))
+		"shop": _open_shop(str(item.id))
 		"invitation": _talk_nearby(str(item.id),"minigame_hook")
 		"module":
 			if _guard_pocket_audio(): return
@@ -561,7 +591,7 @@ func _show_line(speaker: String, text: String) -> void:
 	line.visible_characters = 0
 	speech_tween = create_tween()
 	speech_tween.tween_property(line, "visible_characters", text.length(), maxf(0.3, text.length() / 28.0))
-	var next := _button(event_panel, "继续  E", Vector2(475, 288), Vector2(220, 43), "dialogue")
+	var next := _button(event_panel, "继续  Space / Enter", Vector2(430, 288), Vector2(265, 43), "dialogue")
 	next.pressed.connect(func() -> void: event_overlay.hide())
 	dialogue_choices.append(next)
 
@@ -583,10 +613,11 @@ func _show_dialogue_beat() -> void:
 		scroll.add_child(box)
 		for i in choices.size():
 			var choice: Dictionary = choices[i]
-			var button := _button(box, "%d  %s" % [i + 1, str(choice.get("label", ""))], Vector2.ZERO, Vector2(650, 56), "dialogue")
+			var button := _button(box, "你：%s" % str(choice.get("label", "")), Vector2.ZERO, Vector2(650, 56), "dialogue")
 			button.custom_minimum_size = Vector2(650, 56)
 			button.pressed.connect(_resolve_event.bind(staged_event_id, str(choice.id)))
 			dialogue_choices.append(button)
+		if not dialogue_choices.is_empty(): dialogue_choices[0].grab_focus()
 		return
 	var raw = beats[staged_event_index]
 	var beat: Dictionary = raw if raw is Dictionary else {"text":str(raw)}
@@ -606,6 +637,13 @@ func _open_journal() -> void:
 		return
 	SceneRouter.journal()
 
+
+func _open_shop(shop_id: String) -> void:
+	if is_instance_valid(pocket_panel): return
+	var panel = preload("res://scripts/ui/shop_panel.gd").new()
+	panel.shop_id = shop_id
+	_show_pocket_panel(panel)
+
 func _unhandled_input(event: InputEvent) -> void:
 	if is_instance_valid(conversation): return
 	if not event is InputEventKey or not event.pressed or event.echo: return
@@ -617,14 +655,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.is_action_pressed("ui_cancel"):
 			if street.sitting: _stand_from_bench()
 			else: event_overlay.hide()
-		elif (event.is_action_pressed("interact") or event.is_action_pressed("ui_accept")) and dialogue_choices.size() == 1:
+		elif (event.is_action_pressed("dialogue_advance") or event.is_action_pressed("ui_accept")) and dialogue_choices.size() == 1:
 			if is_instance_valid(spoken_line) and spoken_line.visible_characters >= 0 and spoken_line.visible_characters < spoken_line.text.length():
 				if speech_tween: speech_tween.kill()
 				spoken_line.visible_characters = -1
 			else: dialogue_choices[0].pressed.emit()
-		elif event.keycode >= KEY_1 and event.keycode <= KEY_9:
-			var index: int = event.keycode - KEY_1
-			if index < dialogue_choices.size(): dialogue_choices[index].pressed.emit()
+	elif event.is_action_pressed("open_camera"): _open_pocket_camera()
+	elif event.is_action_pressed("open_recorder"): _open_pocket_recorder()
+	elif event.is_action_pressed("open_album"): _open_pocket_album()
 	elif event.is_action_pressed("interact"): _interact()
 	elif event.is_action_pressed("open_journal"): _open_journal()
 	elif event.is_action_pressed("open_map"): _open_map()
@@ -665,9 +703,9 @@ func _bench_menu() -> void:
 		var wait := _button(event_panel,"E / 1  坐一会 · %d分钟" % minutes,Vector2(30,132),Vector2(660,45),"dialogue")
 		wait.pressed.connect(_wait_on_bench.bind(minutes))
 		dialogue_choices.append(wait)
-	if GameState.current_location == "park" and GameState.current_minute < 1260 and GameState.can_fit_now(1260 - GameState.current_minute):
-		var until_open := _button(event_panel,"2  等到观景台开放 · 21:00",Vector2(30,188),Vector2(660,45),"dialogue")
-		until_open.pressed.connect(_wait_on_bench.bind(1260-GameState.current_minute))
+	if GameState.current_location == "park" and GameState.current_minute < 1200 and GameState.can_fit_now(1200 - GameState.current_minute):
+		var until_open := _button(event_panel,"2  等到观景台开放 · 20:00",Vector2(30,188),Vector2(660,45),"dialogue")
+		until_open.pressed.connect(_wait_on_bench.bind(1200-GameState.current_minute))
 		dialogue_choices.append(until_open)
 	var stand := _button(event_panel,"站起来 · Esc",Vector2(30,264),Vector2(660,45),"dialogue")
 	stand.pressed.connect(_stand_from_bench)

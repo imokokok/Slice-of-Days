@@ -42,7 +42,10 @@ func save_photo(image: Image, context: Dictionary) -> Dictionary:
 		last_error = "照片保存失败，请重试。"
 		return {}
 	var item := {"photo_id": id, "created_at": Time.get_datetime_string_from_system(true), "location": str(context.get("location", "")),
-		"title": str(context.get("title", "小镇的一刻")), "day": int(context.get("day", 1)), "width": image.get_width(), "height": image.get_height()}
+		"title": str(context.get("title", "小镇的一刻")), "day": int(context.get("day", 1)), "role": str(context.get("role", "")), "game_minute": int(context.get("game_minute", 0)), "width": image.get_width(), "height": image.get_height()}
+	for key in ["subject_id", "subject_name", "subject_category", "subject_note"]:
+		if not str(context.get(key, "")).is_empty():
+			item[key] = str(context.get(key, ""))
 	var file := FileAccess.open(path.path_join("photo.json.tmp"), FileAccess.WRITE)
 	if file == null:
 		last_error = "无法保存照片信息。"

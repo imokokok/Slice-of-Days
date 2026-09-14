@@ -17,6 +17,8 @@ func _ready() -> void:
 	var modules := _load_json("res://data/gameplay/modules.json")
 	var prototypes := _load_json("res://data/gameplay/module_prototypes.json")
 	var spaces := _load_json("res://data/world/interactive_spaces.json")
+	var shops := _load_json("res://data/economy/shops.json")
+	var photo_subjects := _load_json("res://data/photography/subjects.json")
 	var arcana := _load_json("res://data/tarot/major_arcana.json")
 	var tarot_cases := _load_json("res://data/tarot/cases.json")
 	var location_ids := _unique_ids(locations.get("locations", []), "location")
@@ -40,6 +42,8 @@ func _ready() -> void:
 	_validate_module_coverage(modules.get("modules", []), prototypes.get("prototypes", []))
 	_validate_module_scenes(modules.get("modules", []))
 	_validate_interactive_spaces(spaces.get("spaces", []), location_ids, module_ids)
+	_validate_shops(shops.get("shops", []), location_ids)
+	_validate_photo_subjects(photo_subjects, location_ids)
 	_validate_tarot(arcana.get("cards", []), tarot_cases.get("cases", []))
 	if failures.is_empty():
 		print("CONTENT VALIDATION PASS: world data, interiors, extension scenes, character and core resident profiles, story, gameplay modules and tarot cases")
@@ -61,6 +65,25 @@ func _unique_ids(rows: Array, kind: String) -> Array[String]:
 		else:
 			result.append(row_id)
 	return result
+
+
+func _validate_photo_subjects(data: Dictionary, location_ids: Array[String]) -> void:
+	var found_ids: Array[String] = []
+	var locations: Dictionary = data.get("locations", {})
+	for location_id in locations:
+		if not location_ids.has(str(location_id)):
+			failures.append("photo subjects reference missing location %s" % str(location_id))
+		for subject in locations[location_id]:
+			var subject_id := str(subject.get("id", ""))
+			if subject_id.is_empty() or found_ids.has(subject_id):
+				failures.append("photo subject id is empty or duplicated: %s" % subject_id)
+			found_ids.append(subject_id)
+			for key in ["name", "category", "note"]:
+				if str(subject.get(key, "")).is_empty():
+					failures.append("photo subject %s is missing %s" % [subject_id, key])
+			var target: Array = subject.get("target", [])
+			if target.size() != 2 or float(target[0]) < 0.0 or float(target[0]) > 1.0 or float(target[1]) < 0.0 or float(target[1]) > 1.0:
+				failures.append("photo subject %s has an invalid target" % subject_id)
 
 
 func _validate_chapter_reachability(events: Array, day_roles: Array) -> void:
@@ -332,11 +355,30 @@ func _validate_interactive_spaces(rows: Array, location_ids: Array[String], modu
 			else:
 				object_ids.append(object_id)
 			var kind := str(item.get("kind", "module"))
-			if not ["module", "tarot", "record_shop", "observe", "journal", "sleep", "book_notes"].has(kind):
+			if not ["module", "tarot", "record_shop", "observe", "journal", "sleep", "book_notes", "shop", "work"].has(kind):
 				failures.append("interactive object %s/%s uses unsupported kind %s" % [space_id, object_id, kind])
 			var module_id := str(item.get("module_id", ""))
 			if kind == "module" and not module_ids.has(module_id):
 				failures.append("interactive object %s/%s references missing module %s" % [space_id, object_id, module_id])
+
+
+func _validate_shops(rows: Array, location_ids: Array[String]) -> void:
+	var shop_ids := _unique_ids(rows, "shop")
+	for shop in rows:
+		var shop_id := str(shop.get("id", ""))
+		if not location_ids.has(str(shop.get("location_id", ""))):
+			failures.append("shop %s references a missing location" % shop_id)
+		var item_ids: Array[String] = []
+		for item in shop.get("items", []):
+			var item_id := str(item.get("id", ""))
+			if item_id.is_empty() or item_ids.has(item_id):
+				failures.append("shop %s has an empty or duplicated item id" % shop_id)
+			else:
+				item_ids.append(item_id)
+			if int(item.get("price", 0)) <= 0 or int(item.get("minutes", 0)) <= 0:
+				failures.append("shop %s item %s needs positive price and time" % [shop_id, item_id])
+			if str(item.get("name", "")).is_empty() or str(item.get("description", "")).is_empty():
+				failures.append("shop %s item %s needs readable copy" % [shop_id, item_id])
 
 
 func _validate_results(label: String, results: Dictionary, resident_ids: Array[String], module_ids: Array[String]) -> void:

@@ -147,6 +147,13 @@
       "name": "杂货店",
       "objects": [
         {
+          "id": "grocery_counter",
+          "name": "在柜台购买日用品和食材",
+          "kind": "shop",
+          "shop_id": "grocery",
+          "detail": "看清价格和余额，再决定带走什么。"
+        },
+        {
           "id": "shelf",
           "name": "看看货架上的日用品",
           "kind": "observe",
@@ -189,6 +196,12 @@
           "name": "桌上的笔记本",
           "kind": "journal",
           "detail": "笔记本整齐地放在地图旁。"
+        },
+        {
+          "id": "work_computer",
+          "name": "打开电脑处理固定工作",
+          "kind": "work",
+          "detail": "开始后会结算准备与工作时间，并在完成时发放收入。"
         },
         {
           "id": "bed",

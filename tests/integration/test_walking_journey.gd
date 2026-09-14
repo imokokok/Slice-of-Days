@@ -71,9 +71,13 @@ func run() -> void:
 	router.town_day()
 	await settle()
 	town = current_scene
-	town.street.player_x = 450.0
+	var residence_index: int = town.street_order.find("residence")
+	town.street.player_x = residence_index * town.BLOCK_WIDTH + 300.0
 	town._on_walk(town.street.player_x)
 	town._refresh()
+	var home_hotspots: Array = town.street.hotspots.filter(func(item): return str(item.get("kind", "")) == "home")
+	check(not home_hotspots.is_empty(), "A's home should expose a proximity hotspot")
+	if not home_hotspots.is_empty(): town.street.player_x = float(home_hotspots[0].x)
 	town._interact()
 	await settle()
 	check(router.active_space_id == "home_a", "A must enter A's own home")

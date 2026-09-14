@@ -5,7 +5,7 @@ signal message_posted(message: String)
 signal role_changed(role: String)
 
 const REAL_SECONDS_PER_GAME_MINUTE := 4.0
-const SAVE_VERSION := 4
+const SAVE_VERSION := 5
 const CALENDAR_PATH := "res://data/story/calendar.json"
 
 var current_role := "A"
@@ -27,6 +27,9 @@ var appointments: Array[Dictionary] = []
 var known_schedule_entries: Array[String] = []
 var module_states: Dictionary = {}
 var choice_history: Array[Dictionary] = []
+var inventory: Dictionary = {}
+var money_ledger: Array[Dictionary] = []
+var completed_commitments: Array[String] = []
 
 var role_states: Dictionary = {}
 var shared_state: Dictionary = {}
@@ -85,6 +88,9 @@ func _default_role_state(role: String) -> Dictionary:
 		"known_schedule_entries": [],
 		"module_states": {},
 		"choice_history": [],
+		"inventory": {},
+		"money_ledger": [],
+		"completed_commitments": [],
 	}
 
 
@@ -108,6 +114,9 @@ func commit_active_role_state() -> void:
 		"known_schedule_entries": known_schedule_entries.duplicate(),
 		"module_states": module_states.duplicate(true),
 		"choice_history": choice_history.duplicate(true),
+		"inventory": inventory.duplicate(true),
+		"money_ledger": money_ledger.duplicate(true),
+		"completed_commitments": completed_commitments.duplicate(),
 	}
 
 
@@ -151,6 +160,9 @@ func _load_role_state(role: String) -> void:
 	known_schedule_entries.assign(data.get("known_schedule_entries", []))
 	module_states = data.get("module_states", {}).duplicate(true)
 	choice_history.assign(data.get("choice_history", []))
+	inventory = data.get("inventory", {}).duplicate(true)
+	money_ledger.assign(data.get("money_ledger", []))
+	completed_commitments.assign(data.get("completed_commitments", []))
 	residency_confirmations = confirmed_residents.size()
 
 
@@ -175,9 +187,48 @@ func active_time_blocks() -> Array:
 	return schedule_for(current_role, current_day).get("blocks", [])
 
 
+func commitments_for_day(role := "", day := -1) -> Array[Dictionary]:
+	var target_role := current_role if role.is_empty() else role
+	var target_day := current_day if day < 0 else day
+	var result: Array[Dictionary] = []
+	for raw in schedule_for(target_role, target_day).get("commitments", []):
+		if raw is Dictionary:
+			result.append((raw as Dictionary).duplicate(true))
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a.get("start", 0)) < int(b.get("start", 0)))
+	return result
+
+
+func next_commitment() -> Dictionary:
+	for commitment in commitments_for_day():
+		if completed_commitments.has(_commitment_token(commitment)):
+			continue
+		if current_minute <= int(commitment.get("end", 0)):
+			return commitment
+	return {}
+
+
+func current_time_guidance() -> String:
+	var remaining := current_block_remaining()
+	var next := next_commitment()
+	if not next.is_empty() and bool(next.get("auto_advance", false)):
+		return "%s空闲 %d分钟 · %s—%s %s已预留" % ["整块" if remaining >= 90 else "碎片", remaining, _minute_text(int(next.get("start", 0))), _minute_text(int(next.get("end", 0))), str(next.get("label", "固定习惯"))]
+	if bool(shared_state.get("pending_commitment", false)) and not next.is_empty():
+		return "%s 到了 · 去%s开始（%d分钟）" % [str(next.get("label", "工作")), str(next.get("location_label", "指定地点")), int(next.get("end", 0)) - current_minute]
+	if not next.is_empty():
+		var return_by := int(next.get("return_by", next.get("start", 0)))
+		if current_minute <= return_by:
+			if current_location == str(next.get("location", "")):
+				return "%s空闲 %d分钟 · 已在%s · %s开始" % ["整块" if remaining >= 90 else "碎片", remaining, str(next.get("location_label", "指定地点")), _minute_text(int(next.get("start", 0)))]
+			return "%s空闲 %d分钟 · %s前到%s · %s开始" % ["整块" if remaining >= 90 else "碎片", remaining, _minute_text(return_by), str(next.get("location_label", "指定地点")), _minute_text(int(next.get("start", 0)))]
+	var sleep_at := int(schedule_for(current_role, current_day).get("sleep_at", 1320))
+	return "%s空闲 %d分钟 · %s休息" % ["整块" if remaining >= 90 else "碎片", remaining, _minute_text(sleep_at)]
+
+
 ## Shared by street and indoor exploration; paused scenes do not feed the clock.
 func advance_world_clock(real_seconds: float) -> void:
 	if real_seconds <= 0.0 or not is_finite(real_seconds): return
+	if bool(shared_state.get("pending_commitment", false)):
+		return
 	# Fragmented schedules contain unavailable gaps. Natural world time may reach
 	# a block boundary, but must never leak through it.
 	if current_block_remaining() <= 0:
@@ -235,6 +286,18 @@ func current_block_remaining() -> int:
 
 
 func advance_to_next_free_block() -> bool:
+	var commitment := _commitment_due_before_next_block()
+	if not commitment.is_empty():
+		if bool(commitment.get("auto_advance", false)):
+			var result := complete_next_commitment()
+			return bool(result.get("ok", false)) and current_block_remaining() > 0
+		var required_location := str(commitment.get("location", ""))
+		if required_location.is_empty() or current_location == required_location:
+			shared_state["pending_commitment"] = true
+			commit_active_role_state()
+			state_changed.emit()
+			return false
+		_miss_commitment(commitment)
 	for block in active_time_blocks():
 		if current_minute < int(block[0]):
 			current_minute = int(block[0])
@@ -245,21 +308,124 @@ func advance_to_next_free_block() -> bool:
 	return false
 
 
-func spend_money(amount: int) -> bool:
+func _commitment_due_before_next_block() -> Dictionary:
+	for commitment in commitments_for_day():
+		if completed_commitments.has(_commitment_token(commitment)):
+			continue
+		var return_by := int(commitment.get("return_by", commitment.get("start", 0)))
+		if current_minute >= return_by and current_minute <= int(commitment.get("end", 0)):
+			return commitment
+	return {}
+
+
+func complete_next_commitment() -> Dictionary:
+	var commitment := next_commitment()
+	if commitment.is_empty():
+		return {"ok": false, "message": "今天已经没有待处理的固定工作。"}
+	var required_location := str(commitment.get("location", ""))
+	if not required_location.is_empty() and current_location != required_location:
+		return {"ok": false, "message": "需要先到%s。" % str(commitment.get("location_label", "指定地点"))}
+	var commitment_id := _commitment_token(commitment)
+	if completed_commitments.has(commitment_id):
+		return {"ok": false, "message": "这段工作已经完成。"}
+	var return_by := int(commitment.get("return_by", commitment.get("start", 0)))
+	if current_minute < return_by:
+		return {"ok": false, "message": "%s前回到电脑即可。现在还有%d分钟可安排。" % [_minute_text(return_by), return_by - current_minute]}
+	if current_minute > int(commitment.get("start", 0)) + int(commitment.get("late_grace", 10)):
+		_miss_commitment(commitment)
+		return {"ok": false, "message": "已经错过这段工作的开始时间。"}
+	var minutes := maxi(0, int(commitment.get("end", current_minute)) - current_minute)
+	current_minute += minutes
+	clock_remainder = 0.0
+	refresh_appointments()
+	completed_commitments.append(commitment_id)
+	shared_state.erase("pending_commitment")
+	var payment := int(commitment.get("pay", 0))
+	if payment > 0:
+		earn_money(payment, str(commitment.get("label", "工作收入")))
+	var commitment_kind := str(commitment.get("kind", "work"))
+	var journal_text := "%s · 用时%d分钟" % [str(commitment.get("label", "完成日程")), minutes]
+	if payment > 0:
+		journal_text += " · 收入%d元" % payment
+	add_journal_entry({"id": "commitment_%s" % commitment_id, "kind": commitment_kind, "text": journal_text})
+	commit_active_role_state()
+	state_changed.emit()
+	var message := "完成%s，用时%d分钟。" % [str(commitment.get("label", "日程")), minutes]
+	if payment > 0:
+		message = "完成%s，用时%d分钟，收入%d元。" % [str(commitment.get("label", "工作")), minutes, payment]
+	return {"ok": true, "minutes": minutes, "payment": payment, "message": message}
+
+
+func _miss_commitment(commitment: Dictionary) -> void:
+	var commitment_id := _commitment_token(commitment)
+	if completed_commitments.has(commitment_id):
+		return
+	completed_commitments.append(commitment_id)
+	shared_state.erase("pending_commitment")
+	add_journal_entry({"id": "missed_commitment_%s" % commitment_id, "kind": "missed_work", "text": "错过固定日程：%s。今天没有获得这笔收入。" % str(commitment.get("label", "工作"))})
+
+
+func _commitment_token(commitment: Dictionary) -> String:
+	return "d%d_%s" % [current_day, str(commitment.get("id", "commitment"))]
+
+
+func spend_money(amount: int, reason := "消费") -> bool:
 	if amount < 0 or money < amount:
 		return false
 	money -= amount
+	_record_money(-amount, reason)
 	commit_active_role_state()
 	state_changed.emit()
 	return true
 
 
-func earn_money(amount: int) -> void:
+func earn_money(amount: int, reason := "收入") -> void:
 	if amount <= 0:
 		return
 	money += amount
+	_record_money(amount, reason)
 	commit_active_role_state()
 	state_changed.emit()
+
+
+func _record_money(amount: int, reason: String) -> void:
+	money_ledger.append({"day": current_day, "minute": current_minute, "amount": amount, "reason": reason, "balance": money})
+	if money_ledger.size() > 80:
+		money_ledger = money_ledger.slice(money_ledger.size() - 80)
+
+
+func buy_item(item: Dictionary) -> Dictionary:
+	var item_id := str(item.get("id", ""))
+	var price := int(item.get("price", 0))
+	var minutes := int(item.get("minutes", 5))
+	if item_id.is_empty() or price <= 0:
+		return {"ok": false, "message": "这件商品暂时无法结算。"}
+	if not can_fit_now(minutes):
+		return {"ok": false, "message": "当前空闲时间不足，先处理接下来的日程。"}
+	if money < price:
+		return {"ok": false, "message": "还差%d元。" % (price - money)}
+	if not spend_money(price, "购买%s" % str(item.get("name", item_id))):
+		return {"ok": false, "message": "余额不足。"}
+	inventory[item_id] = int(inventory.get(item_id, 0)) + 1
+	use_free_time(minutes)
+	add_journal_entry({"id": "purchase_%s_%d_%d" % [item_id, current_day, current_minute], "kind": "purchase", "text": "在%s买了%s · %d元" % [str(item.get("shop_name", "小镇商店")), str(item.get("name", item_id)), price]})
+	commit_active_role_state()
+	state_changed.emit()
+	return {"ok": true, "message": "买下%s，花费%d元。余额%d元。" % [str(item.get("name", item_id)), price, money]}
+
+
+func consume_inventory(item_ids: Array[String]) -> Array[String]:
+	var consumed: Array[String] = []
+	for item_id in item_ids:
+		var count := int(inventory.get(item_id, 0))
+		if count <= 0:
+			continue
+		inventory[item_id] = count - 1
+		if int(inventory[item_id]) <= 0:
+			inventory.erase(item_id)
+		consumed.append(item_id)
+	commit_active_role_state()
+	return consumed
 
 
 func add_fact(fact: String, notify := true) -> void:
@@ -357,6 +523,7 @@ func credit_record_once(record_id: String, payment: int, record: Dictionary = {}
 	credited.append(record_id)
 	shared_state["credited_record_ids"] = credited
 	money += payment
+	_record_money(payment, "唱片《%s》授权费" % str(record.get("title", "未命名唱片")))
 	var artifact := {
 		"id": record_id,
 		"title": str(record.get("title", "未命名唱片")),
@@ -511,6 +678,10 @@ func has_choice(key: String) -> bool:
 
 func clock_text() -> String:
 	return "%02d:%02d" % [current_minute / 60, current_minute % 60]
+
+
+func _minute_text(minute: int) -> String:
+	return "%02d:%02d" % [minute / 60, minute % 60]
 
 
 func reset_demo() -> void:

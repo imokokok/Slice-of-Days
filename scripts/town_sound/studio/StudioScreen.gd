@@ -18,6 +18,7 @@ var region_end := -1.0
 var region_track := 0
 var mute_controls: Array[CheckButton] = []
 var gain_controls: Array[HSlider] = []
+var mixing := false
 
 var monitor_locked := false
 
@@ -307,8 +308,14 @@ func changed() -> void:
 	if not model.save_project(): status.text = model.error
 
 func prepare_mix() -> bool:
+	if mixing:
+		status.text = "混音正在生成，请稍候。"
+		return false
 	if dirty or mixdown == null:
-		mixdown = model.mix()
+		mixing = true
+		status.text = "后台混音中……"
+		mixdown = await model.mix_async()
+		mixing = false
 		dirty = false
 	if mixdown == null:
 		status.text = model.error
@@ -316,7 +323,7 @@ func prepare_mix() -> bool:
 	return true
 
 func play() -> void:
-	if not prepare_mix():
+	if not await prepare_mix():
 		return
 	player.stream = mixdown
 	player.stream_paused = false
@@ -385,7 +392,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			else: delete_clip()
 
 func open_visual() -> void:
-	if not prepare_mix():
+	if not await prepare_mix():
 		return
 	if not model.save_project():
 		status.text = model.error

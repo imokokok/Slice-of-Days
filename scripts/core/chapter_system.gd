@@ -166,9 +166,12 @@ func sleep_at_home() -> bool:
 	if SceneRouter.active_space_id != ("home_a" if GameState.current_role == "A" else "home_b") or GameState.current_location not in ["residence", "dorm"]:
 		return false
 	if bool(GameState.shared_state.get("sleep_pending", false)): return false
+	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	GameState.shared_state["sleep_pending"] = true
 	GameState.commit_active_role_state()
-	SaveManager.save_game()
+	if not SaveManager.save_or_report("入睡前保存失败"):
+		GameState.load_save_data(rollback_snapshot)
+		return false
 	SceneRouter.chapter_transition()
 	return true
 

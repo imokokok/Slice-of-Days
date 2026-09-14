@@ -46,7 +46,7 @@
       "id": "a_d1_mossner_coffee",
       "choice_text": "接受Mossner的彩排邀请（40分钟）",
       "priority": 10,
-      "conditions": {"roles": ["A"], "days": [1], "locations": ["cafe"], "start": 660, "end": 900, "required_events": ["a_d1_print_help"], "resident_present": "mossner"},
+      "conditions": {"roles": ["A"], "days": [1], "locations": ["cafe"], "start": 540, "end": 660, "required_events": ["a_d1_print_help"], "resident_present": "mossner"},
       "cost": {"minutes": 40},
       "presentation": {
         "title": "咖啡还没有喝完",
@@ -110,6 +110,7 @@
     },
     {
       "id": "b_d1_cafeteria_observe",
+      "legacy_route": true,
       "choice_text": "确认周晓六的出现时间（40分钟）",
       "priority": 10,
       "conditions": {"roles": ["B"], "days": [1], "locations": ["night_market"], "start": 660, "end": 840},
@@ -149,6 +150,7 @@
     },
     {
       "id": "b_d1_library_wait",
+      "legacy_route": true,
       "choice_text": "在能被看见的位置等九（60分钟）",
       "priority": 10,
       "conditions": {"roles": ["B"], "days": [1], "locations": ["library"], "start": 1080, "end": 1200, "resident_present": "jiu"},
@@ -173,6 +175,7 @@
     },
     {
       "id": "b_d1_notebook_anomaly",
+      "legacy_route": true,
       "choice_text": "整理第一天的计划本（20分钟）",
       "priority": 20,
       "conditions": {"roles": ["B"], "days": [1], "locations": ["residence", "dorm"], "start": 1080, "end": 1260, "required_events": ["b_d1_cafeteria_observe"]},
@@ -195,6 +198,7 @@
     },
     {
       "id": "a_d2_restaurant_shift",
+      "legacy_route": true,
       "choice_text": "答应帮忙照看饭店时段",
       "priority": 10,
       "conditions": {"roles": ["A"], "days": [2], "locations": ["night_market"], "start": 660, "end": 1080},
@@ -217,6 +221,7 @@
     },
     {
       "id": "a_d2_restaurant_close",
+      "legacy_route": true,
       "choice_text": "把最后的台面收完（20分钟）",
       "priority": 12,
       "conditions": {"roles": ["A"], "days": [2], "locations": ["night_market"], "start": 720, "end": 1140, "required_events": ["a_d2_restaurant_shift"]},
@@ -243,6 +248,7 @@
     },
     {
       "id": "a_d2_park_music",
+      "legacy_route": true,
       "choice_text": "和阿锰在公园坐一会儿",
       "priority": 20,
       "conditions": {"roles": ["A"], "days": [2], "locations": ["park"], "start": 1260, "end": 1380, "resident_present": "a_meng"},
@@ -257,6 +263,7 @@
     },
     {
       "id": "a_d2_family_light",
+      "legacy_route": true,
       "choice_text": "把黄昏的灯光拍下来（10分钟）",
       "priority": 30,
       "conditions": {"roles": ["A"], "days": [2], "locations": ["park"], "start": 1260, "end": 1380, "required_events": ["a_d2_park_music"]},
@@ -296,7 +303,7 @@
       "id": "b_d2_tarot_deduction",
       "choice_text": "用一局推理换免费占卜",
       "priority": 10,
-      "conditions": {"roles": ["B"], "days": [2], "locations": ["tarot_stall"], "start": 1140, "end": 1260, "resident_present": "xia_touming"},
+      "conditions": {"roles": ["B"], "days": [2], "locations": ["tarot_stall"], "start": 840, "end": 960, "resident_present": "xia_touming"},
       "cost": {},
       "presentation": {
         "title": "钱和时间被放到同一张桌上",
@@ -357,6 +364,7 @@
     },
     {
       "id": "a_d3_social_chain",
+      "legacy_route": true,
       "choice_text": "跟着临时关系链走下去（90分钟）",
       "priority": 10,
       "conditions": {"roles": ["A"], "days": [3], "locations": ["park"], "start": 1260, "end": 1380},
@@ -395,6 +403,7 @@
     },
     {
       "id": "a_d3_slow_dinner",
+      "legacy_route": true,
       "choice_text": "慢慢吃完今天的晚饭（40分钟）",
       "priority": 40,
       "conditions": {"roles": ["A"], "days": [3], "locations": ["residence", "dorm"], "start": 1080, "end": 1260, "required_events": ["a_d3_social_chain"]},
@@ -638,7 +647,7 @@
       "id": "a_d4_listen_to_xia",
       "choice_text": "不急着解释，先听夏透明说完（40分钟）",
       "priority": 20,
-      "conditions": {"roles": ["A"], "days": [4], "locations": ["tarot_stall"], "start": 1140, "end": 1260, "resident_present": "xia_touming", "required_events": ["a_d4_confirmation_withdrawn"]},
+      "conditions": {"roles": ["A"], "days": [4], "locations": ["tarot_stall"], "start": 840, "end": 1080, "resident_present": "xia_touming", "required_events": ["a_d4_confirmation_withdrawn"]},
       "cost": {"minutes": 40},
       "presentation": {
         "title": "认可开始有了重量",
@@ -711,6 +720,7 @@
     },
     {
       "id": "b_d4_missed_window",
+      "legacy_route": true,
       "choice_text": "确认那个已经错过的窗口",
       "priority": 10,
       "conditions": {"roles": ["B"], "days": [4], "locations": ["bus_stop"], "start": 840, "end": 960, "resident_present": "station_caretaker"},
@@ -761,6 +771,7 @@
     },
     {
       "id": "b_d4_salvage_rehearsal",
+      "legacy_route": true,
       "choice_text": "赶去处理另一处道具窗口（60分钟）",
       "priority": 20,
       "conditions": {"roles": ["B"], "days": [4], "locations": ["print_shop"], "start": 1080, "end": 1260, "required_events": ["b_d4_missed_window"]},
@@ -778,6 +789,7 @@
     },
     {
       "id": "b_d4_notice_anomaly",
+      "legacy_route": true,
       "choice_text": "把“今日确认+0”写完（10分钟）",
       "priority": 40,
       "conditions": {"roles": ["B"], "days": [4], "locations": ["residence", "dorm"], "start": 1200, "end": 1260, "required_events": ["b_d4_missed_window"]},
@@ -795,6 +807,7 @@
     },
     {
       "id": "a_d5_library_rescue",
+      "legacy_route": true,
       "choice_text": "留下来帮Mossner搬道具（60分钟）",
       "priority": 10,
       "conditions": {"roles": ["A"], "days": [5], "locations": ["library"], "start": 780, "end": 1080},
@@ -815,6 +828,7 @@
     },
     {
       "id": "a_d5_translation",
+      "legacy_route": true,
       "choice_text": "帮两个人补全没有说出口的意思",
       "priority": 20,
       "conditions": {
@@ -1020,6 +1034,7 @@
     },
     {
       "id": "b_d6_key_meeting",
+      "legacy_route": true,
       "choice_text": "完成计算过很多次的会面（90分钟）",
       "priority": 10,
       "conditions": {"roles": ["B"], "days": [6], "locations": ["library"], "start": 1080, "end": 1260, "resident_present": "jiu"},
@@ -1036,6 +1051,7 @@
     },
     {
       "id": "b_d6_boundary_choice",
+      "legacy_route": true,
       "choice_text": "回应一个临时追加的请求",
       "priority": 20,
       "conditions": {"roles": ["B"], "days": [6], "locations": ["park"], "start": 1260, "end": 1380},
@@ -1080,6 +1096,7 @@
     },
     {
       "id": "b_d6_pass_chess",
+      "legacy_route": true,
       "choice_text": "经过棋桌，但不停下来（10分钟）",
       "priority": 30,
       "conditions": {"roles": ["B"], "days": [6], "locations": ["park"], "start": 1260, "end": 1380, "required_events": ["b_d6_key_meeting"]},

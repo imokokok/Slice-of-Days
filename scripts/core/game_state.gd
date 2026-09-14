@@ -178,13 +178,23 @@ func active_time_blocks() -> Array:
 ## Shared by street and indoor exploration; paused scenes do not feed the clock.
 func advance_world_clock(real_seconds: float) -> void:
 	if real_seconds <= 0.0 or not is_finite(real_seconds): return
+	# Fragmented schedules contain unavailable gaps. Natural world time may reach
+	# a block boundary, but must never leak through it.
+	if current_block_remaining() <= 0:
+		if not advance_to_next_free_block():
+			clock_remainder = 0.0
+			return
 	var seconds_per_minute := float(calendar_data.get("real_seconds_per_game_minute", REAL_SECONDS_PER_GAME_MINUTE))
 	seconds_per_minute = maxf(seconds_per_minute, 0.1)
 	clock_remainder += real_seconds
 	var minutes := int(floor((clock_remainder + 0.0000001) / seconds_per_minute))
 	if minutes == 0: return
-	clock_remainder = maxf(0.0, clock_remainder - minutes * seconds_per_minute)
-	spend_time(minutes)
+	var usable_minutes := mini(minutes, current_block_remaining())
+	clock_remainder = maxf(0.0, clock_remainder - usable_minutes * seconds_per_minute)
+	spend_time(usable_minutes)
+	if usable_minutes < minutes:
+		# Time spent during an unavailable gap is not carried into the next block.
+		clock_remainder = 0.0
 
 func spend_time(minutes: int) -> bool:
 	if minutes <= 0:
@@ -203,12 +213,16 @@ func use_free_time(minutes: int) -> bool:
 
 
 func can_fit_now(minutes: int) -> bool:
+	return can_fit_at(current_role, current_day, current_minute, minutes)
+
+
+func can_fit_at(role: String, day: int, minute: int, minutes: int) -> bool:
 	if minutes < 0:
 		return false
-	for block in active_time_blocks():
+	for block in schedule_for(role, day).get("blocks", []):
 		var start := int(block[0])
 		var end := int(block[1])
-		if current_minute >= start and current_minute + minutes <= end:
+		if minute >= start and minute + minutes <= end:
 			return true
 	return false
 

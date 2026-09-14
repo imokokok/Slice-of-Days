@@ -140,6 +140,7 @@ func _experience_completed() -> bool:
 func _complete() -> void:
 	if not _experience_completed():
 		return
+	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	var pending: Dictionary = GameState.shared_state.get("pending_module", {})
 	var source_event_id := str(pending.get("source_event_id", ""))
 	if source_event_id.begins_with("space:") or source_event_id.begins_with("street:"):
@@ -156,13 +157,18 @@ func _complete() -> void:
 	if not GameplayModuleSystem.complete_external(module_id, outcome, metadata.get("external_results", {})):
 		status_label.text = "结果暂时无法写入主存档，请重试。"
 		return
-	SaveManager.save_game()
+	if not SaveManager.save_or_report("玩法结果保存失败"):
+		GameState.load_save_data(rollback_snapshot)
+		status_label.text = "存档写入失败，本次提交尚未生效；可以重试。"
+		return
 	SceneRouter.return_from_gameplay()
 
 
 func _cancel() -> void:
 	GameplayModuleSystem.cancel_session()
-	SaveManager.save_game()
+	if not SaveManager.save_or_report("取消玩法后保存失败"):
+		status_label.text = "已撤销本次玩法，但存档写入失败。"
+		return
 	SceneRouter.return_from_gameplay()
 
 

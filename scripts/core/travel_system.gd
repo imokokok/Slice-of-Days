@@ -65,7 +65,7 @@ func _add_edge(from_id: String, to_id: String, minutes: int) -> void:
 	adjacency[from_id] = rows
 
 
-func route(from_id: String, to_id: String, method: String, _role: String, minute: int) -> Dictionary:
+func route(from_id: String, to_id: String, method: String, role: String, minute: int) -> Dictionary:
 	if from_id == to_id: return {"available":false, "reason":"已经在这里。"}
 	var walking := _shortest_walk_minutes(from_id, to_id)
 	if walking < 0: return {"available":false, "reason":"没有连接的路线。"}
@@ -100,9 +100,11 @@ func route(from_id: String, to_id: String, method: String, _role: String, minute
 			duration = int(transport.friend_minutes)
 			label = "熟人顺路接送"
 		_: return {"available":false, "reason":"没有这种交通方式。"}
+	if not GameState.can_fit_at(role, GameState.current_day, minute, duration):
+		return {"available":false, "reason":"当前空闲时段不足以完成这段路程。"}
 	var conflicts: Array[String] = []
 	for appointment in GameState.appointments:
-		if int(appointment.get("day", 0)) == GameState.current_day and str(appointment.get("status", "")) in ["scheduled", "active"] and minute < int(appointment.get("end", 1440)) and minute + duration > int(appointment.get("start", 1440)):
+		if int(appointment.get("day", 0)) == GameState.current_day and str(appointment.get("status", "")) in ["scheduled", "active"] and str(appointment.get("location", "")) != to_id and minute < int(appointment.get("end", 1440)) and minute + duration > int(appointment.get("start", 1440)):
 			conflicts.append(str(appointment.get("label", "已知预约")))
 	return {"available":true, "minutes":duration, "cost":cost, "wait":wait, "arrival":minute+duration, "label":label, "conflicts":conflicts}
 
@@ -124,7 +126,8 @@ func travel(to_id: String, method: String) -> Dictionary:
 		return {"ok": false, "message": "余额不足。"}
 	if cost > 0:
 		GameState.spend_money(cost)
-	GameState.spend_time(duration)
+	if not GameState.use_free_time(duration):
+		return {"ok": false, "message": "当前空闲时段不足以完成这段路程。"}
 	if method == "friend":
 		var used: Array = GameState.shared_state.get("used_rides", [])
 		used.append("%d_%s" % [GameState.current_day, str(transport.friend_npc)])

@@ -5,6 +5,9 @@ var fade: Tween
 func _ready() -> void:
  add_child(waves)
  add_child(tone)
+ # Headless validation has no audible output and retaining a decoded stream at
+ # engine shutdown causes false-positive ObjectDB/resource leak reports.
+ if AudioServer.get_driver_name() == "Dummy": return
  var path := "res://extensions/observatory/assets/audio/soft_waves.ogg"
  if not ResourceLoader.exists(path): path = "res://extensions/observatory/assets/audio/soft_waves_placeholder.wav"
  if ResourceLoader.exists(path):

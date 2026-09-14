@@ -77,13 +77,20 @@ func chapter_transition() -> void:
 	go_to(CHAPTER_TRANSITION)
 
 
-func gameplay_module(module_id: String, source_event_id := "") -> void:
-	if transitioning: return
-	if not GameplayModuleSystem.begin_session(module_id, source_event_id):
+func gameplay_module(module_id: String, source_event_id := "", rollback_snapshot: Dictionary = {}) -> bool:
+	if transitioning: return false
+	var session_snapshot := rollback_snapshot.duplicate(true)
+	if session_snapshot.is_empty():
+		session_snapshot = GameState.to_save_data().duplicate(true)
+	if not GameplayModuleSystem.begin_session(module_id, source_event_id, session_snapshot):
 		push_warning("Unable to begin gameplay module: %s" % module_id)
-		return
+		return false
+	if not SaveManager.save_or_report("进入玩法时保存失败"):
+		GameplayModuleSystem.cancel_session()
+		return false
 	var metadata: Dictionary = GameplayModuleSystem.modules.get(module_id, {})
 	go_to(str(metadata.get("scene_path", MODULE_WORKBENCH)))
+	return true
 
 
 func return_from_gameplay() -> void:
@@ -116,10 +123,13 @@ func town_map(destination := "") -> void:
 	go_to("res://scenes/town_map.tscn")
 func travel_to(destination: String, method: String) -> Dictionary:
 	if transitioning: return {"ok":false,"message":"还在路上。"}
+	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	var result := TravelSystem.travel(destination,method)
 	if not bool(result.get("ok",false)): return result
 	active_space_id = ""
 	GameState.shared_state["map_arrival"] = destination
-	SaveManager.save_game()
+	if not SaveManager.save_or_report("出行后保存失败"):
+		GameState.load_save_data(rollback_snapshot)
+		return {"ok": false, "message": "存档写入失败，本次出行已撤销。"}
 	town_day()
 	return result

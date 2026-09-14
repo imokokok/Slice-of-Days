@@ -66,7 +66,7 @@ func set_confirmation(resident_id: String, status: String) -> void:
 	GameState.relationships[resident_id] = state
 	if status == "granted":
 		GameState.add_confirmation(resident_id)
-	elif ["withdrawn", "refused"].has(status):
+	else:
 		GameState.remove_confirmation(resident_id)
 	GameState.commit_active_role_state()
 	relationship_changed.emit(GameState.current_role, resident_id)
@@ -87,7 +87,9 @@ func summary(resident_id: String) -> Dictionary:
 
 func confirmation_request_preview(resident_id: String) -> Dictionary:
 	var resident: Dictionary = ScheduleSystem.residents.get(resident_id, {})
-	if resident.is_empty() or (not bool(resident.get("draft", false)) and not ResidentProfileSystem.is_core(resident_id)):
+	# Core residents are confirmed only through authored story events. This
+	# generic conversation action is reserved for draft/free-roam residents.
+	if resident.is_empty() or not bool(resident.get("draft", false)):
 		return {"available": false}
 	var state: Dictionary = GameState.relationships.get(resident_id, {})
 	if state.is_empty():
@@ -141,6 +143,31 @@ func request_confirmation(resident_id: String) -> Dictionary:
 	add_flags(resident_id, [_request_memory(next_status)])
 	set_confirmation(resident_id, next_status)
 	return {"ok": true, "status": next_status, "message": message}
+
+
+func request_confirmation_action(resident_id: String, minutes := 10) -> Dictionary:
+	var preview := confirmation_request_preview(resident_id)
+	if not bool(preview.get("available", false)):
+		return {"ok": false, "message": "现在还不适合提出这个请求。"}
+	if not GameState.can_fit_now(minutes):
+		return {"ok": false, "message": "当前空闲时段不足以进行这次谈话。"}
+	var event_id := "confirmation_request_d%d_%s_%s" % [
+		GameState.current_day, GameState.current_role.to_lower(), resident_id
+	]
+	if GameState.has_event(event_id):
+		return {"ok": false, "message": "今天已经认真问过一次了。"}
+	if not GameState.use_free_time(minutes):
+		return {"ok": false, "message": "当前空闲时段不足以进行这次谈话。"}
+	var result := request_confirmation(resident_id)
+	if not bool(result.get("ok", false)):
+		return result
+	GameState.mark_event(event_id)
+	GameState.add_journal_entry({
+		"id": event_id,
+		"kind": "confirmation_request",
+		"text": str(result.get("message", "这次请求已经被记录。")),
+	})
+	return result
 
 
 func _request_memory(status: String) -> String:

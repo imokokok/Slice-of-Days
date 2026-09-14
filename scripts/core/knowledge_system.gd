@@ -13,7 +13,7 @@ func learn(fact: Dictionary) -> void:
 			replaced = true
 	if not replaced: rows.append(item)
 	GameState.shared_state["knowledge_"+GameState.current_role] = rows
-	SaveManager.save_game()
+	SaveManager.save_or_report("知识记录保存失败")
 func text() -> String:
 	var lines: Array[String] = []
 	for item in facts():

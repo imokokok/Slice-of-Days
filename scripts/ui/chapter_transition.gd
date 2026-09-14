@@ -1,6 +1,7 @@
 extends Control
 
 var continuing := false
+var words: Label
 
 func _ready() -> void:
 	if not bool(GameState.shared_state.get("sleep_pending", false)):
@@ -10,7 +11,7 @@ func _ready() -> void:
 	night.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	night.color = Color("111d28")
 	add_child(night)
-	var words := Label.new()
+	words = Label.new()
 	words.position = Vector2(300, 367)
 	words.size = Vector2(1000, 160)
 	words.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -45,10 +46,16 @@ func _ready() -> void:
 func _continue_journey() -> void:
 	if continuing: return
 	continuing = true
+	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	GameState.shared_state.erase("sleep_pending")
 	GameState.shared_state.erase("midnight_rest")
 	ChapterSystem.mark_transition_complete(str(ChapterSystem.transition_context().get("transition_id", "")))
 	var result := ChapterSystem.advance_chapter()
-	SaveManager.save_game()
+	if not SaveManager.save_or_report("章节切换保存失败"):
+		GameState.load_save_data(rollback_snapshot)
+		continuing = false
+		words.text = "存档写入失败，请检查磁盘空间后重试。"
+		words.modulate.a = 1.0
+		return
 	if bool(result.get("complete", false)): SceneRouter.ending()
 	else: SceneRouter.town_day()

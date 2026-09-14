@@ -12,15 +12,20 @@ var active := false
 var cache: Dictionary = {}
 var monitoring_locks := 0
 var footstep_cache: Dictionary = {}
+var ambience_thread: Thread
+var generating_location := ""
+var requested_location := ""
 
 func _ready() -> void:
-	AudioServer.add_bus()
-	AudioServer.set_bus_name(AudioServer.bus_count - 1, BUS)
+	if AudioServer.get_bus_index(BUS) < 0:
+		AudioServer.add_bus()
+		AudioServer.set_bus_name(AudioServer.bus_count - 1, BUS)
 	ambience = AudioStreamPlayer.new()
 	foley = AudioStreamPlayer.new()
 	coast = AudioStreamPlayer.new()
 	coast.bus = BUS
-	coast.stream = make_sea()
+	if AudioServer.get_driver_name() != "Dummy":
+		coast.stream = make_sea()
 	coast.volume_db = -8.0
 	add_child(coast)
 	for player in [ambience, foley]:
@@ -40,9 +45,50 @@ func set_active(value: bool) -> void:
 func set_location(value: String) -> void:
 	if location == value: return
 	location = value
-	if not cache.has(value): cache[value] = make_ambience(value)
-	ambience.stream = cache[value]
-	if active and AudioServer.get_driver_name() != "Dummy": ambience.play()
+	requested_location = value
+	if AudioServer.get_driver_name() == "Dummy":
+		return
+	if cache.has(value):
+		_apply_ambience(value)
+	elif ambience_thread == null:
+		_start_ambience_job(value)
+
+
+func _start_ambience_job(place: String) -> void:
+	generating_location = place
+	ambience_thread = Thread.new()
+	var result := ambience_thread.start(Callable(self, "make_ambience").bind(place))
+	if result != OK:
+		push_error("Unable to start ambience generation: %s" % error_string(result))
+		ambience_thread = null
+		generating_location = ""
+
+
+func _process(_delta: float) -> void:
+	if ambience_thread == null or ambience_thread.is_alive():
+		return
+	var completed_location := generating_location
+	var generated = ambience_thread.wait_to_finish()
+	ambience_thread = null
+	generating_location = ""
+	if generated is AudioStreamWAV:
+		cache[completed_location] = generated
+		if requested_location == completed_location:
+			_apply_ambience(completed_location)
+	if not requested_location.is_empty() and not cache.has(requested_location):
+		_start_ambience_job(requested_location)
+
+
+func _apply_ambience(place: String) -> void:
+	ambience.stream = cache[place]
+	if active and AudioServer.get_driver_name() != "Dummy":
+		ambience.play()
+
+
+func _exit_tree() -> void:
+	if ambience_thread != null:
+		ambience_thread.wait_to_finish()
+		ambience_thread = null
 
 func lock_monitor(lock: bool) -> void:
 	monitoring_locks = maxi(0, monitoring_locks + (1 if lock else -1))

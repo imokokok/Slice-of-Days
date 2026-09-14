@@ -92,7 +92,8 @@ func _on_new_game_pressed() -> void:
 	# Allocate automatically; preserve older journeys without showing empty slot UI.
 	if not SaveManager.prepare_new_journey(): return
 	ChapterSystem.start_new_game()
-	SaveManager.save_game()
+	if not SaveManager.save_or_report("新旅程保存失败"):
+		return
 	SceneRouter.town_day()
 
 

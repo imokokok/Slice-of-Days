@@ -11,6 +11,7 @@ func _ready() -> void:
 	EventSystem.load_event_data("res://data/story/events.json")
 	_test_calendar_and_role_isolation()
 	_test_schedule_and_route()
+	_test_fragmented_time_and_module_rollback()
 	_test_core_resident_profiles()
 	_test_event_and_relationship()
 	_test_draft_confirmation_request()
@@ -73,6 +74,36 @@ func _test_schedule_and_route() -> void:
 	var result: Dictionary = TravelSystem.travel("park", "walk")
 	_check(bool(result.get("ok", false)), "The route graph should connect residence to park")
 	_check(GameState.current_location == "park", "Travel should update the active role location")
+
+
+func _test_fragmented_time_and_module_rollback() -> void:
+	ChapterSystem.start_new_game("A")
+	ChapterSystem.advance_chapter()
+	GameState.current_minute = 599
+	GameState.current_location = "residence"
+	GameState.commit_active_role_state()
+	GameState.advance_world_clock(8.0)
+	_check(GameState.current_minute == 600, "Natural time should stop at the end of B's fragmented free block")
+	GameState.advance_world_clock(4.0)
+	_check(GameState.current_minute == 661, "Natural time should resume from B's next declared free block")
+	GameState.current_minute = 660
+	GameState.commit_active_role_state()
+	var rollback_id := "smoke_module_rollback"
+	EventSystem.events[rollback_id] = {
+		"id": rollback_id,
+		"conditions": {"roles": ["B"], "days": [2], "locations": ["residence"], "start": 660, "end": 720},
+		"cost": {"money": 7, "minutes": 10},
+		"results": {"facts": ["provisional module fact"], "unlock_modules": ["cooking"]},
+		"launch_module": "cooking",
+	}
+	var before_money := GameState.money
+	var result := EventSystem.trigger(rollback_id)
+	_check(bool(result.get("ok", false)), "A module-backed event should enter its provisional state")
+	_check(GameplayModuleSystem.begin_session("cooking", rollback_id, result.get("rollback_snapshot", {})), "The provisional module session should begin")
+	GameplayModuleSystem.cancel_session()
+	_check(GameState.current_minute == 660 and GameState.money == before_money, "Cancel should restore module event time and money")
+	_check(not GameState.known_facts.has("provisional module fact") and not GameState.has_event(rollback_id), "Cancel should restore module event facts and completion markers")
+	EventSystem.events.erase(rollback_id)
 
 
 func _test_core_resident_profiles() -> void:
@@ -146,13 +177,18 @@ func _test_event_and_relationship() -> void:
 func _test_draft_confirmation_request() -> void:
 	ChapterSystem.start_new_game("A")
 	RelationshipSystem.record_encounter("recordist", "smoke_first")
-	var early := RelationshipSystem.request_confirmation("recordist")
+	var before_minute := GameState.current_minute
+	var early := RelationshipSystem.request_confirmation_action("recordist")
 	_check(str(early.get("status", "")) == "refused", "Asking a draft resident after one encounter should be refused")
+	_check(GameState.current_minute == before_minute + 10, "A conversation confirmation request should charge its authored time cost")
+	_check(GameState.has_event("confirmation_request_d1_a_recordist"), "A conversation confirmation request should leave a daily event marker")
 	for index in 3:
 		RelationshipSystem.record_encounter("recordist", "smoke_more_%d" % index)
 	var repaired := RelationshipSystem.request_confirmation("recordist")
 	_check(str(repaired.get("status", "")) == "granted", "A refused draft resident should allow repair after enough real encounters")
 	_check(GameState.confirmed_residents.has("recordist"), "A repaired draft relationship should grant confirmation")
+	RelationshipSystem.set_confirmation("recordist", "pending")
+	_check(not GameState.confirmed_residents.has("recordist"), "Any non-granted confirmation status should remove the resident from the confirmed list")
 
 
 func _test_choice_history() -> void:

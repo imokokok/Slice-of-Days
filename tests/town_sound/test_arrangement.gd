@@ -18,6 +18,8 @@ func run() -> void:
 	model.clips[0].loop = true
 	model.clips[0].length = 3.0
 	var original := model.mix().data
+	var async_mix = await model.mix_async()
+	check(async_mix != null and async_mix.data == original, "Background mix changed rendered audio")
 	check(model.split(0, 1.25), "Loop split failed")
 	check(model.mix().data == original, "Split changed loop audio")
 	model.muted[0] = true

@@ -40,7 +40,11 @@ func _ready() -> void:
 	var segment := WorldGraph.segment_for(GameState.current_location)
 	segment_id = str(segment.id)
 	for location_id in segment.locations: street_order.append(str(location_id))
-	outdoor_objects = JSON.parse_string(FileAccess.get_file_as_string("res://data/world/street_objects.json")).get("objects", [])
+	var object_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/world/street_objects.json"))
+	if object_data is Dictionary:
+		outdoor_objects = object_data.get("objects", [])
+	else:
+		push_error("Invalid street object data")
 	street = preload("res://scripts/ui/walk_stage.gd").new()
 	add_child(street)
 	backdrop = street
@@ -206,7 +210,7 @@ func _ambient_talk(resident_id: String) -> void:
 		status_message = "%s说起%s。没有人因此立刻给出认可，但这次相处被记住了。" % [name, activity_text]
 	else:
 		status_message = "%s：“%s”\n这次谈话发生在%s，没有人因此立刻给出认可。" % [name, profile_line, activity_text]
-	SaveManager.save_game()
+	SaveManager.save_or_report("居民互动后保存失败")
 	_refresh()
 	_show_line(name, profile_line if not profile_line.is_empty() else status_message)
 
@@ -220,17 +224,9 @@ func _confirmation_request_event_id(resident_id: String) -> String:
 
 
 func _request_confirmation(resident_id: String) -> void:
-	if not _spend_action_time(10):
-		return
-	var result := RelationshipSystem.request_confirmation(resident_id)
+	var result := RelationshipSystem.request_confirmation_action(resident_id)
 	status_message = str(result.get("message", "这次请求已经被记录。"))
-	GameState.mark_event(_confirmation_request_event_id(resident_id))
-	GameState.add_journal_entry({
-		"id": _confirmation_request_event_id(resident_id),
-		"kind": "confirmation_request",
-		"text": status_message,
-	})
-	SaveManager.save_game()
+	SaveManager.save_or_report("确认请求后保存失败")
 	_refresh()
 
 
@@ -243,12 +239,15 @@ func _resolve_event(event_id: String, choice_id: String = "") -> void:
 	var result := EventSystem.trigger(event_id, choice_id)
 	status_message = str(result.get("message", ""))
 	if bool(result.get("ok", false)):
-		SaveManager.save_game()
 		var launch_module := str(result.get("launch_module", ""))
 		if not launch_module.is_empty():
 			event_overlay.visible = false
-			SceneRouter.gameplay_module(launch_module, event_id)
+			if not SceneRouter.gameplay_module(launch_module, event_id, result.get("rollback_snapshot", {})):
+				event_overlay.visible = true
+				status_message = "玩法暂时无法启动，本次事件尚未生效。"
+				_refresh()
 			return
+		SaveManager.save_or_report("事件完成后保存失败")
 		_show_event_result(result, before)
 	else:
 		_show_line("", status_message)
@@ -301,7 +300,10 @@ func _spend_action_time(minutes: int) -> bool:
 func _return_to_menu() -> void:
 	_remember_position()
 	if _guard_pocket_audio(): return
-	SaveManager.save_game()
+	if not SaveManager.save_or_report("返回菜单前保存失败"):
+		status_message = "存档写入失败，暂时留在小镇。"
+		_refresh()
+		return
 	SceneRouter.main_menu()
 
 
@@ -437,7 +439,7 @@ func _on_walk(x: float) -> void:
 	GameState.current_location = street_order[index]
 	_remember_position()
 	GameState.commit_active_role_state()
-	SaveManager.save_game()
+	SaveManager.save_or_report("街道位置保存失败")
 	_refresh()
 
 func _remember_position() -> void:
@@ -497,7 +499,7 @@ func _interact() -> void:
 	if item.is_empty(): return
 	if str(item.kind) in ["home", "door", "module"] and _guard_pocket_audio(): return
 	_remember_position()
-	SaveManager.save_game()
+	SaveManager.save_or_report("地点互动前保存失败")
 	match str(item.kind):
 		"shop_closed": _show_line("", "门内很安静，桌上留着半杯咖啡。晚一点或明天再来。")
 		"roads": _open_map()
@@ -598,7 +600,10 @@ func _show_dialogue_beat() -> void:
 func _open_journal() -> void:
 	if _guard_pocket_audio(): return
 	_remember_position()
-	SaveManager.save_game()
+	if not SaveManager.save_or_report("打开日志前保存失败"):
+		status_message = "存档写入失败，暂时无法离开当前画面。"
+		_refresh()
+		return
 	SceneRouter.journal()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -607,12 +612,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if SceneRouter.transitioning: return
 	if _pocket_blocks_walking() or pocket_opening: return
 	if event_overlay.visible:
-		if street.sitting and event.keycode == KEY_E:
+		if street.sitting and event.is_action_pressed("interact"):
 			if not dialogue_choices.is_empty(): dialogue_choices[0].pressed.emit()
-		elif event.keycode == KEY_ESCAPE:
+		elif event.is_action_pressed("ui_cancel"):
 			if street.sitting: _stand_from_bench()
 			else: event_overlay.hide()
-		elif event.keycode in [KEY_E, KEY_ENTER, KEY_SPACE] and dialogue_choices.size() == 1:
+		elif (event.is_action_pressed("interact") or event.is_action_pressed("ui_accept")) and dialogue_choices.size() == 1:
 			if is_instance_valid(spoken_line) and spoken_line.visible_characters >= 0 and spoken_line.visible_characters < spoken_line.text.length():
 				if speech_tween: speech_tween.kill()
 				spoken_line.visible_characters = -1
@@ -620,10 +625,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.keycode >= KEY_1 and event.keycode <= KEY_9:
 			var index: int = event.keycode - KEY_1
 			if index < dialogue_choices.size(): dialogue_choices[index].pressed.emit()
-	elif event.keycode == KEY_E: _interact()
-	elif event.keycode == KEY_J: _open_journal()
-	elif event.keycode == KEY_M: _open_map()
-	elif event.keycode == KEY_ESCAPE: _return_to_menu()
+	elif event.is_action_pressed("interact"): _interact()
+	elif event.is_action_pressed("open_journal"): _open_journal()
+	elif event.is_action_pressed("open_map"): _open_map()
+	elif event.is_action_pressed("ui_cancel"): _return_to_menu()
 	get_viewport().set_input_as_handled()
 
 func _pocket_blocks_walking() -> bool:
@@ -633,11 +638,15 @@ func _pocket_blocks_walking() -> bool:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST and is_instance_valid(street):
 		_remember_position()
-		SaveManager.save_game()
+		SaveManager.save_or_report("关闭窗口前保存失败")
 
 func _open_map() -> void:
 	if _guard_pocket_audio(): return
 	_remember_position()
+	if not SaveManager.save_or_report("打开地图前保存失败"):
+		status_message = "存档写入失败，暂时无法离开当前画面。"
+		_refresh()
+		return
 	SceneRouter.town_map()
 
 func _sit_on_bench(item: Dictionary) -> void:
@@ -651,12 +660,12 @@ func _bench_menu() -> void:
 	_clear_dialogue()
 	_label(event_panel,"坐在长椅上 · " + GameState.clock_text(),Vector2(30,20),Vector2(670,40),24,Color("f0e3c7"))
 	_label(event_panel,"海风从身旁经过。",Vector2(30,70),Vector2(670,40),22,Color("c9d8cd"))
-	var minutes := mini(30,1439-GameState.current_minute)
+	var minutes := mini(30, GameState.current_block_remaining())
 	if minutes > 0:
 		var wait := _button(event_panel,"E / 1  坐一会 · %d分钟" % minutes,Vector2(30,132),Vector2(660,45),"dialogue")
 		wait.pressed.connect(_wait_on_bench.bind(minutes))
 		dialogue_choices.append(wait)
-	if GameState.current_location == "park" and GameState.current_minute < 1260:
+	if GameState.current_location == "park" and GameState.current_minute < 1260 and GameState.can_fit_now(1260 - GameState.current_minute):
 		var until_open := _button(event_panel,"2  等到观景台开放 · 21:00",Vector2(30,188),Vector2(660,45),"dialogue")
 		until_open.pressed.connect(_wait_on_bench.bind(1260-GameState.current_minute))
 		dialogue_choices.append(until_open)
@@ -664,11 +673,14 @@ func _bench_menu() -> void:
 	stand.pressed.connect(_stand_from_bench)
 	dialogue_choices.append(stand)
 func _wait_on_bench(minutes: int) -> void:
-	GameState.spend_time(minutes)
+	if not GameState.use_free_time(minutes):
+		status_message = "这段空闲时间不够，不能一直等到那个时刻。"
+		_show_line("", status_message)
+		return
 	if not street.hotspots.any(func(h: Dictionary) -> bool: return str(h.kind) in ["bench","wait_open"] and absf(float(h.x)-street.player_x)<1):
 		street.hotspots.append({"x":street.player_x,"kind":"bench","label":"长椅"})
 	_remember_position()
-	SaveManager.save_game()
+	SaveManager.save_or_report("长椅等待后保存失败")
 	_bench_menu()
 func _stand_from_bench() -> void:
 	street.sitting = false

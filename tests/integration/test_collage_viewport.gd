@@ -67,9 +67,27 @@ func run() -> void:
 	var screenshot := OS.get_environment("COLLAGE_TEST_SCREENSHOT")
 	if not screenshot.is_empty():
 		root.get_texture().get_image().save_png(screenshot)
+	# Exercise pellet dropping through the real scaled host viewport too.
+	letter.stage = "WAX_SEAL"
+	letter.wax_step = 1
+	letter.build_ui()
+	await process_frame
+	for sample in [[Vector2(310, 570), true], [Vector2(328, 371), false]]:
+		var at: Vector2 = host.letter_container.position + sample[0] * host.letter_container.scale
+		var event := InputEventMouseButton.new()
+		event.position = at
+		event.global_position = at
+		event.button_index = MOUSE_BUTTON_LEFT
+		event.pressed = sample[1]
+		root.push_input(event, true)
+		await process_frame
+	check(letter.wax_step == 2, "Wax pellets must drop into the spoon through the scaled game window")
+	if not screenshot.is_empty():
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png(screenshot.get_basename() + "-wax.png")
 	letter.audio.shutdown()
 	host.queue_free()
 	gameplay.cancel_session()
-	await process_frame
+	await create_timer(0.3).timeout
 	print("COLLAGE_VIEWPORT_TEST: ", "PASS" if failures == 0 else "FAIL", " failures=", failures)
 	quit(failures)

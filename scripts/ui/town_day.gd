@@ -23,7 +23,9 @@ var pocket_opening := false
 var interactive_spaces: Array[Dictionary] = []
 var street: Control
 var street_order: Array[String] = []
-const BLOCK_WIDTH := 1600.0
+var BLOCK_WIDTH := 1600.0
+var route_offset := 0.0
+var route_hint: Label
 const Atlas = preload("res://scripts/ui/scene_atlas.gd")
 var outdoor_objects: Array = []
 var current_index := -1
@@ -44,6 +46,8 @@ func _ready() -> void:
 	var segment := WorldGraph.segment_for(GameState.current_location)
 	segment_id = str(segment.id)
 	for location_id in segment.locations: street_order.append(str(location_id))
+	route_offset = float(segment.get("offset", 0))
+	BLOCK_WIDTH = (float(segment.width) - route_offset) / street_order.size()
 	var object_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/world/street_objects.json"))
 	if object_data is Dictionary:
 		outdoor_objects = object_data.get("objects", [])
@@ -52,33 +56,46 @@ func _ready() -> void:
 	street = preload("res://scripts/ui/walk_stage.gd").new()
 	add_child(street)
 	backdrop = street
-	street.world_width = street_order.size() * BLOCK_WIDTH
+	street.world_width = float(segment.width)
+	street.route_id = segment_id
 	street.composition_anchor = 800.0
 	for index in street_order.size():
-		street.places.append({"id": street_order[index], "name": _location_name(street_order[index]), "kind":locations[street_order[index]].kind, "interior":locations[street_order[index]].interior, "x": index * BLOCK_WIDTH + 800.0})
+		street.places.append({"id": street_order[index], "name": _location_name(street_order[index]), "kind":locations[street_order[index]].kind, "interior":locations[street_order[index]].interior, "x": _world_x(index, 800), "width":BLOCK_WIDTH})
 	# Load this connected street before walking so a new plate never stalls a boundary crossing.
 	for location_id in street_order:
 		Atlas.plate(Atlas.street(location_id))
 	var saved: Dictionary = GameState.shared_state.get("street_positions", {})
 	var layout := int(GameState.shared_state.get("street_layout_version",0))
 	if layout == 4:
-		for saved_key in saved: saved[saved_key] = float(saved[saved_key]) * BLOCK_WIDTH / 900.0
-	elif layout != 5: saved = {}
+		for saved_key in saved: saved[saved_key] = float(saved[saved_key]) * 1600.0 / 900.0
+	elif layout not in [5, 6]: saved = {}
 	GameState.shared_state["street_positions"] = saved
-	GameState.shared_state["street_layout_version"] = 5
+	GameState.shared_state["street_layout_version"] = 6
 	var key := "%s_%d_%s" % [GameState.current_role, GameState.current_day, segment_id]
-	var default_x := maxi(0, street_order.find(GameState.current_location)) * BLOCK_WIDTH + 300.0
+	var default_x := _world_x(maxi(0, street_order.find(GameState.current_location)), 300)
 	if not saved.has(key):
 		var legacy := WorldGraph.legacy_segment_for(GameState.current_location)
 		var old_key := "%s_%d_%s" % [GameState.current_role, GameState.current_day, str(legacy.get("id", ""))]
 		if saved.has(old_key):
 			var old_places: Array = legacy.locations
-			var old_index := clampi(int(float(saved[old_key]) / BLOCK_WIDTH), 0, old_places.size() - 1)
-			default_x = street_order.find(str(old_places[old_index])) * BLOCK_WIDTH + fposmod(float(saved[old_key]), BLOCK_WIDTH)
+			var old_index := clampi(int(float(saved[old_key]) / 1600.0), 0, old_places.size() - 1)
+			if layout == 4 and street_order.has(str(old_places[old_index])):
+				GameState.current_location = str(old_places[old_index])
+				default_x = _world_x(street_order.find(GameState.current_location), fposmod(float(saved[old_key]), 1600.0))
 	street.player_x = float(saved.get(key, default_x))
+	# Scripted relocations and restored saves can request another location on
+	# the same joined coast. Do not let an old coast coordinate undo that move.
+	if saved.has(key) and _index_at(street.player_x) != street_order.find(GameState.current_location):
+		street.player_x = default_x
 	if str(GameState.shared_state.get("map_arrival", "")) == GameState.current_location:
 		street.player_x = default_x
 		GameState.shared_state.erase("map_arrival")
+	var arrival: Dictionary = GameState.shared_state.get("route_arrival", {})
+	if str(arrival.get("route", "")) == segment_id:
+		street.player_x = float(arrival.x)
+		street.facing = float(arrival.get("facing", 1))
+		GameState.shared_state.erase("route_arrival")
+	street.camera_x = clampf(street.player_x - 800, 0, street.world_width - 1600)
 	street.move_player(0, 0)
 	street.moved.connect(_on_walk)
 	_build_ui()
@@ -117,6 +134,10 @@ func _load_interactive_spaces() -> void:
 
 
 func _build_ui() -> void:
+	route_hint = _label(self, "", Vector2(380, 750), Vector2(840, 50), 23, Color("fff3d8"), HORIZONTAL_ALIGNMENT_CENTER)
+	route_hint.add_theme_color_override("font_shadow_color", Color("152f3e"))
+	route_hint.add_theme_constant_override("shadow_offset_x", 2)
+	route_hint.add_theme_constant_override("shadow_offset_y", 2)
 	location_title = _label(self, "", Vector2(142, 18), Vector2(590, 35), 23, Color("e9dcc4"))
 	clock_label = _label(self, "", Vector2(720, 22), Vector2(330, 30), 17, Color("aab8b6"), HORIZONTAL_ALIGNMENT_RIGHT)
 	wallet_icon = TextureRect.new()
@@ -161,7 +182,7 @@ func _refresh() -> void:
 		create_tween().tween_property(wallet_icon, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	time_guidance_label.text = _time_guidance_text()
 	if GameState.current_day == 6 and GameState.current_minute >= 1200: clock_label.text += " · 确认%d/12" % GameState.residency_confirmations
-	street.walk_limit = street_order.find("park") * BLOCK_WIDTH + 1060 if GameState.current_minute < WorldGraph.LOOKOUT_OPEN and street_order.has("park") else INF
+	street.walk_limit = _world_x(street_order.find("park"), 1060) if GameState.current_minute < WorldGraph.LOOKOUT_OPEN and street_order.has("park") else INF
 	if street.player_x > street.walk_limit:
 		street.player_x = street.walk_limit
 		street.move_player(0, 0)
@@ -176,10 +197,10 @@ func _time_guidance_text() -> String:
 	if commitment.is_empty() or str(commitment.get("location", "")) == GameState.current_location:
 		return base
 	var return_by := int(commitment.get("return_by", commitment.get("start", 0)))
-	var home_x := street_order.find(str(commitment.get("location", "dorm"))) * BLOCK_WIDTH + 800.0
-	var shortest := int(ceil(absf(home_x - street.player_x) / street.SPEED / 4.0)) + 1
+	var home_id := str(commitment.get("location", "dorm"))
+	var shortest := int(ceil(WorldGraph.walking_distance(GameState.current_location, home_id, street.player_x) / street.SPEED / 4.0)) + 1
 	var leave_by := return_by - shortest
-	return "%s 回家工作 · 慢走约%d分钟 · %s%s动身" % [_minute_text(return_by), shortest, "往左" if home_x < street.player_x else "往右", "，现在该" if GameState.current_minute >= leave_by else "，" + _minute_text(leave_by) + "前"]
+	return "%s 回家工作 · 步行约%d分钟 · %s · %s" % [_minute_text(return_by), shortest, "住宅区内" if segment_id == "residential" else "经主街路口向上", "现在该动身了" if GameState.current_minute >= leave_by else _minute_text(leave_by) + "前动身"]
 
 
 func _spaces_at(location_id: String) -> Array[Dictionary]:
@@ -242,14 +263,16 @@ func _camera_subjects() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	# Authored points belong to the scene plate, never to a fixed screen center.
 	for index in street_order.size():
-		var left: float = index * BLOCK_WIDTH - 80.0 - street.camera_x
-		if left > 1600.0 or left + 1760.0 < 0.0: continue
+		var span := BLOCK_WIDTH + 160.0
+		var left: float = _world_x(index, 0) - 80.0 - street.camera_x
+		if left > 1600.0 or left + span < 0.0: continue
 		for raw in catalog.get("locations", {}).get(street_order[index], []):
 			var subject: Dictionary = raw.duplicate(true)
 			var target: Array = subject.get("target", [0.5, 0.5])
-			var screen_x: float = (left + float(target[0]) * 1760.0) / 1600.0
+			var screen_x: float = (left + float(target[0]) * span) / 1600.0
 			if screen_x < 0.04 or screen_x > 0.96: continue
 			subject["target"] = [screen_x, float(target[1])]
+			subject["location"] = street_order[index]
 			result.append(subject)
 	return result
 
@@ -491,9 +514,40 @@ func _process(delta: float) -> void:
 	street.enabled = not is_instance_valid(conversation) and not event_overlay.visible and not _pocket_blocks_walking() and not pocket_opening and not SceneRouter.transitioning
 	if street.enabled and DisplayServer.window_is_focused():
 		GameState.advance_world_clock(delta)
+	if not street.enabled: route_hint.text = ""; return
+	route_hint.text = ""
+	if segment_id == "main_street" and absf(street.player_x - WorldGraph.JUNCTION_X) < 240:
+		route_hint.text = "↑ W  住宅区     ·     ↓ S  文化街"
+	elif segment_id != "main_street" and street.player_x < 500:
+		route_hint.text = "← 回到社区中心" if segment_id == "lookout_route" else "← 回到主街"
+	elif segment_id == "main_street" and street.player_x > street.world_width - 600:
+		route_hint.text = "观景台路线 →"
+	_check_route_boundary(Input.get_axis("move_left", "move_right"))
+
+func _world_x(index: int, local_x: float) -> float:
+	return route_offset + index * BLOCK_WIDTH + local_x * BLOCK_WIDTH / 1600.0
+
+func _index_at(x: float) -> int:
+	return clampi(int((x - route_offset) / BLOCK_WIDTH), 0, street_order.size() - 1)
+
+func _check_route_boundary(axis: float) -> void:
+	if SceneRouter.transitioning: return
+	if segment_id == "main_street" and axis > 0 and street.player_x >= street.world_width - 82:
+		_change_route("park", 140, 1)
+	elif segment_id != "main_street" and axis < 0 and street.player_x <= 82:
+		_change_route("print_shop" if segment_id == "lookout_route" else "town_entrance", 7840 if segment_id == "lookout_route" else WorldGraph.JUNCTION_X, -1)
+
+func _change_route(destination: String, arrival_x: float, facing: float) -> void:
+	if SceneRouter.transitioning: return
+	_remember_position()
+	GameState.current_location = destination
+	GameState.shared_state["route_arrival"] = {"route":WorldGraph.segment_for(destination).id, "x":arrival_x, "facing":facing}
+	GameState.commit_active_role_state()
+	SaveManager.save_or_report("路口位置保存失败")
+	SceneRouter.town_day()
 
 func _on_walk(x: float) -> void:
-	var index := clampi(int(x / BLOCK_WIDTH), 0, street_order.size() - 1)
+	var index := _index_at(x)
 	if index == current_index: return
 	current_index = index
 	GameState.current_location = street_order[index]
@@ -503,7 +557,7 @@ func _on_walk(x: float) -> void:
 	_refresh()
 
 func _remember_position() -> void:
-	GameState.shared_state["street_layout_version"] = 5
+	GameState.shared_state["street_layout_version"] = 6
 	var positions: Dictionary = GameState.shared_state.get("street_positions", {})
 	positions["%s_%d_%s" % [GameState.current_role, GameState.current_day, segment_id]] = street.player_x
 	GameState.shared_state["street_positions"] = positions
@@ -513,22 +567,22 @@ func _rebuild_hotspots() -> void:
 	for index in street_order.size():
 		var bench = Atlas.street(street_order[index]).get("bench_x")
 		if bench != null:
-			street.hotspots.append({"x":index*BLOCK_WIDTH+float(bench),"kind":"bench","label":"坐一会"})
+			street.hotspots.append({"x":_world_x(index, float(bench)),"kind":"bench","label":"坐一会"})
 	if street.sitting:
 		street.hotspots.append({"x":street.player_x,"kind":"bench","label":"长椅"})
 	# Keep exits on the actual movement limits. The old right exit shared the
 	# same x position as the final bench, so nearest() always selected the bench
 	# and made the road interaction unreachable.
-	var center := current_index * BLOCK_WIDTH + float(Atlas.street(GameState.current_location).get("door_x",800))
+	var center := _world_x(current_index, float(Atlas.street(GameState.current_location).get("door_x",800)))
 	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
-		street.hotspots.append({"x":current_index * BLOCK_WIDTH + 1060.0, "kind":"closed", "label":"观景台 · 21:00 开放"})
-		street.hotspots.append({"x":current_index * BLOCK_WIDTH + 930.0, "kind":"wait_open", "label":"坐下等到 21:00"})
+		street.hotspots.append({"x":_world_x(current_index, 1060), "kind":"closed", "label":"观景台 · 21:00 开放"})
+		street.hotspots.append({"x":_world_x(current_index, 930), "kind":"wait_open", "label":"坐下等到 21:00"})
 		return
 	# Outdoor residents remain available even after the shop closes.
 	var people := ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
 	for index in mini(people.size(), 3):
 		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
-		street.hotspots.append({"x":current_index*BLOCK_WIDTH + 450 + index * 150, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
+		street.hotspots.append({"x":_world_x(current_index, 450 + index * 150), "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
 	var hours: Array = locations.get(GameState.current_location,{}).get("hours",[])
 	var open_now := hours.is_empty() or hours.any(func(h: Array) -> bool: return GameState.current_minute >= int(h[0]) and GameState.current_minute < int(h[1]))
 	if not open_now:
@@ -695,6 +749,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_focus_dialogue_choice(-1)
 		elif dialogue_choices.size() > 1 and (event.is_action_pressed("ui_down") or event.physical_keycode == KEY_S):
 			_focus_dialogue_choice(1)
+	elif segment_id == "main_street" and absf(street.player_x - WorldGraph.JUNCTION_X) < 240 and (event.physical_keycode == KEY_W or event.is_action_pressed("ui_up")):
+		_change_route("residence", 140, 1)
+	elif segment_id == "main_street" and absf(street.player_x - WorldGraph.JUNCTION_X) < 240 and (event.physical_keycode == KEY_S or event.is_action_pressed("ui_down")):
+		_change_route("handcraft_shop", 140, 1)
 	elif event.is_action_pressed("open_camera"): _open_pocket_camera()
 	elif event.is_action_pressed("open_recorder"): _open_pocket_recorder()
 	elif event.is_action_pressed("open_album"): _open_pocket_album()

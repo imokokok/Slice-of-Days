@@ -8,6 +8,7 @@ const ACTOR_BASE_HEIGHT := 121.0
 const Atlas = preload("res://scripts/ui/scene_atlas.gd")
 var player_x := 500.0
 var world_width := 1800.0
+var route_id := ""
 var camera_x := 0.0
 var composition_anchor := 710.0
 var enabled := true
@@ -81,7 +82,7 @@ func _draw() -> void:
 	var night := GameState.current_minute >= 1080
 	draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
 	var illustrated := _draw_atlas()
-	var ground := 805.0 if not indoor and GameState.current_location == "park" and GameState.current_minute >= WorldGraph.LOOKOUT_OPEN else 713.0
+	var ground := lerpf(713.0, 805.0, smoothstep(2900, 3350, player_x)) if not indoor and route_id == "lookout_route" and GameState.current_minute >= WorldGraph.LOOKOUT_OPEN else 713.0
 	if illustrated:
 		pass
 	elif indoor:
@@ -131,6 +132,13 @@ func _draw() -> void:
 		draw_rect(Rect2(x - 16, hint_y, width + 32, 46), Color("10161c", 0.94))
 		draw_string(font, Vector2(x, hint_y + 30), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color("f5e8d0"))
 	# Letterbox framing keeps the world visually separate from optional overlays.
+	if not indoor and route_id == "main_street":
+		var sign_x := WorldGraph.JUNCTION_X - 200 - camera_x
+		if sign_x > -100 and sign_x < 1700:
+			draw_line(Vector2(sign_x, 602), Vector2(sign_x, 714), Color("435f58"), 6)
+			draw_rect(Rect2(sign_x - 90, 560, 180, 66), Color("203c40", 0.95))
+			draw_string(ThemeDB.fallback_font, Vector2(sign_x - 74, 585), "↑ 住宅区", HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff1cb"))
+			draw_string(ThemeDB.fallback_font, Vector2(sign_x - 74, 612), "↓ 文化街", HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff1cb"))
 	draw_rect(Rect2(0, 0, 1600, 70), Color("10161c",0.72))
 
 func _draw_atlas() -> bool:
@@ -140,18 +148,20 @@ func _draw_atlas() -> bool:
 		draw_texture_rect(texture,Rect2(0,0,1600,900),false)
 		return true
 	if places.is_empty(): return false
+	if route_id == "lookout_route": _draw_lookout_approach()
 	for i in places.size():
 		var place: Dictionary = places[i]
-		var left := float(place.x) - 880.0 - camera_x
-		if left > 1600 or left + 1760 < 0: continue
+		var span := float(place.get("width", 1600)) + 160.0
+		var left := float(place.x) - span / 2.0 - camera_x
+		if left > 1600 or left + span < 0: continue
 		var texture := Atlas.plate(Atlas.street(str(place.id)))
 		if texture == null: continue
 		# Overlap neighboring plates by 160px. Only the incoming left edge
 		# fades, so an opaque previous plate always remains underneath.
-		if i == 0:
-			draw_texture_rect(texture,Rect2(left,0,1760,900),false)
+		if i == 0 and route_id != "lookout_route":
+			draw_texture_rect(texture,Rect2(left,0,span,900),false)
 		else:
-			var edge_uv := 160.0 / 1760.0
+			var edge_uv := 160.0 / span
 			# Spatial smoothstep blend: both pictures stay fixed in the same world,
 			# with no timed image swap when the player crosses their boundary.
 			for strip in 16:
@@ -160,8 +170,22 @@ func _draw_atlas() -> bool:
 				var ca := Color(1, 1, 1, smoothstep(0.0, 1.0, a))
 				var cb := Color(1, 1, 1, smoothstep(0.0, 1.0, b))
 				draw_polygon(PackedVector2Array([Vector2(left+a*160,0),Vector2(left+b*160,0),Vector2(left+b*160,900),Vector2(left+a*160,900)]),PackedColorArray([ca,cb,cb,ca]),PackedVector2Array([Vector2(a*edge_uv,0),Vector2(b*edge_uv,0),Vector2(b*edge_uv,1),Vector2(a*edge_uv,1)]),texture)
-			draw_texture_rect_region(texture,Rect2(left+160,0,1600,900),Rect2(texture.get_width()*edge_uv,0,texture.get_width()*(1.0-edge_uv),texture.get_height()))
+			draw_texture_rect_region(texture,Rect2(left+160,0,span-160,900),Rect2(texture.get_width()*edge_uv,0,texture.get_width()*(1.0-edge_uv),texture.get_height()))
 	return true
+
+func _draw_lookout_approach() -> void:
+	var night := GameState.current_minute >= 1080
+	_draw_sea(night)
+	draw_rect(Rect2(0, 713, 1600, 187), Color("55646a") if night else Color("d7c9a7"))
+	for i in range(12):
+		var x := i * 300.0 - camera_x
+		if x < -350 or x > 1950: continue
+		if i < 10:
+			_draw_tree(x, 710, 0.6 + (i % 3) * 0.12)
+			draw_rect(Rect2(x + 90, 666, 165, 46), Color("82928a") if night else Color("dfd7b6"))
+			for step in range(4):
+				draw_line(Vector2(x + 90 + step * 20, 666 - step * 12), Vector2(x + 255, 666 - step * 12), Color("a6ab93"), 10)
+			draw_line(Vector2(x + 60, 718), Vector2(x + 60, 760), Color("7a8b7f", 0.3), 2)
 
 func _draw_street(night: bool) -> void:
 	_draw_sea(night)

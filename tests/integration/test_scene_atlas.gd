@@ -22,11 +22,11 @@ func run() -> void:
 	change_scene_to_file("res://scenes/town_day.tscn")
 	await create_timer(0.6).timeout
 	check(state.current_location == "night_market","Old save keeps its correct street location")
-	check(current_scene.street.world_width == 24000,"All fifteen scene plates form a continuous street")
+	check(current_scene.street.world_width == 8000,"Main street spans five screens")
 	var door: Dictionary = {}
 	for item in current_scene.street.hotspots:
 		if item.kind == "door": door = item
-	check(not door.is_empty() and float(door.get("x",0)) == 5920,"Restaurant interaction aligns with its pictured door on the joined street")
+	check(not door.is_empty() and is_equal_approx(float(door.get("x",0)), current_scene._world_x(3,1120)),"Restaurant interaction aligns with its pictured door on the main street")
 	var street = current_scene.street
 	street.player_x = 1595.0
 	street.move_player(0, 0)

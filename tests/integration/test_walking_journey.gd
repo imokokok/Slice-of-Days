@@ -53,7 +53,7 @@ func run() -> void:
 	await settle()
 	check(current_scene.scene_file_path.ends_with("town_day.tscn"), "New game must enter the world directly")
 	var town = current_scene
-	check(town.street.player_x == 150.0 and state.current_location == "town_entrance", "A new journey must begin at the far left")
+	check(town.street.player_x == 150.0 and state.current_location == "bus_stop", "A new journey must begin at the far-left bus stop")
 	check(town.street != null and not town.event_overlay.visible, "No role, empty-slot or opening-page gate")
 	town.street.enabled = true
 	var before: float = town.street.player_x
@@ -62,7 +62,7 @@ func run() -> void:
 	town.street.player_x = town.street.world_width - 80.0
 	town._on_walk(town.street.player_x)
 	town._refresh()
-	check(town.street_order.size() == 15 and town.street_order[-1] == "park", "All approved locations form one walkable coast ending at the lookout")
+	check(town.street_order.size() == 6 and town.street_order[-1] == "print_shop", "Main street ends at the community center and connects to the lookout route")
 	check(not town.street.hotspots.any(func(h: Dictionary) -> bool: return str(h.kind) == "roads"), "Walking must never require a map travel menu")
 	town.street.hotspots.clear()
 	town.street.hotspots.append({"x":town.street.player_x + 200, "kind":"door"})

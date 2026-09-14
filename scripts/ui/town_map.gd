@@ -13,13 +13,26 @@ func _ready() -> void:
 	title.position = Vector2(42, 28)
 	title.add_theme_font_size_override("font_size", 24)
 	add_child(title)
-	for id in WorldGraph.config.map_positions:
-		var point: Array = WorldGraph.config.map_positions[id]
+	for index in WorldGraph.street_locations.size():
+		var id := WorldGraph.street_locations[index]
 		var b := Button.new()
-		b.position = Vector2(float(point[0]) * 0.8 - 65, float(point[1]) + 65)
-		b.size = Vector2(155, 48)
+		b.position = _map_point(index) - Vector2(69, 24)
+		b.size = Vector2(138, 48)
 		b.text = ("● " if str(id) == GameState.current_location else "") + TravelSystem.location_name(str(id))
-		b.add_theme_font_size_override("font_size", 18)
+		b.add_theme_font_size_override("font_size", 16)
+		var face := StyleBoxFlat.new()
+		face.bg_color = Color("e6ba79") if id == GameState.current_location else Color("fff7e5")
+		face.border_color = Color("9a9276")
+		face.set_border_width_all(1)
+		face.set_corner_radius_all(8)
+		b.add_theme_stylebox_override("normal", face)
+		var hover: StyleBoxFlat = face.duplicate()
+		hover.bg_color = Color("d6e7d6")
+		b.add_theme_stylebox_override("hover", hover)
+		b.add_theme_stylebox_override("pressed", hover)
+		b.add_theme_color_override("font_color", Color("294f56"))
+		b.add_theme_color_override("font_hover_color", Color("294f56"))
+		b.add_theme_color_override("font_pressed_color", Color("294f56"))
 		b.pressed.connect(_select.bind(str(id)))
 		add_child(b)
 	info = VBoxContainer.new()
@@ -36,12 +49,23 @@ func _ready() -> void:
 	_select(selected)
 func _draw() -> void:
 	draw_rect(Rect2(0,0,1600,900), Color("eddfbe"))
-	draw_colored_polygon(PackedVector2Array([Vector2(0,80),Vector2(1000,80),Vector2(1000,300),Vector2(850,245),Vector2(700,190),Vector2(480,250),Vector2(300,215),Vector2(0,280)]), Color("298da8"))
-	for index in range(1, WorldGraph.street_locations.size()):
-		var a: Array = WorldGraph.config.map_positions[WorldGraph.street_locations[index - 1]]
-		var b: Array = WorldGraph.config.map_positions[WorldGraph.street_locations[index]]
-		draw_line(Vector2(float(a[0])*0.8+12,float(a[1])+89),Vector2(float(b[0])*0.8+12,float(b[1])+89),Color("b89468"),4,true)
+	draw_colored_polygon(PackedVector2Array([Vector2(825,80),Vector2(1030,80),Vector2(1030,290),Vector2(945,255),Vector2(850,220)]), Color("a0ccd0"))
+	var colors := [Color("a78058"),Color("b46f6a"),Color("508c9a"),Color("4c9c88")]
+	var routes: Array = WorldGraph.config.segments
+	for r in routes.size():
+		var ids: Array = routes[r].locations
+		for i in range(1, ids.size()):
+			draw_line(_point(str(ids[i-1])), _point(str(ids[i])), colors[r], 5, true)
+	for path in [[Vector2(720,360),Vector2(720,230),Vector2(350,230),Vector2(350,150)], [Vector2(720,360),Vector2(720,490),Vector2(160,490),Vector2(160,620)], [Vector2(890,360),Vector2(995,360),Vector2(995,190),Vector2(930,190)]]:
+		for i in range(1, path.size()): draw_line(path[i-1],path[i],Color("8b9b86"),4,true)
+	for caption in [["住宅区 · A 的家 / B 的家 / 停车区",Vector2(300,100)],["主街 · 从左侧公交站出发",Vector2(40,315)],["文化街支路 · 巷尾可以转身返回",Vector2(100,570)],["海边观景台",Vector2(835,135)]]:
+		draw_string(ThemeDB.fallback_font,caption[1],caption[0],HORIZONTAL_ALIGNMENT_LEFT,-1,20,Color("294f56"))
 	draw_rect(Rect2(1038,90,540,745),Color("faf2de"))
+func _map_point(index: int) -> Vector2:
+	return _point(WorldGraph.street_locations[index])
+func _point(id: String) -> Vector2:
+	var point: Array = WorldGraph.config.map_positions[id]
+	return Vector2(float(point[0]), float(point[1]))
 func _text(value: String, font_size := 21) -> Label:
 	var label := Label.new()
 	label.text = value
@@ -69,8 +93,8 @@ func _select(id: String) -> void:
 	if id == GameState.current_location:
 		_text("你就在这里。", 22)
 	else:
-		var direction := "往右" if WorldGraph.street_locations.find(id) > WorldGraph.street_locations.find(GameState.current_location) else "往左"
-		_text("沿街%s走 · 慢走约%d分钟" % [direction, WorldGraph.walk_minutes(GameState.current_location, id)], 22)
+		_text("%s。\n步行约%d分钟" % [WorldGraph.directions(GameState.current_location, id), WorldGraph.walk_minutes(GameState.current_location, id)], 22)
+	_text("主街拱门路口：↑ / W 进入住宅区，↓ / S 进入文化街。支路向左走回主街。",18)
 	notice = _text("合上地图，用 A / D 或方向键继续走。",17)
 func _depart(method: String) -> void:
 	var result := SceneRouter.travel_to(selected,method)

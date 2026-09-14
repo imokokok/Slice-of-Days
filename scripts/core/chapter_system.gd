@@ -16,9 +16,9 @@ func start_new_game(_start_role: String = "A") -> void:
 	GameState.shared_state["game_complete"] = false
 	var chapter := current_chapter()
 	GameState.switch_to_role(str(chapter.get("role", start_role)), int(chapter.get("day", 1)), true)
-	GameState.current_location = "town_entrance"
-	GameState.shared_state["street_layout_version"] = 5
-	GameState.shared_state["street_positions"] = {"A_1_public_west":150.0}
+	GameState.current_location = "bus_stop"
+	GameState.shared_state["street_layout_version"] = 6
+	GameState.shared_state["street_positions"] = {"A_1_main_street":150.0}
 	GameState.commit_active_role_state()
 	EchoSystem.begin_day()
 	chapter_started.emit(chapter)

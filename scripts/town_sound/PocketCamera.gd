@@ -294,6 +294,7 @@ func take_photo() -> void:
 	_flash_shutter()
 	var shot_context := context.duplicate(true)
 	if not current_subject.is_empty():
+		shot_context["location"] = str(current_subject.get("location", context.get("location", "")))
 		shot_context["subject_id"] = str(current_subject.get("id", ""))
 		shot_context["subject_name"] = str(current_subject.get("name", ""))
 		shot_context["subject_category"] = str(current_subject.get("category", ""))
@@ -308,9 +309,9 @@ func take_photo() -> void:
 	var is_new_subject := not current_subject.is_empty() and not _subject_discovered(str(current_subject.get("id", "")))
 	if has_node("/root/GameState"):
 		var photo_title := str(current_subject.get("name", context.get("title", "小镇")))
-		GameState.add_artifact("photos", {"id": str(photo.photo_id), "title": "%s · %s" % [photo_title, GameState.clock_text()], "kind": "photo", "location": str(context.get("location", ""))})
+		GameState.add_artifact("photos", {"id": str(photo.photo_id), "title": "%s · %s" % [photo_title, GameState.clock_text()], "kind": "photo", "location": str(shot_context.get("location", ""))})
 		if not current_subject.is_empty():
-			GameState.add_artifact("photo_subjects", {"id": str(current_subject.get("id", "")), "title": str(current_subject.get("name", "景物")), "kind": "photo_subject", "location": str(context.get("location", "")), "note": str(current_subject.get("note", ""))})
+			GameState.add_artifact("photo_subjects", {"id": str(current_subject.get("id", "")), "title": str(current_subject.get("name", "景物")), "kind": "photo_subject", "location": str(shot_context.get("location", "")), "note": str(current_subject.get("note", ""))})
 		GameState.add_journal_entry({"id": "photo_%s" % str(photo.photo_id), "kind": "photo", "text": "在%s拍下%s，画面已留在本地相册。" % [str(context.get("title", "小镇")), photo_title]})
 		SaveManager.save_or_report("拍照后保存失败")
 		WorldSound.play_ui("shutter")

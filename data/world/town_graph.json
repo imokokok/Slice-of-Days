@@ -1,6 +1,52 @@
 {
   "segments": [
     {
+      "id": "main_street",
+      "name": "主街",
+      "width": 8000,
+      "locations": [
+        "bus_stop",
+        "cafe",
+        "produce_stall",
+        "night_market",
+        "town_entrance",
+        "print_shop"
+      ]
+    },
+    {
+      "id": "cultural_street",
+      "name": "文化街",
+      "width": 8000,
+      "locations": [
+        "handcraft_shop",
+        "library",
+        "record_store",
+        "chess_stall",
+        "tarot_stall"
+      ]
+    },
+    {
+      "id": "residential",
+      "name": "住宅区",
+      "width": 4800,
+      "locations": [
+        "residence",
+        "dorm",
+        "port"
+      ]
+    },
+    {
+      "id": "lookout_route",
+      "name": "观景台路线",
+      "width": 4800,
+      "offset": 3200,
+      "locations": [
+        "park"
+      ]
+    }
+  ],
+  "legacy_segments": [
+    {
       "id": "public_west",
       "locations": [
         "town_entrance",
@@ -65,65 +111,65 @@
     }
   ],
   "map_positions": {
-    "town_entrance": [
-      300,
-      310
-    ],
-    "night_market": [
-      170,
-      430
-    ],
-    "produce_stall": [
-      350,
-      490
-    ],
-    "handcraft_shop": [
-      480,
-      275
+    "bus_stop": [
+      90,
+      360
     ],
     "cafe": [
-      560,
-      430
+      245,
+      360
+    ],
+    "produce_stall": [
+      400,
+      360
+    ],
+    "night_market": [
+      555,
+      360
+    ],
+    "town_entrance": [
+      720,
+      360
     ],
     "print_shop": [
-      720,
-      290
-    ],
-    "library": [
-      740,
-      490
-    ],
-    "record_store": [
-      930,
-      380
-    ],
-    "tarot_stall": [
-      1070,
-      470
-    ],
-    "chess_stall": [
-      1010,
-      600
-    ],
-    "bus_stop": [
-      690,
-      150
-    ],
-    "port": [
-      410,
-      130
+      890,
+      360
     ],
     "residence": [
-      150,
+      350,
       150
     ],
     "dorm": [
-      230,
-      680
+      535,
+      150
+    ],
+    "port": [
+      720,
+      150
     ],
     "park": [
-      1130,
-      150
+      930,
+      190
+    ],
+    "handcraft_shop": [
+      160,
+      620
+    ],
+    "library": [
+      340,
+      620
+    ],
+    "record_store": [
+      520,
+      620
+    ],
+    "chess_stall": [
+      700,
+      620
+    ],
+    "tarot_stall": [
+      880,
+      620
     ]
   }
 }

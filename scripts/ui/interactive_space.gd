@@ -459,6 +459,7 @@ func _start_conversation(resident_id: String, topic := "greeting") -> void:
 	stage.velocity = 0.0
 	add_child(conversation)
 func _refresh_people() -> void:
+	stage.queue_redraw()
 	people = ScheduleSystem.residents_at(GameState.current_location,GameState.current_day,GameState.current_minute)
 	if SceneRouter.active_space_id in ["home_a","home_b"]: people.clear()
 	stage.hotspots = stage.hotspots.filter(func(item: Dictionary) -> bool: return str(item.get("kind","")) != "person")

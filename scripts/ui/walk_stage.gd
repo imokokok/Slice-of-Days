@@ -24,6 +24,8 @@ var hotspots: Array[Dictionary] = []
 var room_name := ""
 var room_kind := ""
 var walk_limit := INF
+var visual_phase := -1
+var lookout_was_open := false
 
 func _ready() -> void:
 	WorldSound.set_indoor(indoor)
@@ -31,6 +33,12 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func _process(delta: float) -> void:
+	var phase_now := Atlas.phase(GameState.current_minute)
+	var lookout_open := GameState.current_minute >= WorldGraph.LOOKOUT_OPEN
+	if phase_now != visual_phase or lookout_open != lookout_was_open:
+		visual_phase = phase_now
+		lookout_was_open = lookout_open
+		queue_redraw()
 	var previous_player_x := player_x
 	var previous_camera_x := camera_x
 	var previous_facing := facing
@@ -78,7 +86,7 @@ func _draw() -> void:
 	var night := GameState.current_minute >= 1080
 	draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
 	var illustrated := _draw_atlas()
-	var ground := lerpf(713.0, 805.0, smoothstep(2900, 3350, player_x)) if not indoor and route_id == "lookout_route" and GameState.current_minute >= WorldGraph.LOOKOUT_OPEN else 713.0
+	var ground := _ground_at(player_x)
 	if illustrated:
 		pass
 	elif indoor:
@@ -98,7 +106,7 @@ func _draw() -> void:
 		if kind == "person" or kind == "event" or kind == "shopkeeper":
 			var shades := [Color("324b62"),Color("567363"),Color("76554c"),Color("ada16b")]
 			var shade: Color = shades[absi(str(item.get("id", "")).hash()) % shades.size()]
-			_draw_person(Vector2(x, ground), shade, 0.0, 0.0, -1.0)
+			_draw_person(Vector2(x, _ground_at(float(item.x))), shade, 0.0, 0.0, -1.0)
 		elif kind == "echo" and not illustrated:
 			draw_rect(Rect2(x-55,572,110,118),Color("4c4937"))
 			draw_rect(Rect2(x-49,580,98,102),Color("203f43"))
@@ -147,32 +155,53 @@ func _draw_atlas() -> bool:
 	if route_id == "lookout_route": _draw_lookout_approach()
 	for i in places.size():
 		var place: Dictionary = places[i]
-		var span := float(place.get("width", 1600)) + 160.0
-		var left := float(place.x) - span / 2.0 - camera_x
-		if left > 1600 or left + span < 0: continue
+		var block_width := float(place.get("width", 1600))
+		var left := float(place.x) - block_width / 2.0 - camera_x
+		if left > 1600 or left + block_width < 0: continue
 		var texture := Atlas.plate(Atlas.street(str(place.id)))
 		if texture == null: continue
-		# Overlap neighboring plates by 160px. Only the incoming left edge
-		# fades, so an opaque previous plate always remains underneath.
-		if i == 0 and route_id != "lookout_route":
-			draw_texture_rect(texture,Rect2(left,0,span,900),false)
-		else:
-			var edge_uv := 160.0 / span
-			# Spatial smoothstep blend: both pictures stay fixed in the same world,
-			# with no timed image swap when the player crosses their boundary.
-			for strip in 16:
-				var a := float(strip) / 16.0
-				var b := float(strip + 1) / 16.0
-				var ca := Color(1, 1, 1, smoothstep(0.0, 1.0, a))
-				var cb := Color(1, 1, 1, smoothstep(0.0, 1.0, b))
-				draw_polygon(PackedVector2Array([Vector2(left+a*160,0),Vector2(left+b*160,0),Vector2(left+b*160,900),Vector2(left+a*160,900)]),PackedColorArray([ca,cb,cb,ca]),PackedVector2Array([Vector2(a*edge_uv,0),Vector2(b*edge_uv,0),Vector2(b*edge_uv,1),Vector2(a*edge_uv,1)]),texture)
-			draw_texture_rect_region(texture,Rect2(left+160,0,span-160,900),Rect2(texture.get_width()*edge_uv,0,texture.get_width()*(1.0-edge_uv),texture.get_height()))
+		# Each plate owns one opaque world rectangle. Crop its overscan rather
+		# than dissolving two buildings together into a double image.
+		var overscan := 80.0 / (block_width + 160.0)
+		draw_texture_rect_region(texture, Rect2(left,0,block_width,900),
+			Rect2(texture.get_width()*overscan,0,texture.get_width()*(1.0-2.0*overscan),texture.get_height()))
+	# A crisp planted divider gives each join a physical edge in the scene.
+	# It remains behind the player and never blocks horizontal movement.
+	for i in places.size():
+		if i == 0 and route_id != "lookout_route": continue
+		var seam_x := float(places[i].x) - float(places[i].get("width",1600)) / 2.0 - camera_x
+		if seam_x < -90 or seam_x > 1690: continue
+		_draw_street_divider(seam_x)
 	return true
+
+func _draw_street_divider(x: float) -> void:
+	var ground_offset := _ground_at(x + camera_x) - 713.0
+	draw_set_transform(Vector2(0,ground_offset))
+	var night := GameState.current_minute >= 1140
+	var leaves := Color("344843") if night else Color("596749")
+	var leaves_light := Color("42594b") if night else Color("738050")
+	draw_rect(Rect2(x-9,570,18,143),Color("4c5142"))
+	draw_colored_polygon(PackedVector2Array([Vector2(x,72),Vector2(x-13,200),Vector2(x-31,314),Vector2(x-42,477),Vector2(x-38,605),Vector2(x+23,617),Vector2(x+43,515),Vector2(x+31,348),Vector2(x+13,208)]),leaves)
+	draw_colored_polygon(PackedVector2Array([Vector2(x,80),Vector2(x+12,221),Vector2(x+28,392),Vector2(x+23,544),Vector2(x+4,595),Vector2(x-4,403)]),leaves_light)
+	draw_rect(Rect2(x-54,675,108,38),Color("7c8070") if night else Color("cabf9e"))
+	draw_rect(Rect2(x-59,671,118,8),Color("919381") if night else Color("e2d7b6"))
+	draw_set_transform(Vector2.ZERO)
+
+func _ground_at(world_x: float) -> float:
+	if not indoor and route_id == "lookout_route" and GameState.current_minute >= WorldGraph.LOOKOUT_OPEN:
+		return lerpf(713.0,805.0,smoothstep(2900,3200,world_x))
+	return 713.0
 
 func _draw_lookout_approach() -> void:
 	var night := GameState.current_minute >= 1080
 	_draw_sea(night)
-	draw_rect(Rect2(0, 713, 1600, 187), Color("55646a") if night else Color("d7c9a7"))
+	var path := PackedVector2Array()
+	for step in range(17):
+		var x := step * 100.0
+		path.append(Vector2(x,_ground_at(x+camera_x)))
+	path.append(Vector2(1600,900))
+	path.append(Vector2(0,900))
+	draw_colored_polygon(path,Color("55646a") if night else Color("d7c9a7"))
 	for i in range(12):
 		var x := i * 300.0 - camera_x
 		if x < -350 or x > 1950: continue

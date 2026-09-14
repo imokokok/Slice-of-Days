@@ -10,6 +10,7 @@ const SEA := Color("537982")
 var shop_id := ""
 var shop: Dictionary = {}
 var balance_label: Label
+var budget_label: Label
 var status_label: Label
 var item_list: VBoxContainer
 
@@ -55,11 +56,12 @@ func _build_ui() -> void:
 	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	balance_label = _label(panel, "", Vector2(620, 30), Vector2(275, 35), 21, TERRACOTTA, HORIZONTAL_ALIGNMENT_RIGHT)
 	_label(panel, "点选商品即可购买 · 每次挑选会经过 5 分钟", Vector2(34, 75), Vector2(750, 30), 16, MUTED)
+	budget_label = _label(panel, "", Vector2(34, 108), Vector2(870, 28), 17, SEA)
 	var close := _button(panel, "收起  Esc", Vector2(744, 622), Vector2(160, 44), false)
 	close.pressed.connect(queue_free)
 	var scroll := ScrollContainer.new()
-	scroll.position = Vector2(32, 120)
-	scroll.size = Vector2(876, 430)
+	scroll.position = Vector2(32, 150)
+	scroll.size = Vector2(876, 400)
 	panel.add_child(scroll)
 	item_list = VBoxContainer.new()
 	item_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -73,6 +75,8 @@ func _refresh() -> void:
 	if balance_label == null:
 		return
 	balance_label.text = "钱包  %d 元" % GameState.money
+	budget_label.text = GameState.spending_plan_text()
+	budget_label.add_theme_color_override("font_color", TERRACOTTA if int(GameState.daily_spending_plan().over) > 0 else SEA)
 	for child in item_list.get_children():
 		item_list.remove_child(child)
 		child.queue_free()
@@ -116,11 +120,22 @@ func _refresh() -> void:
 
 
 func _buy(item: Dictionary) -> void:
+	var snapshot := GameState.to_save_data().duplicate(true)
 	var result := GameState.buy_item(item)
-	WorldSound.play_ui("coin" if bool(result.get("ok", false)) else "error")
-	var saved := SaveManager.save_or_report("购买商品后保存失败")
+	if not bool(result.get("ok", false)):
+		WorldSound.play_ui("error")
+		_refresh()
+		status_label.text = str(result.get("message", "这次没能买下。"))
+		return
+	if not SaveManager.save_or_report("购买商品后保存失败"):
+		GameState.load_save_data(snapshot)
+		WorldSound.play_ui("error")
+		_refresh()
+		status_label.text = "存档暂时没能写入，本次购买已撤销，没有扣款。可以稍后重试。"
+		return
+	WorldSound.play_ui("coin")
 	_refresh()
-	status_label.text = str(result.get("message", "")) + ("" if saved else " 本次存档未写入，请稍后重试保存。")
+	status_label.text = str(result.get("message", ""))
 
 
 func _unhandled_input(event: InputEvent) -> void:

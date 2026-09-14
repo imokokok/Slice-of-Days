@@ -93,6 +93,7 @@
         }
       ],
       "starting_money": 1600,
+      "daily_spending_plan": 80,
       "opening_facts": []
     }
   },

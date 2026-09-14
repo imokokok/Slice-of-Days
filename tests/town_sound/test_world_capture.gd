@@ -15,6 +15,7 @@ func run() -> void:
 	var world := root.get_node("WorldSound")
 	world.set_location("park")
 	world.set_active(true)
+	check(not root.get_node("ObservatoryAudio").waves.playing, "Standalone observatory waves must not leak into the global Master mix")
 	check(AudioServer.get_driver_name() != "Dummy", "This integration test requires a real audio driver")
 	if failures: quit(failures); return
 	var recorder := FieldRecorder.new()

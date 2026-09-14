@@ -41,7 +41,8 @@ func _today_text() -> String:
 		lines.append("一张沾着海盐的明信片\n背面写着：饿的时候，来饭店坐坐。别急着把每一站都走完。")
 		lines.append("折起来的纸条\n观景台晚上九点开放，记得带相机。")
 	else:
-		lines.append("第%d天 · %s · 今日预算 %d元" % [GameState.current_day,GameState.clock_text(),GameState.money])
+		lines.append("第%d天 · %s · 钱包 %d元" % [GameState.current_day,GameState.clock_text(),GameState.money])
+		lines.append(GameState.spending_plan_text() + "\n今天的花销尽量放在 80 元里，留些钱给后面的日子。")
 		lines.append("□ 问问周晓六今天碰见过谁。\n□ 去下棋摊看看，闹闹傍晚可能会来。")
 	lines.append(KnowledgeSystem.text())
 	for lead in DialogueSystem.notebook_leads(): lines.append(str(lead.heading) + "\n" + str(lead.text))

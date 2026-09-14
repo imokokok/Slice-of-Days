@@ -29,6 +29,7 @@ var module_states: Dictionary = {}
 var choice_history: Array[Dictionary] = []
 var inventory: Dictionary = {}
 var money_ledger: Array[Dictionary] = []
+var daily_spending: Dictionary = {}
 var completed_commitments: Array[String] = []
 
 var role_states: Dictionary = {}
@@ -91,6 +92,7 @@ func _default_role_state(role: String) -> Dictionary:
 		"choice_history": [],
 		"inventory": {},
 		"money_ledger": [],
+		"daily_spending": {},
 		"completed_commitments": [],
 	}
 
@@ -117,6 +119,7 @@ func commit_active_role_state() -> void:
 		"choice_history": choice_history.duplicate(true),
 		"inventory": inventory.duplicate(true),
 		"money_ledger": money_ledger.duplicate(true),
+		"daily_spending": daily_spending.duplicate(true),
 		"completed_commitments": completed_commitments.duplicate(),
 	}
 
@@ -163,6 +166,12 @@ func _load_role_state(role: String) -> void:
 	choice_history.assign(data.get("choice_history", []))
 	inventory = data.get("inventory", {}).duplicate(true)
 	money_ledger.assign(data.get("money_ledger", []))
+	daily_spending = data.get("daily_spending", {}).duplicate(true)
+	if not data.has("daily_spending"):
+		for row in money_ledger:
+			if int(row.get("amount", 0)) < 0:
+				var day_key := str(int(row.get("day", current_day)))
+				daily_spending[day_key] = int(daily_spending.get(day_key, 0)) - int(row.amount)
 	completed_commitments.assign(data.get("completed_commitments", []))
 	residency_confirmations = confirmed_residents.size()
 
@@ -390,9 +399,22 @@ func earn_money(amount: int, reason := "收入") -> void:
 
 
 func _record_money(amount: int, reason: String) -> void:
+	if amount < 0:
+		var day_key := str(current_day)
+		daily_spending[day_key] = int(daily_spending.get(day_key, 0)) - amount
 	money_ledger.append({"day": current_day, "minute": current_minute, "amount": amount, "reason": reason, "balance": money})
 	if money_ledger.size() > 80:
 		money_ledger = money_ledger.slice(money_ledger.size() - 80)
+
+func daily_spending_plan() -> Dictionary:
+	var planned := int(schedule_for(current_role, current_day).get("daily_spending_plan", 0))
+	var spent := int(daily_spending.get(str(current_day), 0))
+	return {"planned":planned, "spent":spent, "remaining":maxi(0, planned - spent), "over":maxi(0, spent - planned)}
+
+func spending_plan_text() -> String:
+	var plan := daily_spending_plan()
+	if int(plan.planned) <= 0: return ""
+	return "今日花钱计划 %d元 · 已花 %d元 · %s" % [plan.planned, plan.spent, "超出计划 %d元" % plan.over if plan.over > 0 else "还可安排 %d元" % plan.remaining]
 
 
 func buy_item(item: Dictionary) -> Dictionary:

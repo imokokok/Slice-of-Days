@@ -539,11 +539,15 @@ func _check_route_boundary(axis: float) -> void:
 
 func _change_route(destination: String, arrival_x: float, facing: float) -> void:
 	if SceneRouter.transitioning: return
+	var snapshot := GameState.to_save_data().duplicate(true)
 	_remember_position()
 	GameState.current_location = destination
 	GameState.shared_state["route_arrival"] = {"route":WorldGraph.segment_for(destination).id, "x":arrival_x, "facing":facing}
 	GameState.commit_active_role_state()
-	SaveManager.save_or_report("路口位置保存失败")
+	if not SaveManager.save_or_report("路口位置保存失败"):
+		GameState.load_save_data(snapshot)
+		_show_line("", "存档暂时没能写入，先在这里停一下。稍后可以继续走。")
+		return
 	SceneRouter.town_day()
 
 func _on_walk(x: float) -> void:
@@ -564,6 +568,7 @@ func _remember_position() -> void:
 
 func _rebuild_hotspots() -> void:
 	street.hotspots.clear()
+	street.queue_redraw()
 	for index in street_order.size():
 		var bench = Atlas.street(street_order[index]).get("bench_x")
 		if bench != null:

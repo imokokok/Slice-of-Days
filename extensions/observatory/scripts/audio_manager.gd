@@ -5,6 +5,9 @@ var fade: Tween
 func _ready() -> void:
  add_child(waves)
  add_child(tone)
+ # Solmere supplies its sea through WorldSound. The standalone observatory
+ # loop must not also run on Master in shops, menus and every other minigame.
+ if has_node("/root/WorldSound"): return
  # Headless validation has no audible output and retaining a decoded stream at
  # engine shutdown causes false-positive ObjectDB/resource leak reports.
  if AudioServer.get_driver_name() == "Dummy": return
@@ -26,6 +29,7 @@ func _exit_tree() -> void:
  waves.stream = null
  tone.stream = null
 func set_stargazing(active: bool) -> void:
+ if waves.stream == null: return
  if fade: fade.kill()
  fade = create_tween()
  fade.tween_property(waves, "volume_db", -33.0 if active else -25.0, 0.8)

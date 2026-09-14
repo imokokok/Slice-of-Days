@@ -67,6 +67,7 @@ func _button(value: String, action: Callable) -> void:
 	box.add_child(button)
 	options.append(button)
 func _show_topic(topic: String) -> void:
+	close_after_line = false
 	invite_after_chat = topic == "greeting" and DialogueSystem.should_invite(npc)
 	offer = DialogueSystem.invitation_for(npc) if topic == "minigame_hook" else {}
 	if not offer.is_empty(): DialogueSystem.mark_invitation_heard(npc)

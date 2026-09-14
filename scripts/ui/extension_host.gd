@@ -184,6 +184,7 @@ func _complete() -> void:
 	if submitting or SceneRouter.transitioning or not _experience_completed():
 		return
 	submitting = true
+	var money_before := GameState.money
 	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	var pending: Dictionary = GameState.shared_state.get("pending_module", {})
 	var source_event_id := str(pending.get("source_event_id", ""))
@@ -209,11 +210,13 @@ func _complete() -> void:
 		GameState.load_save_data(rollback_snapshot)
 		status_label.text = "存档写入失败，本次提交尚未生效；可以重试。"
 		return
-	WorldSound.play_ui("coin" if GameState.money > int(rollback_snapshot.get("money", GameState.money)) else "dialogue")
+	WorldSound.play_ui("coin" if GameState.money > money_before else "dialogue")
 	SceneRouter.return_from_gameplay()
 
 
 func _cancel() -> void:
+	if submitting or SceneRouter.transitioning: return
+	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	if module_id == "ghostwriting" and is_instance_valid(experience) and experience.has_method("save_game"):
 		experience.save_game()
 	var preserved_extension_state: Dictionary = {}
@@ -227,7 +230,8 @@ func _cancel() -> void:
 		GameState.shared_state[preserved_key] = preserved_extension_state
 		GameState.commit_active_role_state()
 	if not SaveManager.save_or_report("取消玩法后保存失败"):
-		status_label.text = "已撤销本次玩法，但存档写入失败。"
+		GameState.load_save_data(rollback_snapshot)
+		status_label.text = "存档暂时没能写入，仍留在当前小游戏。可以重试离开。"
 		return
 	SceneRouter.return_from_gameplay()
 

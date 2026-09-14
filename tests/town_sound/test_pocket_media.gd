@@ -13,7 +13,6 @@ func run() -> void:
 	root.add_child(town)
 	await process_frame
 	await process_frame
-	if is_instance_valid(town.opening_overlay): town.opening_overlay.hide()
 	town._open_record_store()
 	check(not is_instance_valid(town.pocket_panel), "Studio allowed away from record store")
 	var forbidden_studio = load("res://scripts/town_sound/studio/StudioScreen.gd").new()
@@ -43,8 +42,11 @@ func run() -> void:
 	await process_frame
 	check(auto_accept_quit, "Closing recorder did not restore main window close behavior")
 	game.current_location = "record_store"
-	town.selected_location = "record_store"
-	town._refresh()
+	town.queue_free()
+	await process_frame
+	town = load("res://scenes/town_day.tscn").instantiate()
+	root.add_child(town)
+	await process_frame
 	town._open_record_store()
 	check(town.pocket_panel.can_edit_here(), "Shop actions unavailable at record store")
 	town.pocket_panel.queue_free()
@@ -64,7 +66,8 @@ func run() -> void:
 	var original := restored.load_photo(stored.photo_id)
 	check(original != null and original.get_width() > 0, "Photo did not survive reload")
 	check(restored.load_photo("../../outside") == null, "Untrusted photo path accepted")
-	camera.zoom.value = 2
+	await create_timer(0.5).timeout
+	camera._set_zoom(2)
 	camera.take_photo()
 	check(photo_library.list_photos().size() == 2, "New crop not saved")
 	camera.queue_free()

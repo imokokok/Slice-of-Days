@@ -41,11 +41,11 @@ func _test_calendar_and_role_isolation() -> void:
 	_check(GameState.spend_money(20), "A should be able to spend money")
 	GameState.add_fact("A-only fact")
 	_check(GameState.switch_to_role("B"), "Switching to B should succeed")
-	_check(GameState.money == 160, "B should keep the configured independent budget")
+	_check(GameState.money == 1600, "B should keep the configured independent budget")
 	_check(not GameState.known_facts.has("A-only fact"), "B should not inherit A's private facts")
 	GameState.add_fact("B-only fact")
 	_check(GameState.switch_to_role("A"), "Switching back to A should succeed")
-	_check(GameState.money == 980, "A's budget should survive the role switch")
+	_check(GameState.money == 11980, "A's budget should survive the role switch")
 	_check(GameState.known_facts.has("A-only fact"), "A's facts should survive the role switch")
 	_check(not GameState.known_facts.has("B-only fact"), "A should not inherit B's private facts")
 

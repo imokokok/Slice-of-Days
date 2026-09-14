@@ -12,7 +12,7 @@ var current_role := "A"
 var current_day := 1
 var current_minute := 9 * 60
 var clock_remainder := 0.0
-var money := 1000
+var money := 12000
 var residency_confirmations := 0
 var current_location := "residence"
 
@@ -58,7 +58,7 @@ func _initialize_new_state(start_role: String) -> void:
 		"B": _default_role_state("B"),
 	}
 	shared_state = {
-		"starting_budget_version": 2,
+		"starting_budget_version": 3,
 		"chapter_index": 0,
 		"chapter_start_role": start_role if role_states.has(start_role) else "A",
 		"completed_chapters": [],
@@ -76,7 +76,7 @@ func _default_role_state(role: String) -> Dictionary:
 	return {
 		"day": 1,
 		"minute": int(schedule.get("start", 9 * 60)),
-		"money": int(schedule.get("starting_money", 1000 if role == "A" else 160)),
+		"money": int(schedule.get("starting_money", 12000 if role == "A" else 1600)),
 		"location": "residence",
 		"completed_events": [],
 		"confirmed_residents": [],
@@ -148,7 +148,7 @@ func _load_role_state(role: String) -> void:
 	current_day = int(data.get("day", 1))
 	current_minute = int(data.get("minute", 9 * 60))
 	clock_remainder = clampf(float(data.get("clock_remainder", 0.0)), 0.0, REAL_SECONDS_PER_GAME_MINUTE)
-	money = int(data.get("money", 1000 if role == "A" else 160))
+	money = int(data.get("money", 12000 if role == "A" else 1600))
 	current_location = str(data.get("location", "residence"))
 	completed_events.assign(data.get("completed_events", []))
 	confirmed_residents.assign(data.get("confirmed_residents", []))
@@ -172,7 +172,7 @@ func schedule_for(role: String, day: int) -> Dictionary:
 	var result: Dictionary = defaults.get(role, {
 		"start": 540,
 		"blocks": [[540, 1260]],
-		"starting_money": 1000 if role == "A" else 160,
+		"starting_money": 12000 if role == "A" else 1600,
 	}).duplicate(true)
 	for override in calendar_data.get("day_overrides", []):
 		if int(override.get("day", 0)) != day:
@@ -703,17 +703,21 @@ func load_save_data(data: Dictionary) -> void:
 	if data.has("role_states"):
 		role_states = data.get("role_states", {}).duplicate(true)
 		shared_state = data.get("shared_state", {}).duplicate(true)
-		# Modern saves started A at 300. Add only the missing starting capital;
-		# never replace earned/spent balances or pay the adjustment twice.
-		if int(shared_state.get("starting_budget_version", 1)) < 2:
-			if int(data.get("save_version", 0)) >= 4 and role_states.has("A"):
-				var a_state: Dictionary = role_states.A
-				var adjustment := int(schedule_for("A", 1).get("starting_money", 1000)) - 300
-				a_state.money = int(a_state.get("money", 300)) + adjustment
-				var ledger: Array = a_state.get("money_ledger", []).duplicate(true)
-				ledger.append({"day":int(a_state.get("day", 1)), "minute":int(a_state.get("minute", 480)), "amount":adjustment, "reason":"初始资金调整", "balance":a_state.money})
-				a_state.money_ledger = ledger
-			shared_state["starting_budget_version"] = 2
+		# Apply only the difference from each save's original starting capital.
+		# Existing earnings and spending survive, including for the inactive role.
+		var budget_version := int(shared_state.get("starting_budget_version", 1))
+		if budget_version < 3:
+			if int(data.get("save_version", 0)) >= 4:
+				for role in ["A", "B"]:
+					if not role_states.has(role): continue
+					var previous_budget := (1000 if budget_version == 2 else 300) if role == "A" else 160
+					var role_state: Dictionary = role_states[role]
+					var adjustment := int(schedule_for(role, 1).get("starting_money", 12000 if role == "A" else 1600)) - previous_budget
+					role_state.money = int(role_state.get("money", previous_budget)) + adjustment
+					var ledger: Array = role_state.get("money_ledger", []).duplicate(true)
+					ledger.append({"day":int(role_state.get("day", 1)), "minute":int(role_state.get("minute", 480)), "amount":adjustment, "reason":"初始资金调整", "balance":role_state.money})
+					role_state.money_ledger = ledger
+			shared_state["starting_budget_version"] = 3
 		for role in ["A", "B"]:
 			if not role_states.has(role):
 				role_states[role] = _default_role_state(role)

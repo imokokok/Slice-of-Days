@@ -33,7 +33,7 @@
           "pay": 0
         }
       ],
-      "starting_money": 1000,
+      "starting_money": 12000,
       "opening_facts": []
     },
     "B": {
@@ -92,7 +92,7 @@
           "pay": 80
         }
       ],
-      "starting_money": 160,
+      "starting_money": 1600,
       "opening_facts": []
     }
   },

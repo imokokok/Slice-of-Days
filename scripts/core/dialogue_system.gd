@@ -42,6 +42,8 @@ func reply(npc: String, topic: String) -> Array[String]:
 	if not variants.is_empty():
 		var count := history.filter(func(h: Dictionary) -> bool: return str(h.get("npc","")) == npc and str(h.get("topic","")) == topic).size()
 		lines.assign(variants[count % variants.size()])
+	var activity_lines: Array = activity.get("dialogue", {}).get(topic, [])
+	if not activity_lines.is_empty(): lines.assign(activity_lines)
 	if topic in ["rumor","npc_info"]:
 		KnowledgeSystem.learn({"id":npc+"_recollection","subject_id":npc,"predicate":"recollection","value":lines.duplicate(),"source_npc_id":npc,"confidence":0.6,"text":"听"+str(ScheduleSystem.residents.get(npc,{}).get("display_name",npc))+"说："+" ".join(lines)+"（对方的回忆，未核实）"})
 	if mood == "busy" and topic == "personal_topic": lines = ["等我一下，手上这点还没弄完。", "这事我想慢慢跟你说，晚点再聊，行吗？"]
@@ -55,6 +57,8 @@ func reply(npc: String, topic: String) -> Array[String]:
 	return lines
 
 func invitation_for(npc: String) -> Dictionary:
+	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
+	if not bool(activity.get("allows_invitation", true)): return {}
 	for offer in invitations:
 		if str(offer.npc) == npc and str(offer.location) == GameState.current_location and str(ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute).get("location","")) == GameState.current_location: return offer
 	return {}

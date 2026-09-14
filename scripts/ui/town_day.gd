@@ -464,6 +464,11 @@ func _rebuild_hotspots() -> void:
 		street.hotspots.append({"x":1060.0, "kind":"closed", "label":"观景台 · 21:00 开放"})
 		street.hotspots.append({"x":930.0, "kind":"wait_open", "label":"坐下等到 21:00"})
 		return
+	# Outdoor residents remain available even after the shop closes.
+	var people := ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
+	for index in mini(people.size(), 3):
+		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
+		street.hotspots.append({"x":current_index*BLOCK_WIDTH + 450 + index * 150, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
 	var hours: Array = locations.get(GameState.current_location,{}).get("hours",[])
 	var open_now := hours.is_empty() or hours.any(func(h: Array) -> bool: return GameState.current_minute >= int(h[0]) and GameState.current_minute < int(h[1]))
 	if not open_now:
@@ -485,10 +490,6 @@ func _rebuild_hotspots() -> void:
 	var available := EventSystem.available_events()
 	for index in available.size():
 		street.hotspots.append({"x":center - 190.0 - index * 110.0, "kind":"event", "id":str(available[index].id), "label":str(available[index].get("choice_text", "交谈"))})
-	var people := ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
-	for index in mini(people.size(), 3):
-		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
-		street.hotspots.append({"x":current_index*BLOCK_WIDTH + 450 + index * 150, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
 	street.queue_redraw()
 
 func _interact() -> void:

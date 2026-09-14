@@ -114,13 +114,13 @@ func run() -> void:
 	router.town_day()
 	await settle()
 	check(current_scene.street.hotspots.any(func(h: Dictionary) -> bool: return h.kind == "shop_closed"), "Missed shop leaves quiet closure, no failed quest")
-	state.current_minute = 1259
+	state.current_minute = 1199
 	router.travel_to("park","taxi")
 	await settle()
-	check(current_scene.segment_id == "lookout" and not is_finite(current_scene.street.walk_limit), "Lookout is separate seaside stage open after 21:00")
-	state.current_minute = 1200
+	check(current_scene.segment_id == "lookout" and not is_finite(current_scene.street.walk_limit), "Lookout is separate seaside stage open after 20:00")
+	state.current_minute = 1140
 	current_scene._refresh()
-	check(is_finite(current_scene.street.walk_limit), "Lookout gate closed before 21:00")
+	check(is_finite(current_scene.street.walk_limit), "Lookout gate closed before 20:00")
 	state.current_day = 6
 	state.current_role = "A"
 	state.shared_state.chapter_index = 5

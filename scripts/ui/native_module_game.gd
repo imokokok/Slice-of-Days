@@ -256,6 +256,10 @@ func _complete_choice(choice_id: String) -> void:
 	status_label.text = str(result.get("message", ""))
 	if not bool(result.get("ok", false)):
 		return
+	if module_id == "cooking":
+		var carried := GameState.consume_inventory(selected_tokens)
+		if not carried.is_empty():
+			status_label.text += "\n这次用掉了随身带来的%d样食材，其余来自饭店当天的备料。" % carried.size()
 	completed = true
 	if not SaveManager.save_or_report("玩法结果保存失败"):
 		GameState.load_save_data(rollback_snapshot)
@@ -442,6 +446,10 @@ func _token_label(token_id: String) -> String:
 
 func _token_button_text(token: Dictionary) -> String:
 	var label := str(token.get("label", "素材"))
+	if module_id == "cooking":
+		var count := int(GameState.inventory.get(str(token.get("id", "")), 0))
+		if count > 0:
+			return "%s  ·  随身有%d" % [label, count]
 	if module_id == "sound_sampling":
 		return ("△  " if str(token.get("id", "")) in ["cafe_cups", "old_hinge"] else "✓  ") + label
 	return label

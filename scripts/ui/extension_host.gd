@@ -165,7 +165,16 @@ func _complete() -> void:
 
 
 func _cancel() -> void:
+	var preserved_extension_state: Dictionary = {}
+	var preserved_key := ""
+	if module_id == "tarot" and is_instance_valid(experience) and experience.has_method("save_session"):
+		experience.save_session()
+		preserved_key = "myriorama_" + GameState.current_role
+		preserved_extension_state = GameState.shared_state.get(preserved_key, {}).duplicate(true)
 	GameplayModuleSystem.cancel_session()
+	if not preserved_key.is_empty() and not preserved_extension_state.is_empty():
+		GameState.shared_state[preserved_key] = preserved_extension_state
+		GameState.commit_active_role_state()
 	if not SaveManager.save_or_report("取消玩法后保存失败"):
 		status_label.text = "已撤销本次玩法，但存档写入失败。"
 		return

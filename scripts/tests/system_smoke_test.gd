@@ -37,7 +37,7 @@ func _test_calendar_and_role_isolation() -> void:
 	_check(GameState.current_role == "A", "A should be the first active role")
 	_check(GameState.current_day == 1, "A should start on day 1")
 	_check(GameState.residency_confirmations == 0, "A should start without prototype confirmations")
-	_check(GameState.current_minute == 540, "Day 1 should begin at 09:00")
+	_check(GameState.current_minute == 480, "A should begin after the 07:00-08:00 morning run")
 	_check(GameState.spend_money(20), "A should be able to spend money")
 	GameState.add_fact("A-only fact")
 	_check(GameState.switch_to_role("B"), "Switching to B should succeed")
@@ -59,12 +59,12 @@ func _test_schedule_and_route() -> void:
 		if str(lead.get("id", "")) == "a_d1_print_help":
 			found_day_lead = true
 	_check(found_day_lead, "The journal lead query should expose an eligible day event without requiring the current location")
-	GameState.current_minute = 1260
+	GameState.current_minute = 1200
 	GameState.current_location = "park"
 	GameState.commit_active_role_state()
 	_check(
-		ScheduleSystem.residents_at("park", 1, 1260).has("xia_touming"),
-		"Xia should be present in the park on day 1 at 21:00"
+		ScheduleSystem.residents_at("park", 1, 1200).has("xia_touming"),
+		"Xia should be present in the park on day 1 at 20:00"
 	)
 	var known_activity := ScheduleSystem.activity_by_id("zhou_xiaoliu_current_0")
 	_check(str(known_activity.get("resident_name", "")) == "周晓六", "Known schedules should resolve to readable resident data")
@@ -194,7 +194,7 @@ func _test_draft_confirmation_request() -> void:
 func _test_choice_history() -> void:
 	ChapterSystem.start_new_game("A")
 	GameState.current_day = 6
-	GameState.current_minute = 1260
+	GameState.current_minute = 1200
 	GameState.current_location = "park"
 	GameState.commit_active_role_state()
 	var result := EventSystem.trigger("a_d6_last_full_block", "watch_stars")

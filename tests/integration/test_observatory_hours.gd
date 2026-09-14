@@ -12,15 +12,15 @@ func run() -> void:
 	var state = root.get_node("GameState")
 	root.get_node("ChapterSystem").start_new_game()
 	state.current_location = "park"
-	state.current_minute = 1259
-	check(not root.get_node("GameplayModuleSystem").begin_session("contemplation", "street:park"), "Telescope must reject entry before 21:00")
+	state.current_minute = 1139
+	check(not root.get_node("GameplayModuleSystem").begin_session("contemplation", "street:park"), "Telescope must reject entry before 20:00")
 	change_scene_to_file("res://scenes/town_day.tscn")
 	await create_timer(0.5).timeout
 	var town = current_scene
-	check(is_finite(town.street.walk_limit), "Lookout needs a gate before 21:00")
-	state.current_minute = 1260
+	check(is_finite(town.street.walk_limit), "Lookout needs a gate before 20:00")
+	state.current_minute = 1200
 	town._refresh()
-	check(not is_finite(town.street.walk_limit), "Gate must open at exactly 21:00")
+	check(not is_finite(town.street.walk_limit), "Gate must open at exactly 20:00")
 	root.get_node("SceneRouter").gameplay_module("contemplation", "street:park")
 	await create_timer(0.8).timeout
 	var sky = current_scene.experience

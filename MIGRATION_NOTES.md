@@ -51,7 +51,7 @@ CharacterSystem, GameState, ScheduleSystem, ResidentProfileSystem, TravelSystem,
 ## Risks and acceptance
 - Do not erase old saves. Migrate old chapter cursor onto the matching calendar day/role, preserving all personal artifacts and recognized residents.
 - Travel must validate before charging, display full wait/fare/arrival and preserve correct return location.
-- Lookout opens at 21:00; time display HH:MM; 60 real seconds = 5 game minutes.
+- Lookout opens at 20:00; time display HH:MM; both roles rest at 22:00.
 - Tests at baseline pass behavior assertions but print 2 ObjectDB / 1 resource cleanup warnings on exit.
 - First delivery is the Day 1 A + Day 2 B vertical slice, not a claim that all expanded minigames or seven-day authored content are finished.
 

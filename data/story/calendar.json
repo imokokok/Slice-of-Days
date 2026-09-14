@@ -6,21 +6,43 @@
   ],
   "default_role_schedules": {
     "A": {
-      "start": 540,
+      "wake": 420,
+      "start": 480,
+      "sleep_at": 1320,
       "blocks": [
         [
-          540,
-          1380
+          480,
+          1140
+        ],
+        [
+          1200,
+          1320
         ]
+      ],
+      "rhythm_note": "07:00起床 · 07:00—08:00晨跑 · 19:00—20:00夜跑 · 22:00休息",
+      "commitments": [
+        {
+          "id": "a_night_run",
+          "label": "沿海边完成夜跑",
+          "kind": "routine",
+          "start": 1140,
+          "end": 1200,
+          "return_by": 1140,
+          "auto_advance": true,
+          "location_label": "沿海跑道",
+          "pay": 0
+        }
       ],
       "starting_money": 300,
       "opening_facts": []
     },
     "B": {
-      "start": 540,
+      "wake": 420,
+      "start": 420,
+      "sleep_at": 1320,
       "blocks": [
         [
-          540,
+          420,
           600
         ],
         [
@@ -33,8 +55,42 @@
         ],
         [
           1080,
-          1380
+          1320
         ]
+      ],
+      "rhythm_note": "07:00起床即可行动 · 三段远程工作会切开白天 · 22:00休息",
+      "commitments": [
+        {
+          "id": "b_morning_remote_work",
+          "label": "在电脑前处理上午工作",
+          "start": 600,
+          "end": 660,
+          "return_by": 600,
+          "location": "dorm",
+          "location_label": "B的家",
+          "pay": 45
+        },
+        {
+          "id": "b_afternoon_work",
+          "label": "处理下午项目",
+          "start": 720,
+          "end": 840,
+
+          "return_by": 720,
+          "location": "dorm",
+          "location_label": "B的家",
+          "pay": 70
+        },
+        {
+          "id": "b_evening_delivery",
+          "label": "完成傍晚交付",
+          "start": 960,
+          "end": 1080,
+          "return_by": 960,
+          "location": "dorm",
+          "location_label": "B的家",
+          "pay": 80
+        }
       ],
       "starting_money": 160,
       "opening_facts": []

@@ -93,7 +93,7 @@
       "id": "a_d1_evening_photo",
       "choice_text": "拍下第一天的晚霞",
       "priority": 20,
-      "conditions": {"roles": ["A"], "days": [1], "locations": ["park"], "start": 1260, "end": 1380, "required_events": ["a_d1_theatre_rehearsal"]},
+      "conditions": {"roles": ["A"], "days": [1], "locations": ["park"], "start": 1200, "end": 1320, "required_events": ["a_d1_theatre_rehearsal"]},
       "cost": {},
       "presentation": {
         "title": "相册里多出来的栏杆",
@@ -251,7 +251,7 @@
       "legacy_route": true,
       "choice_text": "和阿锰在公园坐一会儿",
       "priority": 20,
-      "conditions": {"roles": ["A"], "days": [2], "locations": ["park"], "start": 1260, "end": 1380, "resident_present": "a_meng"},
+      "conditions": {"roles": ["A"], "days": [2], "locations": ["park"], "start": 1200, "end": 1320, "resident_present": "a_meng"},
       "cost": {},
       "presentation": {
         "title": "竹笛和停下来的时间",
@@ -266,7 +266,7 @@
       "legacy_route": true,
       "choice_text": "把黄昏的灯光拍下来（10分钟）",
       "priority": 30,
-      "conditions": {"roles": ["A"], "days": [2], "locations": ["park"], "start": 1260, "end": 1380, "required_events": ["a_d2_park_music"]},
+      "conditions": {"roles": ["A"], "days": [2], "locations": ["park"], "start": 1200, "end": 1320, "required_events": ["a_d2_park_music"]},
       "cost": {"minutes": 10},
       "presentation": {
         "title": "不在画面里的晚饭",
@@ -335,7 +335,7 @@
       "id": "b_d2_chess_start",
       "choice_text": "把一段完整时间留给棋局",
       "priority": 30,
-      "conditions": {"roles": ["B"], "days": [2], "locations": ["park"], "start": 1260, "end": 1380, "resident_present": "jian_zhaoxiang"},
+      "conditions": {"roles": ["B"], "days": [2], "locations": ["park"], "start": 1200, "end": 1320, "resident_present": "jian_zhaoxiang"},
       "cost": {},
       "presentation": {
         "title": "可以暂停的棋",
@@ -367,7 +367,7 @@
       "legacy_route": true,
       "choice_text": "跟着临时关系链走下去（90分钟）",
       "priority": 10,
-      "conditions": {"roles": ["A"], "days": [3], "locations": ["park"], "start": 1260, "end": 1380},
+      "conditions": {"roles": ["A"], "days": [3], "locations": ["park"], "start": 1200, "end": 1320},
       "cost": {"minutes": 90},
       "presentation": {
         "title": "屋檐、乙游和一只需要散步的狗",
@@ -664,7 +664,7 @@
       "id": "a_d4_long_bench",
       "choice_text": "在长椅上多坐一会儿（60分钟）",
       "priority": 15,
-      "conditions": {"roles": ["A"], "days": [4], "locations": ["park"], "start": 1260, "end": 1380, "required_events": ["a_d4_confirmation_withdrawn"]},
+      "conditions": {"roles": ["A"], "days": [4], "locations": ["park"], "start": 1200, "end": 1320, "required_events": ["a_d4_confirmation_withdrawn"]},
       "cost": {"minutes": 60},
       "presentation": {
         "title": "没有立刻补救的一个小时",
@@ -966,7 +966,7 @@
       "id": "b_d5_resume_chess",
       "choice_text": "把之前暂停的棋下完",
       "priority": 20,
-      "conditions": {"roles": ["B"], "days": [5], "locations": ["park"], "start": 1260, "end": 1380, "resident_present": "jian_zhaoxiang"},
+      "conditions": {"roles": ["B"], "days": [5], "locations": ["park"], "start": 1200, "end": 1320, "resident_present": "jian_zhaoxiang"},
       "cost": {},
       "presentation": {
         "title": "终于没有被取消的完整时间",
@@ -997,7 +997,7 @@
       "id": "a_d6_last_full_block",
       "choice_text": "决定最后一块完整时间留给谁",
       "priority": 10,
-      "conditions": {"roles": ["A"], "days": [6], "locations": ["park"], "start": 1260, "end": 1380},
+      "conditions": {"roles": ["A"], "days": [6], "locations": ["park"], "start": 1200, "end": 1320},
       "cost": {},
       "presentation": {
         "title": "最后的完整时间",
@@ -1054,7 +1054,7 @@
       "legacy_route": true,
       "choice_text": "回应一个临时追加的请求",
       "priority": 20,
-      "conditions": {"roles": ["B"], "days": [6], "locations": ["park"], "start": 1260, "end": 1380},
+      "conditions": {"roles": ["B"], "days": [6], "locations": ["park"], "start": 1200, "end": 1320},
       "cost": {},
       "presentation": {
         "title": "做得到，和要不要接",
@@ -1099,7 +1099,7 @@
       "legacy_route": true,
       "choice_text": "经过棋桌，但不停下来（10分钟）",
       "priority": 30,
-      "conditions": {"roles": ["B"], "days": [6], "locations": ["park"], "start": 1260, "end": 1380, "required_events": ["b_d6_key_meeting"]},
+      "conditions": {"roles": ["B"], "days": [6], "locations": ["park"], "start": 1200, "end": 1320, "required_events": ["b_d6_key_meeting"]},
       "cost": {"minutes": 10},
       "presentation": {
         "title": "棋盘还在那里",
@@ -1119,7 +1119,7 @@
       "id": "a_d7_last_sunset",
       "choice_text": "把最后一个傍晚留给自己",
       "priority": 10,
-      "conditions": {"roles": ["A"], "days": [7], "locations": ["park"], "start": 1260, "end": 1380},
+      "conditions": {"roles": ["A"], "days": [7], "locations": ["park"], "start": 1200, "end": 1320},
       "cost": {},
       "presentation": {
         "title": "最后一个傍晚",

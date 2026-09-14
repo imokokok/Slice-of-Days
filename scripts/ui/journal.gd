@@ -32,14 +32,14 @@ func _build_ui() -> void:
 	back.pressed.connect(SceneRouter.return_from_gameplay)
 
 	if GameState.current_role == "A": _build_pocket()
-	else: _text_panel(Vector2(80,125),Vector2(710,710),"Notebook / 已知信息",_today_text())
+	else: _text_panel(Vector2(80,125),Vector2(710,710),"Notebook / 时间与已知信息",_today_text() + "\n\n" + _planning_text())
 	_text_panel(Vector2(810, 125), Vector2(710, 710), "沿途留下的东西", _memory_text() + "\n\n旧日记录（未经本次核实）\n" + _fact_text() + "\n\n" + _traces_text())
 
 func _today_text() -> String:
 	var lines: Array[String] = []
 	if GameState.current_role == "A":
 		lines.append("一张沾着海盐的明信片\n背面写着：饿的时候，来饭店坐坐。别急着把每一站都走完。")
-		lines.append("折起来的纸条\n观景台晚上九点开放，记得带相机。")
+		lines.append("折起来的纸条\n观景台晚上八点开放，记得带相机。")
 	else:
 		lines.append("第%d天 · %s · 今日预算 %d元" % [GameState.current_day,GameState.clock_text(),GameState.money])
 		lines.append("□ 问问周晓六今天碰见过谁。\n□ 去下棋摊看看，闹闹傍晚可能会来。")
@@ -102,6 +102,14 @@ func _relationship_text() -> String:
 
 func _memory_text() -> String:
 	var lines: Array[String] = []
+	if not GameState.inventory.is_empty():
+		lines.append("随身物品")
+		for item_id in GameState.inventory:
+			lines.append("• %s × %d" % [_inventory_name(str(item_id)), int(GameState.inventory[item_id])])
+	if not GameState.money_ledger.is_empty():
+		lines.append("\n最近收支")
+		for row in GameState.money_ledger.slice(maxi(0, GameState.money_ledger.size() - 8)):
+			lines.append("• 第%d天 %s  %s%d元 · %s · 余额%d元" % [int(row.get("day", GameState.current_day)), _minute_text(int(row.get("minute", 0))), "+" if int(row.get("amount", 0)) > 0 else "", int(row.get("amount", 0)), str(row.get("reason", "收支")), int(row.get("balance", 0))])
 	if not GameState.choice_history.is_empty():
 		lines.append("关键选择")
 		for choice in GameState.choice_history:
@@ -123,6 +131,13 @@ func _memory_text() -> String:
 		for artifact in rows:
 			lines.append("• %s" % str(artifact.get("title", artifact.get("id", "未命名"))))
 	return "\n\n".join(lines) if not lines.is_empty() else "还没有留下作品或私人记录。"
+
+
+func _inventory_name(item_id: String) -> String:
+	return {
+		"tomato": "熟透的番茄", "lemon": "一袋柠檬", "herbs": "窗台香草", "sea_beans": "海盐豆罐头",
+		"bread": "昨天的面包", "cheese": "一小块奶酪", "soap": "海盐肥皂", "matches": "一盒火柴",
+	}.get(item_id, item_id)
 
 
 func _planning_text() -> String:
@@ -187,10 +202,23 @@ func _location_name(location_id: String) -> String:
 
 
 func _block_text() -> String:
+	var schedule := GameState.schedule_for(GameState.current_role, GameState.current_day)
 	var parts: Array[String] = []
 	for block in GameState.active_time_blocks():
 		parts.append("%s—%s" % [_minute_text(int(block[0])), _minute_text(int(block[1]))])
-	return " / ".join(parts)
+	var result := str(schedule.get("rhythm_note", ""))
+	if not result.is_empty():
+		result += "\n"
+	result += "自由行动：" + " / ".join(parts)
+	var commitments := GameState.commitments_for_day()
+	if not commitments.is_empty():
+		result += "\n\n固定日程"
+		for work in commitments:
+			if str(work.get("kind", "work")) == "routine":
+				result += "\n• %s—%s %s（生活习惯，时间已预留）" % [_minute_text(int(work.get("start", 0))), _minute_text(int(work.get("end", 0))), str(work.get("label", "固定习惯"))]
+			else:
+				result += "\n• %s前到%s · %s—%s %s · 收入%d元" % [_minute_text(int(work.get("return_by", work.get("start", 0)))), str(work.get("location_label", "指定地点")), _minute_text(int(work.get("start", 0))), _minute_text(int(work.get("end", 0))), str(work.get("label", "工作")), int(work.get("pay", 0))]
+	return result
 
 
 func _minute_text(minute: int) -> String:
@@ -278,7 +306,7 @@ func _build_pocket() -> void:
 	var stack := VBoxContainer.new()
 	stack.add_theme_constant_override("separation",22)
 	scroll.add_child(stack)
-	var items: Array = [{"kind":"postcard","heading":"一张沾着海盐的明信片","text":"背面写着：饿的时候，来饭店坐坐。","place":"night_market"},{"kind":"note","heading":"折起来的纸条","text":"观景台晚上九点开放。记得带相机。","place":"park"}]
+	var items: Array = [{"kind":"postcard","heading":"一张沾着海盐的明信片","text":"背面写着：饿的时候，来饭店坐坐。","place":"night_market"},{"kind":"note","heading":"折起来的纸条","text":"观景台晚上八点开放。记得带相机。","place":"park"}]
 	items.append_array(DialogueSystem.notebook_leads())
 	for fact in KnowledgeSystem.facts(): items.append({"kind":"note","heading":"谈话留下的便签","text":str(fact.get("text","")) + (" ?" if float(fact.get("confidence",1.0)) < 0.8 else ""),"place":""})
 	for item in items:

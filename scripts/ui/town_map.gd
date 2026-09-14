@@ -67,7 +67,7 @@ func _select(id: String) -> void:
 	pin.text = "取消标记" if WorldGraph.pins().has(id) else "夹一张地点便签" if GameState.current_role == "A" else "Pin 到日程本"
 	pin.pressed.connect(func() -> void: WorldGraph.toggle_pin(id); _select(id))
 	info.add_child(pin)
-	if id == "park": _text("观景台每天 21:00 开放。",18)
+	if id == "park": _text("观景台每天 20:00 开放。",18)
 	for method in ["walk", "bus", "taxi", "friend"]:
 		var quote := TravelSystem.route(GameState.current_location,id,method,GameState.current_role,GameState.current_minute)
 		if not bool(quote.get("available",false)):

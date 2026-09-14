@@ -24,8 +24,10 @@ func _ready() -> void:
 	foley = AudioStreamPlayer.new()
 	coast = AudioStreamPlayer.new()
 	coast.bus = BUS
-	if AudioServer.get_driver_name() != "Dummy":
-		coast.stream = make_sea()
+	# Keep the authored stream available even with the Dummy driver so tests,
+	# waveform capture and accessibility previews can inspect the real sound.
+	# Playback itself remains disabled below when no audio driver exists.
+	coast.stream = make_sea()
 	coast.volume_db = -8.0
 	add_child(coast)
 	for player in [ambience, foley]:

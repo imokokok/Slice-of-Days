@@ -123,7 +123,7 @@ func latest_outcome(module_id: String) -> Dictionary:
 
 
 func begin_session(module_id: String, source_event_id := "", rollback_snapshot: Dictionary = {}) -> bool:
-	if module_id == "contemplation" and GameState.current_minute < 1260:
+	if module_id == "contemplation" and GameState.current_minute < 1200:
 		return false
 	if not unlock(module_id) or not start(module_id):
 		return false
@@ -226,7 +226,7 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 	var amount := int(cost.get("money", 0))
 	var minutes := int(cost.get("minutes", 0))
 	if amount > 0:
-		GameState.spend_money(amount)
+		GameState.spend_money(amount, "完成%s" % str(prototypes.get(module_id, {}).get("title", module_id)))
 	if minutes > 0:
 		GameState.use_free_time(minutes)
 	EventSystem.apply_results("module_%s_%s" % [module_id, choice_id], selected.get("results", {}))

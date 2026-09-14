@@ -20,7 +20,7 @@ func run() -> void:
 	chapters.start_new_game()
 	check(chapters.chapter_sequence().size() == 7, "Exactly seven days")
 	check(chapters.chapter_sequence()[1].role == "B" and chapters.chapter_sequence()[2].role == "B", "Days 2 and 3 must be B")
-	check(state.money == 300 and state.role_states.B.money == 160, "Configured separate budgets")
+	check(state.money == 1000 and state.role_states.B.money == 160, "A starts with substantially more money than B")
 	for location in travel.location_names:
 		check(travel._shortest_walk_minutes("town_entrance",location) >= 0, "Every approved location reachable: " + location)
 	check(travel.adjacency.town_entrance.size() > 2, "World graph branches")

@@ -1,7 +1,9 @@
 extends Node
 var content: Dictionary = {}
 var invitations: Array = []
+var linear_stories: Dictionary = {}
 func _ready() -> void:
+	linear_stories = JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs/linear_conversations.json"))
 	var invitation_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs/minigame_invitations.json"))
 	if invitation_data is Dictionary:
 		invitations = invitation_data.get("invitations", [])
@@ -64,6 +66,38 @@ func reply(npc: String, topic: String) -> Array[String]:
 	SaveManager.save_or_report("对话后保存失败")
 	return lines
 
+func linear_conversation(npc: String) -> Array:
+	var counts: Dictionary = GameState.shared_state.get("linear_talk_counts_"+GameState.current_role,{})
+	var count := int(counts.get(npc,0))
+	var row: Dictionary = linear_stories.get(npc,{})
+	var episodes: Array = row.get("episodes",[])
+	if not episodes.is_empty():
+		var beats: Array = (episodes[count] if count < episodes.size() else row.get("after",episodes.back())).duplicate(true)
+		if npc == "zhou_xiaoliu" and count == 0:
+			if GameState.current_role == "A":
+				beats[3][1] = "你不能先给自己放个假吗？"
+				beats[4][1] = "能。我休一天，房租可不会休。等钱到账吧。"
+			else: beats[3][1] = "一单后面还有一单，什么时候算忙完？"
+		return beats
+	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
+	var authored: Array = activity.get("dialogue",{}).get("greeting",[])
+	if authored.is_empty():
+		var personal := ResidentProfileSystem.ambient_line(npc,GameState.current_role,GameState.current_day+count)
+		authored = [personal if not personal.is_empty() else str(content.get(npc,{}).get("greeting","今天也在附近走走吗？")), "手边这件事还没弄完。你不赶时间的话，可以在这儿坐会儿。"]
+	var result: Array = []
+	for line in authored: result.append(["npc",str(line)])
+	return result
+
+func complete_linear_conversation(npc: String) -> void:
+	var key := "linear_talk_counts_"+GameState.current_role
+	var counts: Dictionary = GameState.shared_state.get(key,{})
+	counts[npc] = int(counts.get(npc,0))+1
+	GameState.shared_state[key] = counts
+	var encounter_id := "chat_%d_%s_%s" % [GameState.current_day,GameState.current_role,npc]
+	if not GameState.has_event(encounter_id):
+		RelationshipSystem.record_encounter(npc,encounter_id,["认真听完了一次谈话"])
+		GameState.mark_event(encounter_id)
+
 func invitation_for(npc: String) -> Dictionary:
 	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
 	if not bool(activity.get("allows_invitation", true)): return {}
@@ -80,14 +114,14 @@ func should_invite(npc: String) -> bool:
 	var offer := invitation_for(npc)
 	return not offer.is_empty() and not invitation_accepted(str(offer.module)) and not GameState.shared_state.get("invitations_heard",{}).has("%s_%d_%s" % [GameState.current_role,GameState.current_day,npc])
 
-func mark_invitation_heard(npc: String) -> void:
+func mark_invitation_heard(npc: String, persist := true) -> void:
 	var heard: Dictionary = GameState.shared_state.get("invitations_heard",{})
 	heard["%s_%d_%s" % [GameState.current_role,GameState.current_day,npc]] = true
 	GameState.shared_state["invitations_heard"] = heard
-	SaveManager.save_or_report("记录邀请后保存失败")
+	if persist: SaveManager.save_or_report("记录邀请后保存失败")
 func invitation_accepted(module_id: String) -> bool:
 	return GameState.shared_state.get("accepted_invitations",{}).has("%s_%d_%s" % [GameState.current_role,GameState.current_day,module_id])
-func accept_invitation(npc: String) -> Dictionary:
+func accept_invitation(npc: String, persist := true) -> Dictionary:
 	var offer := invitation_for(npc)
 	if offer.is_empty(): return {}
 	var accepted: Dictionary = GameState.shared_state.get("accepted_invitations",{})
@@ -95,7 +129,7 @@ func accept_invitation(npc: String) -> Dictionary:
 	GameState.shared_state["accepted_invitations"] = accepted
 	var name := str(ScheduleSystem.residents[npc].display_name)
 	GameState.add_journal_entry({"kind":"invitation","text":name + "邀请我：" + str(offer.label)})
-	SaveManager.save_or_report("接受邀请后保存失败")
+	if persist: SaveManager.save_or_report("接受邀请后保存失败")
 	return offer
 
 func notebook_leads() -> Array:

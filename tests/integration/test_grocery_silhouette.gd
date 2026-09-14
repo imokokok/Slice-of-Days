@@ -56,7 +56,7 @@ func run() -> void:
 	check(is_instance_valid(town.conversation) and town.conversation.text_label.text.contains("买点什么"), "Owner asks what the player wants before shopping")
 	check(not is_instance_valid(town.pocket_panel), "Greeting precedes the product list")
 	await shot("grocery-greeting")
-	await key(KEY_ENTER)
+	town.conversation.typewriter = false
 	await key(KEY_ENTER)
 	check(is_instance_valid(town.pocket_panel) and town.pocket_panel.shop_id == "grocery", "Keyboard reply opens the grocery purchase list")
 	check(router.active_space_id.is_empty() and state.current_location == "cafe", "Player remains outside")
@@ -70,11 +70,8 @@ func run() -> void:
 	await process_frame
 	check(town.street.player_x == location_x and not is_instance_valid(town.conversation), "Finish shopping in the same street position")
 	town._interact()
-	await key(KEY_ENTER)
-	await key(KEY_S)
-	await key(KEY_ENTER)
-	await key(KEY_ENTER)
-	check(not is_instance_valid(town.pocket_panel) and not is_instance_valid(town.conversation), "Declining purchase ends with a farewell and no shop menu")
+	await key(KEY_ESCAPE)
+	check(not is_instance_valid(town.pocket_panel) and not is_instance_valid(town.conversation), "Leaving the greeting does not open the product list or charge money")
 	state.current_location = "residence"
 	router.enter_space("home_a")
 	await create_timer(0.8).timeout

@@ -52,7 +52,9 @@ func run() -> void:
 	current_scene._open_selected()
 	await process_frame
 	check(is_instance_valid(current_scene.conversation),"Kitchen first introduces the shopkeeper commission")
-	current_scene.conversation._accept_offer()
+	var kitchen_talk = current_scene.conversation
+	kitchen_talk.typewriter = false
+	for i in range(kitchen_talk.lines.size()): kitchen_talk._advance()
 	await process_frame
 	current_scene._open_selected()
 	await settle()
@@ -94,8 +96,7 @@ func run() -> void:
 	current_scene._process(60.0)
 	check(not current_scene.street.enabled and state.current_minute == 540, "Reading dialogue pauses world time")
 	check(is_instance_valid(current_scene.conversation.text_label), "Shared stage conversation actually renders")
-	current_scene.conversation._topics()
-	check(current_scene.conversation.options.size() >= 5, "Conversation offers practical questions")
+	check(current_scene.conversation.lines.size() >= 8 and current_scene.conversation.speakers.has("player"), "Conversation has a continuous exchange between the resident and player")
 	current_scene.conversation._close()
 	await process_frame
 	graph.toggle_pin("record_store")

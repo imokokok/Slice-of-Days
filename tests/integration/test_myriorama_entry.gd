@@ -20,10 +20,10 @@ func run() -> void:
 	var room = current_scene
 	room._start_conversation("xia_touming")
 	await process_frame
-	room.conversation.typewriter = false
-	for i in range(room.conversation.lines.size()): room.conversation._advance()
-	check(room.conversation.offer.get("module","") == "tarot","Xia naturally invites the player after greeting")
-	room.conversation._accept_offer()
+	var talk = room.conversation
+	talk.typewriter = false
+	check(talk.offer.get("module","") == "tarot","Xia naturally invites the player after greeting")
+	for i in range(talk.lines.size()): talk._advance()
 	await process_frame
 	var index := -1
 	for i in range(room.objects.size()):

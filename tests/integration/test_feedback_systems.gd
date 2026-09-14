@@ -58,15 +58,16 @@ func run() -> void:
 	var dialogue = load("res://scripts/ui/conversation_panel.gd").new()
 	dialogue.npc = "zhou_xiaoliu"
 	current_scene.add_child(dialogue)
-	dialogue._topics()
+	dialogue.typewriter = false
 	var key := InputEventKey.new()
 	key.physical_keycode = KEY_S
 	key.pressed = true
 	root.push_input(key, true)
-	check(root.gui_get_focus_owner() == dialogue.options[1], "S moves to exactly the next reply")
+	check(dialogue.index == 0, "S does not navigate a removed topic menu")
 	key.physical_keycode = KEY_ENTER
+	key.keycode = KEY_ENTER
 	root.push_input(key, true)
-	check(is_instance_valid(dialogue.text_label) and dialogue.index == 0, "Enter selects a reply without skipping its first spoken line")
+	check(is_instance_valid(dialogue.text_label) and dialogue.index == 1, "Enter advances exactly one spoken line")
 	dialogue._close()
 	await process_frame
 	var modules = root.get_node("GameplayModuleSystem")

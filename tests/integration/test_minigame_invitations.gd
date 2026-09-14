@@ -19,15 +19,18 @@ func run() -> void:
 	panel.npc = "xanni"
 	root.add_child(panel)
 	panel.typewriter = false
-	check(panel.offer.is_empty(),"Ordinary greeting comes before the invitation")
+	check(panel.lines[0].contains("咳嗽"),"Ordinary character conversation comes before the invitation")
+	check(panel.offer.get("module","") == "sound_sampling","Invitation is woven into the forward-moving dialogue")
+	panel._close()
+	await process_frame
+	check(not dialogue.invitation_accepted("sound_sampling"),"Leaving mid-conversation does not accept an unread invitation")
+	panel = load("res://scripts/ui/conversation_panel.gd").new()
+	panel.npc = "xanni"
+	root.add_child(panel)
+	panel.typewriter = false
 	for i in range(panel.lines.size()): panel._advance()
-	check(panel.offer.get("module","") == "sound_sampling","NPC volunteers invitation after chatting without player selecting a task topic")
+	check(panel.closing and dialogue.invitation_accepted("sound_sampling"),"Last line records the invitation and naturally ends the conversation")
 	check(not dialogue.should_invite("xanni"),"Invitation is remembered so reopening does not nag")
-	panel._decline_offer()
-	panel._show_topic("greeting")
-	for i in range(panel.lines.size()): panel._advance()
-	check(panel.offer.is_empty(),"Declined invitation leaves ordinary conversation available")
-	panel.queue_free()
 	await process_frame
 	var hours = dialogue.reply("xanni","schedule_info")
 	check(str(hours[0]).begins_with("我") and not str(hours[0]).contains("Xanni"),"Xanni uses first person for her own hours")

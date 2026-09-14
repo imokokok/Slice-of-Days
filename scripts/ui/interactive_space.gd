@@ -66,6 +66,9 @@ func _load_active_space() -> void:
 	if active_id.is_empty() or not FileAccess.file_exists(SPACES_PATH):
 		return
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string(SPACES_PATH))
+	if not parsed is Dictionary:
+		push_error("Invalid interactive space data")
+		return
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return
 	for row in parsed.get("spaces", []):
@@ -245,7 +248,7 @@ func _talk_to_resident() -> void:
 		"kind": "interior_conversation",
 		"text": "%s在%s说：“%s”" % [resident_name, str(space.get("name", "室内")), line],
 	})
-	SaveManager.save_game()
+	SaveManager.save_or_report("室内互动后保存失败")
 	name_label.text = resident_name.to_upper()
 	cue_label.text = "“%s”" % line
 	detail_label.text = "E · 继续"
@@ -296,18 +299,18 @@ func _unhandled_input(event: InputEvent) -> void:
 	if is_instance_valid(pocket_panel) or is_instance_valid(notes_overlay) or SceneRouter.transitioning: return
 	if not event is InputEventKey or not event.pressed or event.echo: return
 	if room_dialogue.visible:
-		if event.keycode in [KEY_E, KEY_ESCAPE, KEY_ENTER]:
-			if event.keycode != KEY_ESCAPE and speech_progress < cue_label.text.length():
+		if event.is_action_pressed("interact") or event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_accept"):
+			if not event.is_action_pressed("ui_cancel") and speech_progress < cue_label.text.length():
 				speech_progress = cue_label.text.length()
 				cue_label.visible_characters = -1
 			else: room_dialogue.hide()
 		get_viewport().set_input_as_handled()
 		return
-	if event.keycode == KEY_J:
+	if event.is_action_pressed("open_journal"):
 		SceneRouter.journal()
-	elif event.keycode == KEY_M:
+	elif event.is_action_pressed("open_map"):
 		SceneRouter.town_map()
-	elif event.keycode == KEY_E:
+	elif event.is_action_pressed("interact"):
 		var nearest: Dictionary = stage.nearest()
 		match str(nearest.get("kind", "")):
 			"echo":
@@ -320,7 +323,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			"object":
 				_select_object(int(nearest.index))
 				_open_selected()
-	elif event.keycode == KEY_ESCAPE:
+	elif event.is_action_pressed("ui_cancel"):
 		name_label.text = ""
 		cue_label.text = ""
 		detail_label.text = ""
@@ -348,7 +351,7 @@ func _show_book_notes() -> void:
 		var notes: Array = GameState.shared_state.get("bookstore_notes", [])
 		if not notes.has(title): notes.append(title)
 		GameState.shared_state["bookstore_notes"] = notes
-		SaveManager.save_game()
+		SaveManager.save_or_report("室内状态保存失败")
 		input.clear()
 		refresh.call())
 	var reload := _button(notes_overlay, "刷新", Vector2(600, 528), Vector2(220, 45), "quiet")

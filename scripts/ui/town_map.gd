@@ -86,4 +86,4 @@ func _depart(method: String) -> void:
 	var result := SceneRouter.travel_to(selected,method)
 	if not bool(result.get("ok",false)): notice.text = str(result.get("message","现在无法出发。"))
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_M,KEY_ESCAPE]: SceneRouter.return_from_gameplay()
+	if event is InputEventKey and event.pressed and not event.echo and (event.is_action_pressed("open_map") or event.is_action_pressed("ui_cancel")): SceneRouter.return_from_gameplay()

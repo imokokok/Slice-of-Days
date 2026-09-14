@@ -184,6 +184,7 @@ func _token_label(token_id: String) -> String:
 
 
 func _complete_choice(choice_id: String) -> void:
+	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	var interaction_record := {
 		"mode": str(interaction.get("mode", "toggle")),
 		"selected_tokens": selected_tokens.duplicate(),
@@ -193,13 +194,16 @@ func _complete_choice(choice_id: String) -> void:
 	result_label.text = str(result.get("message", ""))
 	result_label.add_theme_color_override("font_color", INK if bool(result.get("ok", false)) else TERRACOTTA)
 	if bool(result.get("ok", false)):
+		if not SaveManager.save_or_report("玩法结果保存失败"):
+			GameState.load_save_data(rollback_snapshot)
+			result_label.text = "存档写入失败，本次提交尚未生效；可以重试。"
+			return
 		completed = true
 		for button in choice_buttons:
 			button.disabled = true
 		for token_id in token_buttons:
 			token_buttons[token_id].disabled = true
 		clear_button.disabled = true
-		SaveManager.save_game()
 
 
 func _return_to_town() -> void:

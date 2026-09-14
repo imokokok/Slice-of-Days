@@ -80,7 +80,7 @@
           ],
           "start": 540,
           "end": 660,
-          "location": "town_entrance",
+          "location": "cafe",
           "activity": "喝完咖啡去开门",
           "mood": "relaxed",
           "energy": 85

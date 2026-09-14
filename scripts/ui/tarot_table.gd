@@ -788,7 +788,7 @@ func _submit_world() -> void:
 			"kind": "tarot",
 			"text": "在 Solmere 牌桌用 The World 提交了《%s》的完整汤底。" % str(case_data.get("title", "海龟汤")),
 		})
-		SaveManager.save_game()
+		SaveManager.save_or_report("塔罗推理结果保存失败")
 	world_feedback.text = "汤底闭环。The World 已翻开：%s" % str(case_data.get("solution", ""))
 	world_submit_button.text = "世界已翻开"
 	world_submit_button.disabled = true

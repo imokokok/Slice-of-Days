@@ -9,6 +9,7 @@ func _ready() -> void:
 	var residents := _load_json("res://data/npcs/demo_npcs.json")
 	var core_residents := _load_json("res://data/npcs/core_residents.json")
 	var events := _load_json("res://data/story/events.json")
+	var calendar := _load_json("res://data/story/calendar.json")
 	var openings := _load_json("res://data/story/day_openings.json")
 	var transitions := _load_json("res://data/story/transitions.json")
 	var endings := _load_json("res://data/story/endings.json")
@@ -28,7 +29,8 @@ func _ready() -> void:
 	if resident_rows.size() != 100:
 		failures.append("the graybox roster should expand to exactly 100 residents, got %d" % resident_rows.size())
 	_validate_routes(routes.get("edges", []), location_ids)
-	_validate_events(events.get("events", []), location_ids, resident_ids, event_ids, module_ids)
+	_validate_events(events.get("events", []), location_ids, resident_ids, resident_rows, event_ids, module_ids)
+	_validate_chapter_reachability(events.get("events", []), calendar.get("day_roles", []))
 	_validate_appointments(events.get("events", []), location_ids, event_ids)
 	_validate_day_openings(openings)
 	_validate_transitions(transitions)
@@ -59,6 +61,21 @@ func _unique_ids(rows: Array, kind: String) -> Array[String]:
 		else:
 			result.append(row_id)
 	return result
+
+
+func _validate_chapter_reachability(events: Array, day_roles: Array) -> void:
+	for event in events:
+		var conditions: Dictionary = event.get("conditions", {})
+		var roles: Array = conditions.get("roles", [])
+		var days: Array = conditions.get("days", [])
+		for day_value in days:
+			var day := int(day_value)
+			if day < 1 or day > day_roles.size() or str(day_roles[day - 1]) == "choice":
+				continue
+			for role_value in roles:
+				var role := str(role_value)
+				if role != str(day_roles[day - 1]) and not bool(event.get("legacy_route", false)):
+					failures.append("event %s is unreachable in the chapter sequence (day %d is role %s); mark an intentionally archived route with legacy_route" % [str(event.get("id", "")), day, str(day_roles[day - 1])])
 
 
 func _validate_schedules(rows: Array, location_ids: Array[String]) -> void:
@@ -109,7 +126,7 @@ func _validate_routes(edges: Array, location_ids: Array[String]) -> void:
 				failures.append("route references missing location %s" % location_id)
 
 
-func _validate_events(rows: Array, location_ids: Array[String], resident_ids: Array[String], event_ids: Array[String], module_ids: Array[String]) -> void:
+func _validate_events(rows: Array, location_ids: Array[String], resident_ids: Array[String], resident_rows: Array, event_ids: Array[String], module_ids: Array[String]) -> void:
 	for event in rows:
 		var event_id := str(event.get("id", ""))
 		var presentation: Dictionary = event.get("presentation", {})
@@ -136,6 +153,8 @@ func _validate_events(rows: Array, location_ids: Array[String], resident_ids: Ar
 		var present := str(conditions.get("resident_present", ""))
 		if not present.is_empty() and not resident_ids.has(present):
 			failures.append("event %s references missing resident %s" % [event_id, present])
+		elif not present.is_empty() and not _resident_overlaps_event(present, conditions, resident_rows):
+			failures.append("event %s requires %s where their schedule never overlaps the event window" % [event_id, present])
 		for required in conditions.get("required_events", []):
 			if not event_ids.has(str(required)):
 				failures.append("event %s requires missing event %s" % [event_id, str(required)])
@@ -154,6 +173,19 @@ func _validate_events(rows: Array, location_ids: Array[String], resident_ids: Ar
 			else:
 				choice_ids.append(choice_id)
 			_validate_results("%s/%s" % [event_id, str(choice.get("id", ""))], choice.get("results", {}), resident_ids, module_ids)
+
+
+func _resident_overlaps_event(resident_id: String, conditions: Dictionary, resident_rows: Array) -> bool:
+	for resident in resident_rows:
+		if str(resident.get("id", "")) != resident_id:
+			continue
+		for activity in resident.get("schedule", []):
+			var shares_day: bool = (activity.get("days", []) as Array).any(func(day): return conditions.get("days", []).has(day))
+			var shares_location: bool = conditions.get("locations", []).has(activity.get("location", ""))
+			var shares_time: bool = int(activity.get("start", 0)) < int(conditions.get("end", 1440)) and int(activity.get("end", 1440)) > int(conditions.get("start", 0))
+			if shares_day and shares_location and shares_time:
+				return true
+	return false
 
 
 func _validate_appointments(rows: Array, location_ids: Array[String], event_ids: Array[String]) -> void:

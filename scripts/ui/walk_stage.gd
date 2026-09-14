@@ -30,11 +30,16 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func _process(delta: float) -> void:
+	var previous_player_x := player_x
+	var previous_camera_x := camera_x
+	var previous_facing := facing
+	var previous_gait := gait_weight
 	var axis := 0.0
 	if enabled and DisplayServer.window_is_focused():
-		axis = float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT))
-	move_player(axis, delta, Input.is_physical_key_pressed(KEY_SHIFT))
-	queue_redraw()
+		axis = Input.get_axis("move_left", "move_right")
+	move_player(axis, delta, Input.is_action_pressed("move_fast"))
+	if not is_equal_approx(previous_player_x, player_x) or not is_equal_approx(previous_camera_x, camera_x) or not is_equal_approx(previous_facing, facing) or not is_equal_approx(previous_gait, gait_weight):
+		queue_redraw()
 
 func move_player(axis: float, delta: float, hurry := false) -> void:
 	var target := axis * SPEED * (1.6 if hurry else 1.0) if enabled and not sitting else 0.0

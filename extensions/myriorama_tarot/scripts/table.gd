@@ -1007,7 +1007,7 @@ func save_session() -> void:
 	if OS.get_cmdline_user_args().has("--smoke-test"):
 		return
 	GameState.shared_state["myriorama_"+GameState.current_role] = {"case_id": case_id, "deal": deal, "owned": owned, "revealed": revealed, "main": main_cards, "answers": answers, "question_records": question_records, "round_picks": round_picks, "used_fan_slots": used_fan_slots, "orientations": card_orientations, "reversed_enabled": REVERSED_ENABLED, "round": round_index, "mode": mode, "muted": sound.muted, "truth_draft": truth_draft, "conversations": conversations, "question_drafts": question_drafts, "tutorial_seen": tutorial_seen, "solmere_completed": solmere_completed}
-	SaveManager.save_game()
+	SaveManager.save_or_report("塔罗状态保存失败")
 
 func load_session() -> void:
 	if not GameState.shared_state.has("myriorama_"+GameState.current_role) or OS.get_cmdline_user_args().has("--smoke-test"):

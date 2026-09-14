@@ -84,7 +84,10 @@ func _advance() -> void:
 func _topics(page := 0) -> void:
 	_clear()
 	_label("你说……",19)
-	var topics := [[str(DialogueSystem.content.get(npc,{}).get("chat_label","今天过得怎么样？")),"daily_state"],["晚点还能在这儿碰到你吗？","schedule_info"],["最近有什么小事？","rumor"],["我想去海边看看。","location_info"],["后来呢？再讲一点吧。","personal_topic"],["我再陪你坐一会儿。","small_talk"],["你刚才说的那件事……","relationship_followup"],["我们也算熟人了吧？","recognition_related"]]
+	var topics := [[str(DialogueSystem.content.get(npc,{}).get("chat_label","今天过得怎么样？")),"daily_state"],["晚点还能在这儿碰到你吗？","schedule_info"],["最近有什么小事？","rumor"],["我想去海边看看。","location_info"],["后来呢？再讲一点吧。","personal_topic"],["我再陪你坐一会儿。","small_talk"],["你刚才说的那件事……","relationship_followup"]]
+	var confirmation := RelationshipSystem.confirmation_request_preview(npc)
+	if bool(confirmation.get("available", false)):
+		topics.append([str(confirmation.get("label", "请求对方确认这段居住（10分钟）")), "recognition_related"])
 	var invitation := DialogueSystem.invitation_for(npc)
 	if not invitation.is_empty():
 		topics = topics.filter(func(t: Array) -> bool: return str(t[1]) != "minigame_hook")
@@ -104,12 +107,12 @@ func _process(delta: float) -> void:
 		text_label.visible_characters = int(progress)
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_ESCAPE: _close()
-		elif event.keycode == KEY_T:
+		if event.is_action_pressed("ui_cancel"): _close()
+		elif event.is_action_pressed("toggle_typewriter"):
 			typewriter = not typewriter
 			GameState.shared_state["typewriter"] = typewriter
 			if is_instance_valid(text_label): text_label.visible_characters = -1 if not typewriter else int(progress)
-		elif event.keycode in [KEY_E,KEY_SPACE] and is_instance_valid(text_label): _advance()
+		elif (event.is_action_pressed("interact") or event.is_action_pressed("ui_accept")) and is_instance_valid(text_label): _advance()
 		elif event.keycode >= KEY_1 and event.keycode <= KEY_6:
 			var number := int(event.keycode-KEY_1)
 			if number < options.size(): options[number].pressed.emit()

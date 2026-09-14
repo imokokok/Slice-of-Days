@@ -2,8 +2,16 @@ extends Node
 var content: Dictionary = {}
 var invitations: Array = []
 func _ready() -> void:
-	invitations = JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs/minigame_invitations.json")).get("invitations",[])
-	content = JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs/conversations.json"))
+	var invitation_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs/minigame_invitations.json"))
+	if invitation_data is Dictionary:
+		invitations = invitation_data.get("invitations", [])
+	else:
+		push_error("Invalid minigame invitation data")
+	var conversation_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs/conversations.json"))
+	if conversation_data is Dictionary:
+		content = conversation_data
+	else:
+		push_error("Invalid conversation data")
 func reply(npc: String, topic: String) -> Array[String]:
 	var row: Dictionary = content.get(npc,{})
 	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
@@ -35,7 +43,7 @@ func reply(npc: String, topic: String) -> Array[String]:
 			else: lines.assign(offer.lines)
 		"relationship_followup": lines = ["我记得我们聊过。", "不用每次都带一个结果来，路过打声招呼也好。"]
 		"recognition_related":
-			var result := RelationshipSystem.request_confirmation(npc)
+			var result := RelationshipSystem.request_confirmation_action(npc)
 			lines = [str(result.get("message","我想再考虑一下。"))]
 		_: lines = ["那你先走，回头见。"]
 	var variants: Array = row.get("authored",{}).get(topic,[])
@@ -51,7 +59,7 @@ func reply(npc: String, topic: String) -> Array[String]:
 		GameState.mark_event(encounter_id)
 	history.append({"npc":npc,"topic":topic,"day":GameState.current_day,"minute":GameState.current_minute,"lines":lines})
 	GameState.shared_state["dialogue_history_"+GameState.current_role] = history.slice(maxi(0,history.size()-80))
-	SaveManager.save_game()
+	SaveManager.save_or_report("对话后保存失败")
 	return lines
 
 func invitation_for(npc: String) -> Dictionary:
@@ -71,7 +79,7 @@ func mark_invitation_heard(npc: String) -> void:
 	var heard: Dictionary = GameState.shared_state.get("invitations_heard",{})
 	heard["%s_%d_%s" % [GameState.current_role,GameState.current_day,npc]] = true
 	GameState.shared_state["invitations_heard"] = heard
-	SaveManager.save_game()
+	SaveManager.save_or_report("记录邀请后保存失败")
 func invitation_accepted(module_id: String) -> bool:
 	return GameState.shared_state.get("accepted_invitations",{}).has("%s_%d_%s" % [GameState.current_role,GameState.current_day,module_id])
 func accept_invitation(npc: String) -> Dictionary:
@@ -82,7 +90,7 @@ func accept_invitation(npc: String) -> Dictionary:
 	GameState.shared_state["accepted_invitations"] = accepted
 	var name := str(ScheduleSystem.residents[npc].display_name)
 	GameState.add_journal_entry({"kind":"invitation","text":name + "邀请我：" + str(offer.label)})
-	SaveManager.save_game()
+	SaveManager.save_or_report("接受邀请后保存失败")
 	return offer
 
 func notebook_leads() -> Array:

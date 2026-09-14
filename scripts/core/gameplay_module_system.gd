@@ -122,7 +122,7 @@ func latest_outcome(module_id: String) -> Dictionary:
 	return (outcomes[-1] as Dictionary).duplicate(true)
 
 
-func begin_session(module_id: String, source_event_id := "") -> bool:
+func begin_session(module_id: String, source_event_id := "", rollback_snapshot: Dictionary = {}) -> bool:
 	if module_id == "contemplation" and GameState.current_minute < 1260:
 		return false
 	if not unlock(module_id) or not start(module_id):
@@ -132,6 +132,7 @@ func begin_session(module_id: String, source_event_id := "") -> bool:
 		"role": GameState.current_role,
 		"day": GameState.current_day,
 		"source_event_id": source_event_id,
+		"rollback_snapshot": rollback_snapshot.duplicate(true),
 	}
 	GameState.commit_active_role_state()
 	return true
@@ -146,9 +147,10 @@ func pending_module_id() -> String:
 
 func cancel_session() -> void:
 	var pending: Dictionary = GameState.shared_state.get("pending_module", {})
-	var source_event_id := str(pending.get("source_event_id", ""))
-	if not source_event_id.is_empty():
-		GameState.unmark_event(source_event_id)
+	var rollback_snapshot: Dictionary = pending.get("rollback_snapshot", {})
+	if not rollback_snapshot.is_empty():
+		GameState.load_save_data(rollback_snapshot)
+		return
 	GameState.shared_state.erase("pending_module")
 	GameState.commit_active_role_state()
 

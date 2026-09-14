@@ -1,11 +1,14 @@
 extends Node
 
+signal save_failed(message: String)
+
 const SAVE_PATH := "user://solmere_save.json"
 const LEGACY_SAVE_PATH := "user://vertical_slice_save.json"
 const PREVIOUS_PROJECT_DIR := "100game"
 const SLOT_COUNT := 3
 
 var active_slot := 1
+var last_error := ""
 
 
 func path_for_slot(slot: int) -> String:
@@ -43,11 +46,12 @@ func has_save(path := "") -> bool:
 
 
 func save_game(path := "") -> bool:
+	last_error = ""
 	var target_path := path_for_slot(active_slot) if str(path).is_empty() else str(path)
 	var temporary_path := target_path + ".tmp"
 	var file := FileAccess.open(temporary_path, FileAccess.WRITE)
 	if file == null:
-		return false
+		return _save_error("无法创建临时存档：%s" % error_string(FileAccess.get_open_error()))
 	var payload := JSON.stringify(GameState.to_save_data(), "\t")
 	file.store_string(payload)
 	file.flush()
@@ -56,16 +60,29 @@ func save_game(path := "") -> bool:
 	var written = JSON.parse_string(FileAccess.get_file_as_string(temporary_path))
 	if typeof(written) != TYPE_DICTIONARY:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(temporary_path))
-		push_error("Could not validate the temporary save file")
-		return false
+		return _save_error("无法校验临时存档。")
 	var temporary_absolute := ProjectSettings.globalize_path(temporary_path)
 	var target_absolute := ProjectSettings.globalize_path(target_path)
 	var rename_error := DirAccess.rename_absolute(temporary_absolute, target_absolute)
 	if rename_error != OK:
 		DirAccess.remove_absolute(temporary_absolute)
-		push_error("Could not atomically replace save file: %s" % error_string(rename_error))
-		return false
+		return _save_error("无法安全替换存档：%s" % error_string(rename_error))
 	return true
+
+
+func save_or_report(context := "") -> bool:
+	if save_game():
+		return true
+	if not str(context).is_empty():
+		push_error("%s：%s" % [context, last_error])
+	return false
+
+
+func _save_error(message: String) -> bool:
+	last_error = message
+	push_error(message)
+	save_failed.emit(message)
+	return false
 
 
 func load_game(path := "") -> bool:

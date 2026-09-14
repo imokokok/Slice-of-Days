@@ -1,11 +1,17 @@
 extends Node
 var config: Dictionary = {}
 func _ready() -> void:
-	config = JSON.parse_string(FileAccess.get_file_as_string("res://data/world/town_graph.json"))
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string("res://data/world/town_graph.json"))
+	if parsed is Dictionary:
+		config = parsed
+	else:
+		config = {}
+		push_error("Invalid town graph data")
 func segment_for(location: String) -> Dictionary:
-	for segment in config.get("segments", []):
+	var segments: Array = config.get("segments", [])
+	for segment in segments:
 		if segment.locations.has(location): return segment
-	return config.segments[0]
+	return segments[0] if not segments.is_empty() else {}
 func neighbours(location: String) -> Array:
 	return TravelSystem.adjacency.get(location, [])
 func pins() -> Array:
@@ -15,4 +21,4 @@ func toggle_pin(location: String) -> void:
 	if list.has(location): list.erase(location)
 	else: list.append(location)
 	GameState.shared_state["pins_" + GameState.current_role] = list
-	SaveManager.save_game()
+	SaveManager.save_or_report("世界状态保存失败")

@@ -8,13 +8,36 @@ const DEFAULTS := {
 	"fullscreen": false,
 	"reduced_motion": false,
 }
+const DEFAULT_INPUT_ACTIONS := {
+	"move_left": [KEY_A, KEY_LEFT],
+	"move_right": [KEY_D, KEY_RIGHT],
+	"move_fast": [KEY_SHIFT],
+	"interact": [KEY_E],
+	"open_journal": [KEY_J],
+	"open_map": [KEY_M],
+	"toggle_typewriter": [KEY_T],
+	"restart_module": [KEY_R],
+}
 
 var values: Dictionary = DEFAULTS.duplicate(true)
 
 
 func _ready() -> void:
+	_ensure_input_actions()
 	load_settings()
 	apply_settings()
+
+
+func _ensure_input_actions() -> void:
+	for action_name in DEFAULT_INPUT_ACTIONS:
+		var action := StringName(action_name)
+		if InputMap.has_action(action):
+			continue
+		InputMap.add_action(action)
+		for keycode in DEFAULT_INPUT_ACTIONS[action_name]:
+			var input := InputEventKey.new()
+			input.physical_keycode = int(keycode)
+			InputMap.action_add_event(action, input)
 
 
 func load_settings(path := SETTINGS_PATH) -> bool:

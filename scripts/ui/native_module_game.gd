@@ -251,12 +251,17 @@ func _update_module_value() -> void:
 func _complete_choice(choice_id: String) -> void:
 	if completed or not stage_ready:
 		return
+	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	var result := GameplayModuleSystem.complete_choice(choice_id, _interaction_record())
 	status_label.text = str(result.get("message", ""))
 	if not bool(result.get("ok", false)):
 		return
 	completed = true
-	SaveManager.save_game()
+	if not SaveManager.save_or_report("玩法结果保存失败"):
+		GameState.load_save_data(rollback_snapshot)
+		completed = false
+		status_label.text = "存档写入失败，本次提交尚未生效；可以重试。"
+		return
 	return_button.text = "带着结果返回"
 	_update_state()
 
@@ -279,7 +284,9 @@ func _interaction_record() -> Dictionary:
 func _return_or_cancel() -> void:
 	if not GameplayModuleSystem.pending_module_id().is_empty():
 		GameplayModuleSystem.cancel_session()
-	SaveManager.save_game()
+	if not SaveManager.save_or_report("退出玩法后保存失败"):
+		status_label.text = "状态已撤销，但存档写入失败。"
+		return
 	SceneRouter.return_from_gameplay()
 
 
@@ -297,9 +304,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		var tokens: Array = interaction.get("tokens", [])
 		if index < tokens.size():
 			_toggle_token(str(tokens[index].get("id", "")))
-	elif event.keycode == KEY_R:
+	elif event.is_action_pressed("restart_module"):
 		_perform_primary_action()
-	elif event.keycode == KEY_ESCAPE:
+	elif event.is_action_pressed("ui_cancel"):
 		_return_or_cancel()
 
 

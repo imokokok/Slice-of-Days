@@ -213,7 +213,7 @@ func complete_action() -> void:
 				int(saved_record.get("payment", payment)),
 				saved_record
 			)
-			SaveManager.save_game()
+			SaveManager.save_or_report("唱片压制结果保存失败")
 		instructions.text = "老板：我晚点再听一遍。\n正在把你的唱片放上 LOCAL RECORDINGS……"
 		var tween := create_tween()
 		tween.tween_property(self, "progress", 1.0, 3.5).set_trans(Tween.TRANS_CUBIC)

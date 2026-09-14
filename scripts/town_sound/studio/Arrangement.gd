@@ -154,6 +154,29 @@ func mix() -> AudioStreamWAV:
 	wav.data = bytes
 	return wav
 
+
+func mix_async():
+	# Mix an immutable snapshot off the main thread. UI edits made while mixing
+	# become the next mix instead of racing the current PCM render.
+	var snapshot := Arrangement.new()
+	snapshot.clips = clips.duplicate(true)
+	snapshot.muted = muted.duplicate()
+	snapshot.gains = gains.duplicate()
+	# Packed PCM arrays are copy-on-write, so this reuses decoded samples without
+	# copying their buffers or allowing the worker to mutate the live cache.
+	snapshot.cache = cache.duplicate(true)
+	snapshot.project_path = project_path
+	var worker := Thread.new()
+	var start_error := worker.start(Callable(snapshot, "mix"))
+	if start_error != OK:
+		error = "无法启动后台混音：%s" % error_string(start_error)
+		return null
+	while worker.is_alive():
+		await (Engine.get_main_loop() as SceneTree).process_frame
+	var result = worker.wait_to_finish()
+	error = snapshot.error
+	return result
+
 func save_project() -> bool:
 	DirAccess.make_dir_recursive_absolute(project_path.get_base_dir())
 	var file := FileAccess.open(project_path + ".tmp", FileAccess.WRITE)

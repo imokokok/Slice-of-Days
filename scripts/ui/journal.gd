@@ -63,7 +63,7 @@ func _traces_text() -> String:
 	return "\n\n".join(lines)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_J,KEY_ESCAPE]: SceneRouter.return_from_gameplay()
+	if event is InputEventKey and event.pressed and not event.echo and (event.is_action_pressed("open_journal") or event.is_action_pressed("ui_cancel")): SceneRouter.return_from_gameplay()
 
 func _fact_text() -> String:
 	if GameState.known_facts.is_empty():

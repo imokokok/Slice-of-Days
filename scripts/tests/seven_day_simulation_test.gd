@@ -25,7 +25,7 @@ func _simulate_a_route() -> void:
 	ChapterSystem.start_new_game("A")
 	_context(1, 540, "print_shop")
 	_choice_event("a_d1_print_help", "lend_phone")
-	_context(1, 700, "cafe")
+	_context(1, 600, "cafe")
 	_event("a_d1_mossner_coffee")
 	_context(1, 900, "print_shop")
 	_event("a_d1_theatre_rehearsal")
@@ -41,12 +41,12 @@ func _simulate_a_route() -> void:
 
 	_context(4, 600, "cafe")
 	_choice_event("a_d4_confirmation_withdrawn", "ask_what_was_missed")
-	_context(4, 1140, "tarot_stall")
+	_context(4, 900, "tarot_stall")
 	_event("a_d4_listen_to_xia")
 
 	_context(5, 780, "library")
 	_event("a_d5_library_rescue")
-	_context(5, 900, "night_market")
+	_context(5, 900, "produce_stall")
 	_module_event("a_d5_translation", "translation", "hold_both_meanings")
 
 	_context(6, 1260, "park")
@@ -69,7 +69,7 @@ func _simulate_b_route() -> void:
 
 	_context(2, 660, "night_market")
 	_event("b_d2_careful_questions")
-	_context(2, 1140, "tarot_stall")
+	_context(2, 900, "tarot_stall")
 	var tarot_event := EventSystem.trigger("b_d2_tarot_deduction")
 	_check(bool(tarot_event.get("ok", false)), "B tarot entry event should trigger")
 	_check(GameplayModuleSystem.begin_session("tarot", "b_d2_tarot_deduction"), "B tarot session should begin")
@@ -123,7 +123,7 @@ func _simulate_a_day_four_without_first_day_rehearsal() -> void:
 	_context(4, 600, "cafe")
 	_choice_event("a_d4_no_shared_memory", "accept_the_blank")
 	_check(GameState.has_event("a_d4_confirmation_withdrawn"), "The alternate day-four scene should unlock the shared downstream beat")
-	_context(4, 1140, "tarot_stall")
+	_context(4, 900, "tarot_stall")
 	_check(EventSystem.is_available(EventSystem.events.get("a_d4_listen_to_xia", {})), "A should still reach the evening day-four scene after missing the first-day rehearsal")
 
 
@@ -158,6 +158,10 @@ func _choice_module_event(event_id: String, event_choice_id: String, expected_mo
 
 func _complete_module_result(result: Dictionary, event_id: String, expected_module_id: String, choice_id: String) -> void:
 	var module_id := str(result.get("launch_module", ""))
+	# Invitation events first unlock the activity, then the resident's dialogue
+	# launches it. The simulation enters that second stage directly.
+	if module_id.is_empty() and not str(EventSystem.events.get(event_id, {}).get("invitation_npc", "")).is_empty():
+		module_id = expected_module_id
 	_check(module_id == expected_module_id, "Event %s should launch %s, got %s" % [event_id, expected_module_id, module_id])
 	if module_id.is_empty():
 		return

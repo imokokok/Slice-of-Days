@@ -212,6 +212,12 @@ func trigger(event_id: String, choice_id: String = "") -> Dictionary:
 		return {"ok": false, "message": str(payment.get("reason", "当前资源不足。"))}
 	var amount := int(cost.get("money", 0))
 	var minutes := int(cost.get("minutes", 0))
+	var launch_module := str(choice.get("launch_module", event.get("launch_module", "")))
+	# A module-backed event is provisional until the module succeeds. Keep a
+	# complete pre-event snapshot so cancel can undo time, money and every result.
+	var rollback_snapshot: Dictionary = {}
+	if not launch_module.is_empty():
+		rollback_snapshot = GameState.to_save_data().duplicate(true)
 	if amount > 0:
 		GameState.spend_money(amount)
 	if minutes > 0:
@@ -224,7 +230,6 @@ func trigger(event_id: String, choice_id: String = "") -> Dictionary:
 		GameState.mark_event(event_id)
 	var presentation := resolved_presentation(event)
 	var choice_presentation: Dictionary = choice.get("presentation", {})
-	var launch_module := str(choice.get("launch_module", event.get("launch_module", "")))
 	var presented_event := event.duplicate(true)
 	presented_event["presentation"] = presentation
 	var result := {
@@ -236,6 +241,7 @@ func trigger(event_id: String, choice_id: String = "") -> Dictionary:
 		"event": presented_event,
 		"choice": choice,
 		"launch_module": launch_module,
+		"rollback_snapshot": rollback_snapshot,
 	}
 	event_completed.emit(event_id, result)
 	return result

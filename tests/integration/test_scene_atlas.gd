@@ -22,20 +22,20 @@ func run() -> void:
 	change_scene_to_file("res://scenes/town_day.tscn")
 	await create_timer(0.6).timeout
 	check(state.current_location == "night_market","Old save keeps its correct street location")
-	check(current_scene.street.world_width == 4800,"Each illustrated street occupies one full-width stage")
+	check(current_scene.street.world_width == 24000,"All fifteen scene plates form a continuous street")
 	var door: Dictionary = {}
 	for item in current_scene.street.hotspots:
 		if item.kind == "door": door = item
-	check(not door.is_empty() and float(door.get("x",0)) == 2720,"Restaurant interaction aligns with its pictured door")
+	check(not door.is_empty() and float(door.get("x",0)) == 5920,"Restaurant interaction aligns with its pictured door on the joined street")
 	var street = current_scene.street
 	street.player_x = 1595.0
 	street.move_player(0, 0)
 	var camera_before: float = street.camera_x
 	street.move_player(1, 0.1)
 	check(street.player_x > 1600 and absf(street.camera_x - camera_before) < 30, "Camera follows smoothly across a scene boundary")
-	state.current_minute = 1199
+	state.current_minute = 1259
 	check(Atlas.street("park").pages[0] == 70,"Closed lookout uses its exterior gate")
-	state.current_minute = 1200
+	state.current_minute = 1260
 	check(Atlas.street("park").pages[0] == 66,"After nine, the lookout opens onto the sea terrace")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		for shot in [["town_entrance",540,""],["night_market",1050,"restaurant"],["record_store",1140,""],["park",1200,""]]:

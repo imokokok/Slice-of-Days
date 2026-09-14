@@ -327,11 +327,13 @@ func _start_recording() -> void:
 	var source_mode := "game" if source_picker.selected == 0 else "microphone"
 	draft_context = _capture_context(source_mode)
 	if recorder.start(devices.get_item_text(devices.selected) if devices.selected >= 0 else "", source_mode):
+		WorldSound.play_ui("record_start")
 		status_label.text = "正在录制 · 录完请按 STOP，最长 60 秒。"
 	_refresh_controls()
 
 func _stop() -> void:
 	if recorder.capturing:
+		WorldSound.play_ui("record_stop")
 		recorder.stop()
 	else:
 		player.stop()

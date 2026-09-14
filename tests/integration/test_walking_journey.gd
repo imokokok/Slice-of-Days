@@ -62,7 +62,8 @@ func run() -> void:
 	town.street.player_x = town.street.world_width - 80.0
 	town._on_walk(town.street.player_x)
 	town._refresh()
-	check(str(town.street.nearest().get("kind", "")) == "roads", "The road interaction must remain reachable at the right edge")
+	check(town.street_order.size() == 15 and town.street_order[-1] == "park", "All approved locations form one walkable coast ending at the lookout")
+	check(not town.street.hotspots.any(func(h: Dictionary) -> bool: return str(h.kind) == "roads"), "Walking must never require a map travel menu")
 	town.street.hotspots.clear()
 	town.street.hotspots.append({"x":town.street.player_x + 200, "kind":"door"})
 	check(town.street.nearest().is_empty(), "Distant interactions must be inaccessible")

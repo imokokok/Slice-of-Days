@@ -272,18 +272,12 @@ func say(text: String) -> void:
 func _draw() -> void:
 	if not font:
 		return
-	var backdrop := preload("res://scripts/ui/scene_atlas.gd").plate({"pages":[30,31,32]})
-	draw_texture_rect(backdrop,Rect2(0,0,1440,900),false)
-	# The atlas remains visible as atmosphere, while a warm veil separates it
-	# from instructions, movable scraps and the client's dialogue.
-	draw_rect(Rect2(0,114,1440,724),Color(0.95,0.92,0.84,0.58 if stage == "DIALOGUE" else 0.42))
+	# Keep this extension visually self-contained. The town illustration is
+	# intentionally omitted so the playable paper, tools and targets lead.
+	draw_rect(Rect2(0,0,1440,900),Color("d8c6a7"))
+	draw_rect(Rect2(36,132,1368,682),Color("e8dcc5"))
 	draw_rect(Rect2(0,0,1440,114),Color("e9e2d2"))
 	draw_line(Vector2(50,113),Vector2(1390,113),Color("b6ab92"),1)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 18
-	for i in 750:
-		var p := Vector2(rng.randf_range(0,1440),rng.randf_range(115,900))
-		draw_line(p,p+Vector2(rng.randf_range(3,15),1),Color(0.34,0.29,0.22,0.045))
 	draw_rect(Rect2(0,838,1440,62),Color("e9e2d2"))
 	if stage == "WORKBENCH":
 		paper(LETTER,Color("faf6e9"))

@@ -172,6 +172,7 @@ func _open_selected() -> void:
 		return
 	if str(item.get("kind", "")) == "work":
 		var result := GameState.complete_next_commitment()
+		WorldSound.play_ui("coin" if bool(result.get("ok", false)) else "dialogue")
 		room_dialogue.show()
 		name_label.text = "B的工作日程"
 		cue_label.text = str(result.get("message", ""))
@@ -188,7 +189,7 @@ func _open_selected() -> void:
 		else:
 			name_label.text = "工作台旁留着便签"
 			cue_label.text = "先和店主聊聊，听听今天的委托。"
-			detail_label.text = "E · 继续"
+			detail_label.text = "Space / Enter · 继续"
 			room_dialogue.show()
 		return
 	if not module_id.is_empty():
@@ -276,7 +277,7 @@ func _talk_to_resident() -> void:
 	SaveManager.save_or_report("室内互动后保存失败")
 	name_label.text = resident_name.to_upper()
 	cue_label.text = "“%s”" % line
-	detail_label.text = "E · 继续"
+	detail_label.text = "Space / Enter · 继续"
 
 
 func _next_conversation_resident() -> String:
@@ -341,7 +342,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			"echo":
 				name_label.text = "黑板"
 				cue_label.text = str(nearest.text)
-				detail_label.text = "E · 收起视线"
+				detail_label.text = "Space / Enter · 收起视线"
 				room_dialogue.show()
 			"exit": SceneRouter.leave_space()
 			"person": _start_conversation(str(nearest.id))
@@ -466,6 +467,10 @@ func _refresh_people() -> void:
 
 func _object_hint(index: int) -> String:
 	var item: Dictionary = objects[index]
+	if str(item.get("kind", "")) == "work":
+		var work := GameState.next_commitment()
+		if work.is_empty(): return "电脑 · 今天的工作已处理完"
+		return "电脑 · %02d:%02d 开始 · %d分钟 · 收入%d元" % [int(work.start) / 60, int(work.start) % 60, int(work.end) - int(work.start), int(work.get("pay", 0))]
 	var hint := GameplayModuleSystem.time_hint(str(item.get("module_id","")))
 	return str(item.get("name","")) + (" · " + hint if not hint.is_empty() else "")
 

@@ -2,8 +2,8 @@
   "_note": "随身相机的取景发现点。target 是快照中的归一化构图中心，不依赖电脑摄像头。",
   "locations": {
     "town_entrance": [
-      {"id":"entrance_blue_vine","name":"蓝花藤","category":"街角植物","note":"花藤从二楼垂下来，把店门和海风连在一起。","target":[0.50,0.48]},
-      {"id":"entrance_rooftops","name":"临海屋檐","category":"小镇风景","note":"屋檐一层压着一层，替街道收住午后的光。","target":[0.72,0.34]}
+      {"id":"entrance_blue_vine","name":"蓝花藤","word":"VINE · 藤蔓","category":"街角植物","note":"花藤从二楼垂下来，把店门和海风连在一起。","target":[0.50,0.48]},
+      {"id":"entrance_rooftops","name":"临海屋檐","word":"EAVE · 屋檐","category":"小镇风景","note":"屋檐一层压着一层，替街道收住午后的光。","target":[0.72,0.34]}
     ],
     "residence": [
       {"id":"residence_window","name":"亮着的窗","category":"生活痕迹","note":"有人起得很早，窗帘还没来得及完全拉开。","target":[0.50,0.46]},
@@ -18,8 +18,8 @@
       {"id":"restaurant_table","name":"收拾到一半的桌","category":"生活痕迹","note":"杯沿和空椅子替刚离开的人保留了位置。","target":[0.73,0.64]}
     ],
     "produce_stall": [
-      {"id":"produce_crates","name":"叠起的菜筐","category":"市集物件","note":"不同成熟度的颜色被摊主排成一条缓慢的时间线。","target":[0.50,0.56]},
-      {"id":"produce_scale","name":"旧秤","category":"市集物件","note":"秤盘会晃一会儿，才肯给出一个数字。","target":[0.28,0.54]}
+      {"id":"produce_crates","name":"叠起的菜筐","word":"CRATE · 菜筐","category":"市集物件","note":"不同成熟度的颜色被摊主排成一条缓慢的时间线。","target":[0.50,0.56]},
+      {"id":"produce_scale","name":"旧秤","word":"SCALE · 秤","category":"市集物件","note":"秤盘会晃一会儿，才肯给出一个数字。","target":[0.28,0.54]}
     ],
     "cafe": [
       {"id":"grocery_list","name":"未取走的清单","category":"生活痕迹","note":"清单没有署名，只留下肥皂、火柴和散装糖。","target":[0.50,0.56]},
@@ -34,8 +34,8 @@
       {"id":"library_ladder","name":"书架梯","category":"书店物件","note":"最高一格的书，总要借一点额外的勇气。","target":[0.73,0.47]}
     ],
     "record_store": [
-      {"id":"record_turntable","name":"唱针与转盘","category":"声音物件","note":"唱针落下之前，房间里有一秒完整的安静。","target":[0.50,0.55]},
-      {"id":"record_rain_window","name":"雨痕玻璃","category":"天气痕迹","note":"窗外的灯被雨水拉成长线，像一段还没剪好的声音。","target":[0.72,0.37]}
+      {"id":"record_turntable","name":"唱针与转盘","word":"TURNTABLE · 唱盘","category":"声音物件","note":"唱针落下之前，房间里有一秒完整的安静。","target":[0.50,0.55]},
+      {"id":"record_rain_window","name":"雨痕玻璃","word":"DRIZZLE · 细雨","category":"天气痕迹","note":"窗外的灯被雨水拉成长线，像一段还没剪好的声音。","target":[0.72,0.37]}
     ],
     "tarot_stall": [
       {"id":"tarot_candle","name":"短了一截的蜡烛","category":"摊位物件","note":"蜡油记下谈话的长度，却记不住答案。","target":[0.50,0.50]},
@@ -50,16 +50,16 @@
       {"id":"chess_empty_chair","name":"对面的空椅","category":"生活痕迹","note":"一把空椅子有时也是一种明确的约定。","target":[0.72,0.61]}
     ],
     "bus_stop": [
-      {"id":"bus_timetable","name":"末班时刻表","category":"交通物件","note":"最后一班车之后，距离会重新变得具体。","target":[0.50,0.48]},
-      {"id":"bus_bench","name":"站台长椅","category":"生活痕迹","note":"每一道磨损都来自一次不长不短的等待。","target":[0.27,0.61]}
+      {"id":"bus_timetable","name":"末班时刻表","word":"TIMETABLE · 时刻表","category":"交通物件","note":"最后一班车之后，距离会重新变得具体。","target":[0.50,0.48]},
+      {"id":"bus_bench","name":"站台长椅","word":"WAIT · 等候","category":"生活痕迹","note":"每一道磨损都来自一次不长不短的等待。","target":[0.27,0.61]}
     ],
     "port": [
       {"id":"port_mirror","name":"后视镜里的海","category":"沿海风景","note":"海被收进很小的镜面，仍然没有尽头。","target":[0.50,0.44]},
       {"id":"port_white_lines","name":"褪色停车线","category":"街道物件","note":"白线努力维持秩序，风却把细沙吹得到处都是。","target":[0.72,0.67]}
     ],
     "park": [
-      {"id":"park_telescope","name":"望向海面的镜筒","category":"观景物件","note":"镜筒把远处拉近，也让身边的人暂时离开画面。","target":[0.50,0.47]},
-      {"id":"park_horizon","name":"暮色海平线","category":"沿海风景","note":"天色每天都在重复变暗，从来没有完全相同。","target":[0.72,0.32]}
+      {"id":"park_telescope","name":"望向海面的镜筒","word":"TELESCOPE · 望远镜","category":"观景物件","note":"镜筒把远处拉近，也让身边的人暂时离开画面。","target":[0.50,0.47]},
+      {"id":"park_horizon","name":"暮色海平线","word":"HORIZON · 海平线","category":"沿海风景","note":"天色每天都在重复变暗，从来没有完全相同。","target":[0.72,0.32]}
     ]
   }
 }

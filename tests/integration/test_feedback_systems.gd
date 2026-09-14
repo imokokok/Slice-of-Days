@@ -47,10 +47,35 @@ func run() -> void:
 		check(InputMap.has_action(action), "Semantic input action should exist: %s" % action)
 	change_scene_to_file("res://scenes/town_day.tscn")
 	await create_timer(0.8).timeout
-	check(current_scene != null and current_scene.time_guidance_label != null and current_scene.wallet_label != null, "Town HUD should expose money and actionable time guidance")
+	check(current_scene != null and current_scene.time_guidance_label != null and current_scene.wallet_label != null and current_scene.wallet_icon != null, "Town HUD should expose iconic money feedback and actionable time guidance")
 	current_scene._open_shop("produce_stall")
 	await process_frame
 	check(is_instance_valid(current_scene.pocket_panel) and current_scene.pocket_panel.item_list.get_child_count() == 4, "Produce stall should open a four-item purchase interface")
+	current_scene.pocket_panel._buy({"id":"lemon", "name":"一袋柠檬", "price":12, "minutes":5})
+	check(current_scene.pocket_panel.status_label.text.contains("花费12元"), "Purchase feedback must survive the item-list refresh")
+	current_scene.pocket_panel.queue_free()
+	await process_frame
+	var dialogue = load("res://scripts/ui/conversation_panel.gd").new()
+	dialogue.npc = "zhou_xiaoliu"
+	current_scene.add_child(dialogue)
+	dialogue._topics()
+	var key := InputEventKey.new()
+	key.physical_keycode = KEY_S
+	key.pressed = true
+	root.push_input(key, true)
+	check(root.gui_get_focus_owner() == dialogue.options[1], "S moves to exactly the next reply")
+	key.physical_keycode = KEY_ENTER
+	root.push_input(key, true)
+	check(is_instance_valid(dialogue.text_label) and dialogue.index == 0, "Enter selects a reply without skipping its first spoken line")
+	dialogue._close()
+	await process_frame
+	var modules = root.get_node("GameplayModuleSystem")
+	modules.unlock("ghostwriting")
+	var before_letter: int = state.money
+	check(modules.complete_external("ghostwriting", {"choice_id":"extension_complete"}, {"money":35}), "Finished commission can settle")
+	check(state.money == before_letter + 35, "Letter commission pays its real fee")
+	modules.complete_external("ghostwriting", {"choice_id":"extension_complete"}, {"money":35})
+	check(state.money == before_letter + 35, "Reopening a completed letter cannot farm the same fee")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		await process_frame
 		var viewport_texture := root.get_texture()

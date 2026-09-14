@@ -11,6 +11,7 @@ var experience: Node
 var complete_button: Button
 var status_label: Label
 var completion_ready := false
+var submitting := false
 
 
 func _ready() -> void:
@@ -138,14 +139,16 @@ func _experience_completed() -> bool:
 
 
 func _complete() -> void:
-	if not _experience_completed():
+	if submitting or SceneRouter.transitioning or not _experience_completed():
 		return
+	submitting = true
 	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	var pending: Dictionary = GameState.shared_state.get("pending_module", {})
 	var source_event_id := str(pending.get("source_event_id", ""))
 	if source_event_id.begins_with("space:") or source_event_id.begins_with("street:"):
 		var direct_minutes := int(metadata.get("direct_time_minutes", 0))
 		if direct_minutes > 0 and not GameState.use_free_time(direct_minutes):
+			submitting = false
 			status_label.text = "当前时间块已不足 %d 分钟。进度保留在扩展内部，请暂时离开。" % direct_minutes
 			return
 	var outcome := {
@@ -155,12 +158,16 @@ func _complete() -> void:
 		"interaction": {"mode": "extension", "selected_labels": [str(metadata.get("name", module_id))]},
 	}
 	if not GameplayModuleSystem.complete_external(module_id, outcome, metadata.get("external_results", {})):
+		GameState.load_save_data(rollback_snapshot)
+		submitting = false
 		status_label.text = "结果暂时无法写入主存档，请重试。"
 		return
 	if not SaveManager.save_or_report("玩法结果保存失败"):
+		submitting = false
 		GameState.load_save_data(rollback_snapshot)
 		status_label.text = "存档写入失败，本次提交尚未生效；可以重试。"
 		return
+	WorldSound.play_ui("coin" if GameState.money > int(rollback_snapshot.get("money", GameState.money)) else "dialogue")
 	SceneRouter.return_from_gameplay()
 
 

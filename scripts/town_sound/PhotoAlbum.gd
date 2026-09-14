@@ -168,7 +168,7 @@ func _activate_photo(item: Dictionary) -> void:
 	display.custom_minimum_size = Vector2(800, 450)
 	column.add_child(display)
 	var note := Label.new()
-	note.text = str(item.get("subject_note", "这张自由照片没有附加标签。"))
+	note.text = str(item.get("subject_word", item.get("subject_name", ""))) + "\n" + str(item.get("subject_note", "这张自由照片没有附加标签。"))
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	note.add_theme_font_size_override("font_size", 17)
 	note.add_theme_color_override("font_color", MUTED)

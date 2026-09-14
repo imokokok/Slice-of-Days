@@ -23,13 +23,17 @@ var hotspots: Array[Dictionary] = []
 var room_name := ""
 var room_kind := ""
 var walk_limit := INF
+var visual_actor_height := 0.0
 
 func _ready() -> void:
+	visual_actor_height = _target_actor_height()
 	WorldSound.set_indoor(indoor)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func _process(delta: float) -> void:
+	var previous_height := visual_actor_height
+	visual_actor_height = lerpf(visual_actor_height, _target_actor_height(), 1.0 - exp(-7.0 * delta))
 	var previous_player_x := player_x
 	var previous_camera_x := camera_x
 	var previous_facing := facing
@@ -38,7 +42,7 @@ func _process(delta: float) -> void:
 	if enabled and DisplayServer.window_is_focused():
 		axis = Input.get_axis("move_left", "move_right")
 	move_player(axis, delta, Input.is_action_pressed("move_fast"))
-	if not is_equal_approx(previous_player_x, player_x) or not is_equal_approx(previous_camera_x, camera_x) or not is_equal_approx(previous_facing, facing) or not is_equal_approx(previous_gait, gait_weight):
+	if not is_equal_approx(previous_height, visual_actor_height) or not is_equal_approx(previous_player_x, player_x) or not is_equal_approx(previous_camera_x, camera_x) or not is_equal_approx(previous_facing, facing) or not is_equal_approx(previous_gait, gait_weight):
 		queue_redraw()
 
 func move_player(axis: float, delta: float, hurry := false) -> void:
@@ -75,7 +79,7 @@ func _draw() -> void:
 	var night := GameState.current_minute >= 1080
 	draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
 	var illustrated := _draw_atlas()
-	var ground := 805.0 if not indoor and GameState.current_location == "park" and GameState.current_minute >= 1200 else 713.0
+	var ground := 805.0 if not indoor and GameState.current_location == "park" and GameState.current_minute >= WorldGraph.LOOKOUT_OPEN else 713.0
 	if illustrated:
 		pass
 	elif indoor:
@@ -366,6 +370,9 @@ func _draw_furniture(x: float, prop: String) -> void:
 		draw_line(Vector2(x + side * 50, 657), Vector2(x + side * 50, 718), Color("272c2d"), 6)
 
 func _actor_height() -> float:
+	return visual_actor_height if visual_actor_height > 0.0 else _target_actor_height()
+
+func _target_actor_height() -> float:
 	# Use each illustration's door opening as the scale reference.
 	var scene_row := Atlas.room(room_kind) if indoor else Atlas.street(GameState.current_location)
 	return float(scene_row.get("door_height", 300.0)) * 0.8

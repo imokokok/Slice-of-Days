@@ -39,7 +39,7 @@ func _today_text() -> String:
 	var lines: Array[String] = []
 	if GameState.current_role == "A":
 		lines.append("一张沾着海盐的明信片\n背面写着：饿的时候，来饭店坐坐。别急着把每一站都走完。")
-		lines.append("折起来的纸条\n观景台晚上八点开放，记得带相机。")
+		lines.append("折起来的纸条\n观景台晚上九点开放，记得带相机。")
 	else:
 		lines.append("第%d天 · %s · 今日预算 %d元" % [GameState.current_day,GameState.clock_text(),GameState.money])
 		lines.append("□ 问问周晓六今天碰见过谁。\n□ 去下棋摊看看，闹闹傍晚可能会来。")
@@ -142,22 +142,7 @@ func _inventory_name(item_id: String) -> String:
 
 func _planning_text() -> String:
 	var goal := str(GameState.schedule_for(GameState.current_role, GameState.current_day).get("goal", ""))
-	var lines: Array[String] = ["本段目标\n%s\n\n今日可行动时间\n%s" % [goal, _block_text()]]
-	var leads := EventSystem.day_leads()
-	if not leads.is_empty():
-		lines.append("\n今日可追踪机会")
-		for lead in leads:
-			var conditions: Dictionary = lead.get("conditions", {})
-			var lead_locations: Array = conditions.get("locations", [])
-			var location_id := str(lead_locations[0]) if not lead_locations.is_empty() else ""
-			var status := "已过时间窗" if bool(lead.get("window_passed", false)) else "尚可前往"
-			lines.append("• %s—%s · %s\n  %s（%s）" % [
-				_minute_text(int(conditions.get("start", 0))),
-				_minute_text(int(conditions.get("end", 1440))),
-				_location_name(location_id),
-				str(lead.get("choice_text", lead.get("id", "未命名机会"))),
-				status,
-			])
+	var lines: Array[String] = ["今天想做的事\n%s\n不必把每件事都做完，留一点时间在路上也好。\n\n今天的节奏\n%s" % [goal, _block_text()]]
 	if not GameState.appointments.is_empty():
 		lines.append("\n预约")
 		for appointment in GameState.appointments:
@@ -214,6 +199,11 @@ func _block_text() -> String:
 	if not commitments.is_empty():
 		result += "\n\n固定日程"
 		for work in commitments:
+			var token := "d%d_%s" % [GameState.current_day, str(work.get("id", ""))]
+			if GameState.completed_commitments.has(token):
+				var missed := GameState.journal_entries.any(func(entry: Dictionary) -> bool: return str(entry.get("id", "")) == "missed_commitment_" + token)
+				result += "\n• %s · %s" % [str(work.get("label", "工作")), "这次没赶上，今天不再安排" if missed else "已完成"]
+				continue
 			if str(work.get("kind", "work")) == "routine":
 				result += "\n• %s—%s %s（生活习惯，时间已预留）" % [_minute_text(int(work.get("start", 0))), _minute_text(int(work.get("end", 0))), str(work.get("label", "固定习惯"))]
 			else:
@@ -306,7 +296,7 @@ func _build_pocket() -> void:
 	var stack := VBoxContainer.new()
 	stack.add_theme_constant_override("separation",22)
 	scroll.add_child(stack)
-	var items: Array = [{"kind":"postcard","heading":"一张沾着海盐的明信片","text":"背面写着：饿的时候，来饭店坐坐。","place":"night_market"},{"kind":"note","heading":"折起来的纸条","text":"观景台晚上八点开放。记得带相机。","place":"park"}]
+	var items: Array = [{"kind":"postcard","heading":"一张沾着海盐的明信片","text":"背面写着：饿的时候，来饭店坐坐。","place":"night_market"},{"kind":"note","heading":"折起来的纸条","text":"观景台晚上九点开放。记得带相机。","place":"park"}]
 	items.append_array(DialogueSystem.notebook_leads())
 	for fact in KnowledgeSystem.facts(): items.append({"kind":"note","heading":"谈话留下的便签","text":str(fact.get("text","")) + (" ?" if float(fact.get("confidence",1.0)) < 0.8 else ""),"place":""})
 	for item in items:

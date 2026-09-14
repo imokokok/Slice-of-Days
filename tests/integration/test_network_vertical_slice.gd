@@ -27,7 +27,7 @@ func run() -> void:
 	change_scene_to_file("res://scenes/town_day.tscn")
 	await settle()
 	check(current_scene.street.player_x == 150, "A starts at left edge")
-	check(current_scene.street_order.size() == 3 and current_scene.street.world_width == 4800 and not current_scene.street_order.has("park"), "Public street remains a three-location branch with full-width illustrated scenes")
+	check(current_scene.street_order.size() == 15 and current_scene.street.world_width == 24000 and current_scene.street_order[-1] == "park", "Approved locations join into one coast ending at the lookout")
 	var bus: Dictionary = travel.route("residence","park","bus","A",545)
 	var taxi: Dictionary = travel.route("residence","park","taxi","A",545)
 	check(bus.available and taxi.available and bus.cost < taxi.cost and bus.minutes > taxi.minutes, "Transit offers real time/money tradeoff")
@@ -43,7 +43,7 @@ func run() -> void:
 	check(current_scene.selected == "night_market", "Map exposes selected destination quote")
 	current_scene._depart("walk")
 	await settle()
-	check(state.current_location == "night_market" and current_scene.segment_id == "public_west", "Map travel returns to destination stage")
+	check(state.current_location == "night_market" and current_scene.segment_id == "coast", "Legacy travel restores the destination on the connected coast")
 	state.current_minute = 700
 	router.enter_space("restaurant")
 	await settle()
@@ -114,13 +114,13 @@ func run() -> void:
 	router.town_day()
 	await settle()
 	check(current_scene.street.hotspots.any(func(h: Dictionary) -> bool: return h.kind == "shop_closed"), "Missed shop leaves quiet closure, no failed quest")
-	state.current_minute = 1199
+	state.current_minute = 1259
 	router.travel_to("park","taxi")
 	await settle()
-	check(current_scene.segment_id == "lookout" and not is_finite(current_scene.street.walk_limit), "Lookout is separate seaside stage open after 20:00")
+	check(current_scene.segment_id == "coast" and not is_finite(current_scene.street.walk_limit), "Lookout remains on the connected coast and opens after 21:00")
 	state.current_minute = 1140
 	current_scene._refresh()
-	check(is_finite(current_scene.street.walk_limit), "Lookout gate closed before 20:00")
+	check(is_finite(current_scene.street.walk_limit), "Lookout gate closed before 21:00")
 	state.current_day = 6
 	state.current_role = "A"
 	state.shared_state.chapter_index = 5

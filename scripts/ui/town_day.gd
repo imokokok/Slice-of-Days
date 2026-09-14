@@ -33,6 +33,8 @@ var dialogue_choices: Array[Button] = []
 var spoken_line: Label
 var speech_tween: Tween
 var wallet_label: Label
+var wallet_icon: TextureRect
+var displayed_money := -1
 var time_guidance_label: Label
 
 
@@ -66,6 +68,13 @@ func _ready() -> void:
 	GameState.shared_state["street_layout_version"] = 5
 	var key := "%s_%d_%s" % [GameState.current_role, GameState.current_day, segment_id]
 	var default_x := maxi(0, street_order.find(GameState.current_location)) * BLOCK_WIDTH + 300.0
+	if not saved.has(key):
+		var legacy := WorldGraph.legacy_segment_for(GameState.current_location)
+		var old_key := "%s_%d_%s" % [GameState.current_role, GameState.current_day, str(legacy.get("id", ""))]
+		if saved.has(old_key):
+			var old_places: Array = legacy.locations
+			var old_index := clampi(int(float(saved[old_key]) / BLOCK_WIDTH), 0, old_places.size() - 1)
+			default_x = street_order.find(str(old_places[old_index])) * BLOCK_WIDTH + fposmod(float(saved[old_key]), BLOCK_WIDTH)
 	street.player_x = float(saved.get(key, default_x))
 	if str(GameState.shared_state.get("map_arrival", "")) == GameState.current_location:
 		street.player_x = default_x
@@ -110,7 +119,14 @@ func _load_interactive_spaces() -> void:
 func _build_ui() -> void:
 	location_title = _label(self, "", Vector2(142, 18), Vector2(590, 35), 23, Color("e9dcc4"))
 	clock_label = _label(self, "", Vector2(720, 22), Vector2(330, 30), 17, Color("aab8b6"), HORIZONTAL_ALIGNMENT_RIGHT)
-	wallet_label = _label(self, "", Vector2(1060, 22), Vector2(145, 30), 17, Color("f1d08d"), HORIZONTAL_ALIGNMENT_RIGHT)
+	wallet_icon = TextureRect.new()
+	wallet_icon.texture = preload("res://scripts/town_sound/MediaTheme.gd").icon("wallet")
+	wallet_icon.position = Vector2(1072, 20)
+	wallet_icon.size = Vector2(28, 28)
+	wallet_icon.modulate = Color("f1d08d")
+	wallet_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(wallet_icon)
+	wallet_label = _label(self, "", Vector2(1102, 22), Vector2(103, 30), 17, Color("f1d08d"), HORIZONTAL_ALIGNMENT_RIGHT)
 	var guide_panel := _panel(self, Vector2(38, 80), Vector2(950, 48), Color("10161c", 0.82), Color("6d817c", 0.75))
 	time_guidance_label = _label(guide_panel, "", Vector2(16, 9), Vector2(918, 30), 16, Color("f0e3c7"))
 	var map_button := _button(self, "地图 M", Vector2(42, 15), Vector2(80, 40), "quiet")
@@ -136,10 +152,16 @@ func _refresh() -> void:
 	GameState.refresh_appointments()
 	location_title.text = _location_name(GameState.current_location)
 	clock_label.text = "%s · 第%d天 · %s" % [GameState.current_role,GameState.current_day,GameState.clock_text()]
-	wallet_label.text = "钱包 %d元" % GameState.money
+	var money_changed := displayed_money >= 0 and displayed_money != GameState.money
+	displayed_money = GameState.money
+	wallet_label.text = "%d 元" % GameState.money
+	if money_changed and is_instance_valid(wallet_icon):
+		wallet_icon.scale = Vector2(1.35, 1.35)
+		wallet_icon.pivot_offset = wallet_icon.size * 0.5
+		create_tween().tween_property(wallet_icon, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	time_guidance_label.text = _time_guidance_text()
 	if GameState.current_day == 6 and GameState.current_minute >= 1200: clock_label.text += " · 确认%d/12" % GameState.residency_confirmations
-	street.walk_limit = street_order.find("park") * BLOCK_WIDTH + 1060 if GameState.current_minute < 1200 and street_order.has("park") else INF
+	street.walk_limit = street_order.find("park") * BLOCK_WIDTH + 1060 if GameState.current_minute < WorldGraph.LOOKOUT_OPEN and street_order.has("park") else INF
 	if street.player_x > street.walk_limit:
 		street.player_x = street.walk_limit
 		street.move_player(0, 0)
@@ -154,15 +176,10 @@ func _time_guidance_text() -> String:
 	if commitment.is_empty() or str(commitment.get("location", "")) == GameState.current_location:
 		return base
 	var return_by := int(commitment.get("return_by", commitment.get("start", 0)))
-	var shortest := 1 << 20
-	for method in ["walk", "bus", "taxi", "friend"]:
-		var quote := TravelSystem.route(GameState.current_location, str(commitment.get("location", "")), method, GameState.current_role, GameState.current_minute)
-		if bool(quote.get("available", false)):
-			shortest = mini(shortest, int(quote.get("minutes", 0)))
-	if shortest == 1 << 20:
-		return base + " · 当前路线已来不及，先打开地图"
+	var home_x := street_order.find(str(commitment.get("location", "dorm"))) * BLOCK_WIDTH + 800.0
+	var shortest := int(ceil(absf(home_x - street.player_x) / street.SPEED / 4.0)) + 1
 	var leave_by := return_by - shortest
-	return "%s空闲 %d分钟 · 路上至少%d分钟 · 最晚%s出发回家" % ["整块" if GameState.current_block_remaining() >= 90 else "碎片", GameState.current_block_remaining(), shortest, _minute_text(leave_by)]
+	return "%s 回家工作 · 慢走约%d分钟 · %s%s动身" % [_minute_text(return_by), shortest, "往左" if home_x < street.player_x else "往右", "，现在该" if GameState.current_minute >= leave_by else "，" + _minute_text(leave_by) + "前"]
 
 
 func _spaces_at(location_id: String) -> Array[Dictionary]:
@@ -217,8 +234,24 @@ func _open_pocket_camera() -> void:
 	pocket_opening = false
 	var camera = load("res://scripts/town_sound/PocketCamera.gd").new()
 	camera.source = frame
-	camera.context = {"location": GameState.current_location, "title": _location_name(GameState.current_location), "day": GameState.current_day, "role": GameState.current_role, "game_minute": GameState.current_minute}
+	camera.context = {"location": GameState.current_location, "title": _location_name(GameState.current_location), "day": GameState.current_day, "role": GameState.current_role, "game_minute": GameState.current_minute, "subjects": _camera_subjects()}
 	_show_pocket_panel(camera)
+
+func _camera_subjects() -> Array[Dictionary]:
+	var catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/photography/subjects.json"))
+	var result: Array[Dictionary] = []
+	# Authored points belong to the scene plate, never to a fixed screen center.
+	for index in street_order.size():
+		var left: float = index * BLOCK_WIDTH - 80.0 - street.camera_x
+		if left > 1600.0 or left + 1760.0 < 0.0: continue
+		for raw in catalog.get("locations", {}).get(street_order[index], []):
+			var subject: Dictionary = raw.duplicate(true)
+			var target: Array = subject.get("target", [0.5, 0.5])
+			var screen_x: float = (left + float(target[0]) * 1760.0) / 1600.0
+			if screen_x < 0.04 or screen_x > 0.96: continue
+			subject["target"] = [screen_x, float(target[1])]
+			result.append(subject)
+	return result
 
 
 func _ambient_talk(resident_id: String) -> void:
@@ -486,12 +519,10 @@ func _rebuild_hotspots() -> void:
 	# Keep exits on the actual movement limits. The old right exit shared the
 	# same x position as the final bench, so nearest() always selected the bench
 	# and made the road interaction unreachable.
-	street.hotspots.append({"x":80.0, "kind":"roads", "label":"路口 · 打开地图选择去向"})
-	street.hotspots.append({"x":street.world_width - 80.0, "kind":"roads", "label":"路口 · 打开地图选择去向"})
 	var center := current_index * BLOCK_WIDTH + float(Atlas.street(GameState.current_location).get("door_x",800))
-	if GameState.current_location == "park" and GameState.current_minute < 1200:
-		street.hotspots.append({"x":1060.0, "kind":"closed", "label":"观景台 · 20:00 开放"})
-		street.hotspots.append({"x":930.0, "kind":"wait_open", "label":"坐下等到 20:00"})
+	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
+		street.hotspots.append({"x":current_index * BLOCK_WIDTH + 1060.0, "kind":"closed", "label":"观景台 · 21:00 开放"})
+		street.hotspots.append({"x":current_index * BLOCK_WIDTH + 930.0, "kind":"wait_open", "label":"坐下等到 21:00"})
 		return
 	# Outdoor residents remain available even after the shop closes.
 	var people := ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
@@ -532,7 +563,7 @@ func _interact() -> void:
 	match str(item.kind):
 		"shop_closed": _show_line("", "门内很安静，桌上留着半杯咖啡。晚一点或明天再来。")
 		"roads": _open_map()
-		"closed": _show_line("", "观景台将在晚上八点开放。可以在旁边的长椅坐一会。")
+		"closed": _show_line("", "观景台将在晚上九点开放。可以在旁边的长椅坐一会。")
 		"wait_open": _sit_on_bench(item)
 		"home": SceneRouter.enter_space("home_a" if GameState.current_role == "A" else "home_b")
 		"door":
@@ -603,7 +634,7 @@ func _show_dialogue_beat() -> void:
 			_resolve_event(staged_event_id)
 			return
 		_clear_dialogue()
-		_label(event_panel, "你说……", Vector2(32, 16), Vector2(675, 35), 22, Color("ede3ce"))
+		_label(event_panel, "你说……    W / S 或 ↑ / ↓ 选择 · Enter 回应", Vector2(32, 16), Vector2(675, 35), 18, Color("ede3ce"))
 		var scroll := ScrollContainer.new()
 		scroll.position = Vector2(30, 62)
 		scroll.size = Vector2(680, 265)
@@ -660,6 +691,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				if speech_tween: speech_tween.kill()
 				spoken_line.visible_characters = -1
 			else: dialogue_choices[0].pressed.emit()
+		elif dialogue_choices.size() > 1 and (event.is_action_pressed("ui_up") or event.physical_keycode == KEY_W):
+			_focus_dialogue_choice(-1)
+		elif dialogue_choices.size() > 1 and (event.is_action_pressed("ui_down") or event.physical_keycode == KEY_S):
+			_focus_dialogue_choice(1)
 	elif event.is_action_pressed("open_camera"): _open_pocket_camera()
 	elif event.is_action_pressed("open_recorder"): _open_pocket_recorder()
 	elif event.is_action_pressed("open_album"): _open_pocket_album()
@@ -668,6 +703,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("open_map"): _open_map()
 	elif event.is_action_pressed("ui_cancel"): _return_to_menu()
 	get_viewport().set_input_as_handled()
+
+func _focus_dialogue_choice(step: int) -> void:
+	var focused := get_viewport().gui_get_focus_owner()
+	var current := dialogue_choices.find(focused)
+	dialogue_choices[posmod(current + step, dialogue_choices.size())].grab_focus()
+	WorldSound.play_ui("focus")
 
 func _pocket_blocks_walking() -> bool:
 	if not is_instance_valid(pocket_panel): return false
@@ -700,16 +741,17 @@ func _bench_menu() -> void:
 	_label(event_panel,"海风从身旁经过。",Vector2(30,70),Vector2(670,40),22,Color("c9d8cd"))
 	var minutes := mini(30, GameState.current_block_remaining())
 	if minutes > 0:
-		var wait := _button(event_panel,"E / 1  坐一会 · %d分钟" % minutes,Vector2(30,132),Vector2(660,45),"dialogue")
+		var wait := _button(event_panel,"坐一会 · %d分钟" % minutes,Vector2(30,132),Vector2(660,45),"dialogue")
 		wait.pressed.connect(_wait_on_bench.bind(minutes))
 		dialogue_choices.append(wait)
-	if GameState.current_location == "park" and GameState.current_minute < 1200 and GameState.can_fit_now(1200 - GameState.current_minute):
-		var until_open := _button(event_panel,"2  等到观景台开放 · 20:00",Vector2(30,188),Vector2(660,45),"dialogue")
-		until_open.pressed.connect(_wait_on_bench.bind(1200-GameState.current_minute))
+	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN and GameState.can_fit_now(WorldGraph.LOOKOUT_OPEN - GameState.current_minute):
+		var until_open := _button(event_panel,"等到观景台开放 · 21:00",Vector2(30,188),Vector2(660,45),"dialogue")
+		until_open.pressed.connect(_wait_on_bench.bind(WorldGraph.LOOKOUT_OPEN-GameState.current_minute))
 		dialogue_choices.append(until_open)
 	var stand := _button(event_panel,"站起来 · Esc",Vector2(30,264),Vector2(660,45),"dialogue")
 	stand.pressed.connect(_stand_from_bench)
 	dialogue_choices.append(stand)
+	dialogue_choices[0].grab_focus()
 func _wait_on_bench(minutes: int) -> void:
 	if not GameState.use_free_time(minutes):
 		status_message = "这段空闲时间不够，不能一直等到那个时刻。"

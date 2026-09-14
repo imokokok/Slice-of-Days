@@ -12,6 +12,7 @@ var typewriter := true
 var options: Array[Button] = []
 var next_action: Callable
 var invite_after_chat := false
+var close_after_line := false
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -62,7 +63,7 @@ func _show_topic(topic: String) -> void:
 	_show_line()
 func _show_line() -> void:
 	_clear()
-	_label(str(ScheduleSystem.residents.get(npc,{}).get("display_name",npc)) + "     Space / Enter · 继续     T · 逐字显示",18)
+	_label(str(ScheduleSystem.residents.get(npc,{}).get("display_name",npc)) + "     Space / Enter · 继续     T · 调整文字速度",18)
 	text_label = _label(lines[index],25)
 	text_label.custom_minimum_size.y = 140
 	progress = 0.0
@@ -75,8 +76,10 @@ func _advance() -> void:
 		progress = text_label.text.length()
 		text_label.visible_characters = -1
 		return
+	WorldSound.play_ui("dialogue")
 	index += 1
 	if index < lines.size(): _show_line()
+	elif close_after_line: _close()
 	elif invite_after_chat:
 		invite_after_chat = false
 		_show_topic("minigame_hook")
@@ -84,7 +87,7 @@ func _advance() -> void:
 	else: _topics()
 func _topics(page := 0) -> void:
 	_clear()
-	_label("想怎么接这句话？（直接点击完整句子）",19)
+	_label("想怎么接这句话？    W / S 或 ↑ / ↓ 选择 · Enter 回应 · Esc 离开",19)
 	var topics := [[str(DialogueSystem.content.get(npc,{}).get("chat_label","今天过得怎么样？")),"daily_state"],["晚点还能在这儿碰到你吗？","schedule_info"],["最近有什么小事？","rumor"],["我想去海边看看。","location_info"],["后来呢？再讲一点吧。","personal_topic"],["我再陪你坐一会儿。","small_talk"],["你刚才说的那件事……","relationship_followup"]]
 	var confirmation := RelationshipSystem.confirmation_request_preview(npc)
 	if bool(confirmation.get("available", false)):
@@ -95,9 +98,9 @@ func _topics(page := 0) -> void:
 		topics.push_front([str(invitation.label),"minigame_hook"])
 	for i in range(page*4,mini(page*4+4,topics.size())):
 		var item: Array = topics[i]
-		_button("你：%s" % str(item[0]),_show_topic.bind(str(item[1])))
-	_button("你：我还有件事想问……",_topics.bind((page+1)%int(ceil(topics.size()/4.0))))
-	_button("你：我得走了，回头见。   Esc",_close)
+		_button("“%s”" % str(item[0]),_show_topic.bind(str(item[1])))
+	_button("“我还有件事想问……”",_topics.bind((page+1)%int(ceil(topics.size()/4.0))))
+	_button("“我得走了，回头见。”   Esc",_close)
 	options[0].grab_focus()
 func _close() -> void:
 	closed.emit()
@@ -106,15 +109,29 @@ func _process(delta: float) -> void:
 	if is_instance_valid(text_label) and typewriter and text_label.visible_characters >= 0:
 		progress += delta*28.0
 		text_label.visible_characters = int(progress)
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.is_action_pressed("ui_cancel"): _close()
+		elif (event.is_action_pressed("ui_up") or event.physical_keycode == KEY_W) and options.size() > 1:
+			_focus_option(-1)
+		elif (event.is_action_pressed("ui_down") or event.physical_keycode == KEY_S) and options.size() > 1:
+			_focus_option(1)
 		elif event.is_action_pressed("toggle_typewriter"):
 			typewriter = not typewriter
 			GameState.shared_state["typewriter"] = typewriter
 			if is_instance_valid(text_label): text_label.visible_characters = -1 if not typewriter else int(progress)
 		elif (event.is_action_pressed("dialogue_advance") or event.is_action_pressed("ui_accept")) and is_instance_valid(text_label): _advance()
+		elif event.is_action_pressed("dialogue_advance") or event.is_action_pressed("ui_accept"):
+			var focused := get_viewport().gui_get_focus_owner()
+			if focused in options: focused.pressed.emit()
+		else: return
 		get_viewport().set_input_as_handled()
+
+func _focus_option(step: int) -> void:
+	var focused := get_viewport().gui_get_focus_owner()
+	var current := options.find(focused)
+	options[posmod(current + step, options.size())].grab_focus()
+	WorldSound.play_ui("focus")
 
 func _offer_choices() -> void:
 	_clear()
@@ -122,14 +139,15 @@ func _offer_choices() -> void:
 	var duration := GameplayModuleSystem.time_hint(str(offer.module))
 	_label(str(offer.lines.back()),23)
 	if not duration.is_empty(): _label("约 " + duration,16)
-	_button("你：" + str(offer.accept),_accept_offer)
-	_button("你：我晚一点再来。",_decline_offer)
+	_button("“" + str(offer.accept) + "”",_accept_offer)
+	_button("“我晚一点再来。”",_decline_offer)
 	options[0].grab_focus()
 func _decline_offer() -> void:
 	var farewell := str(offer.get("decline","好，不着急。你想好了再来找我。"))
 	offer = {}
 	lines = [farewell]
 	index = 0
+	close_after_line = true
 	_show_line()
 func _accept_offer() -> void:
 	var accepted := DialogueSystem.accept_invitation(npc)

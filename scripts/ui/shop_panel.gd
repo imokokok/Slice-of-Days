@@ -117,9 +117,10 @@ func _refresh() -> void:
 
 func _buy(item: Dictionary) -> void:
 	var result := GameState.buy_item(item)
-	status_label.text = str(result.get("message", ""))
-	SaveManager.save_or_report("购买商品后保存失败")
+	WorldSound.play_ui("coin" if bool(result.get("ok", false)) else "error")
+	var saved := SaveManager.save_or_report("购买商品后保存失败")
 	_refresh()
+	status_label.text = str(result.get("message", "")) + ("" if saved else " 本次存档未写入，请稍后重试保存。")
 
 
 func _unhandled_input(event: InputEvent) -> void:

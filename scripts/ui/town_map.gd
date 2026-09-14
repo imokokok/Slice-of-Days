@@ -37,12 +37,10 @@ func _ready() -> void:
 func _draw() -> void:
 	draw_rect(Rect2(0,0,1600,900), Color("eddfbe"))
 	draw_colored_polygon(PackedVector2Array([Vector2(0,80),Vector2(1000,80),Vector2(1000,300),Vector2(850,245),Vector2(700,190),Vector2(480,250),Vector2(300,215),Vector2(0,280)]), Color("298da8"))
-	for source in TravelSystem.adjacency:
-		if not WorldGraph.config.map_positions.has(source): continue
-		var a: Array = WorldGraph.config.map_positions[source]
-		for edge in TravelSystem.adjacency[source]:
-			var b: Array = WorldGraph.config.map_positions.get(str(edge.to), a)
-			draw_line(Vector2(float(a[0])*0.8+12,float(a[1])+89),Vector2(float(b[0])*0.8+12,float(b[1])+89),Color("b89468"),4,true)
+	for index in range(1, WorldGraph.street_locations.size()):
+		var a: Array = WorldGraph.config.map_positions[WorldGraph.street_locations[index - 1]]
+		var b: Array = WorldGraph.config.map_positions[WorldGraph.street_locations[index]]
+		draw_line(Vector2(float(a[0])*0.8+12,float(a[1])+89),Vector2(float(b[0])*0.8+12,float(b[1])+89),Color("b89468"),4,true)
 	draw_rect(Rect2(1038,90,540,745),Color("faf2de"))
 func _text(value: String, font_size := 21) -> Label:
 	var label := Label.new()
@@ -60,28 +58,20 @@ func _select(id: String) -> void:
 		child.queue_free()
 	if id.is_empty():
 		_text("每条路，都通向另一段生活。", 28)
-		_text("选择地点查看路程。公交需从站点出发；熟人接送取决于关系和对方日程。")
+		_text("选一个地点看看方向，或夹上便签。合上地图后，沿街步行就能到达。")
 		return
 	_text(TravelSystem.location_name(id),28)
 	var pin := Button.new()
 	pin.text = "取消标记" if WorldGraph.pins().has(id) else "夹一张地点便签" if GameState.current_role == "A" else "Pin 到日程本"
 	pin.pressed.connect(func() -> void: WorldGraph.toggle_pin(id); _select(id))
 	info.add_child(pin)
-	if id == "park": _text("观景台每天 20:00 开放。",18)
-	for method in ["walk", "bus", "taxi", "friend"]:
-		var quote := TravelSystem.route(GameState.current_location,id,method,GameState.current_role,GameState.current_minute)
-		if not bool(quote.get("available",false)):
-			_text(str(quote.get("reason", "")),16)
-			continue
-		var button := Button.new()
-		button.text = "%s · %d分钟 · %d元\n等候%d分钟 · 到达%02d:%02d" % [str(quote.label),int(quote.minutes),int(quote.cost),int(quote.wait),int(quote.arrival)/60,int(quote.arrival)%60]
-		button.custom_minimum_size = Vector2(470,76)
-		button.add_theme_font_size_override("font_size",21)
-		button.disabled = int(quote.cost) > GameState.money or int(quote.arrival) >= 1440
-		button.pressed.connect(_depart.bind(method))
-		info.add_child(button)
-		if not quote.conflicts.is_empty(): _text("可能错过：" + "、".join(quote.conflicts),17)
-	notice = _text("选择上方交通方式后出发。",17)
+	if id == "park": _text("观景台在街道最右端，每天 21:00 开放。",18)
+	if id == GameState.current_location:
+		_text("你就在这里。", 22)
+	else:
+		var direction := "往右" if WorldGraph.street_locations.find(id) > WorldGraph.street_locations.find(GameState.current_location) else "往左"
+		_text("沿街%s走 · 慢走约%d分钟" % [direction, WorldGraph.walk_minutes(GameState.current_location, id)], 22)
+	notice = _text("合上地图，用 A / D 或方向键继续走。",17)
 func _depart(method: String) -> void:
 	var result := SceneRouter.travel_to(selected,method)
 	if not bool(result.get("ok",false)): notice.text = str(result.get("message","现在无法出发。"))

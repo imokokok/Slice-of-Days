@@ -22,11 +22,13 @@ var flash: ColorRect
 var capture_card: Panel
 var capture_image: TextureRect
 var capture_category: Label
+var capture_word: Label
 var capture_title: Label
 var capture_note: Label
 var zoom_value := 1.22
 var pan := Vector2(0.5, 0.5)
 var dragging := false
+var card_back := false
 
 
 func _ready() -> void:
@@ -86,6 +88,8 @@ func _build_camera() -> void:
 	frame_style.border_color = Color("3d4548")
 	frame_style.set_border_width_all(2)
 	preview_frame.add_theme_stylebox_override("panel", frame_style)
+	preview_frame.mouse_filter = Control.MOUSE_FILTER_STOP
+	preview_frame.gui_input.connect(_viewfinder_input)
 	add_child(preview_frame)
 	preview = TextureRect.new()
 	preview.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -103,6 +107,7 @@ func _build_camera() -> void:
 	overlay.offset_right = -3
 	overlay.offset_top = 3
 	overlay.offset_bottom = -3
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	preview_frame.add_child(overlay)
 
 	var auto_badge := _make_label(preview_frame, "  AUTO  ·  景物识别  ", Vector2(18, 18), Vector2(190, 30), 14, Color("14201d"))
@@ -130,6 +135,7 @@ func _build_camera() -> void:
 	focus_style.set_corner_radius_all(12)
 	focus_pill.add_theme_stylebox_override("panel", focus_style)
 	preview_frame.add_child(focus_pill)
+	focus_pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	focus_label = _make_label(focus_pill, "", Vector2(18, 8), Vector2(514, 48), 16, INK)
 	focus_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	focus_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -188,7 +194,7 @@ func _build_capture_card() -> void:
 	capture_card = Panel.new()
 	capture_card.set_anchors_preset(PRESET_TOP_RIGHT)
 	capture_card.position = Vector2(-358, 94)
-	capture_card.size = Vector2(324, 350)
+	capture_card.size = Vector2(324, 372)
 	capture_card.pivot_offset = capture_card.size * 0.5
 	var paper := StyleBoxFlat.new()
 	paper.bg_color = Color("f4ecd8")
@@ -207,15 +213,21 @@ func _build_capture_card() -> void:
 	capture_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	capture_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	capture_card.add_child(capture_image)
-	capture_title = _make_label(capture_card, "", Vector2(20, 218), Vector2(284, 34), 24, Color("322923"))
-	capture_note = _make_label(capture_card, "", Vector2(20, 255), Vector2(284, 54), 14, Color("6f625a"))
+	capture_word = _make_label(capture_card, "", Vector2(20, 214), Vector2(284, 22), 13, Color("8b5b44"))
+	capture_title = _make_label(capture_card, "", Vector2(20, 237), Vector2(284, 34), 24, Color("322923"))
+	capture_note = _make_label(capture_card, "", Vector2(20, 274), Vector2(284, 54), 14, Color("6f625a"))
 	capture_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var dismiss := _make_button(capture_card, "继续取景", Vector2(188, 312), Vector2(116, 28), false)
+	var dismiss := _make_button(capture_card, "继续取景", Vector2(188, 334), Vector2(116, 28), false)
 	dismiss.pressed.connect(func() -> void: capture_card.hide())
+	var flip := _make_button(capture_card, "翻面 · 笔记", Vector2(20, 334), Vector2(130, 28), false)
+	flip.pressed.connect(_flip_capture)
 	capture_card.hide()
 
 
 func _load_subjects() -> void:
+	if context.has("subjects"):
+		subjects.assign(context.subjects)
+		return
 	if not FileAccess.file_exists(SUBJECTS_PATH):
 		return
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string(SUBJECTS_PATH))
@@ -286,6 +298,7 @@ func take_photo() -> void:
 		shot_context["subject_name"] = str(current_subject.get("name", ""))
 		shot_context["subject_category"] = str(current_subject.get("category", ""))
 		shot_context["subject_note"] = str(current_subject.get("note", ""))
+		shot_context["subject_word"] = str(current_subject.get("word", current_subject.get("name", "")))
 	var image := cropped_image()
 	var photo := library.save_photo(image, shot_context)
 	if photo.is_empty():
@@ -300,7 +313,7 @@ func take_photo() -> void:
 			GameState.add_artifact("photo_subjects", {"id": str(current_subject.get("id", "")), "title": str(current_subject.get("name", "景物")), "kind": "photo_subject", "location": str(context.get("location", "")), "note": str(current_subject.get("note", ""))})
 		GameState.add_journal_entry({"id": "photo_%s" % str(photo.photo_id), "kind": "photo", "text": "在%s拍下%s，画面已留在本地相册。" % [str(context.get("title", "小镇")), photo_title]})
 		SaveManager.save_or_report("拍照后保存失败")
-		WorldSound.play_detail(true)
+		WorldSound.play_ui("shutter")
 	_show_capture(image, current_subject, is_new_subject)
 	_refresh_count()
 	get_tree().create_timer(0.45).timeout.connect(func() -> void:
@@ -311,15 +324,21 @@ func _show_capture(image: Image, subject: Dictionary, is_new: bool) -> void:
 	capture_image.texture = ImageTexture.create_from_image(image)
 	if subject.is_empty():
 		capture_category.text = "自由摄影  ·  已收入本地相册"
+		capture_word.text = "SOLMERE FIELD NOTE"
 		capture_title.text = str(context.get("title", "小镇的一刻"))
 		capture_note.text = "这张照片没有被标签定义，但仍属于今天。"
 		focus_label.text = "咔嚓 · 自由照片已保存"
 	else:
-		capture_category.text = ("NEW  ·  " if is_new else "再次拍到  ·  ") + str(subject.get("category", "小镇发现"))
+		capture_category.text = ("新发现  ·  " if is_new else "再次拍到  ·  ") + str(subject.get("category", "小镇发现"))
+		capture_word.text = str(subject.get("word", subject.get("name", "景物"))).to_upper() + "  /  小镇词卡"
 		capture_title.text = str(subject.get("name", "景物"))
 		capture_note.text = str(subject.get("note", ""))
 		focus_label.text = "咔嚓 · %s已进入景物图鉴" % str(subject.get("name", "这处景物"))
 	capture_card.show()
+	card_back = false
+	capture_image.show()
+	capture_note.position = Vector2(20, 274)
+	capture_note.size = Vector2(284, 54)
 	capture_card.modulate = Color(1, 1, 1, 0)
 	capture_card.scale = Vector2(0.96, 0.96)
 	var tween := create_tween().set_parallel(true)
@@ -352,9 +371,29 @@ func _refresh_count() -> void:
 
 
 func _set_zoom(value: float) -> void:
-	zoom_value = clampf(value, 1.0, 2.8)
+	zoom_value = clampf(value, 1.0, 4.0)
 	capture_card.hide()
 	update_preview()
+
+func _flip_capture() -> void:
+	card_back = not card_back
+	capture_image.visible = not card_back
+	capture_note.position = Vector2(20, 60) if card_back else Vector2(20, 274)
+	capture_note.size = Vector2(284, 140) if card_back else Vector2(284, 54)
+	WorldSound.play_ui("dialogue")
+
+func _viewfinder_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+			_set_zoom(zoom_value + (0.14 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -0.14))
+		elif event.button_index == MOUSE_BUTTON_LEFT:
+			dragging = event.pressed
+		preview_frame.accept_event()
+	elif event is InputEventMouseMotion and dragging:
+		if event.button_mask & MOUSE_BUTTON_MASK_LEFT:
+			_move_pan(-event.relative / preview_frame.size.max(Vector2.ONE) * 1.8)
+		else: dragging = false
+		preview_frame.accept_event()
 
 
 func _move_pan(delta: Vector2) -> void:

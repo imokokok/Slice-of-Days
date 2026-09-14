@@ -6,6 +6,7 @@ const RATE := 22050
 var ambience: AudioStreamPlayer
 var foley: AudioStreamPlayer
 var coast: AudioStreamPlayer
+var ui: AudioStreamPlayer
 var indoors := false
 var location := ""
 var active := false
@@ -23,6 +24,7 @@ func _ready() -> void:
 	ambience = AudioStreamPlayer.new()
 	foley = AudioStreamPlayer.new()
 	coast = AudioStreamPlayer.new()
+	ui = AudioStreamPlayer.new()
 	coast.bus = BUS
 	# Keep the authored stream available even with the Dummy driver so tests,
 	# waveform capture and accessibility previews can inspect the real sound.
@@ -30,6 +32,7 @@ func _ready() -> void:
 	coast.stream = make_sea()
 	coast.volume_db = -8.0
 	add_child(coast)
+	add_child(ui)
 	for player in [ambience, foley]:
 		player.bus = BUS
 		add_child(player)
@@ -107,6 +110,37 @@ func play_detail(footsteps := false) -> void:
 	foley.volume_db = 0.0
 	foley.stream = make_detail(location, footsteps)
 	foley.play()
+
+func play_ui(cue: String) -> void:
+	if AudioServer.get_driver_name() == "Dummy": return
+	ui.stream = make_ui(cue)
+	ui.volume_db = -5.0
+	ui.play()
+
+static func make_ui(cue: String) -> AudioStreamWAV:
+	var durations := {"focus": 0.055, "dialogue": 0.075, "coin": 0.24, "error": 0.16, "shutter": 0.18, "record_start": 0.16, "record_stop": 0.12}
+	var duration := float(durations.get(cue, 0.10))
+	var frames := maxi(1, int(RATE * duration))
+	var data := PackedByteArray()
+	data.resize(frames * 2)
+	for i in frames:
+		var t := float(i) / RATE
+		var envelope := sin(PI * minf(t / duration, 1.0)) * exp(-t * (8.0 if cue == "coin" else 16.0))
+		var value := 0.0
+		match cue:
+			"coin": value = (sin(TAU * 880.0 * t) + 0.55 * sin(TAU * 1320.0 * t)) * 0.18 * envelope
+			"error": value = (sin(TAU * 150.0 * t) + 0.35 * sin(TAU * 105.0 * t)) * 0.16 * envelope
+			"shutter": value = (sin(TAU * 90.0 * t) * 0.12 + sin(TAU * 1900.0 * t) * 0.05) * envelope
+			"record_start": value = sin(TAU * (430.0 + t * 900.0) * t) * 0.16 * envelope
+			"record_stop": value = sin(TAU * (620.0 - t * 1500.0) * t) * 0.14 * envelope
+			"dialogue": value = sin(TAU * 620.0 * t) * 0.07 * envelope
+			_: value = sin(TAU * 760.0 * t) * 0.06 * envelope
+		data.encode_s16(i * 2, int(clampf(value, -1.0, 1.0) * 32767.0))
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = RATE
+	wav.data = data
+	return wav
 
 static func make_ambience(place: String) -> AudioStreamWAV:
 	var rng := RandomNumberGenerator.new()

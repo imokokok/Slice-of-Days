@@ -123,7 +123,7 @@ func latest_outcome(module_id: String) -> Dictionary:
 
 
 func begin_session(module_id: String, source_event_id := "", rollback_snapshot: Dictionary = {}) -> bool:
-	if module_id == "contemplation" and GameState.current_minute < 1200:
+	if module_id == "contemplation" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
 		return false
 	if not unlock(module_id) or not start(module_id):
 		return false
@@ -258,11 +258,16 @@ func _prototype_token_label(prototype: Dictionary, token_id: String) -> String:
 
 
 func complete_external(module_id: String, outcome: Dictionary, results: Dictionary = {}) -> bool:
-	if not modules.has(module_id):
+	if not modules.has(module_id) or not is_unlocked(module_id):
 		return false
-	EventSystem.apply_results("module_%s_external" % module_id, results)
+	var was_completed := bool(ensure_state(module_id).get("completed", false))
 	if not complete(module_id, outcome):
 		return false
+	var granted := results.duplicate(true)
+	# This extension contains one authored client commission. Reopening its
+	# finished letter is a keepsake, not a new payable delivery.
+	if module_id == "ghostwriting" and was_completed: granted.erase("money")
+	EventSystem.apply_results("module_%s_external" % module_id, granted)
 	EchoSystem.record_module(module_id, outcome)
 	GameState.shared_state.erase("pending_module")
 	GameState.commit_active_role_state()

@@ -49,16 +49,39 @@ func run() -> void:
 		return
 	camera.library.root_path = "user://tests/camera_rhythm_photos_" + Crypto.new().generate_random_bytes(6).hex_encode()
 	check(camera.subjects.size() >= 2 and not camera.current_subject.is_empty(), "Camera should expose authored scenery and focus the centered discovery")
+	check(not str(camera.current_subject.get("word", "")).is_empty(), "Centered scenery should expose a field-guide word card")
 	check(camera.find_children("*", "HSlider", true, false).is_empty(), "Camera should no longer look like a three-slider utility form")
+	var drag_start: Vector2 = camera.preview_frame.get_global_rect().get_center()
+	var press := InputEventMouseButton.new()
+	press.position = drag_start
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	root.push_input(press, true)
+	var motion := InputEventMouseMotion.new()
+	motion.position = drag_start + Vector2(90, 0)
+	motion.relative = Vector2(90, 0)
+	motion.button_mask = MOUSE_BUTTON_MASK_LEFT
+	root.push_input(motion, true)
+	press.pressed = false
+	press.position = motion.position
+	root.push_input(press, true)
+	check(camera.pan.x < 0.5, "Mouse drag must pass through the actual viewfinder GUI and change composition")
+	camera.pan = Vector2(0.5, 0.5)
+	camera.update_preview()
 	camera.take_photo()
 	await create_timer(0.55).timeout
 	check(camera.capture_card.visible, "A successful shot should create an immediate photo card")
 	check((state.artifacts.get("photo_subjects", []) as Array).size() == 1, "Recognized scenery should enter the persistent field guide")
+	check(camera.capture_word.text.contains("VINE"), "The result card should name the photographed word instead of showing only utility feedback")
+	camera._flip_capture()
+	check(not camera.capture_image.visible and camera.capture_note.position.y == 60, "A photo can be flipped over to read its observation")
+	camera._flip_capture()
+	check(camera.capture_image.visible, "Flipping back restores the captured photograph")
 	var saved: Array[Dictionary] = camera.library.list_photos()
 	check(saved.size() == 1 and str(saved[0].get("subject_name", "")).is_empty() == false, "Photo metadata should retain the recognized subject")
 	if OS.get_cmdline_user_args().has("--screenshots") and root.get_texture() != null:
 		await process_frame
-		root.get_texture().get_image().save_png("/private/tmp/solmere-camera-redesign.png")
+		root.get_texture().get_image().save_png(OS.get_environment("SOLMERE_TEST_OUTPUT").path_join("solmere-camera-redesign.png"))
 		var album = load("res://scripts/town_sound/PhotoAlbum.gd").new()
 		album.library = camera.library
 		camera.queue_free()
@@ -66,6 +89,6 @@ func run() -> void:
 		await process_frame
 		current_scene._show_pocket_panel(album)
 		await process_frame
-		root.get_texture().get_image().save_png("/private/tmp/solmere-album-redesign.png")
+		root.get_texture().get_image().save_png(OS.get_environment("SOLMERE_TEST_OUTPUT").path_join("solmere-album-redesign.png"))
 	print("CAMERA + RHYTHM: ", "PASS" if failures == 0 else "FAIL", " failures=", failures)
 	quit(failures)

@@ -43,7 +43,7 @@ func save_photo(image: Image, context: Dictionary) -> Dictionary:
 		return {}
 	var item := {"photo_id": id, "created_at": Time.get_datetime_string_from_system(true), "location": str(context.get("location", "")),
 		"title": str(context.get("title", "小镇的一刻")), "day": int(context.get("day", 1)), "role": str(context.get("role", "")), "game_minute": int(context.get("game_minute", 0)), "width": image.get_width(), "height": image.get_height()}
-	for key in ["subject_id", "subject_name", "subject_category", "subject_note"]:
+	for key in ["subject_id", "subject_name", "subject_category", "subject_note", "subject_word"]:
 		if not str(context.get(key, "")).is_empty():
 			item[key] = str(context.get(key, ""))
 	var file := FileAccess.open(path.path_join("photo.json.tmp"), FileAccess.WRITE)

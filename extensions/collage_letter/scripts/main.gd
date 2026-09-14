@@ -139,6 +139,15 @@ func label_at(text: String, rect: Rect2, size: int = 18, color: Color = INK) -> 
 	ui.add_child(node)
 	return node
 
+func info_card(rect: Rect2) -> ColorRect:
+	var card := ColorRect.new()
+	card.position = rect.position
+	card.size = rect.size
+	card.color = Color("f7efdc")
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ui.add_child(card)
+	return card
+
 func button(text: String, rect: Rect2, action: Callable, active: bool = false) -> Button:
 	var node := Button.new()
 	node.text = text
@@ -198,6 +207,9 @@ func build_ui() -> void:
 		label_at("相册 / "+str(materials[album_source].title),Rect2(1070,151,325,28),16)
 		label_at("旧车票 / 私人素材",Rect2(1072,450,180,28),14)
 		label_at("TO / "+("很久没见的朋友" if letter_mode=="npc" else ("海上的某个人" if letter_mode=="bottle" else "回复 #"+str(reply_parent.get("id",0)))),Rect2(483,184,480,30),14,Color("9a9787"))
+		if letter_mode == "npc":
+			info_card(Rect2(435,738,740,46))
+			label_at("林舟的委托  ·  写给多年未见的朋友；别直说“我想你”，别写成告别，并放入旧车票。",Rect2(451,748,710,28),16,RUST)
 		if tool == "pen":
 			entry = LineEdit.new()
 			entry.position = Vector2(481,716)
@@ -274,6 +286,9 @@ func _draw() -> void:
 		return
 	var backdrop := preload("res://scripts/ui/scene_atlas.gd").plate({"pages":[30,31,32]})
 	draw_texture_rect(backdrop,Rect2(0,0,1440,900),false)
+	# The atlas remains visible as atmosphere, while a warm veil separates it
+	# from instructions, movable scraps and the client's dialogue.
+	draw_rect(Rect2(0,114,1440,724),Color(0.95,0.92,0.84,0.58 if stage == "DIALOGUE" else 0.42))
 	draw_rect(Rect2(0,0,1440,114),Color("e9e2d2"))
 	draw_line(Vector2(50,113),Vector2(1390,113),Color("b6ab92"),1)
 	var rng := RandomNumberGenerator.new()
@@ -290,14 +305,14 @@ func _draw() -> void:
 				draw_texture_rect(textures[i],sources[i],false)
 		if cutting_source >= 0 and path.size()>1:
 			if tool == "rect":
-				draw_rect(Rect2(start,get_global_mouse_position()-start).abs(),Color(0.65,0.29,0.20,0.13))
-				draw_rect(Rect2(start,get_global_mouse_position()-start).abs(),RUST,false,2)
+				draw_rect(Rect2(start,get_local_mouse_position()-start).abs(),Color(0.65,0.29,0.20,0.13))
+				draw_rect(Rect2(start,get_local_mouse_position()-start).abs(),RUST,false,2)
 			else:
 				draw_polyline(path,RUST,2,true)
 		if tape_drawing:
-			draw_line(tape_start,get_global_mouse_position(),Color(0.77,0.67,0.43,0.6),22,true)
+			draw_line(tape_start,get_local_mouse_position(),Color(0.77,0.67,0.43,0.6),22,true)
 		if tool in ["rect","free"]:
-			var tip:=get_global_mouse_position()
+			var tip:=get_local_mouse_position()
 			draw_line(tip+Vector2(7,-9),tip+Vector2(27,-40),Color("735e4c"),8,true)
 			draw_colored_polygon(PackedVector2Array([tip,tip+Vector2(5,-20),tip+Vector2(12,-12)]),Color("e5e9db"))
 	elif stage == "DIALOGUE":
@@ -385,6 +400,7 @@ func draw_envelope() -> void:
 	text_at("给  /  很久没见的朋友",Vector2(543,589),19,Color("776c57"))
 
 func draw_wax_tools() -> void:
+	paper(Rect2(376,135,720,58),Color("f7efdc"))
 	text_at(["点一下火柴，点亮蜡烛。","把蜡粒拖进金属小勺。","把小勺拖到烛火上，等待蜡融化。","将小勺拖到信封封口，缓缓倒下。","将印章拖到火漆上。","按住火漆 1 秒，再松开印章。","火漆正在冷却……"][mini(wax_step,6)],Vector2(401,173),22)
 	draw_rect(Rect2(133,489,54,110),Color("f2e3b7"))
 	draw_ellipse_custom(Vector2(160,489),Vector2(27,8),Color("fff0c8"))
@@ -398,12 +414,12 @@ func draw_wax_tools() -> void:
 	for i in 6:
 		var p := Vector2(289+(i%3)*19,556+(i/3)*19)
 		if stage_drag == "pellets":
-			p += get_global_mouse_position()-Vector2(310,570)
+			p += get_local_mouse_position()-Vector2(310,570)
 		draw_circle(p,8,Color("a34f3c"))
 	text_at("蜡粒",Vector2(285,632),17)
 	var spoon := Vector2(328,371)
 	if stage_drag == "spoon":
-		spoon = get_global_mouse_position()
+		spoon = get_local_mouse_position()
 	elif wax_step == 2 and wax_progress > 0:
 		spoon = Vector2(160,420)
 	draw_line(spoon+Vector2(10,0),spoon+Vector2(97,-36),Color("766e5f"),9,true)
@@ -417,7 +433,7 @@ func draw_wax_tools() -> void:
 	text_at("金属小勺",Vector2(283,320),17)
 	var stamp := Vector2(1170,460)
 	if stage_drag == "stamp":
-		stamp = get_global_mouse_position()
+		stamp = get_local_mouse_position()
 	elif wax_step == 5:
 		stamp = Vector2(720,458+4*minf(wax_progress,1))
 	elif wax_step == 6 and stamp_lift<1:
@@ -491,7 +507,7 @@ func select(piece: Node2D) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not ready_done or help_open or busy or dock_open:
 		return
-	var mouse := get_global_mouse_position()
+	var mouse := _event_position(event) if event is InputEventMouse else get_local_mouse_position()
 	if event is InputEventKey and event.pressed and stage == "WORKBENCH":
 		if selected and is_instance_valid(selected):
 			match event.keycode:
@@ -561,6 +577,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif stage == "ENVELOPE" and stage_drag == "letter":
 			stage_pos = mouse
 	queue_redraw()
+
+func _event_position(event: InputEventMouse) -> Vector2:
+	# Input events arrive in viewport coordinates. The extension host offsets this
+	# Node2D by 80 px, so convert through the complete canvas transform before
+	# testing visual drop targets.
+	return get_global_transform_with_canvas().affine_inverse() * event.position
 
 func roughen(poly: PackedVector2Array) -> PackedVector2Array:
 	var result := PackedVector2Array()
@@ -995,6 +1017,7 @@ func _notification(what: int) -> void:
 func run_smoke_test() -> void:
 	print("SMOKE: starting interactive flow")
 	save_path="user://smoke_letter_v1.json"
+	await capture_test("dialogue")
 	advance_dialogue(); advance_dialogue(); advance_dialogue()
 	assert(stage=="WORKBENCH")
 	tool="rect"
@@ -1039,9 +1062,23 @@ func run_smoke_test() -> void:
 	await get_tree().create_timer(0.75).timeout
 	assert(envelope_inserted)
 	await close_envelope()
+	await capture_test("wax_start")
 	wax_input(Vector2(160,630),true)
 	assert(wax_step==1)
-	wax_input(Vector2(310,570),true); wax_input(Vector2(328,371),false)
+	# Exercise the real host offset: visual pellet and spoon positions are local,
+	# while mouse events arrive in viewport coordinates.
+	position = Vector2(80,0)
+	var pellet_press := InputEventMouseButton.new()
+	pellet_press.button_index = MOUSE_BUTTON_LEFT
+	pellet_press.pressed = true
+	pellet_press.position = Vector2(390,570)
+	_unhandled_input(pellet_press)
+	var spoon_release := InputEventMouseButton.new()
+	spoon_release.button_index = MOUSE_BUTTON_LEFT
+	spoon_release.pressed = false
+	spoon_release.position = Vector2(408,371)
+	_unhandled_input(spoon_release)
+	position = Vector2.ZERO
 	assert(wax_step==2)
 	wax_input(Vector2(328,371),true); wax_input(Vector2(160,420),false)
 	_process(3.1)

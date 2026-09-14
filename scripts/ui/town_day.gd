@@ -45,9 +45,12 @@ func _ready() -> void:
 	add_child(street)
 	backdrop = street
 	street.world_width = street_order.size() * BLOCK_WIDTH
-	street.composition_anchor = float(segment.anchor)
+	street.composition_anchor = 800.0
 	for index in street_order.size():
 		street.places.append({"id": street_order[index], "name": _location_name(street_order[index]), "kind":locations[street_order[index]].kind, "interior":locations[street_order[index]].interior, "x": index * BLOCK_WIDTH + 800.0})
+	# Load this connected street before walking so a new plate never stalls a boundary crossing.
+	for location_id in street_order:
+		Atlas.plate(Atlas.street(location_id))
 	var saved: Dictionary = GameState.shared_state.get("street_positions", {})
 	var layout := int(GameState.shared_state.get("street_layout_version",0))
 	if layout == 4:

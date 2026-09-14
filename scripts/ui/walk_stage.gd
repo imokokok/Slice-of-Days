@@ -116,8 +116,9 @@ func _draw() -> void:
 		var font := ThemeDB.fallback_font
 		var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 21).x
 		var x := clampf(float(near.x) - camera_x - width / 2.0, 32.0, 1568.0 - width)
-		draw_rect(Rect2(x - 16, ground - _actor_height() - 64, width + 32, 46), Color("10161c", 0.94))
-		draw_string(font, Vector2(x, ground - _actor_height() - 34), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color("f5e8d0"))
+		var hint_y := maxf(80.0, ground - _actor_height() - 64.0)
+		draw_rect(Rect2(x - 16, hint_y, width + 32, 46), Color("10161c", 0.94))
+		draw_string(font, Vector2(x, hint_y + 30), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color("f5e8d0"))
 	# Letterbox framing keeps the world visually separate from optional overlays.
 	draw_rect(Rect2(0, 0, 1600, 70), Color("10161c",0.72))
 
@@ -140,7 +141,14 @@ func _draw_atlas() -> bool:
 			draw_texture_rect(texture,Rect2(left,0,1760,900),false)
 		else:
 			var edge_uv := 160.0 / 1760.0
-			draw_polygon(PackedVector2Array([Vector2(left,0),Vector2(left+160,0),Vector2(left+160,900),Vector2(left,900)]),PackedColorArray([Color(1,1,1,0),Color.WHITE,Color.WHITE,Color(1,1,1,0)]),PackedVector2Array([Vector2.ZERO,Vector2(edge_uv,0),Vector2(edge_uv,1),Vector2(0,1)]),texture)
+			# Spatial smoothstep blend: both pictures stay fixed in the same world,
+			# with no timed image swap when the player crosses their boundary.
+			for strip in 16:
+				var a := float(strip) / 16.0
+				var b := float(strip + 1) / 16.0
+				var ca := Color(1, 1, 1, smoothstep(0.0, 1.0, a))
+				var cb := Color(1, 1, 1, smoothstep(0.0, 1.0, b))
+				draw_polygon(PackedVector2Array([Vector2(left+a*160,0),Vector2(left+b*160,0),Vector2(left+b*160,900),Vector2(left+a*160,900)]),PackedColorArray([ca,cb,cb,ca]),PackedVector2Array([Vector2(a*edge_uv,0),Vector2(b*edge_uv,0),Vector2(b*edge_uv,1),Vector2(a*edge_uv,1)]),texture)
 			draw_texture_rect_region(texture,Rect2(left+160,0,1600,900),Rect2(texture.get_width()*edge_uv,0,texture.get_width()*(1.0-edge_uv),texture.get_height()))
 	return true
 
@@ -348,11 +356,11 @@ func _draw_furniture(x: float, prop: String) -> void:
 		draw_line(Vector2(x + side * 50, 657), Vector2(x + side * 50, 718), Color("272c2d"), 6)
 
 func _actor_height() -> float:
-	# Match the illustrated furniture: outdoor doors ~290 high, indoor tables ~145.
-	# Interior close-ups and the terrace use a larger world-to-screen scale.
-	if indoor: return 320.0
-	if GameState.current_location == "park" and GameState.current_minute >= 1260: return 330.0
-	return 240.0
+	# Double the established scene-relative height at the user's request.
+	# Keep the same foot anchor and relative scale between streets and close-ups.
+	if indoor: return 640.0
+	if GameState.current_location == "park" and GameState.current_minute >= 1260: return 660.0
+	return 480.0
 
 func _draw_person(at: Vector2, coat: Color, stride: float, direction: float, seated := false) -> void:
 	var actor_scale := _actor_height() / ACTOR_BASE_HEIGHT

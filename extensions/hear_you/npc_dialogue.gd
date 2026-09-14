@@ -41,7 +41,6 @@ const ENDING := [
 ]
 
 var market_texture: Texture2D
-var emoji_font: Font
 var clock_time := 0.0
 var chapter := 0
 var lines: Array = []
@@ -62,13 +61,6 @@ var tense: Array[bool] = [false, false]
 func _ready() -> void:
 	super._ready()
 	market_texture = preload("res://scripts/ui/scene_atlas.gd").plate({"pages":[33,34,35]})
-	if DisplayServer.get_name() == "headless":
-		emoji_font = ThemeDB.fallback_font
-	else:
-		var emoji_system_font := SystemFont.new()
-		emoji_system_font.font_names = PackedStringArray(["Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji"])
-		emoji_system_font.disable_embedded_bitmaps = false
-		emoji_font = emoji_system_font
 	_reset()
 
 
@@ -99,7 +91,7 @@ func _process(delta: float) -> void:
 	for side in range(2):
 		speech_age[side] += delta
 		pulse[side] = move_toward(pulse[side], 0.0, delta * 1.5)
-	hovering = _thought_at(get_global_mouse_position()) if waiting else -1
+	hovering = _thought_at(get_local_mouse_position()) if waiting else -1
 	if notify_seconds > 0:
 		notify_seconds -= delta
 		if notify_seconds <= 0:
@@ -109,7 +101,7 @@ func _process(delta: float) -> void:
 		return_position = return_origin.lerp(_thought_rect(return_index).get_center(), 1.0-pow(1.0-return_time,3))
 		if return_time >= 1:
 			return_index = -1
-	var hand := hovering >= 0 or TALK_BOX.has_point(get_global_mouse_position()) or NPC_RESET.has_point(get_global_mouse_position())
+	var hand := hovering >= 0 or TALK_BOX.has_point(get_local_mouse_position()) or NPC_RESET.has_point(get_local_mouse_position())
 	Input.set_default_cursor_shape(Input.CURSOR_DRAG if drag_index >= 0 else (Input.CURSOR_POINTING_HAND if hand else Input.CURSOR_ARROW))
 	queue_redraw()
 
@@ -153,17 +145,12 @@ func _draw_npc(side: int) -> void:
 	center.y += sin(clock_time*(3.0 if active else 1.6))*(3.0 if active else 1.2)
 	var target := drag_index>=0 and int(MEMORIES[drag_index].side)!=side
 	if target:
-		var inside := _recipient_at(get_global_mouse_position())==side
+		var inside := _recipient_at(get_local_mouse_position())==side
 		_box(NPC_AREAS[side].grow(4),Color(1,1,1,0.1),Color("ab8359") if inside else Color("c7b89d"),40,2)
 		_center_text("松开，让"+NAMES[side]+"看见" if inside else "交给"+NAMES[side],560,13,INK,NPC_AREAS[side].position.x,NPC_AREAS[side].size.x)
 	draw_ellipse_shadow(center+Vector2(0,95))
-	var expression := ("😟" if side==0 else "😠") if angry else ("🙂" if side==0 else "😊")
-	if active and not angry and typed<str(current_line[1]).length():
-		expression="😮"
-	var font_size:=142
-	var width:=emoji_font.get_string_size(expression,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x
-	draw_string(emoji_font,center+Vector2(-width/2.0,46),expression,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color.WHITE)
-	# Small grocery bags make both emoji characters read as shoppers.
+	preload("res://extensions/hear_you/shopper.gd").draw(self,side,center+Vector2(0,92))
+	# Grocery bags remain beside the two standing shoppers.
 	var bagx:=center.x+82 if side==0 else center.x-120
 	draw_arc(Vector2(bagx+20,center.y+38),15,PI,TAU,18,Color("a08860"),4,true)
 	_box(Rect2(bagx,center.y+37,40,48),Color("c8ac7a"),Color("ac8c5f"),6)
@@ -298,9 +285,9 @@ func _give(index: int, side: int) -> bool:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and drag_index>=0:
-		drag_position=get_global_mouse_position()
+		drag_position=get_global_transform_with_canvas().affine_inverse()*event.position
 	elif event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT:
-		var point:=get_global_mouse_position()
+		var point: Vector2 = get_global_transform_with_canvas().affine_inverse()*event.position
 		if event.pressed:
 			if NPC_RESET.has_point(point):
 				_reset()

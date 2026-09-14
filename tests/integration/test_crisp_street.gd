@@ -12,7 +12,7 @@ func run() -> void:
 	state.current_minute = 540
 	var atlas = load("res://scripts/ui/scene_atlas.gd")
 	var cached: Dictionary = atlas.textures.duplicate()
-	for sample in [["bus_stop",Color.RED],["cafe",Color.BLUE]]:
+	for sample in [["town_entrance",Color.RED],["cafe",Color.BLUE]]:
 		var flat := Image.create(160,90,false,Image.FORMAT_RGBA8)
 		flat.fill(sample[1])
 		atlas.textures[int(atlas.street(sample[0]).pages[0])] = ImageTexture.create_from_image(flat)
@@ -26,7 +26,7 @@ func run() -> void:
 	stage.player_x = 1600
 	stage.camera_x = 800
 	stage.enabled = false
-	stage.places.assign([{"id":"bus_stop","x":800,"width":1600},{"id":"cafe","x":2400,"width":1600}])
+	stage.places.assign([{"id":"town_entrance","x":800,"width":1600},{"id":"cafe","x":2400,"width":1600}])
 	viewport.add_child(stage)
 	await RenderingServer.frame_post_draw
 	var pixels := viewport.get_texture().get_image()

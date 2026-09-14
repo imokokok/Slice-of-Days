@@ -68,6 +68,7 @@ func invitation_for(npc: String) -> Dictionary:
 	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
 	if not bool(activity.get("allows_invitation", true)): return {}
 	for offer in invitations:
+		if bool(offer.get("encounter",false)): continue
 		if str(offer.npc) == npc and str(offer.location) == GameState.current_location and str(ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute).get("location","")) == GameState.current_location: return offer
 	return {}
 func invitation_for_module(module_id: String) -> Dictionary:
@@ -102,6 +103,9 @@ func notebook_leads() -> Array:
 	var prompts := {"cooking":"想听听厨房里的声音，去饭店找史勇奇聊聊今天的菜。", "ghostwriting":"去书信事务所见见 Mossner，问问桌上那封没写完的信。", "sound_sampling":"带着路上听到的声音，去唱片店跟 Xanni 聊聊。", "tarot":"去塔罗店找夏透明，听听那副旧牌的故事。", "chess":"傍晚去棋摊找闹闹，问问对面的位子有没有人。", "translation":"买菜时和 BEETMAN 聊聊，听说摊边有人把话说岔了。", "contemplation":"晚上九点以后去观景台，遇见余星晴就问问他在看哪片天空。"}
 	for offer in invitations:
 		var accepted := invitation_accepted(str(offer.module))
+		if bool(offer.get("encounter",false)):
+			notes.append({"kind":"note","heading":"路上听见的事","text":"买菜摊旁，两个人为了晚饭争执起来。走近听听他们各自在意什么。","place":"produce_stall"})
+			continue
 		var name := str(ScheduleSystem.residents.get(str(offer.npc),{}).get("display_name",offer.npc))
 		var note := str(prompts.get(str(offer.module),""))
 		if accepted:

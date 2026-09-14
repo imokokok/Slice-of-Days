@@ -73,6 +73,7 @@
     {
       "npc": "beetman",
       "module": "translation",
+      "encounter": true,
       "location": "produce_stall",
       "label": "刚才买菜时怎么吵起来了？",
       "lines": [

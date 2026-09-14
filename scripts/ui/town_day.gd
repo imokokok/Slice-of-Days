@@ -352,6 +352,9 @@ func _build_event_modal() -> void:
 
 
 func _open_event(event_id: String) -> void:
+	if event_id == "a_d5_translation":
+		_start_market_encounter()
+		return
 	if not EventSystem.events.has(event_id): return
 	var invitation_npc := str(EventSystem.events[event_id].get("invitation_npc",""))
 	if not invitation_npc.is_empty():
@@ -523,6 +526,60 @@ func _process(delta: float) -> void:
 	elif segment_id == "main_street" and street.player_x > street.world_width - 600:
 		route_hint.text = "观景台路线 →"
 	_check_route_boundary(Input.get_axis("move_left", "move_right"))
+	_try_market_encounter()
+
+func _market_encounter_key() -> String:
+	return "market_encounter_%s_%d" % [GameState.current_role,GameState.current_day]
+
+func _try_market_encounter() -> void:
+	if not street.enabled or SceneRouter.transitioning or GameState.current_location != "produce_stall": return
+	if bool(GameState.shared_state.get(_market_encounter_key(),false)): return
+	for item in street.hotspots:
+		if str(item.kind) == "argument" and absf(street.player_x-float(item.x)) < 115:
+			_start_market_encounter()
+			return
+
+func _start_market_encounter() -> void:
+	if is_instance_valid(conversation) or _guard_pocket_audio(): return
+	if bool(GameState.shared_state.get(_market_encounter_key()+"_done",false)):
+		_show_line("阿禾", "我们正准备回去做饭呢。他做他的，我做我的，还是一起吃。")
+		return
+	var snapshot := GameState.to_save_data().duplicate(true)
+	_remember_position()
+	GameState.shared_state[_market_encounter_key()] = true
+	street.velocity = 0
+	if not SaveManager.save_or_report("记录街边相遇失败"):
+		GameState.load_save_data(snapshot)
+		_show_line("", "先在这里停一会儿，稍后再听他们说。")
+		return
+	conversation = Control.new()
+	conversation.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	conversation.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(conversation)
+	var words = preload("res://scripts/ui/street_argument.gd").new()
+	words.street = street
+	words.world_x = _world_x(current_index,1210)
+	words.leave_requested.connect(func() -> void: conversation.queue_free())
+	words.finish_requested.connect(_finish_market_encounter.bind(words))
+	conversation.add_child(words)
+	street.enabled = false
+	street.queue_redraw()
+
+func _finish_market_encounter(words: Node2D) -> void:
+	if not words.finished: return
+	var snapshot := GameState.to_save_data().duplicate(true)
+	var metadata: Dictionary = GameplayModuleSystem.modules.get("translation",{})
+	if not GameState.use_free_time(int(metadata.get("direct_time_minutes",30))):
+		words.save_message = "眼下该回去忙了。这段话先记在心里，空下来再接着聊。"
+		return
+	var outcome := {"choice_id":"extension_complete","label":"在菜摊边听懂彼此","source_event_id":"street:produce_stall:conversation","interaction":{"mode":"conversation","selected_labels":["阿禾的记忆","陈川的记忆"]}}
+	GameState.shared_state[_market_encounter_key()+"_done"] = true
+	if not GameplayModuleSystem.begin_session("translation","street:produce_stall:conversation") or not GameplayModuleSystem.complete_external("translation",outcome,metadata.get("external_results",{})) or not SaveManager.save_or_report("保存街边对话失败"):
+		GameState.load_save_data(snapshot)
+		words.save_message = "这段对话暂时没能保存，按空格可以重试。"
+		return
+	conversation.queue_free()
+	_refresh()
 
 func _world_x(index: int, local_x: float) -> float:
 	return route_offset + index * BLOCK_WIDTH + local_x * BLOCK_WIDTH / 1600.0
@@ -605,7 +662,9 @@ func _rebuild_hotspots() -> void:
 			street.hotspots.append({"x":center + i * 120, "kind":"door", "id":str(rooms[i].id), "label":"进入" + str(rooms[i].name)})
 	for item in outdoor_objects:
 		if str(item.get("location_id", "")) == GameState.current_location:
-			if str(item.get("kind","")) == "dialogue":
+			if str(item.get("kind","")) == "encounter":
+				street.hotspots.append({"x":_world_x(current_index,1210),"kind":"argument","id":"translation","label":str(item.name)})
+			elif str(item.get("kind","")) == "dialogue":
 				if not DialogueSystem.invitation_for(str(item.npc_id)).is_empty(): street.hotspots.append({"x":center,"kind":"invitation","id":str(item.npc_id),"label":str(item.name)})
 			elif str(item.get("kind", "")) == "shop":
 				street.hotspots.append({"x":center + 145.0, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
@@ -631,6 +690,7 @@ func _interact() -> void:
 			if not _guard_pocket_audio(): SceneRouter.enter_space(str(item.id))
 		"shop": _open_shop(str(item.id))
 		"shopkeeper": _talk_shopkeeper(str(item.id))
+		"argument": _start_market_encounter()
 		"invitation": _talk_nearby(str(item.id),"minigame_hook")
 		"module":
 			if _guard_pocket_audio(): return

@@ -74,8 +74,9 @@ func _fit_experience() -> void:
 		if module_id == "tarot": experience.offset_top = 60
 	if experience is Node2D:
 		if module_id == "translation":
-			experience.scale = Vector2(0.9, 0.9)
-			experience.position = Vector2(80, 0)
+			var fit := minf(size.x / 1280.0, maxf(1.0,size.y-100.0) / 960.0)
+			experience.scale = Vector2.ONE * fit
+			experience.position = Vector2((size.x-1280.0*fit)*0.5,100)
 
 
 func _build_host_bar() -> void:

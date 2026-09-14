@@ -6,6 +6,10 @@ const SPEED := 300.0
 const REACH := 85.0
 const ACTOR_BASE_HEIGHT := 121.0
 const Atlas = preload("res://scripts/ui/scene_atlas.gd")
+const COAST_ART = preload("res://art/user_scenes/lookout_approach.jpg")
+const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
+const BUS_ART = preload("res://art/user_scenes/bus_stop.jpg")
+var original_resident: Sprite2D
 var player_x := 500.0
 var world_width := 1800.0
 var route_id := ""
@@ -28,11 +32,15 @@ var visual_phase := -1
 var lookout_was_open := false
 
 func _ready() -> void:
+	original_resident = preload("res://scripts/ui/original_resident.gd").new()
+	add_child(original_resident)
+	original_resident.hide()
 	WorldSound.set_indoor(indoor)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func _process(delta: float) -> void:
+	_sync_original_resident()
 	var phase_now := Atlas.phase(GameState.current_minute)
 	var lookout_open := GameState.current_minute >= WorldGraph.LOOKOUT_OPEN
 	if phase_now != visual_phase or lookout_open != lookout_was_open:
@@ -77,6 +85,8 @@ func nearest() -> Dictionary:
 	var distance := REACH
 	for item in hotspots:
 		var gap := absf(float(item.get("x", 0.0)) - player_x)
+		# A pair can be addressed from beside them, without standing between them.
+		if str(item.get("kind","")) == "argument": gap = maxf(0,gap-55)
 		if gap < distance:
 			distance = gap
 			result = item
@@ -104,9 +114,13 @@ func _draw() -> void:
 			continue
 		var kind := str(item.get("kind", ""))
 		if kind == "person" or kind == "event" or kind == "shopkeeper":
+			if str(item.get("id", "")) == "zhou_xiaoliu": continue
 			var shades := [Color("324b62"),Color("567363"),Color("76554c"),Color("ada16b")]
 			var shade: Color = shades[absi(str(item.get("id", "")).hash()) % shades.size()]
 			_draw_person(Vector2(x, _ground_at(float(item.x))), shade, 0.0, 0.0, -1.0)
+		elif kind == "argument":
+			_draw_person(Vector2(x-46,ground),Color("718573"),0,0,1)
+			_draw_person(Vector2(x+46,ground),Color("a07757"),0,0,-1)
 		elif kind == "echo" and not illustrated:
 			draw_rect(Rect2(x-55,572,110,118),Color("4c4937"))
 			draw_rect(Rect2(x-49,580,98,102),Color("203f43"))
@@ -158,6 +172,12 @@ func _draw_atlas() -> bool:
 		var block_width := float(place.get("width", 1600))
 		var left := float(place.x) - block_width / 2.0 - camera_x
 		if left > 1600 or left + block_width < 0: continue
+		if str(place.id) == "chess_stall":
+			_draw_chess_stall(left, block_width)
+			continue
+		if str(place.id) == "bus_stop":
+			_draw_bus_stop(left, block_width)
+			continue
 		var texture := Atlas.plate(Atlas.street(str(place.id)))
 		if texture == null: continue
 		# Each plate owns one opaque world rectangle. Crop its overscan rather
@@ -193,24 +213,56 @@ func _ground_at(world_x: float) -> float:
 	return 713.0
 
 func _draw_lookout_approach() -> void:
-	var night := GameState.current_minute >= 1080
-	_draw_sea(night)
+	# The supplied panorama is one continuous coastal drawing, not repeated tiles.
+	# Preserve its aspect ratio; extend its flat sky and ground to fill the stage.
+	var tint := _scene_art_tint()
+	var sky := Color("e0e0e0") * tint
+	draw_rect(Rect2(0,70,1600,830),sky)
+	var art_width := 3200.0
+	var art_height := art_width * COAST_ART.get_height() / COAST_ART.get_width()
+	var art_top := 713.0 - art_height * 0.795
+	draw_texture_rect(COAST_ART,Rect2(-camera_x,art_top,art_width,art_height),false,tint)
 	var path := PackedVector2Array()
 	for step in range(17):
 		var x := step * 100.0
 		path.append(Vector2(x,_ground_at(x+camera_x)))
 	path.append(Vector2(1600,900))
 	path.append(Vector2(0,900))
-	draw_colored_polygon(path,Color("55646a") if night else Color("d7c9a7"))
-	for i in range(12):
-		var x := i * 300.0 - camera_x
-		if x < -350 or x > 1950: continue
-		if i < 10:
-			_draw_tree(x, 710, 0.6 + (i % 3) * 0.12)
-			draw_rect(Rect2(x + 90, 666, 165, 46), Color("82928a") if night else Color("dfd7b6"))
-			for step in range(4):
-				draw_line(Vector2(x + 90 + step * 20, 666 - step * 12), Vector2(x + 255, 666 - step * 12), Color("a6ab93"), 10)
-			draw_line(Vector2(x + 60, 718), Vector2(x + 60, 760), Color("7a8b7f", 0.3), 2)
+	draw_colored_polygon(path,Color("969696") * tint)
+
+func _scene_art_tint() -> Color:
+	match Atlas.phase(GameState.current_minute):
+		2: return Color("596c89")
+		1: return Color("edc6a4")
+	return Color.WHITE
+
+func _sync_original_resident() -> void:
+	if not is_instance_valid(original_resident): return
+	original_resident.hide()
+	for item in hotspots:
+		if str(item.get("id","")) != "zhou_xiaoliu": continue
+		var at := Vector2(float(item.x)-camera_x,_ground_at(float(item.x)))
+		original_resident.stand_at(at,_actor_height(),player_x > float(item.x),_scene_art_tint())
+		original_resident.visible = at.x > -120 and at.x < 1720
+		break
+
+func _draw_bus_stop(left: float, width: float) -> void:
+	var tint := _scene_art_tint()
+	draw_rect(Rect2(left,0,width,900),Color("9c9c9c") * tint)
+	# Crop only the white presentation margin, not the shelter or its mountain.
+	draw_texture_rect_region(BUS_ART,Rect2(left,-77,width,900),Rect2(140,134,1215,822),tint)
+
+func _draw_chess_stall(left: float, width: float) -> void:
+	# The user's PNG has real transparency: keep the cloth and branches intact,
+	# with the same walk line and actor scale as the rest of the cultural street.
+	var tint := _scene_art_tint()
+	draw_rect(Rect2(left,0,width,900),Color("b8d8db") * tint)
+	draw_rect(Rect2(left,440,width,273),Color("729ea2") * tint)
+	draw_rect(Rect2(left,580,width,133),Color("c0c6af") * tint)
+	draw_rect(Rect2(left,713,width,187),Color("d2c29e") * tint)
+	var art_size := Vector2(1120,630)
+	var art_origin := Vector2(left+(width-art_size.x)*0.5,713-art_size.y*0.95)
+	draw_texture_rect(CHESS_ART,Rect2(art_origin,art_size),false,tint)
 
 func _draw_street(night: bool) -> void:
 	_draw_sea(night)

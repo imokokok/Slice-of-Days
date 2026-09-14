@@ -97,11 +97,11 @@ func _process(delta: float) -> void:
 		if feedback_time == 0.0:
 			feedback = "先看看一段记忆，再把它交给对方的一个问题。"
 	if not keyboard_mode:
-		hover_index = _card_at(get_global_mouse_position(), true)
+		hover_index = _card_at(get_local_mouse_position(), true)
 	var cursor := Input.CURSOR_ARROW
 	if drag_index >= 0:
 		cursor = Input.CURSOR_DRAG
-	elif hover_index >= 0 or RESET_RECT.has_point(get_global_mouse_position()):
+	elif hover_index >= 0 or RESET_RECT.has_point(get_local_mouse_position()):
 		cursor = Input.CURSOR_POINTING_HAND
 	Input.set_default_cursor_shape(cursor)
 	queue_redraw()
@@ -170,7 +170,7 @@ func _draw_question(listener_side: int, row: int) -> void:
 	var index := _question_memory(listener_side, row)
 	var rect := _question_rect(listener_side, row)
 	var active := drag_index >= 0 and int(MEMORIES[drag_index].side) != listener_side
-	var inside := active and rect.has_point(get_global_mouse_position())
+	var inside := active and rect.has_point(get_local_mouse_position())
 	var keyboard_target := keyboard_mode and keyboard_index >= 0 and int(MEMORIES[keyboard_index].side) != listener_side
 	var fill := Color("f6f3ed")
 	var border := LINE
@@ -229,9 +229,9 @@ func _input(event: InputEvent) -> void:
 		keyboard_mode = false
 		keyboard_index = -1
 		if drag_index >= 0:
-			drag_position = get_global_mouse_position() + drag_offset
+			drag_position = get_local_mouse_position() + drag_offset
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		var point := get_global_mouse_position()
+		var point := get_local_mouse_position()
 		if event.pressed:
 			keyboard_mode = false
 			keyboard_index = -1
@@ -451,7 +451,7 @@ func _box(rect: Rect2, fill: Color, border: Color, radius: int, border_width: in
 
 
 func _button(rect: Rect2, value: String) -> void:
-	var hovered := rect.has_point(get_global_mouse_position())
+	var hovered := rect.has_point(get_local_mouse_position())
 	_box(rect, Color("e8e3d8") if hovered else Color.TRANSPARENT, LINE, 19)
 	_center_text(value, rect.position.y + rect.size.y / 2.0 + 5, 13, INK, rect.position.x, rect.size.x)
 

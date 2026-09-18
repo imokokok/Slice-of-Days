@@ -26,6 +26,7 @@ var exploration_kind := "discover"
 var exploration_location := ""
 var exploration_text := ""
 var exploration_evidence := ""
+var show_dossier_reference := false
 
 func _ready() -> void:
 	add_to_group("meta_modal")
@@ -154,6 +155,12 @@ func _input(event: InputEvent) -> void:
 
 func _dossier() -> void:
 	var names := {"packet":"资料袋","requirements":"要求","days":"七日","proof":"证明","recognition":"认可","personal":"个人","loose":"散页"}
+	if tab == "packet":
+		_dossier_dashboard()
+		return
+	if show_dossier_reference and tab in ["days", "exploration", "recognition", "personal", "proof"]:
+		_dossier_reference_page()
+		return
 	var x := 28.0
 	for key in names:
 		var entry := button(body,str(names[key]),Vector2(x,78),Vector2(172,42),func() -> void: tab = key; build())
@@ -174,6 +181,69 @@ func _dossier() -> void:
 		"loose": _filed("loose")
 		"receipts": _living_receipts()
 		"exploration": _explore_records()
+
+func _dossier_dashboard() -> void:
+	var preview := TextureRect.new()
+	preview.texture = load("res://art/ui/dossier-open-reference.png")
+	preview.position = Vector2(35, 82)
+	preview.size = Vector2(1270, 600)
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	body.add_child(preview)
+	var progress := ResidencySystem.audit()
+	label(body, "Day %d / 7   ·   收入 %s   ·   探索 %d / 3   ·   认可 %d / 12" % [GameState.current_day, "已收" if bool(progress.get("requirements", {}).get("income", false)) else "待补", int(progress.get("exploration", []).size()), int(progress.get("recognition", 0))], Vector2(525, 621), Vector2(590, 28), 16, Color("665748"))
+	var tabs := [
+		["requirements", Vector2(1110, 200), Vector2(132, 52)],
+		["days", Vector2(1110, 275), Vector2(132, 52)],
+		["exploration", Vector2(1110, 350), Vector2(132, 52)],
+		["recognition", Vector2(1110, 425), Vector2(132, 52)],
+		["personal", Vector2(1110, 500), Vector2(132, 52)],
+		["proof", Vector2(1110, 575), Vector2(132, 52)]
+	]
+	for row in tabs:
+		var hit := Button.new()
+		hit.name = "DossierTab_" + str(row[0])
+		hit.position = row[1]
+		hit.size = row[2]
+		hit.flat = true
+		hit.modulate = Color(1, 1, 1, 0.01)
+		hit.tooltip_text = str({"requirements":"申请要求", "days":"七日作品集", "exploration":"探索材料", "recognition":"居民认可", "personal":"个人页", "proof":"最终文件"}.get(str(row[0]), "档案"))
+		hit.pressed.connect(_select_dossier_tab.bind(str(row[0])))
+		body.add_child(hit)
+	var open_pages := Button.new()
+	open_pages.name = "DossierTab_packet"
+	open_pages.position = Vector2(152, 220)
+	open_pages.size = Vector2(340, 330)
+	open_pages.flat = true
+	open_pages.modulate = Color(1, 1, 1, 0.01)
+	open_pages.tooltip_text = "打开资料袋"
+	open_pages.pressed.connect(func() -> void: tab = "cover"; build())
+	body.add_child(open_pages)
+
+func _select_dossier_tab(target: String) -> void:
+	tab = target
+	show_dossier_reference = target in ["days", "exploration", "recognition", "personal", "proof"]
+	build()
+
+func _dossier_reference_page() -> void:
+	var images := {
+		"days": "res://art/ui/dossier-seven-days.png",
+		"exploration": "res://art/ui/dossier-exploration.png",
+		"recognition": "res://art/ui/dossier-recognition.png",
+		"personal": "res://art/ui/dossier-personal.png",
+		"proof": "res://art/ui/dossier-final-statement.png"
+	}
+	var preview := TextureRect.new()
+	preview.texture = load(str(images.get(tab, "")))
+	preview.position = Vector2(35, 80)
+	preview.size = Vector2(1270, 605)
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	body.add_child(preview)
+	button(body, "打开可编辑档案", Vector2(870, 635), Vector2(250, 38), func() -> void: show_dossier_reference = false; build())
+	button(body, "返回档案首页", Vector2(1130, 635), Vector2(150, 38), func() -> void: tab = "packet"; show_dossier_reference = false; build())
 
 func _starter_packet() -> void:
 	var s := ResidencySystem.state()

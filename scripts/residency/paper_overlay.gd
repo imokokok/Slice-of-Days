@@ -177,7 +177,7 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 func _dossier() -> void:
-	var names := {"packet":"资料袋","requirements":"要求","days":"七日","proof":"证明","recognition":"认可","personal":"个人","loose":"散页"}
+	var names := {"packet":"申请进度","requirements":"要求","days":"七日","proof":"证明","recognition":"认可","personal":"个人","loose":"散页"}
 	if tab == "packet":
 		_dossier_dashboard()
 		return
@@ -192,9 +192,6 @@ func _dossier() -> void:
 		var entry := button(body,str(names[key]),Vector2(x,78),Vector2(172,42),_select_dossier_tab.bind(str(key)))
 		entry.name = "DossierTab_"+str(key)
 		x += 186
-	if not ResidencySystem.state().packet:
-		label(body,"先到社区中心领取 RP-07 资料袋。\n地图上的社区中心柜台开放 09:00–18:00。",Vector2(70,170),Vector2(1100,180),27)
-		return
 	match tab:
 		"packet": _starter_packet()
 		"document": _starter_reader()
@@ -207,6 +204,8 @@ func _dossier() -> void:
 		"loose": _filed("loose")
 		"receipts": _living_receipts()
 		"exploration": _explore_records()
+	if not ResidencySystem.state().packet:
+		feedback.text = LocalizationSystem.text("当前正在预览对应功能。到社区中心领取 RP-07 资料袋后即可填写与归档。")
 
 func _dossier_dashboard() -> void:
 	# The illustrated dossier is the whole surface on its home screen. Remove
@@ -363,6 +362,11 @@ func _dossier_reference_page() -> void:
 
 func _starter_packet() -> void:
 	var s := ResidencySystem.state()
+	if not s.packet:
+		label(body,"尚未领取 RP-07 资料袋。\n你仍可从申请进度预览每一项对应的真实功能。",Vector2(70,180),Vector2(1120,130),27)
+		button(body,"在地图上找到社区中心",Vector2(70,350),Vector2(1120,60),func() -> void: mode = "map"; map_selected = "print_shop"; build())
+		feedback.text = LocalizationSystem.text("社区中心柜台开放时间：09:00–18:00。")
+		return
 	var paper_count: int = s.materials.size()
 	var layers := clampi(2+paper_count/6,2,7)
 	for i in range(layers,0,-1):
@@ -470,6 +474,7 @@ func _requirement_open(key: String) -> void:
 	build()
 
 func _day_page() -> void:
+	var has_packet := bool(ResidencySystem.state().packet)
 	for i in range(1,8):
 		var b := button(body,"DAY %d" % i,Vector2(40+(i-1)*178,137),Vector2(165,36),func() -> void: day = i; build())
 		b.name = "PortfolioDay_%d" % i
@@ -487,13 +492,14 @@ func _day_page() -> void:
 	if page.keep.is_empty(): label(keep,"从素材本选择，或回房间拖进这一页。",Vector2(20,120),Vector2(510,90),22)
 	var ledger := ResidencySystem.ledger_for(day)
 	label(body,"收支  ·  收入 %d / 支出 %d / 余额 %d" % [ledger.income,ledger.expense,ledger.balance],Vector2(750,505),Vector2(555,54),21)
-	button(body,"已核对" if page.ledger_checked else "核对当天收支",Vector2(750,565),Vector2(260,42),func() -> void: ResidencySystem.check_ledger(day); build())
+	var ledger_button := button(body,"已核对" if page.ledger_checked else "核对当天收支",Vector2(750,565),Vector2(260,42),func() -> void: ResidencySystem.check_ledger(day); build())
+	ledger_button.disabled = not has_packet
 	if day == 2: button(body,"制作实地记录 →",Vector2(1022,565),Vector2(273,42),func() -> void: tab = "exploration"; build())
 	if day == 3: button(body,"生活小票 →",Vector2(1022,565),Vector2(273,42),func() -> void: tab = "receipts"; build())
 	var mark_names: Array[String] = []
 	for resident in page.marks: mark_names.append(str(ScheduleSystem.residents.get(resident,{}).get("display_name",resident)))
 	label(body,"居民签记 %d / 2：%s" % [page.marks.size(),"、".join(mark_names)],Vector2(750,625),Vector2(550,42),18)
-	feedback.text = LocalizationSystem.text("%s · 当前 Day %d / 7 · 这页到当天可以填写" % [GameState.current_role,GameState.current_day] if day > GameState.current_day else "%s · 当前 Day %d / 7 · 每天一页，材料按自己的选择收好" % [GameState.current_role,GameState.current_day])
+	feedback.text = LocalizationSystem.text("当前为预览；领取资料袋后可以填写。" if not has_packet else "%s · 当前 Day %d / 7 · 这页到当天可以填写" % [GameState.current_role,GameState.current_day] if day > GameState.current_day else "%s · 当前 Day %d / 7 · 每天一页，材料按自己的选择收好" % [GameState.current_role,GameState.current_day])
 
 func _form_row(rows: VBoxContainer, caption: String, value: String, key: String, height: float) -> void:
 	var row := Control.new()
@@ -502,11 +508,12 @@ func _form_row(rows: VBoxContainer, caption: String, value: String, key: String,
 	label(row,caption,Vector2.ZERO,Vector2(610,28),18)
 	var current_day := day
 	var input := edit(row,value,Vector2(0,31),Vector2(607,height),func(text: String) -> void: ResidencySystem.set_field(current_day,key,text))
-	input.editable = day <= GameState.current_day and ResidencySystem.state().submitted.is_empty()
+	input.editable = ResidencySystem.state().packet and day <= GameState.current_day and ResidencySystem.state().submitted.is_empty()
 	input.focus_exited.connect(func() -> void: ResidencySystem.persist())
 
 func _recognition() -> void:
 	var audit := ResidencySystem.audit()
+	var has_packet := bool(ResidencySystem.state().packet)
 	label(body,"已归档 %d / 12  ·  生活圈 %d / 4  ·  每页两处签记" % [int(audit.recognitions),audit.recognition_circles.size()],Vector2(40,145),Vector2(1200,40),24)
 	var rows := scroll_area(body,Vector2(40,200),Vector2(1250,467))
 	for resident in GameState.confirmed_residents:
@@ -518,13 +525,14 @@ func _recognition() -> void:
 		label(row,name,Vector2(8,4),Vector2(160,42),22)
 		var circle := ResidencySystem.recognition_circle(str(resident))
 		label(row,str(ResidencySystem.content.recognition_circles.labels.get(circle,"待核实来源")),Vector2(8,48),Vector2(850,25),17)
-		button(row,"收进认可页",Vector2(170,4),Vector2(158,42),func() -> void: ResidencySystem.file_material(id,"recognition"); build())
+		var file_button := button(row,"收进认可页",Vector2(170,4),Vector2(158,42),func() -> void: ResidencySystem.file_material(id,"recognition"); build())
+		file_button.disabled = not has_packet
 		for i in range(1,8):
 			var marked: bool = ResidencySystem.state().pages[i-1].marks.has(resident)
 			var b := button(row,("✓ " if marked else "")+"Day %d" % i,Vector2(339+(i-1)*124,4),Vector2(116,42),func() -> void:
 				if ResidencySystem.assign_mark(resident,i): build()
 				else: feedback.text = LocalizationSystem.text("这一页已有两处签记，或日期尚未到来。"))
-			b.disabled = i > GameState.current_day
+			b.disabled = not has_packet or i > GameState.current_day
 	if GameState.confirmed_residents.is_empty(): label(body,"还没有居民签记。先在小镇里一起做些事。",Vector2(70,280),Vector2(1100,80),26)
 
 func _living_receipts() -> void:
@@ -549,6 +557,7 @@ func _living_receipts() -> void:
 func _explore_records() -> void:
 	label(body,"三种实地记录  ·  地点与到访时间来自走过的路",Vector2(45,141),Vector2(1235,45),25)
 	var s := ResidencySystem.state()
+	var has_packet := bool(s.packet)
 	var visited: Array = s.visits.keys()
 	if visited.is_empty(): label(body,"先去一个地方走走。",Vector2(80,280),Vector2(1130,85),26); return
 	if not visited.has(exploration_location): exploration_location = str(visited[0])
@@ -569,6 +578,7 @@ func _explore_records() -> void:
 	body.add_child(places)
 	var input := edit(body,exploration_text,Vector2(50,269),Vector2(1215,152),func(value: String) -> void: exploration_text = value,"写一句发现、变化，或想带谁来……")
 	input.name = "ExploreObservation"
+	input.editable = has_packet
 	var evidence := OptionButton.new()
 	evidence.position = Vector2(50,437); evidence.size = Vector2(760,40)
 	evidence.name = "ExploreEvidence"
@@ -581,9 +591,11 @@ func _explore_records() -> void:
 	evidence.select(evidence_ids.find(exploration_evidence))
 	evidence.item_selected.connect(func(index: int) -> void: exploration_evidence = evidence_ids[index])
 	body.add_child(evidence)
-	button(body,"留下这张记录",Vector2(855,435),Vector2(410,44),func() -> void:
+	var create_button := button(body,"留下这张记录",Vector2(855,435),Vector2(410,44),func() -> void:
 		var result := ResidencySystem.record_exploration(exploration_kind,exploration_location,exploration_text,exploration_evidence)
-		build(); feedback.text = LocalizationSystem.text(str(result.message))).name = "CreateExploreRecord"
+		build(); feedback.text = LocalizationSystem.text(str(result.message)))
+	create_button.name = "CreateExploreRecord"
+	create_button.disabled = not has_packet
 	var records := scroll_area(body,Vector2(50,500),Vector2(1215,165))
 	for type in ["discover","revisit","shareplace"]:
 		var id := str(s.explorations.get(type,""))

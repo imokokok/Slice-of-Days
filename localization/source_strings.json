@@ -4775,8 +4775,8 @@
   "先到": [
     "data/tarot/cases.json"
   ],
-  "先到社区中心领取 RP-07 资料袋。\n地图上的社区中心柜台开放 09:00–18:00。": [
-    "scripts/residency/paper_overlay.gd"
+  "先到社区中心领取 RP-07 资料袋。": [
+    "scripts/residency/residency_system.gd"
   ],
   "先到社区中心领取资料袋。素材会一直留在素材本里。": [
     "scripts/residency/paper_overlay.gd"
@@ -7382,6 +7382,9 @@
   "在地图上找到柜台": [
     "scripts/residency/paper_overlay.gd"
   ],
+  "在地图上找到社区中心": [
+    "scripts/residency/paper_overlay.gd"
+  ],
   "在地图上选一个想去的地方。": [
     "scripts/residency/paper_overlay.gd"
   ],
@@ -9143,6 +9146,9 @@
   "尚未选择 · 需要%d项，最多%d项": [
     "scripts/ui/module_workbench.gd"
   ],
+  "尚未领取 RP-07 资料袋。\n你仍可从申请进度预览每一项对应的真实功能。": [
+    "scripts/residency/paper_overlay.gd"
+  ],
   "尝一小口。小心，烫。": [
     "data/npcs/linear_conversations.json"
   ],
@@ -9808,6 +9814,9 @@
   "弯曲   陡峭   湿润": [
     "extensions/collage_letter/assets/materials.json"
   ],
+  "当前为预览；领取资料袋后可以填写。": [
+    "scripts/residency/paper_overlay.gd"
+  ],
   "当前全部正位 · 逆位暂未启用；扇形摆放角度不是逆位。": [
     "extensions/myriorama_tarot/scripts/table.gd"
   ],
@@ -9849,6 +9858,9 @@
   ],
   "当前案件": [
     "scripts/core/tarot_case_engine.gd"
+  ],
+  "当前正在预览对应功能。到社区中心领取 RP-07 资料袋后即可填写与归档。": [
+    "scripts/residency/paper_overlay.gd"
   ],
   "当前没有可用的音频输出驱动。": [
     "scripts/town_sound/audio/SoundSettings.gd"
@@ -15557,6 +15569,9 @@
   "申请要求 · 动态清单": [
     "data/residency/portfolio.json"
   ],
+  "申请进度": [
+    "scripts/residency/paper_overlay.gd"
+  ],
   "电影放映志愿者": [
     "data/npcs/demo_npcs.json"
   ],
@@ -16204,6 +16219,9 @@
   ],
   "社区中心彩排成为今天的新目的地。": [
     "data/story/events.json"
+  ],
+  "社区中心柜台开放时间：09:00–18:00。": [
+    "scripts/residency/paper_overlay.gd"
   ],
   "社区中心灯光助理": [
     "data/npcs/demo_npcs.json"
@@ -18603,9 +18621,6 @@
   ],
   "贴上去": [
     "scripts/meta/trace_panel.gd"
-  ],
-  "资料袋": [
-    "scripts/residency/paper_overlay.gd"
   ],
   "资料袋已经领过，F 可随时查看。": [
     "scripts/residency/residency_system.gd"

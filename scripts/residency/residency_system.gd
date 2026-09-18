@@ -243,6 +243,7 @@ func exploration_period(minute: int) -> String:
 
 func record_exploration(kind: String, location: String, text: String, evidence_id := "") -> Dictionary:
 	var s := state()
+	if not s.packet: return {"ok":false,"message":"先到社区中心领取 RP-07 资料袋。"}
 	if kind not in ["discover","revisit","shareplace"] or not s.visits.has(location): return {"ok":false,"message":"先亲自到过这个地方，再留下实地记录。"}
 	if text.strip_edges().is_empty(): return {"ok":false,"message":"写下一句自己的观察。"}
 	if not s.submitted.is_empty(): return {"ok":false,"message":"已交出的档案保持封存。"}
@@ -371,7 +372,7 @@ func night_organized(day: int) -> bool:
 
 func set_field(day: int, key: String, value: String) -> bool:
 	var s := state()
-	if day < 1 or day > mini(7,GameState.current_day) or not s.submitted.is_empty(): return false
+	if not s.packet or day < 1 or day > mini(7,GameState.current_day) or not s.submitted.is_empty(): return false
 	var page: Dictionary = s.pages[day-1]
 	if key in ["today","record"]: page[key] = value
 	else: page.fields[key] = value
@@ -411,7 +412,7 @@ func file_material(id: String, destination: String, require_home := false) -> bo
 
 func assign_mark(resident: String, day: int) -> bool:
 	var s := state()
-	if not GameState.confirmed_residents.has(resident) or day < 1 or day > mini(7,GameState.current_day) or not s.submitted.is_empty(): return false
+	if not s.packet or not GameState.confirmed_residents.has(resident) or day < 1 or day > mini(7,GameState.current_day) or not s.submitted.is_empty(): return false
 	if s.pages[day-1].marks.has(resident): return true
 	if s.pages[day-1].marks.size() >= 2: return false
 	for page in s.pages: page.marks.erase(resident)
@@ -423,7 +424,7 @@ func assign_mark(resident: String, day: int) -> bool:
 	return true
 
 func check_ledger(day: int) -> void:
-	if day < 1 or day > mini(7,GameState.current_day) or not state().submitted.is_empty(): return
+	if not state().packet or day < 1 or day > mini(7,GameState.current_day) or not state().submitted.is_empty(): return
 	state().pages[day-1].ledger_checked = true
 	_record_organize()
 	persist()

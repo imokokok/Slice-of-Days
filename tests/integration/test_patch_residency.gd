@@ -84,6 +84,34 @@ func run() -> void:
 	check(gs.current_day == 1 and gs.current_role == "A","Production new-game flow starts A on Day 1")
 	check(current_scene.has_node("GameplayShell"),"Normal town scene has the residency entry")
 	check(not rs.state().packet,"New journey does not grant an invisible starter packet")
+	var shell = current_scene.get_node("GameplayShell")
+	shell._unhandled_input(key(KEY_F))
+	await create_timer(.1).timeout
+	check(is_instance_valid(shell.overlay) and shell.overlay.tab == "packet","Uncollected dossier still opens its application-progress home")
+	var preview_actions := [
+		["days","days"],
+		["income","proof"],
+		["exploration","exploration"],
+		["recognition","recognition"],
+		["contribution","proof"],
+		["personal","personal"],
+		["final","days"]
+	]
+	var preview = shell.overlay
+	for action in preview_actions:
+		preview = shell.overlay
+		preview.tab = "packet"; preview.build()
+		await process_frame
+		check(await click_named(preview,"DossierAction_"+str(action[0])),"Uncollected checklist opens "+str(action[0])+" instead of the shared packet gate")
+		check(preview.tab == str(action[1]),"Uncollected checklist renders the corresponding "+str(action[0])+" section")
+		check(not preview.body.find_children("*","Label",true,false).any(func(candidate: Label) -> bool: return candidate.text.contains("先到社区中心领取 RP-07 资料袋")),"Corresponding section is not replaced by the packet gate")
+	preview = shell.overlay
+	preview.tab = "packet"; preview.build()
+	await process_frame
+	await click_named(preview,"DossierAction_days")
+	var preview_inputs: Array = preview.body.find_children("*","TextEdit",true,false)
+	check(not preview_inputs.is_empty() and not (preview_inputs[0] as TextEdit).editable,"Uncollected portfolio is visible but read-only")
+	await close_paper(shell)
 	check(await travel("print_shop","walk"),"Reach community centre through the actual map walk button")
 	var door: Dictionary = {}
 	for hotspot in current_scene.street.hotspots:
@@ -96,7 +124,7 @@ func run() -> void:
 	check(router.active_space_id == "print_studio","E at the door enters the community interior")
 	if router.active_space_id != "print_studio": quit(1); return
 	await walk_to(current_scene.stage,450)
-	var shell = current_scene.get_node("GameplayShell")
+	shell = current_scene.get_node("GameplayShell")
 	shell._unhandled_input(key(KEY_E))
 	await create_timer(.12).timeout
 	check(is_instance_valid(shell.overlay) and shell.overlay.mode == "counter","E at the real counter opens packet collection")

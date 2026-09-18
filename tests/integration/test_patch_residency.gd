@@ -117,9 +117,28 @@ func run() -> void:
 	await close_paper(shell)
 	shell._unhandled_input(key(KEY_F))
 	await create_timer(.1).timeout
-	check(is_instance_valid(shell.overlay) and shell.overlay.tab == "days" and shell.overlay.show_dossier_reference,"F opens the received seven-day folio through production input")
-	check(await click_text(shell.overlay,"返回档案首页"),"The illustrated folio returns to the interactive dossier home")
-	check(shell.overlay.tab == "packet" and not shell.overlay.show_dossier_reference,"The illustrated folio returns to the dossier home")
+	check(is_instance_valid(shell.overlay) and shell.overlay.tab == "packet" and not shell.overlay.show_dossier_reference,"F opens the centered interactive dossier home through production input")
+	var viewport_center := root.get_visible_rect().size * 0.5
+	check(shell.overlay.body.get_global_rect().get_center().distance_to(viewport_center) < 1.0,"The RP-07 dossier stays centered in the current viewport")
+	var dashboard_actions := [
+		["days","days","all",1],
+		["income","proof","income",1],
+		["exploration","exploration","all",1],
+		["recognition","recognition","all",1],
+		["contribution","proof","contribution",1],
+		["personal","personal","all",1],
+		["final","days","all",7]
+	]
+	for action in dashboard_actions:
+		var folio = shell.overlay
+		folio.tab = "packet"; folio.proof_filter = "all"; folio.build()
+		await process_frame
+		check(await click_named(folio,"DossierAction_"+str(action[0])),"Dossier checklist opens the real "+str(action[0])+" function")
+		check(folio.tab == str(action[1]),"Dossier action reaches its corresponding section: "+str(action[0]))
+		if str(action[1]) == "proof": check(folio.proof_filter == str(action[2]),"Proof action applies its corresponding filter: "+str(action[0]))
+		if str(action[0]) == "final": check(folio.day == int(action[3]),"Final statement opens the editable Day 7 page")
+	shell.overlay.tab = "packet"; shell.overlay.build()
+	await process_frame
 	check(await click_named(shell.overlay,"DossierTab_packet"),"Dossier home reopens the received starter packet")
 	check(shell.overlay.tab == "starter","The received starter papers remain reachable after closing the dossier")
 	for id in ["welcome","seven_days","requirements","portfolio","folder","map"]:
@@ -163,7 +182,7 @@ func run() -> void:
 	shell = current_scene.get_node("GameplayShell")
 	shell._unhandled_input(key(KEY_F))
 	await create_timer(.1).timeout
-	check(await click_text(shell.overlay,"打开可编辑档案"),"Illustrated folio opens the interactive filing tabs")
+	check(await click_named(shell.overlay,"DossierTab_days"),"Illustrated dossier opens the interactive filing tabs")
 	check(await click_named(shell.overlay,"DossierTab_loose"),"Loose-papers tab opens")
 	var receipt_buttons: Array = shell.overlay.body.find_children("*","Button",true,false)
 	check(receipt_buttons.any(func(b: Button) -> bool: return b.text.contains("交通") or b.text.contains("打车") or b.text.contains("出租")),"Unfiled receipt is visible in the actual dossier")

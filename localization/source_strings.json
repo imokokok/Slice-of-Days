@@ -1044,7 +1044,7 @@
   "DRIZZLE · 细雨": [
     "data/photography/subjects.json"
   ],
-  "Day %d / 7   ·   收入 %s   ·   探索 %d / 3   ·   认可 %d / 12": [
+  "Day %d / 7   ·   当前进度来自存档中的真实记录": [
     "scripts/residency/paper_overlay.gd"
   ],
   "Day %d / 7  ·  已收 %d 件材料": [
@@ -3944,6 +3944,9 @@
   "作品已进入小镇": [
     "scripts/residency/paper_overlay.gd"
   ],
+  "作品被小镇收下后，贡献证明会在对应柜台等待领取。": [
+    "scripts/residency/paper_overlay.gd"
+  ],
   "你": [
     "extensions/elder_board/scripts/learned_match.gd",
     "extensions/elder_board/scripts/teaching_rules.gd",
@@ -5030,6 +5033,9 @@
   ],
   "全部": [
     "extensions/collage_letter/scripts/main.gd",
+    "scripts/residency/paper_overlay.gd"
+  ],
+  "全部证明": [
     "scripts/residency/paper_overlay.gd"
   ],
   "八": [
@@ -6371,6 +6377,9 @@
   ],
   "可以问隐藏影响，但本案没有规定的附身条件不会被编造成答案。": [
     "extensions/myriorama_tarot/assets/question-bank.json"
+  ],
+  "可填写": [
+    "scripts/residency/paper_overlay.gd"
   ],
   "可它不是人声。规则没有直接告诉她，记忆是否也算一种需要同意的素材。": [
     "data/story/events.json"
@@ -8680,9 +8689,6 @@
   "完成会面；回应追加请求时，把自己的意愿也算进去。": [
     "data/story/day_openings.json"
   ],
-  "完成作品 → 交给小镇 → 领取证明 → 自己归档": [
-    "scripts/residency/paper_overlay.gd"
-  ],
   "完成傍晚交付": [
     "data/story/calendar.json"
   ],
@@ -8694,6 +8700,9 @@
   ],
   "完成审核，把今天真正看见的东西写下来。": [
     "data/story/day_openings.json"
+  ],
+  "完成工作/作品 → 到对应柜台领取证明 → 自己归档": [
+    "scripts/residency/paper_overlay.gd"
   ],
   "完成并返回": [
     "scripts/ui/extension_host.gd"
@@ -8709,6 +8718,9 @@
   ],
   "完成最后必要的事情，然后把傍晚留给一个没有产出的动作。": [
     "data/story/day_openings.json"
+  ],
+  "完成有报酬的工作后，收入证明会在对应柜台等待领取。": [
+    "scripts/residency/paper_overlay.gd"
   ],
   "完成经历 %d · 私人记录 %d": [
     "scripts/ui/ending.gd"
@@ -9394,6 +9406,7 @@
     "scripts/ui/pocket_card.gd"
   ],
   "已完成": [
+    "scripts/residency/paper_overlay.gd",
     "scripts/ui/journal.gd"
   ],
   "已封存": [
@@ -9428,9 +9441,6 @@
   ],
   "已摆好，回到房间就能看见。": [
     "scripts/ui/economy_paper.gd"
-  ],
-  "已收": [
-    "scripts/residency/paper_overlay.gd"
   ],
   "已收入观测册 · 再拍一张": [
     "extensions/observatory/scripts/star_gazing_controller.gd"
@@ -9958,9 +9968,6 @@
     "extensions/collage_letter/scripts/main.gd"
   ],
   "待核实来源": [
-    "scripts/residency/paper_overlay.gd"
-  ],
-  "待补": [
     "scripts/residency/paper_overlay.gd"
   ],
   "待赴约": [
@@ -13100,7 +13107,7 @@
   "最终删改已经记录。": [
     "data/story/events.json"
   ],
-  "最终文件": [
+  "最终居住说明": [
     "scripts/residency/paper_overlay.gd"
   ],
   "最终选择与签名": [
@@ -13922,9 +13929,6 @@
   ],
   "档": [
     "data/world/interactive_spaces.json"
-  ],
-  "档案": [
-    "scripts/residency/paper_overlay.gd"
   ],
   "档案 01  /  海龟汤": [
     "extensions/myriorama_tarot/scripts/rules.gd"
@@ -16487,6 +16491,9 @@
   "第 %s 天": [
     "scripts/residency/paper_overlay.gd"
   ],
+  "第 7 天开放": [
+    "scripts/residency/paper_overlay.gd"
+  ],
   "第%d天": [
     "scripts/meta/trace_panel.gd"
   ],
@@ -18558,7 +18565,11 @@
   "负责签字的人暂时外出，请稍后回来。": [
     "scripts/residency/residency_system.gd"
   ],
+  "贡献记录": [
+    "scripts/residency/paper_overlay.gd"
+  ],
   "贡献证明": [
+    "scripts/residency/paper_overlay.gd",
     "scripts/residency/residency_system.gd"
   ],
   "账目": [

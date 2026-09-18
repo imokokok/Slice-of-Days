@@ -218,8 +218,8 @@ func open_paper(mode: String) -> void:
 	var paper := PAPER.new()
 	paper.mode = mode
 	if mode == "dossier":
-		paper.tab = "days"
-		paper.show_dossier_reference = true
+		paper.tab = "packet"
+		paper.show_dossier_reference = false
 	paper.tool_requested.connect(func(request: String) -> void:
 		call_deferred("open_tool",request))
 	overlay = paper

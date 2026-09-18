@@ -27,6 +27,12 @@ var exploration_location := ""
 var exploration_text := ""
 var exploration_evidence := ""
 var show_dossier_reference := false
+var proof_filter := "all"
+
+const DOSSIER_SIZE := Vector2(1340, 750)
+const DOSSIER_PREVIEW_POSITION := Vector2(220, 82)
+const DOSSIER_PREVIEW_SIZE := Vector2(900, 600)
+const DOSSIER_REFERENCE_SIZE := Vector2(1536, 1024)
 
 func _ready() -> void:
 	add_to_group("meta_modal")
@@ -121,7 +127,15 @@ func build() -> void:
 	dim.color = Color("17262a",0.58)
 	dim.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(dim)
-	body = panel(self,Vector2(130,72),Vector2(1340,750),Color("d5c8a7"))
+	body = panel(self,Vector2.ZERO,DOSSIER_SIZE,Color("d5c8a7"))
+	# Keep the paper centered at every supported window size/aspect ratio. Using
+	# anchors here also keeps the illustrated hit regions aligned after resize.
+	body.set_anchors_preset(Control.PRESET_CENTER)
+	body.offset_left = -DOSSIER_SIZE.x * 0.5
+	body.offset_top = -DOSSIER_SIZE.y * 0.5
+	body.offset_right = DOSSIER_SIZE.x * 0.5
+	body.offset_bottom = DOSSIER_SIZE.y * 0.5
+	body.clip_contents = true
 	var names := {"dossier":"RP-07  /  居住档案","organize":"回房整理  /  桌上的纸","fieldbook":"素材本","gallery":"相册","map":"Solmere  /  随身地图","home":"随身物品","pause":"暂停","controls":"操作","settings":"设置","counter":"社区中心  /  资料柜台","proofs":"领取证明","notebook":"私人手记"}
 	label(body,str(names.get(mode,mode)),Vector2(32,20),Vector2(1000,42),30)
 	button(body,"收起  Esc",Vector2(1150,22),Vector2(154,38),close)
@@ -166,7 +180,7 @@ func _dossier() -> void:
 		return
 	var x := 28.0
 	for key in names:
-		var entry := button(body,str(names[key]),Vector2(x,78),Vector2(172,42),func() -> void: tab = key; build())
+		var entry := button(body,str(names[key]),Vector2(x,78),Vector2(172,42),_select_dossier_tab.bind(str(key)))
 		entry.name = "DossierTab_"+str(key)
 		x += 186
 	if not ResidencySystem.state().packet:
@@ -188,45 +202,89 @@ func _dossier() -> void:
 func _dossier_dashboard() -> void:
 	var preview := TextureRect.new()
 	preview.texture = load("res://art/ui/dossier-open-reference.png")
-	preview.position = Vector2(35, 82)
-	preview.size = Vector2(1270, 600)
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	body.add_child(preview)
-	var progress := ResidencySystem.audit()
-	label(body, "Day %d / 7   ·   收入 %s   ·   探索 %d / 3   ·   认可 %d / 12" % [GameState.current_day, "已收" if bool(progress.get("requirements", {}).get("income", false)) else "待补", int(progress.get("exploration", []).size()), int(progress.get("recognition", 0))], Vector2(525, 621), Vector2(590, 28), 16, Color("665748"))
+	# TextureRect resets itself to the texture's native dimensions when its
+	# expansion mode changes, so assign the designed rect after adding it.
+	preview.position = DOSSIER_PREVIEW_POSITION
+	preview.size = DOSSIER_PREVIEW_SIZE
+	var audit := ResidencySystem.audit()
+	var progress: Dictionary = audit.get("progress", {})
+	var requirements: Dictionary = audit.get("requirements", {})
+	var actions := [
+		{"id":"days", "source":Rect2(770, 278, 570, 102), "tooltip":"七日作品集", "status":"%d / 7" % _audit_count(progress, "pages")},
+		{"id":"income", "source":Rect2(770, 380, 570, 90), "tooltip":"收入证明", "status":"%d / 1" % _audit_count(progress, "income")},
+		{"id":"exploration", "source":Rect2(770, 470, 570, 90), "tooltip":"探索材料", "status":"%d / 3" % _audit_count(progress, "exploration")},
+		{"id":"recognition", "source":Rect2(770, 560, 570, 90), "tooltip":"居民认可", "status":"%d / 12" % _audit_count(progress, "recognition")},
+		{"id":"contribution", "source":Rect2(770, 650, 570, 90), "tooltip":"贡献记录", "status":"已完成" if bool(requirements.get("contribution", false)) else "未完成"},
+		{"id":"personal", "source":Rect2(770, 740, 570, 90), "tooltip":"个人页", "status":"已完成" if bool(requirements.get("personal", false)) else "未完成"},
+		{"id":"final", "source":Rect2(770, 830, 570, 90), "tooltip":"最终居住说明", "status":"已完成" if bool(requirements.get("why_stay", false)) else ("可填写" if GameState.current_day >= 7 else "第 7 天开放")}
+	]
+	for action in actions:
+		_dashboard_hit("DossierAction_" + str(action.id), action.source, str(action.tooltip), _select_dossier_tab.bind(str(action.id)))
+		_dashboard_status(str(action.status) + "   ›", _source_point(Vector2(1120, float(action.source.position.y) + 10.0)), bool(requirements.get(_requirement_for_action(str(action.id)), false)))
 	var tabs := [
-		["requirements", Vector2(1110, 200), Vector2(132, 52)],
-		["days", Vector2(1110, 275), Vector2(132, 52)],
-		["exploration", Vector2(1110, 350), Vector2(132, 52)],
-		["recognition", Vector2(1110, 425), Vector2(132, 52)],
-		["personal", Vector2(1110, 500), Vector2(132, 52)],
-		["proof", Vector2(1110, 575), Vector2(132, 52)]
+		["requirements", Rect2(1345, 188, 165, 112), "申请要求"],
+		["days", Rect2(1345, 302, 165, 110), "七日作品集"],
+		["exploration", Rect2(1345, 414, 165, 110), "探索材料"],
+		["recognition", Rect2(1345, 526, 165, 110), "居民认可"],
+		["personal", Rect2(1345, 638, 165, 120), "个人页"],
+		["final", Rect2(1345, 764, 165, 120), "最终居住说明"]
 	]
 	for row in tabs:
-		var hit := Button.new()
-		hit.name = "DossierTab_" + str(row[0])
-		hit.position = row[1]
-		hit.size = row[2]
-		hit.flat = true
-		hit.modulate = Color(1, 1, 1, 0.01)
-		hit.tooltip_text = LocalizationSystem.text(str({"requirements":"申请要求", "days":"七日作品集", "exploration":"探索材料", "recognition":"居民认可", "personal":"个人页", "proof":"最终文件"}.get(str(row[0]), "档案")))
-		hit.pressed.connect(_select_dossier_tab.bind(str(row[0])))
-		body.add_child(hit)
-	var open_pages := Button.new()
-	open_pages.name = "DossierTab_packet"
-	open_pages.position = Vector2(152, 220)
-	open_pages.size = Vector2(340, 330)
-	open_pages.flat = true
-	open_pages.modulate = Color(1, 1, 1, 0.01)
-	open_pages.tooltip_text = LocalizationSystem.text("打开资料袋")
-	open_pages.pressed.connect(func() -> void: tab = "starter"; build())
-	body.add_child(open_pages)
+		_dashboard_hit("DossierTab_" + str(row[0]), row[1], str(row[2]), _select_dossier_tab.bind(str(row[0])))
+	_dashboard_hit("DossierTab_packet", Rect2(95, 90, 630, 850), "打开资料袋", func() -> void: tab = "starter"; build())
+	label(body, "Day %d / 7   ·   当前进度来自存档中的真实记录" % GameState.current_day, Vector2(510, 684), Vector2(620, 26), 16, Color("665748"))
+
+func _audit_count(progress: Dictionary, key: String) -> int:
+	return int(progress.get(key, {}).get("count", 0))
+
+func _requirement_for_action(action: String) -> String:
+	return str({"days":"pages", "income":"income", "exploration":"exploration", "recognition":"recognition", "contribution":"contribution", "personal":"personal", "final":"why_stay"}.get(action, action))
+
+func _source_point(point: Vector2) -> Vector2:
+	return DOSSIER_PREVIEW_POSITION + point * (DOSSIER_PREVIEW_SIZE.y / DOSSIER_REFERENCE_SIZE.y)
+
+func _source_rect(source: Rect2) -> Rect2:
+	var scale := DOSSIER_PREVIEW_SIZE.y / DOSSIER_REFERENCE_SIZE.y
+	return Rect2(DOSSIER_PREVIEW_POSITION + source.position * scale, source.size * scale)
+
+func _dashboard_hit(node_name: String, source: Rect2, tooltip: String, action: Callable) -> void:
+	var target := _source_rect(source)
+	var hit := Button.new()
+	hit.name = node_name
+	hit.position = target.position
+	hit.size = target.size
+	hit.flat = true
+	hit.modulate = Color(1, 1, 1, 0.01)
+	hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	hit.tooltip_text = LocalizationSystem.text(tooltip)
+	hit.pressed.connect(action)
+	body.add_child(hit)
+
+func _dashboard_status(text: String, at: Vector2, complete: bool) -> void:
+	var status := label(body, text, at, Vector2(120, 42), 15, Color("527b70") if complete else Color("665748"))
+	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	status.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var background := StyleBoxFlat.new()
+	background.bg_color = Color("f2e6ce")
+	background.set_corner_radius_all(3)
+	status.add_theme_stylebox_override("normal", background)
 
 func _select_dossier_tab(target: String) -> void:
-	tab = target
-	show_dossier_reference = target in ["days", "exploration", "recognition", "personal", "proof"]
+	show_dossier_reference = false
+	match target:
+		"income", "contribution":
+			tab = "proof"
+			proof_filter = target
+		"final":
+			tab = "days"
+			day = 7
+		_:
+			tab = target
+			if target == "proof": proof_filter = "all"
 	build()
 
 func _dossier_reference_page() -> void:
@@ -239,12 +297,12 @@ func _dossier_reference_page() -> void:
 	}
 	var preview := TextureRect.new()
 	preview.texture = load(str(images.get(tab, "")))
-	preview.position = Vector2(35, 80)
-	preview.size = Vector2(1270, 605)
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	body.add_child(preview)
+	preview.position = Vector2(35, 80)
+	preview.size = Vector2(1270, 605)
 	var tabs := [
 		["requirements", Vector2(1110, 202)],
 		["days", Vector2(1110, 278)],
@@ -502,12 +560,18 @@ func _filed(destination: String) -> void:
 	if rows.get_child_count() == 0: label(body,"这里还留着空位。B 打开素材本，选择愿意归档的材料。",Vector2(70,260),Vector2(1150,120),26)
 
 func _proof_folder() -> void:
-	label(body,"完成作品 → 交给小镇 → 领取证明 → 自己归档",Vector2(45,145),Vector2(1210,38),24)
-	var rows := scroll_area(body,Vector2(45,202),Vector2(1230,458))
+	label(body,"完成工作/作品 → 到对应柜台领取证明 → 自己归档",Vector2(45,137),Vector2(700,38),22)
+	var filters := [["all","全部证明"],["income","收入证明"],["contribution","贡献证明"]]
+	for i in filters.size():
+		var option: Array = filters[i]
+		var filter_button := button(body, ("• " if proof_filter == str(option[0]) else "") + str(option[1]), Vector2(760 + i * 178, 134), Vector2(166, 40), func() -> void: proof_filter = str(option[0]); build())
+		filter_button.name = "ProofFilter_" + str(option[0])
+	var rows := scroll_area(body,Vector2(45,190),Vector2(1230,470))
 	var s := ResidencySystem.state()
 	for item in s.materials.values():
 		if item.kind != "proof" and not (item.kind == "work" and not str(item.get("proof_kind","")).is_empty()): continue
 		if item.kind == "work" and s.materials.has("proof_"+str(item.id)): continue
+		if proof_filter != "all" and str(item.get("proof_kind", "")) != proof_filter: continue
 		var row := Control.new()
 		row.custom_minimum_size = Vector2(0,100)
 		rows.add_child(row)
@@ -522,7 +586,9 @@ func _proof_folder() -> void:
 			if ResidencySystem.requires_record_archive(item): pending = "声音已完成 · 去制片台制作唱片并入库"
 			label(row,pending+" · "+TravelSystem.location_name(issuer),Vector2(12,56),Vector2(840,32),19)
 			button(row,"在地图上找到柜台",Vector2(860,16),Vector2(310,45),func() -> void: mode = "map"; map_selected = issuer; build())
-	if rows.get_child_count() == 0: label(body,"工作或作品完成后，这里会留下领取证明的记录。",Vector2(75,280),Vector2(1120,140),25)
+	if rows.get_child_count() == 0:
+		var empty_text := "完成有报酬的工作后，收入证明会在对应柜台等待领取。" if proof_filter == "income" else "作品被小镇收下后，贡献证明会在对应柜台等待领取。" if proof_filter == "contribution" else "工作或作品完成后，这里会留下领取证明的记录。"
+		label(body,empty_text,Vector2(75,280),Vector2(1120,140),25)
 
 func _materials() -> void:
 	var kinds := {"all":"全部","photo":"照片","sound":"声音","ticket":"票据","note":"笔记","object":"物件"}

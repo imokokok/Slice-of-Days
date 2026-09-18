@@ -2050,7 +2050,8 @@
   ],
   "上一页": [
     "extensions/collage_letter/scripts/bottle_dock.gd",
-    "scripts/meta/memory_objects.gd"
+    "scripts/meta/memory_objects.gd",
+    "scripts/residency/paper_overlay.gd"
   ],
   "上下位置": [
     "data/tarot/major_arcana.json"
@@ -2128,7 +2129,8 @@
   ],
   "下一页": [
     "extensions/collage_letter/scripts/bottle_dock.gd",
-    "scripts/meta/memory_objects.gd"
+    "scripts/meta/memory_objects.gd",
+    "scripts/residency/paper_overlay.gd"
   ],
   "下午去看彩排吗？可能还缺一个帮忙收道具的人。": [
     "data/story/events.json"
@@ -4775,9 +4777,6 @@
   "先到": [
     "data/tarot/cases.json"
   ],
-  "先到社区中心领取 RP-07 资料袋。": [
-    "scripts/residency/residency_system.gd"
-  ],
   "先到社区中心领取资料袋。素材会一直留在素材本里。": [
     "scripts/residency/paper_overlay.gd"
   ],
@@ -5243,6 +5242,9 @@
   ],
   "关门后的旧货栈仍然留着一点像浪、又像远处车辆的低频。": [
     "data/story/events.json"
+  ],
+  "关闭": [
+    "scripts/residency/paper_overlay.gd"
   ],
   "关闭 · F8": [
     "scripts/meta/runtime_debug.gd"
@@ -6358,6 +6360,9 @@
   ],
   "可以保存的位置": [
     "data/gameplay/module_prototypes.json"
+  ],
+  "可以先填写草稿；到社区中心领取 RP-07 资料袋后即可归档与提交。": [
+    "scripts/residency/paper_overlay.gd"
   ],
   "可以先返回街道，处理下一个预约或时间块。": [
     "scripts/ui/interactive_space.gd"
@@ -9814,9 +9819,6 @@
   "弯曲   陡峭   湿润": [
     "extensions/collage_letter/assets/materials.json"
   ],
-  "当前为预览；领取资料袋后可以填写。": [
-    "scripts/residency/paper_overlay.gd"
-  ],
   "当前全部正位 · 逆位暂未启用；扇形摆放角度不是逆位。": [
     "extensions/myriorama_tarot/scripts/table.gd"
   ],
@@ -9858,9 +9860,6 @@
   ],
   "当前案件": [
     "scripts/core/tarot_case_engine.gd"
-  ],
-  "当前正在预览对应功能。到社区中心领取 RP-07 资料袋后即可填写与归档。": [
-    "scripts/residency/paper_overlay.gd"
   ],
   "当前没有可用的音频输出驱动。": [
     "scripts/town_sound/audio/SoundSettings.gd"
@@ -12953,6 +12952,9 @@
   "更多   更少   刚好": [
     "extensions/collage_letter/assets/materials.json"
   ],
+  "更换照片": [
+    "scripts/residency/paper_overlay.gd"
+  ],
   "更早": [
     "data/tarot/cases.json"
   ],
@@ -15815,6 +15817,9 @@
   "相册里还有一张没有任何人的夜空。": [
     "data/story/endings.json"
   ],
+  "相册里还没有冲洗完成的照片。拍完并取回照片后，就可以贴在这里。": [
+    "scripts/residency/paper_overlay.gd"
+  ],
   "相册里那张由{selected_joined}组成的照片，仍有一瞬间像另一处旧阳台。": [
     "data/story/endings.json"
   ],
@@ -16359,6 +16364,9 @@
   ],
   "移除": [
     "extensions/collage_letter/scripts/main.gd"
+  ],
+  "移除封面照片": [
+    "scripts/residency/paper_overlay.gd"
   ],
   "稀缺让词带上庆祝": [
     "data/gameplay/module_prototypes.json"
@@ -18619,8 +18627,14 @@
   "购买%s": [
     "scripts/core/game_state.gd"
   ],
+  "贴一张照片": [
+    "scripts/residency/paper_overlay.gd"
+  ],
   "贴上去": [
     "scripts/meta/trace_panel.gd"
+  ],
+  "贴到封面 · ": [
+    "scripts/residency/paper_overlay.gd"
   ],
   "资料袋已经领过，F 可随时查看。": [
     "scripts/residency/residency_system.gd"
@@ -18937,9 +18951,6 @@
   ],
   "返回桌面继续调查": [
     "extensions/myriorama_tarot/scripts/table.gd"
-  ],
-  "返回档案首页": [
-    "scripts/residency/paper_overlay.gd"
   ],
   "返回棋类选择": [
     "extensions/elder_board/scripts/match.gd"
@@ -19850,6 +19861,9 @@
   ],
   "选择一则海龟汤": [
     "extensions/myriorama_tarot/scripts/table.gd"
+  ],
+  "选择一张照片贴在档案封面": [
+    "scripts/residency/paper_overlay.gd"
   ],
   "选择一张牌作为本轮 Reading": [
     "scripts/ui/tarot_table.gd"

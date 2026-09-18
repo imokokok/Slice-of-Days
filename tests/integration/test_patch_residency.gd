@@ -104,13 +104,19 @@ func run() -> void:
 		await process_frame
 		check(await click_named(preview,"DossierAction_"+str(action[0])),"Uncollected checklist opens "+str(action[0])+" instead of the shared packet gate")
 		check(preview.tab == str(action[1]),"Uncollected checklist renders the corresponding "+str(action[0])+" section")
+		check(not preview.show_dossier_reference,"Checklist opens the editable "+str(action[0])+" page instead of a static reference image")
 		check(not preview.body.find_children("*","Label",true,false).any(func(candidate: Label) -> bool: return candidate.text.contains("先到社区中心领取 RP-07 资料袋")),"Corresponding section is not replaced by the packet gate")
 	preview = shell.overlay
 	preview.tab = "packet"; preview.build()
 	await process_frame
 	await click_named(preview,"DossierAction_days")
 	var preview_inputs: Array = preview.body.find_children("*","TextEdit",true,false)
-	check(not preview_inputs.is_empty() and not (preview_inputs[0] as TextEdit).editable,"Uncollected portfolio is visible but read-only")
+	check(not preview_inputs.is_empty() and (preview_inputs[0] as TextEdit).editable,"Uncollected portfolio opens as an editable draft")
+	preview.tab = "packet"; preview.build()
+	await process_frame
+	var preview_art := preview.find_child("DossierPreview",true,false) as TextureRect
+	check(is_instance_valid(preview_art) and preview_art.size == Vector2(1080,720),"Dossier home is enlarged by twenty percent and keeps one stable size")
+	check(is_instance_valid(preview.find_child("DossierCoverPhotoAction",true,false)),"Dossier home exposes the cover-photo picker")
 	await close_paper(shell)
 	check(await travel("print_shop","walk"),"Reach community centre through the actual map walk button")
 	var door: Dictionary = {}

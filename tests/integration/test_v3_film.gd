@@ -95,6 +95,18 @@ func run()->void:
 	var photo: Dictionary=film.developed_photos()[0]
 	for key in ["roll_id","film_type","capture_path","developed_path","shown_to_npcs","used_in_collage","submitted_to_dossier"]: check(photo.has(key),"Developed metadata keeps "+key)
 	check(FileAccess.file_exists(str(photo.capture_path)) and FileAccess.file_exists(str(photo.developed_path)),"Original capture and developed PNG both remain available")
+	var residency=root.get_node("ResidencySystem")
+	residency._sync_sources()
+	check(residency.set_cover_photo(str(photo.id)),"A developed photo can be attached to the residency dossier cover")
+	check(str(residency.state().cover_photo_id)==str(photo.id),"The selected dossier cover photo is saved in residency state")
+	var dossier=load("res://scripts/residency/paper_overlay.gd").new()
+	dossier.mode="dossier"
+	dossier.tab="packet"
+	current_scene.add_child(dossier)
+	await process_frame
+	check(is_instance_valid(dossier.find_child("DossierCoverPhoto",true,false)),"The residency dossier renders the attached photo on its cover")
+	dossier.queue_free()
+	await process_frame
 	var actions=film.open_photo_actions(str(photo.id),current_scene)
 	await process_frame
 	press(actions,"带到拼贴桌")

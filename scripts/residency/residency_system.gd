@@ -26,6 +26,7 @@ func state() -> Dictionary:
 			first["period"] = exploration_period(int(first.get("minute",540)))
 			s.visit_history[location] = [first]
 	if not s.has("explorations"): s.explorations = {}
+	if not s.has("cover_photo_id"): s.cover_photo_id = ""
 	s.version = 3
 	return s
 
@@ -243,7 +244,6 @@ func exploration_period(minute: int) -> String:
 
 func record_exploration(kind: String, location: String, text: String, evidence_id := "") -> Dictionary:
 	var s := state()
-	if not s.packet: return {"ok":false,"message":"先到社区中心领取 RP-07 资料袋。"}
 	if kind not in ["discover","revisit","shareplace"] or not s.visits.has(location): return {"ok":false,"message":"先亲自到过这个地方，再留下实地记录。"}
 	if text.strip_edges().is_empty(): return {"ok":false,"message":"写下一句自己的观察。"}
 	if not s.submitted.is_empty(): return {"ok":false,"message":"已交出的档案保持封存。"}
@@ -372,7 +372,7 @@ func night_organized(day: int) -> bool:
 
 func set_field(day: int, key: String, value: String) -> bool:
 	var s := state()
-	if not s.packet or day < 1 or day > mini(7,GameState.current_day) or not s.submitted.is_empty(): return false
+	if day < 1 or day > mini(7,GameState.current_day) or not s.submitted.is_empty(): return false
 	var page: Dictionary = s.pages[day-1]
 	if key in ["today","record"]: page[key] = value
 	else: page.fields[key] = value
@@ -424,10 +424,29 @@ func assign_mark(resident: String, day: int) -> bool:
 	return true
 
 func check_ledger(day: int) -> void:
-	if not state().packet or day < 1 or day > mini(7,GameState.current_day) or not state().submitted.is_empty(): return
+	if day < 1 or day > mini(7,GameState.current_day) or not state().submitted.is_empty(): return
 	state().pages[day-1].ledger_checked = true
 	_record_organize()
 	persist()
+
+func set_cover_photo(id: String) -> bool:
+	_sync_sources()
+	var s := state()
+	if id.is_empty():
+		s.cover_photo_id = ""
+		persist()
+		return true
+	var item: Dictionary = s.materials.get(id,{})
+	if str(item.get("kind","")) != "photo" or str(item.get("status","DEVELOPED")) != "DEVELOPED": return false
+	s.cover_photo_id = id
+	item["submitted_to_dossier"] = true
+	for photo in GameState.artifacts.get("photos",[]):
+		if str(photo.get("id",photo.get("photo_id",""))) == id: photo["submitted_to_dossier"] = true
+	var library := PhotoLibrary.new()
+	library.root_path = str(item.get("library_root",library.root_path))
+	library.update_metadata(id,{"submitted_to_dossier":true})
+	persist()
+	return true
 
 func ledger_for(day: int, s: Dictionary = {}) -> Dictionary:
 	if s.is_empty(): s = state()

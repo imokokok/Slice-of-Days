@@ -28,11 +28,14 @@ var exploration_text := ""
 var exploration_evidence := ""
 var show_dossier_reference := false
 var proof_filter := "all"
+var photo_picker_page := 0
 
 const DOSSIER_SIZE := Vector2(1340, 750)
-const DOSSIER_PREVIEW_POSITION := Vector2(220, 82)
-const DOSSIER_PREVIEW_SIZE := Vector2(900, 600)
+const DOSSIER_PREVIEW_POSITION := Vector2(130, 15)
+const DOSSIER_PREVIEW_SIZE := Vector2(1080, 720)
 const DOSSIER_REFERENCE_SIZE := Vector2(1536, 1024)
+const DOSSIER_PHOTO_SOURCE := Rect2(245, 365, 390, 315)
+const PHOTO_PICKER_PAGE_SIZE := 6
 
 func _ready() -> void:
 	add_to_group("meta_modal")
@@ -205,7 +208,7 @@ func _dossier() -> void:
 		"receipts": _living_receipts()
 		"exploration": _explore_records()
 	if not ResidencySystem.state().packet:
-		feedback.text = LocalizationSystem.text("当前正在预览对应功能。到社区中心领取 RP-07 资料袋后即可填写与归档。")
+		feedback.text = LocalizationSystem.text("可以先填写草稿；到社区中心领取 RP-07 资料袋后即可归档与提交。")
 
 func _dossier_dashboard() -> void:
 	# The illustrated dossier is the whole surface on its home screen. Remove
@@ -214,6 +217,7 @@ func _dossier_dashboard() -> void:
 	for chrome in body.get_children():
 		chrome.hide()
 	var preview := TextureRect.new()
+	preview.name = "DossierPreview"
 	preview.texture = load("res://art/ui/dossier-open-reference.png")
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -223,6 +227,7 @@ func _dossier_dashboard() -> void:
 	# expansion mode changes, so assign the designed rect after adding it.
 	preview.position = DOSSIER_PREVIEW_POSITION
 	preview.size = DOSSIER_PREVIEW_SIZE
+	_dashboard_cover_photo()
 	var audit := ResidencySystem.audit()
 	var progress: Dictionary = audit.get("progress", {})
 	var requirements: Dictionary = audit.get("requirements", {})
@@ -249,6 +254,85 @@ func _dossier_dashboard() -> void:
 	for row in tabs:
 		_dashboard_hit("DossierTab_" + str(row[0]), row[1], str(row[2]), _select_dossier_tab.bind(str(row[0])))
 	_dashboard_hit("DossierTab_packet", Rect2(95, 90, 630, 850), "打开资料袋", func() -> void: tab = "starter"; build())
+	var photo_button := button(body,"更换照片" if not str(ResidencySystem.state().get("cover_photo_id","")).is_empty() else "贴一张照片",_source_point(Vector2(327,700)),Vector2(190,38),_open_dossier_photo_picker)
+	photo_button.name = "DossierCoverPhotoAction"
+	photo_button.add_theme_font_size_override("font_size",16)
+	photo_button.modulate = Color(1,1,1,0.9)
+
+func _dashboard_cover_photo() -> void:
+	var id := str(ResidencySystem.state().get("cover_photo_id",""))
+	if id.is_empty(): return
+	var image := _load_photo_image(id)
+	if image == null: return
+	var target := _source_rect(DOSSIER_PHOTO_SOURCE)
+	var photo := TextureRect.new()
+	photo.name = "DossierCoverPhoto"
+	photo.texture = ImageTexture.create_from_image(image)
+	photo.position = target.position
+	photo.size = target.size
+	photo.pivot_offset = target.size * 0.5
+	photo.rotation = -0.075
+	photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	photo.mouse_filter = MOUSE_FILTER_IGNORE
+	body.add_child(photo)
+
+func _open_dossier_photo_picker() -> void:
+	if is_instance_valid(detail):
+		detail.queue_free()
+		detail = null
+	detail = panel(self,Vector2.ZERO,Vector2(940,620),Color("f6eedc"))
+	detail.name = "DossierPhotoPicker"
+	detail.set_anchors_preset(Control.PRESET_CENTER)
+	detail.offset_left = -470
+	detail.offset_top = -310
+	detail.offset_right = 470
+	detail.offset_bottom = 310
+	detail.z_index = 20
+	label(detail,"选择一张照片贴在档案封面",Vector2(30,22),Vector2(700,45),28)
+	button(detail,"关闭",Vector2(780,24),Vector2(125,38),func() -> void: detail.queue_free(); detail = null)
+	var candidates: Array = []
+	for item in ResidencySystem.state().materials.values():
+		if str(item.get("kind","")) == "photo" and str(item.get("status","DEVELOPED")) == "DEVELOPED": candidates.append(item)
+	candidates.sort_custom(func(a: Dictionary,b: Dictionary) -> bool:
+		if int(a.get("day",0)) == int(b.get("day",0)): return int(a.get("minute",a.get("game_minute",0))) > int(b.get("minute",b.get("game_minute",0)))
+		return int(a.get("day",0)) > int(b.get("day",0)))
+	if candidates.is_empty():
+		label(detail,"相册里还没有冲洗完成的照片。拍完并取回照片后，就可以贴在这里。",Vector2(55,220),Vector2(830,120),25)
+		return
+	var page_count := maxi(1,ceili(float(candidates.size()) / PHOTO_PICKER_PAGE_SIZE))
+	photo_picker_page = clampi(photo_picker_page,0,page_count-1)
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.position = Vector2(35,88)
+	grid.size = Vector2(870,430)
+	grid.add_theme_constant_override("h_separation",18)
+	grid.add_theme_constant_override("v_separation",14)
+	detail.add_child(grid)
+	var first := photo_picker_page * PHOTO_PICKER_PAGE_SIZE
+	var last := mini(first + PHOTO_PICKER_PAGE_SIZE,candidates.size())
+	for index in range(first,last):
+		var item: Dictionary = candidates[index]
+		var id := str(item.get("id",item.get("photo_id","")))
+		var card := Panel.new()
+		card.custom_minimum_size = Vector2(278,198)
+		var card_style := StyleBoxFlat.new()
+		card_style.bg_color = Color("eee3cc")
+		card_style.set_corner_radius_all(3)
+		card.add_theme_stylebox_override("panel",card_style)
+		grid.add_child(card)
+		_photo(card,id,Vector2(9,9),Vector2(260,128))
+		var choose := button(card,"贴到封面 · "+str(item.get("title","照片")).left(10),Vector2(9,145),Vector2(260,40),func() -> void:
+			if ResidencySystem.set_cover_photo(id): build())
+		choose.name = "ChooseDossierPhoto_"+id
+	if page_count > 1:
+		var previous := button(detail,"上一页",Vector2(250,548),Vector2(150,40),func() -> void: photo_picker_page -= 1; _open_dossier_photo_picker())
+		previous.disabled = photo_picker_page <= 0
+		label(detail,"%d / %d" % [photo_picker_page+1,page_count],Vector2(420,552),Vector2(100,34),20)
+		var next := button(detail,"下一页",Vector2(540,548),Vector2(150,40),func() -> void: photo_picker_page += 1; _open_dossier_photo_picker())
+		next.disabled = photo_picker_page >= page_count-1
+	if not str(ResidencySystem.state().get("cover_photo_id","")).is_empty():
+		button(detail,"移除封面照片",Vector2(720,548),Vector2(185,40),func() -> void: ResidencySystem.set_cover_photo(""); build())
 
 func _audit_count(progress: Dictionary, key: String) -> int:
 	return int(progress.get(key, {}).get("count", 0))
@@ -292,13 +376,14 @@ func _select_dossier_tab(target: String) -> void:
 			tab = "proof"
 			proof_filter = target
 		"final":
-			tab = "proof"
-			show_dossier_reference = true
+			tab = "days"
+			day = 7
+		"days":
+			tab = "days"
+			day = clampi(GameState.current_day,1,7)
 		_:
 			tab = target
-			if target == "proof":
-				proof_filter = "all"
-			show_dossier_reference = target in ["requirements", "days", "exploration", "recognition", "personal", "proof"]
+			if target == "proof": proof_filter = "all"
 	build()
 
 func _dossier_reference_page() -> void:
@@ -474,7 +559,6 @@ func _requirement_open(key: String) -> void:
 	build()
 
 func _day_page() -> void:
-	var has_packet := bool(ResidencySystem.state().packet)
 	for i in range(1,8):
 		var b := button(body,"DAY %d" % i,Vector2(40+(i-1)*178,137),Vector2(165,36),func() -> void: day = i; build())
 		b.name = "PortfolioDay_%d" % i
@@ -493,13 +577,13 @@ func _day_page() -> void:
 	var ledger := ResidencySystem.ledger_for(day)
 	label(body,"收支  ·  收入 %d / 支出 %d / 余额 %d" % [ledger.income,ledger.expense,ledger.balance],Vector2(750,505),Vector2(555,54),21)
 	var ledger_button := button(body,"已核对" if page.ledger_checked else "核对当天收支",Vector2(750,565),Vector2(260,42),func() -> void: ResidencySystem.check_ledger(day); build())
-	ledger_button.disabled = not has_packet
+	ledger_button.disabled = day > GameState.current_day
 	if day == 2: button(body,"制作实地记录 →",Vector2(1022,565),Vector2(273,42),func() -> void: tab = "exploration"; build())
 	if day == 3: button(body,"生活小票 →",Vector2(1022,565),Vector2(273,42),func() -> void: tab = "receipts"; build())
 	var mark_names: Array[String] = []
 	for resident in page.marks: mark_names.append(str(ScheduleSystem.residents.get(resident,{}).get("display_name",resident)))
 	label(body,"居民签记 %d / 2：%s" % [page.marks.size(),"、".join(mark_names)],Vector2(750,625),Vector2(550,42),18)
-	feedback.text = LocalizationSystem.text("当前为预览；领取资料袋后可以填写。" if not has_packet else "%s · 当前 Day %d / 7 · 这页到当天可以填写" % [GameState.current_role,GameState.current_day] if day > GameState.current_day else "%s · 当前 Day %d / 7 · 每天一页，材料按自己的选择收好" % [GameState.current_role,GameState.current_day])
+	feedback.text = LocalizationSystem.text("%s · 当前 Day %d / 7 · 这页到当天可以填写" % [GameState.current_role,GameState.current_day] if day > GameState.current_day else "%s · 当前 Day %d / 7 · 每天一页，材料按自己的选择收好" % [GameState.current_role,GameState.current_day])
 
 func _form_row(rows: VBoxContainer, caption: String, value: String, key: String, height: float) -> void:
 	var row := Control.new()
@@ -508,7 +592,7 @@ func _form_row(rows: VBoxContainer, caption: String, value: String, key: String,
 	label(row,caption,Vector2.ZERO,Vector2(610,28),18)
 	var current_day := day
 	var input := edit(row,value,Vector2(0,31),Vector2(607,height),func(text: String) -> void: ResidencySystem.set_field(current_day,key,text))
-	input.editable = ResidencySystem.state().packet and day <= GameState.current_day and ResidencySystem.state().submitted.is_empty()
+	input.editable = day <= GameState.current_day and ResidencySystem.state().submitted.is_empty()
 	input.focus_exited.connect(func() -> void: ResidencySystem.persist())
 
 func _recognition() -> void:
@@ -557,7 +641,6 @@ func _living_receipts() -> void:
 func _explore_records() -> void:
 	label(body,"三种实地记录  ·  地点与到访时间来自走过的路",Vector2(45,141),Vector2(1235,45),25)
 	var s := ResidencySystem.state()
-	var has_packet := bool(s.packet)
 	var visited: Array = s.visits.keys()
 	if visited.is_empty(): label(body,"先去一个地方走走。",Vector2(80,280),Vector2(1130,85),26); return
 	if not visited.has(exploration_location): exploration_location = str(visited[0])
@@ -578,7 +661,6 @@ func _explore_records() -> void:
 	body.add_child(places)
 	var input := edit(body,exploration_text,Vector2(50,269),Vector2(1215,152),func(value: String) -> void: exploration_text = value,"写一句发现、变化，或想带谁来……")
 	input.name = "ExploreObservation"
-	input.editable = has_packet
 	var evidence := OptionButton.new()
 	evidence.position = Vector2(50,437); evidence.size = Vector2(760,40)
 	evidence.name = "ExploreEvidence"
@@ -595,7 +677,6 @@ func _explore_records() -> void:
 		var result := ResidencySystem.record_exploration(exploration_kind,exploration_location,exploration_text,exploration_evidence)
 		build(); feedback.text = LocalizationSystem.text(str(result.message)))
 	create_button.name = "CreateExploreRecord"
-	create_button.disabled = not has_packet
 	var records := scroll_area(body,Vector2(50,500),Vector2(1215,165))
 	for type in ["discover","revisit","shareplace"]:
 		var id := str(s.explorations.get(type,""))
@@ -674,8 +755,7 @@ func _materials() -> void:
 	if grid.get_child_count() == 0: label(body,"还没有这一类材料。走走、拍照，或录一小段声音。",Vector2(70,280),Vector2(1120,90),27)
 
 func _photo(parent: Node, id: String, at: Vector2, dimensions: Vector2) -> void:
-	var library := PhotoLibrary.new()
-	var image := library.load_photo(id)
+	var image := _load_photo_image(id)
 	if image == null: label(parent,"照片文件暂时无法读取",at,dimensions,18); return
 	var rect := TextureRect.new()
 	rect.texture = ImageTexture.create_from_image(image)
@@ -685,6 +765,12 @@ func _photo(parent: Node, id: String, at: Vector2, dimensions: Vector2) -> void:
 	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	rect.mouse_filter = MOUSE_FILTER_IGNORE
 	parent.add_child(rect)
+
+func _load_photo_image(id: String) -> Image:
+	var item: Dictionary = ResidencySystem.state().materials.get(id,{})
+	var library := PhotoLibrary.new()
+	if not item.is_empty(): library.root_path = str(item.get("library_root",library.root_path))
+	return library.load_photo(id)
 
 func _material_row(rows: VBoxContainer, id: String) -> void:
 	var item: Dictionary = ResidencySystem.state().materials.get(id,{})

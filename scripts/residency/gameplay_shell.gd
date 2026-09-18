@@ -227,6 +227,7 @@ func _handle_shortcut(event: InputEvent) -> void:
 
 func open_paper(mode: String) -> void:
 	if is_instance_valid(overlay) or _blocked() or is_instance_valid(tool): return
+	WorldSound.play_ui("paper")
 	var paper := PAPER.new()
 	paper.mode = mode
 	if mode == "dossier":

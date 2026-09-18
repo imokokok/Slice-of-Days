@@ -15,6 +15,7 @@ var active := false
 var cache: Dictionary = {}
 var monitoring_locks := 0
 var footstep_cache: Dictionary = {}
+var step_index := 0
 var ambience_thread: Thread
 var generating_location := ""
 var requested_location := ""
@@ -36,7 +37,7 @@ func _ready() -> void:
 	# waveform capture and accessibility previews can inspect the real sound.
 	# Playback itself remains disabled below when no audio driver exists.
 	coast.stream = make_sea()
-	coast.volume_db = -8.0
+	coast.volume_db = -12.0
 	add_child(coast)
 	add_child(ui)
 	for player in [ambience, foley]:
@@ -122,6 +123,7 @@ func detail_label() -> String:
 func play_detail(footsteps := false) -> void:
 	if not active or AudioServer.get_driver_name() == "Dummy": return
 	foley.volume_db = 0.0
+	foley.pitch_scale = 1.0
 	foley.stream = make_detail(location, footsteps)
 	foley.play()
 
@@ -132,11 +134,14 @@ func play_ui(cue: String) -> void:
 	ui.play()
 
 static func make_ui(cue: String) -> AudioStreamWAV:
-	var durations := {"focus": 0.055, "dialogue": 0.075, "coin": 0.24, "error": 0.16, "shutter": 0.18, "record_start": 0.16, "record_stop": 0.12}
+	var durations := {"focus": 0.055, "dialogue": 0.075, "coin": 0.24, "error": 0.16, "shutter": 0.18, "record_start": 0.16, "record_stop": 0.12, "paper": 0.38}
 	var duration := float(durations.get(cue, 0.10))
 	var frames := maxi(1, int(RATE * duration))
 	var data := PackedByteArray()
 	data.resize(frames * 2)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 46331
+	var paper_smooth := 0.0
 	for i in frames:
 		var t := float(i) / RATE
 		var envelope := sin(PI * minf(t / duration, 1.0)) * exp(-t * (8.0 if cue == "coin" else 16.0))
@@ -148,6 +153,12 @@ static func make_ui(cue: String) -> AudioStreamWAV:
 			"record_start": value = sin(TAU * (430.0 + t * 900.0) * t) * 0.16 * envelope
 			"record_stop": value = sin(TAU * (620.0 - t * 1500.0) * t) * 0.14 * envelope
 			"dialogue": value = sin(TAU * 620.0 * t) * 0.07 * envelope
+			"paper":
+				var noise := rng.randf_range(-1.0, 1.0)
+				paper_smooth += (noise - paper_smooth) * 0.12
+				var turn := sin(PI * clampf(t / duration, 0.0, 1.0))
+				var settle := exp(-pow((t - 0.30) / 0.045, 2.0))
+				value = ((noise - paper_smooth) * 0.12 + paper_smooth * 0.035) * turn + sin(TAU * 118.0 * t) * 0.025 * settle
 			_: value = sin(TAU * 760.0 * t) * 0.06 * envelope
 		data.encode_s16(i * 2, int(clampf(value, -1.0, 1.0) * 32767.0))
 	var wav := AudioStreamWAV.new()
@@ -226,29 +237,38 @@ func play_footstep() -> void:
 		wav.data = wav.data.slice(0,int(RATE*0.16)*2)
 		footstep_cache[location] = wav
 	foley.stream = footstep_cache[location]
-	foley.volume_db = -8.0
+	step_index += 1
+	foley.pitch_scale = 0.95 if step_index % 2 == 0 else 1.04
+	foley.volume_db = -10.0 if indoors else -8.0
 	foley.play()
 
 func set_indoor(value: bool) -> void:
 	indoors = value
-	if coast != null: coast.volume_db = -27.0 if indoors else -8.0
+	if coast != null: coast.volume_db = -30.0 if indoors else -12.0
 static func make_sea() -> AudioStreamWAV:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 71209
 	var data := PackedByteArray()
-	var count := RATE * 12
+	var count := RATE * 16
 	data.resize(count*2)
-	var low := 0.0
-	var wash := 0.0
+	var rumble := 0.0
+	var body := 0.0
+	var foam := 0.0
 	for i in count:
 		var t := float(i)/RATE
-		var noise := rng.randf_range(-1,1)
-		low = lerpf(low,noise,0.035)
-		wash = lerpf(wash,noise,0.24)
-		var swell := 0.2 + 0.8 * pow(0.5 + 0.5 * sin(TAU*t/6.0),2.0)
-		var foam := 0.5 + 0.5 * sin(TAU*t/3.0+1.4)
-		var sample := (low*1.2 + wash*0.24 + noise*0.035*foam)*swell
-		sample *= minf(1.0,minf(t,12.0-t)/0.12)
+		var noise := rng.randf_range(-1.0,1.0)
+		rumble += (noise-rumble)*0.0025
+		body += (noise-body)*0.028
+		foam += (noise-foam)*0.22
+		var breaker_a := pow(maxf(0.0,sin(TAU*(t-0.8)/7.9)),5.0)
+		var breaker_b := 0.62*pow(maxf(0.0,sin(TAU*(t-4.7)/10.7)),7.0)
+		var breaker := clampf(breaker_a+breaker_b,0.0,1.0)
+		var undertow := 0.18+0.22*(0.5+0.5*sin(TAU*t/8.0))
+		var hiss := (foam-body)*breaker
+		var sample := rumble*0.055*undertow + body*0.045*(0.25+breaker) + hiss*0.18
+		# A quiet interval between breakers prevents a continuous fan-like wash.
+		sample *= 0.55+0.45*breaker
+		sample *= minf(1.0,minf(t,16.0-t)/0.18)
 		data.encode_s16(i*2,int(clampf(sample,-1,1)*32767))
 	var wav := AudioStreamWAV.new()
 	wav.format = AudioStreamWAV.FORMAT_16_BITS

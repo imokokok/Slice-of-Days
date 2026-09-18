@@ -1,7 +1,5 @@
 extends Control
 
-const MENU_BACKGROUND := preload("res://art/ui/title-screen-background.png")
-
 const PAPER := Color("fff8eb")
 const PAPER_SOFT := Color("f1dfc7")
 const INK := Color("4a342b")
@@ -10,6 +8,7 @@ const TERRACOTTA := Color("c85f43")
 const TEAL := Color("4f7d83")
 const SAGE := Color("7d8f59")
 const LINE := Color("b88963")
+const COVER_BLUE := Color("3f78a4")
 const NAVIGATION_TITLES := {
 	"NewGame": "新游戏",
 	"Chapters": "章节",
@@ -19,10 +18,6 @@ const NAVIGATION_TITLES := {
 var modal_overlay: ColorRect
 var modal_panel: Panel
 var pending_slot := 1
-var cover_video: VideoStreamPlayer
-var cover_elapsed := 0.0
-var cover_loop_offset := 0.0
-var cover_last_position := 0.0
 var entering := false
 var navigation: Control
 var navigation_ready := false
@@ -48,28 +43,30 @@ func _draw() -> void:
 	var sx := size.x / 1600.0
 	var sy := size.y / 900.0
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(sx, sy))
-	draw_rect(Rect2(0, 0, 1600, 900), PAPER)
+	draw_rect(Rect2(0, 0, 1600, 900), COVER_BLUE)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _build_living_cover() -> void:
-	var cover := TextureRect.new()
-	cover.texture = preload("res://art/ui/cover-film-poster.png")
-	cover.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	cover.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	cover.stretch_mode = TextureRect.STRETCH_SCALE
-	cover.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(cover)
-	cover_video = VideoStreamPlayer.new()
-	cover_video.stream = preload("res://art/ui/cover-film.ogv")
-	cover_video.bus = "Music"
-	cover_video.expand = true
-	cover_video.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	cover_video.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	cover_video.loop = true
-	cover_video.volume_db = 0.0
-	add_child(cover_video)
-	cover_video.play()
+	var blue := ColorRect.new()
+	blue.color = COVER_BLUE
+	blue.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	blue.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(blue)
+	var title := Label.new()
+	title.text = "Solmere"
+	title.position = Vector2(0, 165)
+	title.size = Vector2(1600, 150)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var title_font := SystemFont.new()
+	title_font.font_names = PackedStringArray(["Segoe Print", "Bradley Hand ITC", "Comic Sans MS", "Microsoft YaHei UI"])
+	title_font.font_weight = 300
+	title.add_theme_font_override("font", title_font)
+	title.add_theme_font_size_override("font_size", 92)
+	title.add_theme_color_override("font_color", Color.WHITE)
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(title)
 
 func _process(_delta: float) -> void:
 	if is_instance_valid(intro_video):
@@ -78,26 +75,18 @@ func _process(_delta: float) -> void:
 			intro_wash.color.a = ending
 			intro_video.volume_db = linear_to_db(maxf(.0001,1.0-ending))
 		return
-	# Use playback time so decoder startup cannot reveal the menu early.
-	var playback := cover_video.stream_position
-	if playback + 0.5 < cover_last_position:
-		cover_loop_offset += cover_last_position
-	cover_last_position = playback
-	cover_elapsed = cover_loop_offset + playback
 	if entering: return
-	var reveal := smoothstep(2.0,4.0,cover_elapsed)
-	navigation.modulate.a = reveal
-	for child in navigation.get_children():
-		if child is Button:
-			child.disabled = reveal < .98
-			child.focus_mode = Control.FOCUS_ALL if reveal >= .98 else Control.FOCUS_NONE
-	if reveal >= .98 and not navigation_ready:
+	if not navigation_ready:
 		navigation_ready = true
-		navigation.get_node("NewGame").grab_focus()
+		navigation.modulate.a = 1.0
+		for child in navigation.get_children():
+			if child is Button:
+				child.disabled = false
+				child.focus_mode = Control.FOCUS_NONE
 
 func _build_navigation() -> void:
 	navigation = Control.new()
-	navigation.position = Vector2(635,570)
+	navigation.position = Vector2(635,545)
 	navigation.size = Vector2(330,182)
 	navigation.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(navigation)
@@ -105,7 +94,7 @@ func _build_navigation() -> void:
 		var rule := ColorRect.new()
 		rule.position = Vector2(0,y)
 		rule.size = Vector2(330,1)
-		rule.color = Color("fff7e6",.42)
+		rule.color = Color(1,1,1,.88)
 		rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		navigation.add_child(rule)
 	var titles := ["新游戏","章节","设置"]
@@ -122,12 +111,13 @@ func _build_navigation() -> void:
 		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		button.disabled = true
 		button.focus_mode = Control.FOCUS_NONE
+		button.flat = true
 		button.add_theme_font_size_override("font_size",23)
 		button.add_theme_font_override("font",menu_font)
 		button.add_theme_constant_override("outline_size",0)
-		for state in ["normal","hover","pressed","focus"]:
+		for state in ["normal","hover","pressed","focus","disabled","hover_pressed"]:
 			button.add_theme_stylebox_override(state,StyleBoxEmpty.new())
-		button.add_theme_color_override("font_color",Color("fff7e6",.80))
+		button.add_theme_color_override("font_color",Color.WHITE)
 		button.add_theme_color_override("font_hover_color",Color("fffdf6"))
 		button.add_theme_color_override("font_focus_color",Color("fffdf6"))
 		button.add_theme_color_override("font_pressed_color",Color("f4dfb0"))
@@ -135,7 +125,7 @@ func _build_navigation() -> void:
 		button.add_theme_constant_override("shadow_offset_y",1)
 		navigation.add_child(button)
 		button.pressed.connect(actions[i])
-	navigation.modulate.a = 0
+	navigation.modulate.a = 1
 
 
 func _refresh_navigation_language(_locale := "") -> void:
@@ -155,12 +145,10 @@ func _launch_new_game() -> void:
 	intro_wash.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(intro_wash)
 	var fade := create_tween().set_parallel(true)
-	fade.tween_property(cover_video,"volume_db",-60.0,.65)
 	fade.tween_property(navigation,"modulate:a",0.0,.4)
 	fade.tween_property(intro_wash,"color:a",1.0,.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	await fade.finished
 	navigation.hide()
-	cover_video.stop()
 	WorldSound.set_active(false)
 	await _play_opening_animation()
 	_on_new_game_pressed()
@@ -170,8 +158,7 @@ func _launch_new_game() -> void:
 		intro_video = null
 		intro_wash.queue_free()
 		navigation.show()
-		cover_video.volume_db = 0
-		cover_video.play()
+		navigation.modulate.a = 1.0
 
 func _play_opening_animation() -> void:
 	# The encoded stream contains only the newly authored sound design.

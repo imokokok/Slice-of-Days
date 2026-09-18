@@ -166,6 +166,7 @@ func build() -> void:
 
 func close() -> void:
 	ResidencySystem.persist()
+	WorldSound.play_ui("paper")
 	queue_free()
 
 func _input(event: InputEvent) -> void:
@@ -370,6 +371,7 @@ func _dashboard_status(text: String, at: Vector2, complete: bool) -> void:
 	status.add_theme_stylebox_override("normal", background)
 
 func _select_dossier_tab(target: String) -> void:
+	WorldSound.play_ui("paper")
 	show_dossier_reference = false
 	match target:
 		"income", "contribution":

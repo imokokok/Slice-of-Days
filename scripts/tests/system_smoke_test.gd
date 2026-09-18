@@ -21,6 +21,7 @@ func _ready() -> void:
 	_test_external_extension_and_record_credit()
 	_test_ending_echo_resolver()
 	_test_ui_scenes_load()
+	_test_indoor_actor_scale()
 	_test_chapter_progression()
 	_test_save_roundtrip()
 	if failures.is_empty():
@@ -129,6 +130,17 @@ func _test_ui_scenes_load() -> void:
 	_check(ending_scene is PackedScene, "The ending UI scene and its dynamic echo resolver should parse")
 	_check(interior_scene is PackedScene, "The street-to-interior scene should parse")
 	_check(extension_host_scene is PackedScene, "The extension host scene should parse")
+
+
+func _test_indoor_actor_scale() -> void:
+	var stage = preload("res://scripts/ui/walk_stage.gd").new()
+	stage.indoor = false
+	var outdoor_height: float = stage._actor_height()
+	stage.indoor = true
+	var indoor_height: float = stage._actor_height()
+	_check(indoor_height > outdoor_height, "Entering an interior should increase the actor scale")
+	_check(indoor_height >= 300.0, "Interior actors should stand clearly taller than the authored chairs")
+	stage.free()
 
 
 func _test_external_extension_and_record_credit() -> void:

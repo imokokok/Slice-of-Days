@@ -5,6 +5,8 @@ signal moved(world_x: float)
 const SPEED := 300.0
 const REACH := 85.0
 const ACTOR_BASE_HEIGHT := 121.0
+const OUTDOOR_ACTOR_HEIGHT := 184.0
+const INDOOR_ACTOR_HEIGHT := 320.0
 const Atlas = preload("res://scripts/ui/scene_atlas.gd")
 const COAST_ART = preload("res://art/user_scenes/lookout_approach.png")
 const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
@@ -488,9 +490,11 @@ func _draw_furniture(x: float, prop: String) -> void:
 		draw_line(Vector2(x + side * 50, 657), Vector2(x + side * 50, 718), Color("272c2d"), 6)
 
 func _actor_height() -> float:
-	# One world scale for every street, room and character. Background door
-	# dimensions must never resize a person as they walk between illustrations.
-	return 184.0
+	# Interior plates use a much closer camera than the joined outdoor world.
+	# Give every actor in the room the same larger scale so they read as adults
+	# beside the authored chairs and tables, while streets keep their wide-shot
+	# proportions.
+	return INDOOR_ACTOR_HEIGHT if indoor else OUTDOOR_ACTOR_HEIGHT
 
 func _draw_person(at: Vector2, coat: Color, gait_phase: float, gait_strength: float, direction: float, seated := false, role := "") -> void:
 	var actor_scale := _actor_height() / ACTOR_BASE_HEIGHT

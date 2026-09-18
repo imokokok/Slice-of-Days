@@ -30,6 +30,16 @@ func click_named(parent: Node, target: String) -> bool:
 	await process_frame
 	return true
 
+func click_text(parent: Node, target: String) -> bool:
+	for candidate in parent.find_children("*", "Button", true, false):
+		var button := candidate as Button
+		if button.text != target or button.disabled: continue
+		button.pressed.emit()
+		await process_frame
+		await process_frame
+		return true
+	return false
+
 func close_paper(shell: Node) -> void:
 	if is_instance_valid(shell.overlay): shell.overlay._input(key(KEY_ESCAPE))
 	await create_timer(.12).timeout
@@ -60,6 +70,8 @@ func shot(name: String) -> void:
 
 func run() -> void:
 	if not OS.get_cmdline_user_args().has("--isolated-save"): quit(1); return
+	# UI-copy assertions are intentionally checked against the Chinese source locale.
+	TranslationServer.set_locale("zh_CN")
 	root.gui_disable_input = true
 	gs = root.get_node("GameState")
 	rs = root.get_node("ResidencySystem")
@@ -99,15 +111,20 @@ func run() -> void:
 		push_error("Packet collection failed at %s, location=%s, room=%s: %s" % [gs.clock_text(),gs.current_location,router.active_space_id,shell.overlay.feedback.text])
 		quit(1); return
 	check(rs.state().materials.values().filter(func(item: Dictionary) -> bool: return item.kind == "official").size() == 6,"Packet contains exactly six independent official documents")
-	check(shell.overlay.mode == "dossier" and shell.overlay.tab == "packet","First collection lays out the six-paper folio")
+	check(shell.overlay.mode == "dossier" and shell.overlay.tab == "starter","First collection lays out the six-paper folio")
+	check(shell.overlay.find_children("Starter_*","Button",true,false).size() == 6,"First collection exposes all six starter papers as real controls")
 	await shot("starter_packet")
 	await close_paper(shell)
 	shell._unhandled_input(key(KEY_F))
 	await create_timer(.1).timeout
-	check(is_instance_valid(shell.overlay) and shell.overlay.tab == "packet","F opens the received folio through production input")
+	check(is_instance_valid(shell.overlay) and shell.overlay.tab == "days" and shell.overlay.show_dossier_reference,"F opens the received seven-day folio through production input")
+	check(await click_text(shell.overlay,"返回档案首页"),"The illustrated folio returns to the interactive dossier home")
+	check(shell.overlay.tab == "packet" and not shell.overlay.show_dossier_reference,"The illustrated folio returns to the dossier home")
+	check(await click_named(shell.overlay,"DossierTab_packet"),"Dossier home reopens the received starter packet")
+	check(shell.overlay.tab == "starter","The received starter papers remain reachable after closing the dossier")
 	for id in ["welcome","seven_days","requirements","portfolio","folder","map"]:
 		var folio = shell.overlay
-		folio.mode = "dossier"; folio.tab = "packet"; folio.build()
+		folio.mode = "dossier"; folio.tab = "starter"; folio.show_dossier_reference = false; folio.build()
 		await process_frame
 		var opened: bool = await click_named(folio,"Starter_"+id)
 		check(opened,"Open independent starter paper "+id)
@@ -146,6 +163,7 @@ func run() -> void:
 	shell = current_scene.get_node("GameplayShell")
 	shell._unhandled_input(key(KEY_F))
 	await create_timer(.1).timeout
+	check(await click_text(shell.overlay,"打开可编辑档案"),"Illustrated folio opens the interactive filing tabs")
 	check(await click_named(shell.overlay,"DossierTab_loose"),"Loose-papers tab opens")
 	var receipt_buttons: Array = shell.overlay.body.find_children("*","Button",true,false)
 	check(receipt_buttons.any(func(b: Button) -> bool: return b.text.contains("交通") or b.text.contains("打车") or b.text.contains("出租")),"Unfiled receipt is visible in the actual dossier")

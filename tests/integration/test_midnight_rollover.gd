@@ -17,7 +17,7 @@ func run() -> void:
 	await create_timer(0.8).timeout
 	check(current_scene.scene_file_path.ends_with("chapter_transition.tscn"), "22:00 automatically starts the night transition")
 	await create_timer(3.5).timeout
-	check(state.current_day == 2 and state.current_role == "B", "Midnight advances once to the authored next role")
+	check(state.current_day == 1 and state.current_role == "B", "Midnight advances once to the authored second Day 1 perspective")
 	check(state.current_minute < 1320 and not state.shared_state.get("sleep_pending", false), "Next morning clears the rollover latch")
 	check(current_scene.scene_file_path.ends_with("town_day.tscn"), "Next day resumes playable exploration")
 	print("MIDNIGHT ROLLOVER PASS" if failures == 0 else "MIDNIGHT ROLLOVER FAIL")

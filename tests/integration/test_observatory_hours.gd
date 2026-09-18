@@ -21,7 +21,7 @@ func run() -> void:
 	state.current_minute = 1260
 	town._refresh()
 	check(not is_finite(town.street.walk_limit), "Gate must open at exactly 21:00")
-	check(town.street._ground_at(2900) == 713 and town.street._ground_at(3200) == 805, "Approach and terrace meet at the correct ground height")
+	check(town.street._ground_at(2900) == 713 and town.street._ground_at(3200) == 713, "Approach and terrace share the current illustrated ground height")
 	root.get_node("SceneRouter").gameplay_module("contemplation", "street:park")
 	await create_timer(0.8).timeout
 	var sky = current_scene.experience

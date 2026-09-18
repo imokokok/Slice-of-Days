@@ -83,7 +83,7 @@ func _counter() -> void:
 		label(paper,"柜台上的二手胶片机",Vector2(340,123),Vector2(720,36),25)
 		label(paper,"老板正把一箱旧货分成几堆，旁边放着还没贴好的标签。",Vector2(340,167),Vector2(815,50),20)
 		button(paper,"看看相机 · $%d" % int(FilmSystem.economy().camera_price),Vector2(340,230),Vector2(240,45),func()->void: FilmSystem.notice_camera(); note="快门还能用。老板说，你要是有空，可以帮他把这箱旧货理出来。"; rebuild())
-		button(paper,"帮忙贴标签 · 25 min",Vector2(600,230),Vector2(270,45),func()->void:_act("help"),not bool(state.camera_seen))
+		button(paper,"帮忙贴标签 · 25 min",Vector2(600,230),Vector2(270,45),func()->void:_act("help"),not bool(state.camera_seen) or GameState.current_role == "A")
 		button(paper,"买下相机",Vector2(890,230),Vector2(250,45),func()->void:_act("camera"),GameState.money<int(FilmSystem.economy().camera_price))
 	else:
 		label(paper,"相机在包里。这里可以买胶卷，交底片，或拿回冲好的照片。",Vector2(38,90),Vector2(740,65),21)

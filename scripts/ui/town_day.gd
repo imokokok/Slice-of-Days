@@ -642,7 +642,11 @@ func _rebuild_hotspots() -> void:
 		street.hotspots.append({"x":_world_x(current_index, local_x), "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
 	var hours: Array = locations.get(GameState.current_location,{}).get("hours",[])
 	var open_now := hours.is_empty() or hours.any(func(h: Array) -> bool: return GameState.current_minute >= int(h[0]) and GameState.current_minute < int(h[1]))
-	if not open_now:
+	# The community-centre lobby opens before its 09:00 service counter so a
+	# Day 1 player who follows the first map instruction can enter and wait at
+	# the real counter.  After closing time the exterior remains locked.
+	var waiting_lobby_open := GameState.current_location == "print_shop" and not hours.is_empty() and GameState.current_minute < int(hours[0][0])
+	if not open_now and not waiting_lobby_open:
 		street.hotspots.append({"x":center,"kind":"shop_closed","label":"门已经合上了"})
 		return
 	if GameState.current_location in ["residence", "dorm"]:

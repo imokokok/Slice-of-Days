@@ -73,10 +73,12 @@ func run() -> void:
 	var modules = root.get_node("GameplayModuleSystem")
 	modules.unlock("ghostwriting")
 	var before_letter: int = state.money
-	check(modules.complete_external("ghostwriting", {"choice_id":"extension_complete"}, {"money":35}), "Finished commission can settle")
-	check(state.money == before_letter + 35, "Letter commission pays its real fee")
-	modules.complete_external("ghostwriting", {"choice_id":"extension_complete"}, {"money":35})
-	check(state.money == before_letter + 35, "Reopening a completed letter cannot farm the same fee")
+	var delivery := {"choice_id":"extension_complete", "contribution_accepted":true}
+	var letter_pay: int = int(root.get_node("EconomySystem").config.work.letter.pay)
+	check(modules.complete_external("ghostwriting", delivery, {"money":35}), "Accepted commission can settle")
+	check(state.money == before_letter + letter_pay, "Accepted letter commission pays its configured real fee")
+	modules.complete_external("ghostwriting", delivery, {"money":35})
+	check(state.money == before_letter + letter_pay, "Reopening a completed letter cannot farm the same fee")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		await process_frame
 		var viewport_texture := root.get_texture()

@@ -18,8 +18,11 @@ func run() -> void:
 	var rs=root.get_node("ResidencySystem")
 	var router=root.get_node("SceneRouter")
 	gs.begin_new_game("A")
-	gs.current_location="print_shop"
+	gs.current_location="cafe"
 	gs.current_minute=600
+	root.get_node("FilmSystem").notice_camera()
+	check(root.get_node("FilmSystem").acquire_camera(false).ok,"A buys the camera through the grocery-counter state change")
+	gs.current_location="print_shop"
 	router.active_space_id="print_studio"
 	check(rs.collect_packet().contains("六份"),"Tool journey has a collected packet")
 	change_scene_to_file("res://scenes/interactive_space.tscn")

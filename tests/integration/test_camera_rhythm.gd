@@ -30,6 +30,9 @@ func run() -> void:
 
 	state.begin_new_game("A")
 	state.current_minute = 500
+	state.current_location = "cafe"
+	root.get_node("FilmSystem").notice_camera()
+	check(root.get_node("FilmSystem").acquire_camera(false).ok, "A can buy the camera before using the photography rhythm")
 	state.current_location = "town_entrance"
 	state.commit_active_role_state()
 	change_scene_to_file("res://scenes/town_day.tscn")
@@ -48,37 +51,37 @@ func run() -> void:
 		quit(1)
 		return
 	camera.library.root_path = "user://tests/camera_rhythm_photos_" + Crypto.new().generate_random_bytes(6).hex_encode()
-	check(camera.subjects.size() >= 2 and not camera.current_subject.is_empty(), "Camera should expose authored scenery and focus the centered discovery")
-	check(not str(camera.current_subject.get("word", "")).is_empty(), "Centered scenery should expose a field-guide word card")
+	check(camera.subjects.size() >= 2 and not camera.focus_active and camera.hold_layer.visible, "Held camera exposes authored scenery without taking over walking")
 	check(camera.find_children("*", "HSlider", true, false).is_empty(), "Camera should no longer look like a three-slider utility form")
-	var drag_start: Vector2 = camera.preview_frame.get_global_rect().get_center()
+	camera.enter_viewfinder()
+	await process_frame
+	check(camera.focus_active and not camera.current_subject.is_empty(), "Raising the 3:2 finder focuses the centered authored discovery")
+	check(not str(camera.current_subject.get("word", "")).is_empty(), "Centered scenery retains its optional field-guide word")
+	var drag_start: Vector2 = camera.preview_frame.size * 0.5
 	var press := InputEventMouseButton.new()
 	press.position = drag_start
 	press.button_index = MOUSE_BUTTON_LEFT
 	press.pressed = true
-	root.push_input(press, true)
+	camera._viewfinder_input(press)
 	var motion := InputEventMouseMotion.new()
 	motion.position = drag_start + Vector2(90, 0)
 	motion.relative = Vector2(90, 0)
 	motion.button_mask = MOUSE_BUTTON_MASK_LEFT
-	root.push_input(motion, true)
+	camera._viewfinder_input(motion)
 	press.pressed = false
 	press.position = motion.position
-	root.push_input(press, true)
-	check(camera.pan.x < 0.5, "Mouse drag must pass through the actual viewfinder GUI and change composition")
+	camera._viewfinder_input(press)
+	check(camera.pan.x < 0.5, "Mouse drag through the real viewfinder changes composition")
 	camera.pan = Vector2(0.5, 0.5)
 	camera.update_preview()
+	var exposures_before := int(root.get_node("FilmSystem").active_roll().exposures_used)
 	camera.take_photo()
-	await create_timer(0.55).timeout
-	check(camera.capture_card.visible, "A successful shot should create an immediate photo card")
-	check((state.artifacts.get("photo_subjects", []) as Array).size() == 1, "Recognized scenery should enter the persistent field guide")
-	check(camera.capture_word.text.contains("VINE"), "The result card should name the photographed word instead of showing only utility feedback")
-	camera._flip_capture()
-	check(not camera.capture_image.visible and camera.capture_note.position.y == 60, "A photo can be flipped over to read its observation")
-	camera._flip_capture()
-	check(camera.capture_image.visible, "Flipping back restores the captured photograph")
-	var saved: Array[Dictionary] = camera.library.list_photos()
-	check(saved.size() == 1 and str(saved[0].get("subject_name", "")).is_empty() == false, "Photo metadata should retain the recognized subject")
+	await create_timer(0.3).timeout
+	var roll: Dictionary = root.get_node("FilmSystem").active_roll()
+	check(int(roll.exposures_used) == exposures_before + 1, "A successful shutter press consumes exactly one film exposure")
+	check(str(roll.captures[-1].get("subject_name", "")).is_empty() == false, "Exposed-frame metadata retains the recognized subject")
+	check(FileAccess.file_exists(str(roll.captures[-1].capture_path)), "The unprocessed negative is persisted as a real image")
+	check((state.artifacts.get("photos", []) as Array).is_empty(), "Unprocessed film does not appear as an immediate Gallery photo card")
 	if OS.get_cmdline_user_args().has("--screenshots") and root.get_texture() != null:
 		await process_frame
 		root.get_texture().get_image().save_png(OS.get_environment("SOLMERE_TEST_OUTPUT").path_join("solmere-camera-redesign.png"))
@@ -90,5 +93,6 @@ func run() -> void:
 		current_scene._show_pocket_panel(album)
 		await process_frame
 		root.get_texture().get_image().save_png(OS.get_environment("SOLMERE_TEST_OUTPUT").path_join("solmere-album-redesign.png"))
+	camera.queue_free()
 	print("CAMERA + RHYTHM: ", "PASS" if failures == 0 else "FAIL", " failures=", failures)
 	quit(failures)

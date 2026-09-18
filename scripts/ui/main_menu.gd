@@ -194,7 +194,13 @@ func _play_opening_animation() -> void:
 	var reveal := create_tween().set_parallel(true)
 	reveal.tween_property(intro_wash,"color:a",0.0,.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	reveal.tween_property(intro_video,"volume_db",0.0,.85)
-	await intro_video.finished
+	# Some platform decoders can leave VideoStreamPlayer playing without emitting
+	# `finished`. Never strand a new journey on the opening film: wait for normal
+	# completion, with a wall-clock fallback slightly beyond the encoded length.
+	var deadline_msec := Time.get_ticks_msec() + int((intro_video.get_stream_length() + 2.0) * 1000.0)
+	while is_instance_valid(intro_video) and intro_video.is_playing() and Time.get_ticks_msec() < deadline_msec:
+		await get_tree().process_frame
+	if is_instance_valid(intro_video): intro_video.stop()
 	intro_wash.color.a = 1.0
 	await get_tree().create_timer(.15).timeout
 

@@ -11,6 +11,8 @@ func check(ok: bool,label: String)->void:
 	else: print("PASS ",label)
 func run()->void:
 	if not OS.get_cmdline_user_args().has("--isolated-save"):quit(1);return
+	# Photo-action controls are located by their Chinese source captions.
+	TranslationServer.set_locale("zh_CN")
 	root.gui_disable_input=true
 	gs=root.get_node("GameState")
 	film=root.get_node("FilmSystem")
@@ -22,11 +24,15 @@ func run()->void:
 	gs.begin_new_game("A")
 	gs.current_location="cafe"
 	gs.current_minute=660
+	check(not film.camera_available(false),"A starts without bypassing the camera purchase choice")
+	film.notice_camera()
+	var camera_money := int(gs.money)
+	check(film.acquire_camera(false).ok and gs.money==camera_money-240,"A directly buys the used camera at the configured price")
 	change_scene_to_file("res://scenes/town_day.tscn")
 	await create_timer(.5).timeout
 	current_scene.street.set_process(false)
-	check(film.camera_available(false),"A starts with the visual tool")
-	check(film.active_roll().film_type=="normal" and film.active_roll().exposures_used==0,"A starts with one unused 24-exposure normal roll")
+	check(film.camera_available(false),"A's purchased visual tool is available in normal play")
+	check(film.active_roll().film_type=="normal" and film.active_roll().exposures_used==0,"A's purchase includes one unused 24-exposure normal roll")
 	var camera=load("res://scripts/town_sound/PocketCamera.gd").new()
 	camera.source=Image.create(320,180,false,Image.FORMAT_RGB8)
 	camera.source.fill(Color("68aeb8"))

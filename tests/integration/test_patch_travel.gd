@@ -38,6 +38,7 @@ func paper_to(location: String) -> Control:
 	return paper
 func run() -> void:
 	if not OS.get_cmdline_user_args().has("--isolated-save"): quit(1); return
+	TranslationServer.set_locale("zh_CN")
 	var gs = root.get_node("GameState")
 	var router = root.get_node("SceneRouter")
 	var travel = root.get_node("TravelSystem")
@@ -49,6 +50,9 @@ func run() -> void:
 	for i in 250:
 		await create_timer(.1).timeout
 		if current_scene.scene_file_path.ends_with("town_day.tscn") and not router.transitioning: break
+	if not current_scene.scene_file_path.ends_with("town_day.tscn"):
+		var intro = current_scene.get("intro_video")
+		print("TRAVEL_ENTRY_DEBUG scene=", current_scene.scene_file_path, " entering=", current_scene.get("entering"), " intro_valid=", is_instance_valid(intro), " intro_playing=", intro.is_playing() if is_instance_valid(intro) else false, " intro_position=", intro.stream_position if is_instance_valid(intro) else -1, " transition=", router.transitioning)
 	check(current_scene.scene_file_path.ends_with("town_day.tscn"),"Main-menu new game enters street")
 	if not current_scene.scene_file_path.ends_with("town_day.tscn"): quit(1); return
 	var map = await paper_to("residence")

@@ -39,7 +39,10 @@ func run() -> void:
 	await create_timer(.2).timeout
 	check(debug.report.text.contains("faculty_remaining"),"Developer panel shows faculty cooldowns")
 	check(debug.size.y<=780,"Developer controls stay inside viewport")
-	await RenderingServer.frame_post_draw
-	root.get_texture().get_image().save_png("res://docs/meta/v2_debug.png")
+	if DisplayServer.get_name() != "headless":
+		await process_frame
+		var viewport_texture := root.get_texture()
+		if viewport_texture != null:
+			viewport_texture.get_image().save_png("res://docs/meta/v2_debug.png")
 	print("V2_ENTRY_DEBUG ",errors," failures")
 	quit(errors)

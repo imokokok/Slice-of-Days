@@ -158,6 +158,9 @@ func _dossier() -> void:
 	if tab == "packet":
 		_dossier_dashboard()
 		return
+	if tab == "starter":
+		_starter_packet()
+		return
 	if show_dossier_reference and tab in ["days", "exploration", "recognition", "personal", "proof"]:
 		_dossier_reference_page()
 		return
@@ -218,7 +221,7 @@ func _dossier_dashboard() -> void:
 	open_pages.flat = true
 	open_pages.modulate = Color(1, 1, 1, 0.01)
 	open_pages.tooltip_text = LocalizationSystem.text("打开资料袋")
-	open_pages.pressed.connect(func() -> void: tab = "cover"; build())
+	open_pages.pressed.connect(func() -> void: tab = "starter"; build())
 	body.add_child(open_pages)
 
 func _select_dossier_tab(target: String) -> void:
@@ -313,7 +316,7 @@ func _starter_reader() -> void:
 	text.add_theme_color_override("font_color",INK)
 	text.add_theme_font_size_override("font_size",23)
 	rows.add_child(text)
-	button(sheet,"收回资料袋",Vector2(40,439),Vector2(235,40),func() -> void: tab = "packet"; build())
+	button(sheet,"收回资料袋",Vector2(40,439),Vector2(235,40),func() -> void: tab = "starter"; build())
 	button(sheet,"下一份文件  →",Vector2(650,439),Vector2(315,40),func() -> void: _open_starter("seven_days" if document_id == "welcome" else "requirements"))
 
 func _dossier_cover() -> void:
@@ -761,7 +764,7 @@ func _counter() -> void:
 		wait.name = "WaitForCommunityCounter"
 	var collect := button(body,"展开已领取的资料袋" if ResidencySystem.state().packet else "领取七日资料袋",Vector2(65,260),Vector2(1110,65),func() -> void:
 		var message := ResidencySystem.collect_packet()
-		if ResidencySystem.state().packet: mode = "dossier"; tab = "packet"; build()
+		if ResidencySystem.state().packet: mode = "dossier"; tab = "starter"; build()
 		feedback.text = LocalizationSystem.text(message))
 	collect.name = "CollectStarterPacket"
 	collect.disabled = not ResidencySystem.office_open() and not ResidencySystem.state().packet

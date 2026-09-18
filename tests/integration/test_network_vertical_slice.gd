@@ -51,24 +51,27 @@ func run() -> void:
 	current_scene._select_object(0)
 	current_scene._open_selected()
 	await process_frame
-	check(is_instance_valid(current_scene.conversation),"Kitchen first introduces the shopkeeper commission")
-	var kitchen_talk = current_scene.conversation
-	kitchen_talk.typewriter = false
-	for i in range(kitchen_talk.lines.size()): kitchen_talk._advance()
+	var counters := get_nodes_in_group("economy_paper")
+	check(not counters.is_empty(),"Kitchen first opens the real procurement and reimbursement counter")
+	if not counters.is_empty(): counters[0].queue_free()
 	await process_frame
-	current_scene._open_selected()
+	# The full purchase/delivery chain has its own V3 economy integration test.
+	# This broad network test enters the pantry-mode cooking prototype directly
+	# so it can continue checking return routing, echoes and the seven-day clock.
+	check(root.get_node("GameplayModuleSystem").begin_session("cooking","network_vertical_slice"),"Pantry cooking session begins for the network regression")
+	change_scene_to_file("res://scenes/native_module_game.tscn")
 	await settle()
 	check(current_scene.module_id == "cooking", "Kitchen enters existing cooking prototype")
-	for token in ["lemon","bread","tomato"]: current_scene._toggle_token(token)
+	for token in ["lemon","bread","cheese"]: current_scene._toggle_token(token)
 	current_scene.value_slider.value = 0.58
 	current_scene._perform_primary_action()
 	var before_cooking: int = state.current_minute
-	current_scene._complete_choice("careful_menu")
+	current_scene._complete_choice("improvise")
 	check(current_scene.completed and state.current_minute > before_cooking, "Cooking completes and settles time")
 	router.return_from_gameplay()
 	await settle()
 	check(router.active_space_id == "restaurant" and current_scene.stage != null, "Minigame returns to original interior")
-	check(not root.get_node("EchoSystem").at_location("night_market").is_empty(), "Cooking leaves a persistent visible echo")
+	check(root.get_node("EchoSystem").at_location("night_market").is_empty(), "An unaccepted pantry draft does not fabricate a public echo")
 	router.leave_space()
 	await settle()
 	router.travel_to("residence","taxi")
@@ -110,7 +113,7 @@ func run() -> void:
 	state.begin_new_game()
 	state.load_save_data(save)
 	check(state.current_role == "B" and state.current_day == 2 and root.get_node("KnowledgeSystem").facts().size() == 2, "New save retains role, day and knowledge")
-	check(not root.get_node("EchoSystem").at_location("night_market").is_empty(), "Day 1 echo survives Day 2 reload")
+	check(root.get_node("EchoSystem").at_location("night_market").is_empty(), "Reload preserves the absence of a public echo before real delivery")
 	state.current_location = "record_store"
 	state.current_minute = 1200
 	router.active_space_id = ""

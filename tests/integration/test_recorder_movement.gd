@@ -29,8 +29,25 @@ func tap(code: int) -> void:
 	send_key(code, false)
 	await process_frame
 
+func dismiss_meta_modals() -> void:
+	# Recorder/camera milestones may intentionally surface a narrative memory card.
+	# Dismiss that card before measuring the underlying walking state.
+	for node in get_nodes_in_group("meta_modal"):
+		if not is_instance_valid(node) or not node.is_visible_in_tree(): continue
+		if node.has_method("_close"): node.call("_close")
+		else: node.queue_free()
+	await process_frame
+	await process_frame
+
 func hold_right(stage: Control, should_move: bool, title: String) -> void:
 	await create_timer(0.15).timeout
+	# Long journeys can legitimately leave the actor at the edge of a segment.
+	# Re-center before measuring input so the assertion tests the walking lock,
+	# rather than the collision boundary.
+	if should_move:
+		stage.player_x = minf(stage.player_x, minf(stage.world_width - 260.0, stage.walk_limit - 180.0))
+		stage.player_x = maxf(stage.player_x, 120.0)
+		stage.velocity = 0.0
 	var before: float = stage.player_x
 	send_key(KEY_D, true)
 	check(Input.get_axis("move_left", "move_right") > 0.9, title + " / real key reaches InputMap")
@@ -38,6 +55,8 @@ func hold_right(stage: Control, should_move: bool, title: String) -> void:
 	send_key(KEY_D, false)
 	await create_timer(0.15).timeout
 	var distance: float = stage.player_x - before
+	if should_move and distance <= 45.0:
+		print("MOVEMENT_DEBUG title=", title, " enabled=", stage.enabled, " sitting=", stage.sitting, " velocity=", stage.velocity, " player=", stage.player_x, " limit=", stage.walk_limit, " width=", stage.world_width, " focused=", DisplayServer.window_is_focused(), " modal=", root.get_node("MetaExperience").modal_open(), " tools=", get_nodes_in_group("world_tool").size())
 	check(distance > 45.0 if should_move else absf(distance) < 0.5, title + " / distance %.2f" % distance)
 
 func exercise_scene(indoor: bool) -> void:
@@ -49,6 +68,7 @@ func exercise_scene(indoor: bool) -> void:
 	router.active_space_id = "home_a" if indoor else ""
 	change_scene_to_file("res://scenes/interactive_space.tscn" if indoor else "res://scenes/town_day.tscn")
 	await create_timer(0.5).timeout
+	await dismiss_meta_modals()
 	var host = current_scene
 	var shell = host.get_node("GameplayShell")
 	var stage: Control = host.stage if indoor else host.street
@@ -85,6 +105,7 @@ func exercise_scene(indoor: bool) -> void:
 	await create_timer(1.0).timeout
 	check(not is_instance_valid(shell.tool), label + " saved recorder automatically dismisses")
 	check(get_nodes_in_group("mobile_recorder").is_empty(), label + " recorder releases scene ownership")
+	await dismiss_meta_modals()
 	await hold_right(stage, true, label + " walking after recorder dismissal")
 
 	await tap(KEY_F)
@@ -102,11 +123,15 @@ func exercise_scene(indoor: bool) -> void:
 	check(is_instance_valid(shell.tool), label + " C opens camera")
 	if not is_instance_valid(shell.tool):
 		return
-	check(shell.blocks_walking() and not stage.enabled, label + " camera retains its movement lock")
+	check(not shell.blocks_walking() and stage.enabled, label + " held camera remains mobile before looking through the finder")
+	shell.tool.enter_viewfinder()
+	await create_timer(0.35).timeout
+	check(shell.blocks_walking() and not stage.enabled, label + " viewfinder retains its movement lock")
 	await hold_right(stage, false, label + " camera prevents movement")
 	await tap(KEY_C)
 	await create_timer(0.15).timeout
 	check(not is_instance_valid(shell.tool), label + " C puts camera away")
+	await dismiss_meta_modals()
 	check(stage.enabled, label + " camera close restores walking")
 
 func run() -> void:

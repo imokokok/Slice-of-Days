@@ -98,6 +98,8 @@ func exploration(kind: String, location: String, observation: String) -> void:
 
 func run() -> void:
 	if not OS.get_cmdline_user_args().has("--isolated-save"): quit(1); return
+	# This journey locates production controls by their Chinese source captions.
+	TranslationServer.set_locale("zh_CN")
 	root.gui_disable_input = true
 	gs = root.get_node("GameState")
 	rs = root.get_node("ResidencySystem")

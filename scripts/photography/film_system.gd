@@ -15,7 +15,9 @@ func _ready() -> void:
 func state() -> Dictionary:
 	if not GameState.artifacts.get("film",{}) is Dictionary or GameState.artifacts.get("film",{}).is_empty():
 		var legacy: bool = not GameState.artifacts.get("photos",[]).is_empty()
-		GameState.artifacts["film"] = {"version":1,"camera_owned":GameState.current_role=="A" or legacy,"camera_seen":false,"helped":false,"first_discount_used":false,"active_roll":"","rolls":{},"photo_uses":{},"room_display":[],"collage_selection":""}
+		# New journeys obtain the camera through the grocery-counter exchange.
+		# Legacy photo saves keep camera ownership during migration.
+		GameState.artifacts["film"] = {"version":1,"camera_owned":legacy,"camera_seen":false,"helped":false,"first_discount_used":false,"active_roll":"","rolls":{},"photo_uses":{},"room_display":[],"collage_selection":""}
 		if bool(GameState.artifacts.film.camera_owned): _new_roll("normal",true)
 	return GameState.artifacts.film
 
@@ -86,6 +88,7 @@ func acquire_camera(help := true) -> Dictionary:
 	var s := state()
 	if busy or not at_counter(): return _fail("到杂货店柜台聊聊这台相机。")
 	if bool(s.camera_owned): return _fail("这台相机已经在你的包里。")
+	if help and GameState.current_role == "A": return _fail("A 决定按标价买下它；帮忙换旧相机是 B 的生活交换。")
 	if help and not bool(s.camera_seen): return _fail("先看看柜台上那台二手相机。")
 	if help and not GameState.can_fit_now(int(config.help_minutes)): return _fail("整理旧货要25分钟，眼下的空闲不够。")
 	busy = true

@@ -147,7 +147,7 @@ func _process(delta: float) -> void:
 		var lines: Array[String] = []
 		for line in LocalizationSystem.text(str(context.text)).split("\n"):
 			var parts := str(line).split("  ",true,1)
-			lines.append("[bgcolor=#a8cedb][color=#354c56] "+str(parts[0])+" [/color][/bgcolor] "+(str(parts[1]) if parts.size()>1 else ""))
+			lines.append("[bgcolor=#ffffff][color=#354c56] "+str(parts[0])+" [/color][/bgcolor] "+(str(parts[1]) if parts.size()>1 else ""))
 		hint_label.text = "\n".join(lines)
 		hint_debug.context = id
 		hint_debug.actions = str(context.text).split("\n")

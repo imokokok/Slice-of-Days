@@ -242,6 +242,23 @@ func _dossier_reference_page() -> void:
 	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	body.add_child(preview)
+	var tabs := [
+		["requirements", Vector2(1110, 202)],
+		["days", Vector2(1110, 278)],
+		["exploration", Vector2(1110, 354)],
+		["recognition", Vector2(1110, 430)],
+		["personal", Vector2(1110, 506)],
+		["proof", Vector2(1110, 582)]
+	]
+	for row in tabs:
+		var hit := Button.new()
+		hit.name = "DossierTab_" + str(row[0])
+		hit.position = row[1]
+		hit.size = Vector2(132, 52)
+		hit.flat = true
+		hit.modulate = Color(1, 1, 1, 0.01)
+		hit.pressed.connect(_select_dossier_tab.bind(str(row[0])))
+		body.add_child(hit)
 	button(body, "打开可编辑档案", Vector2(870, 635), Vector2(250, 38), func() -> void: show_dossier_reference = false; build())
 	button(body, "返回档案首页", Vector2(1130, 635), Vector2(150, 38), func() -> void: tab = "packet"; show_dossier_reference = false; build())
 

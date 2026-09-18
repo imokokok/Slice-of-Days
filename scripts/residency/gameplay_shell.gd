@@ -216,6 +216,9 @@ func open_paper(mode: String) -> void:
 	if is_instance_valid(overlay) or _blocked() or is_instance_valid(tool): return
 	var paper := PAPER.new()
 	paper.mode = mode
+	if mode == "dossier":
+		paper.tab = "days"
+		paper.show_dossier_reference = true
 	paper.tool_requested.connect(func(request: String) -> void:
 		call_deferred("open_tool",request))
 	overlay = paper

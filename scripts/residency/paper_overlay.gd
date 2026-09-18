@@ -200,6 +200,11 @@ func _dossier() -> void:
 		"exploration": _explore_records()
 
 func _dossier_dashboard() -> void:
+	# The illustrated dossier is the whole surface on its home screen. Remove
+	# the generic paper window chrome so only the book floats over the world.
+	body.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	for chrome in body.get_children():
+		chrome.hide()
 	var preview := TextureRect.new()
 	preview.texture = load("res://art/ui/dossier-open-reference.png")
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -236,7 +241,6 @@ func _dossier_dashboard() -> void:
 	for row in tabs:
 		_dashboard_hit("DossierTab_" + str(row[0]), row[1], str(row[2]), _select_dossier_tab.bind(str(row[0])))
 	_dashboard_hit("DossierTab_packet", Rect2(95, 90, 630, 850), "打开资料袋", func() -> void: tab = "starter"; build())
-	label(body, "Day %d / 7   ·   当前进度来自存档中的真实记录" % GameState.current_day, Vector2(510, 684), Vector2(620, 26), 16, Color("665748"))
 
 func _audit_count(progress: Dictionary, key: String) -> int:
 	return int(progress.get(key, {}).get("count", 0))

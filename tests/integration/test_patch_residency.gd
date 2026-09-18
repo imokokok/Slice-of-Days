@@ -120,6 +120,8 @@ func run() -> void:
 	check(is_instance_valid(shell.overlay) and shell.overlay.tab == "packet" and not shell.overlay.show_dossier_reference,"F opens the centered interactive dossier home through production input")
 	var viewport_center := root.get_visible_rect().size * 0.5
 	check(shell.overlay.body.get_global_rect().get_center().distance_to(viewport_center) < 1.0,"The RP-07 dossier stays centered in the current viewport")
+	check(shell.overlay.body.get_theme_stylebox("panel") is StyleBoxEmpty,"Dossier home removes the generic outer paper frame")
+	check(not shell.overlay.body.find_children("*","Button",true,false).any(func(candidate: Button) -> bool: return candidate.visible and candidate.text.contains("Esc")),"Dossier home shows only the book without the generic title/close bar")
 	var dashboard_actions := [
 		["days","days","all",1],
 		["income","proof","income",1],

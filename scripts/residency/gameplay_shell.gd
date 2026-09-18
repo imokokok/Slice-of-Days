@@ -4,7 +4,7 @@ var host: Control
 var stage: Control
 var clock_label: Label
 var folder: Button
-var hints: Panel
+var hints: Control
 var hint_label: RichTextLabel
 var overlay: Control
 var tool: Control
@@ -66,14 +66,13 @@ func _ready() -> void:
 	next_button.add_theme_constant_override("shadow_offset_y",2)
 	next_button.pressed.connect(func() -> void: open_paper("today"))
 	add_child(next_button)
-	hints = Panel.new()
+	# Contextual controls float directly over the world. Keeping this as a plain
+	# Control (rather than a Panel) prevents the hint area from masking scenery.
+	hints = Control.new()
+	hints.name = "ContextHints"
 	hints.position = Vector2(1160,175)
 	hints.size = Vector2(410,100)
 	hints.mouse_filter = MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("fff7e8",0.9)
-	style.set_corner_radius_all(4)
-	hints.add_theme_stylebox_override("panel",style)
 	add_child(hints)
 	hint_label = RichTextLabel.new()
 	hint_label.bbcode_enabled = true
@@ -81,7 +80,10 @@ func _ready() -> void:
 	hint_label.position = Vector2(15,8)
 	hint_label.size = Vector2(380,87)
 	hint_label.add_theme_font_size_override("normal_font_size",18)
-	hint_label.add_theme_color_override("default_color",Color("456a76"))
+	hint_label.add_theme_color_override("default_color",Color("fff6df"))
+	hint_label.add_theme_color_override("font_shadow_color",Color("203945",0.9))
+	hint_label.add_theme_constant_override("shadow_offset_x",1)
+	hint_label.add_theme_constant_override("shadow_offset_y",2)
 	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint_label.mouse_filter = MOUSE_FILTER_IGNORE
 	hints.add_child(hint_label)

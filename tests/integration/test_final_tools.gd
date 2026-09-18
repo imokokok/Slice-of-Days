@@ -29,6 +29,7 @@ func run() -> void:
 	await create_timer(.5).timeout
 	var host=current_scene
 	var shell=host.get_node("GameplayShell")
+	check(shell.hints is Control and not shell.hints is Panel,"Context key hints float without a scenery-blocking panel")
 	shell._unhandled_input(key(KEY_TAB))
 	await create_timer(.15).timeout
 	check(is_instance_valid(shell.overlay) and shell.overlay.mode=="map","Tab opens paper map through real input handler")

@@ -77,20 +77,6 @@
     "pass": true
   },
   {
-    "test": "test_v3_residency",
-    "returncode": 0,
-    "seconds": 6.2,
-    "errors": [],
-    "pass": true
-  },
-  {
-    "test": "test_patch_travel",
-    "returncode": 0,
-    "seconds": 26.4,
-    "errors": [],
-    "pass": true
-  },
-  {
     "test": "test_patch_residency",
     "returncode": 0,
     "seconds": 13.3,
@@ -147,6 +133,20 @@
     "test": "test_v3_guidance",
     "returncode": 0,
     "seconds": 3.0,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_patch_travel",
+    "returncode": 0,
+    "seconds": 26.4,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_v3_residency",
+    "returncode": 0,
+    "seconds": 7.1,
     "errors": [],
     "pass": true
   }

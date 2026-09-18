@@ -256,7 +256,7 @@ func _text_panel(at: Vector2, panel_size: Vector2, title: String, content: Strin
 	var text := RichTextLabel.new()
 	text.position = Vector2(22, 62)
 	text.size = Vector2(panel_size.x - 44, panel_size.y - 84)
-	text.text = content
+	text.text = LocalizationSystem.text(content)
 	text.fit_content = false
 	text.scroll_active = true
 	text.add_theme_font_size_override("normal_font_size", 22)
@@ -266,7 +266,7 @@ func _text_panel(at: Vector2, panel_size: Vector2, title: String, content: Strin
 
 func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, font_size: int, color: Color) -> Label:
 	var label := Label.new()
-	label.text = text_value
+	label.text = LocalizationSystem.text(text_value)
 	label.position = at
 	label.size = label_size
 	label.add_theme_font_size_override("font_size", font_size)
@@ -277,7 +277,7 @@ func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, 
 
 func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, color: Color) -> Button:
 	var button := Button.new()
-	button.text = text_value
+	button.text = LocalizationSystem.text(text_value)
 	button.position = at
 	button.size = button_size
 	button.add_theme_font_size_override("font_size", 15)

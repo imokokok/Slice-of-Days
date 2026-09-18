@@ -332,7 +332,7 @@ func _voice_safe_zone() -> Rect2:
 
 func _display_voice(text: String, _faculty: String) -> void:
 	if voice_tween: voice_tween.kill()
-	voice_label.text = text
+	voice_label.text = LocalizationSystem.text(text)
 	voice_label.modulate.a = 0
 	voice_label.add_theme_font_size_override("font_size",clampi(int(SettingsSystem.values.get("voice_size",21)),17,24))
 	voice_tween = create_tween()

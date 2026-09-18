@@ -51,7 +51,7 @@ func open() -> void:
 	connection.add_child(address)
 	nickname=LineEdit.new()
 	nickname.text=client.display_name
-	nickname.placeholder_text="你的署名"
+	nickname.placeholder_text=LocalizationSystem.text("你的署名")
 	nickname.max_length=24
 	nickname.custom_minimum_size=Vector2(210,42)
 	connection.add_child(nickname)
@@ -97,7 +97,7 @@ func open() -> void:
 
 func add_label(parent: Node, text: String, size: int = 20) -> Label:
 	var label:=Label.new()
-	label.text=text
+	label.text=LocalizationSystem.text(text)
 	label.add_theme_font_override("font",font)
 	label.add_theme_font_size_override("font_size",size)
 	label.add_theme_color_override("font_color",Color("354a43"))
@@ -106,7 +106,7 @@ func add_label(parent: Node, text: String, size: int = 20) -> Label:
 
 func add_button(parent: Node, text: String, action: Callable, network: bool = true) -> Button:
 	var button:=Button.new()
-	button.text=text
+	button.text=LocalizationSystem.text(text)
 	button.custom_minimum_size=Vector2(120,42)
 	button.pressed.connect(action)
 	parent.add_child(button)
@@ -150,13 +150,13 @@ func connect_now() -> void:
 	if in_flight:
 		return
 	lock(true)
-	message.text="正在连接海岸邮局……"
+	message.text=LocalizationSystem.text("正在连接海岸邮局……")
 	var result: Dictionary=await client.connect_service(address.text,nickname.text)
 	if not active:
 		return
 	lock(false)
 	if not result.ok:
-		message.text=result.get("error","连接失败。")
+		message.text=LocalizationSystem.text(result.get("error","连接失败。"))
 		return
 	await refresh()
 
@@ -164,7 +164,7 @@ func refresh() -> void:
 	if in_flight:
 		return
 	if client.token.is_empty():
-		message.text="请先连接邮局。"
+		message.text=LocalizationSystem.text("请先连接邮局。")
 		return
 	lock(true)
 	var path: String="/v1/letters?view="+view
@@ -175,11 +175,11 @@ func refresh() -> void:
 		return
 	lock(false)
 	if not result.ok:
-		message.text=result.get("error","暂时没有收到邮局的回应。")
+		message.text=LocalizationSystem.text(result.get("error","暂时没有收到邮局的回应。"))
 		return
 	clear(letters_box)
 	next_before=result.get("next_before")
-	debt_label.text="待完成：回复一封来信，才能再次自由发信。" if client.player.get("reply_required",false) else "可以自由发信，也可以继续回复海上的旧信。"
+	debt_label.text=LocalizationSystem.text("待完成：回复一封来信，才能再次自由发信。" if client.player.get("reply_required",false) else "可以自由发信，也可以继续回复海上的旧信。")
 	for letter in result.get("letters",[]):
 		var id: int=int(letter.id)
 		var label: String="#%d  %s\n%s · %d 封回复" % [id,letter.title,letter.name,int(letter.reply_count)]
@@ -189,7 +189,7 @@ func refresh() -> void:
 		b.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	if result.get("letters",[]).is_empty():
 		add_label(letters_box,"暂时没有信件。",20)
-	message.text="每封信会留在邮局。起航信是事务所准备的，不冒充玩家来信。"
+	message.text=LocalizationSystem.text("每封信会留在邮局。起航信是事务所准备的，不冒充玩家来信。")
 	lock(false)
 
 func show_letter(id: int) -> void:
@@ -201,7 +201,7 @@ func show_letter(id: int) -> void:
 		return
 	lock(false)
 	if not result.ok:
-		message.text=result.get("error","打开失败。")
+		message.text=LocalizationSystem.text(result.get("error","打开失败。"))
 		return
 	clear(detail_box)
 	var letter: Dictionary=result.letter
@@ -235,7 +235,7 @@ func show_letter(id: int) -> void:
 
 func compose_new() -> void:
 	if client.player.is_empty() or client.player.get("reply_required",false):
-		message.text="请先回复一封来信。"
+		message.text=LocalizationSystem.text("请先回复一封来信。")
 		return
 	compose_requested.emit({})
 	close()

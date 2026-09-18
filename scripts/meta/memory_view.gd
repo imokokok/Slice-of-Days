@@ -123,7 +123,7 @@ func _ready() -> void:
 	unfold.tween_property(intro_paper,"size",size,.7).set_trans(Tween.TRANS_SINE)
 	status = Label.new()
 	status.position = Vector2(44,34)
-	status.text = str(definition.title)
+	status.text = LocalizationSystem.text(str(definition.title))
 	status.add_theme_font_size_override("font_size",26)
 	add_child(status)
 	caption = Label.new()
@@ -137,7 +137,7 @@ func _ready() -> void:
 	close = Button.new()
 	close.position = Vector2(1350,35)
 	close.size = Vector2(190,44)
-	close.text = "收起记忆 · Esc"
+	close.text = LocalizationSystem.text("收起记忆 · Esc")
 	close.disabled = true
 	close.pressed.connect(_leave)
 	add_child(close)
@@ -155,7 +155,7 @@ func _ready() -> void:
 	if exit_started: return
 	ready_to_walk = true
 	close.disabled = false
-	status.text = str(definition.title)+"   ·   WASD 走动 / 鼠标环顾 / E 看物件 / Esc 返回"
+	status.text = LocalizationSystem.text(str(definition.title)+"   ·   WASD 走动 / 鼠标环顾 / E 看物件 / Esc 返回")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _add_collisions(node: Node) -> void:

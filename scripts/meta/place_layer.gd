@@ -114,7 +114,7 @@ func _show_comment(row: Dictionary, stage: Control) -> void:
 		if clear:chosen=area;break
 	if not chosen.has_area():return
 	var label:=Label.new()
-	label.text=str(row.get("byline",""))+"\n"+str(row.text) if row.has("byline") else str(row.text)
+	label.text=LocalizationSystem.text(str(row.get("byline","")))+"\n"+LocalizationSystem.text(str(row.text)) if row.has("byline") else LocalizationSystem.text(str(row.text))
 	label.position=chosen.position
 	label.size=chosen.size
 	label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART

@@ -30,7 +30,7 @@ func _ready() -> void:
 	column.add_child(host._button("公共唱片库状态", func() -> void:
 		var online := OnlineRecordLibrary.new()
 		online.list_records()
-		note.text = online.last_error))
+		note.text = LocalizationSystem.text(online.last_error)))
 	for record in library.list_records():
 		var row := HBoxContainer.new()
 		column.add_child(row)
@@ -53,18 +53,18 @@ func _ready() -> void:
 
 func listen(record: Dictionary) -> void:
 	if not FileAccess.file_exists(record.final_audio_path):
-		note.text = "成品音频丢失，其他唱片仍可正常试听。"
+		note.text = LocalizationSystem.text("成品音频丢失，其他唱片仍可正常试听。")
 		return
 	var wav := AudioStreamWAV.load_from_file(record.final_audio_path)
 	if wav == null:
-		note.text = "成品音频无法读取。"
+		note.text = LocalizationSystem.text("成品音频无法读取。")
 		return
 	visual.configure(wav, str(record.get("visual_prompt", "warm")), int(record.get("visual_seed", 23817)))
 	if record.get("visual_profile") is Dictionary and not record.visual_profile.is_empty():
 		visual.profile = record.visual_profile
 	player.stream = wav
 	player.play()
-	note.text = "正在试听：「%s」" % record.title
+	note.text = LocalizationSystem.text("正在试听：「%s」" % record.title)
 
 func _process(_delta: float) -> void:
 	if player.playing:

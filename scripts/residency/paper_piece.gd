@@ -8,7 +8,7 @@ var require_home := false
 func _get_drag_data(_at: Vector2) -> Variant:
 	if material_id.is_empty(): return null
 	var preview := Label.new()
-	preview.text = str(ResidencySystem.state().materials.get(material_id,{}).get("title","纸张"))
+	preview.text = LocalizationSystem.text(str(ResidencySystem.state().materials.get(material_id,{}).get("title","纸张")))
 	preview.add_theme_color_override("font_color",Color("4b5146"))
 	preview.add_theme_font_size_override("font_size",20)
 	set_drag_preview(preview)

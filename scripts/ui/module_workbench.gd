@@ -112,7 +112,7 @@ func _build_outcome_choices(parent: Node) -> void:
 		_label(card, "%d分钟 · %d元" % [minutes, int(cost.get("money", 0))], Vector2(20, 108), Vector2(210, 24), 13, TEAL)
 		var choose := _button(card, "采用", Vector2(card_width - 188, 83), Vector2(164, 44), TERRACOTTA)
 		var choice_id := str(choice.get("id", ""))
-		choose.tooltip_text = str(choice.get("constraint_note", choice.get("detail", "")))
+		choose.tooltip_text = LocalizationSystem.text(choice.get("constraint_note", choice.get("detail", "")))
 		choose.pressed.connect(_complete_choice.bind(choice_id))
 		choice_buttons.append(choose)
 		choice_button_ids[choice_id] = choose
@@ -126,7 +126,7 @@ func _toggle_token(token_id: String) -> void:
 	else:
 		var maximum := int(interaction.get("max_select", 1))
 		if selected_tokens.size() >= maximum:
-			result_label.text = "桌面上最多保留%d项。可以先取消一项。" % maximum
+			result_label.text = LocalizationSystem.text("桌面上最多保留%d项。可以先取消一项。" % maximum)
 			result_label.add_theme_color_override("font_color", TERRACOTTA)
 			return
 		selected_tokens.append(token_id)
@@ -151,7 +151,7 @@ func _update_interaction_state() -> void:
 		labels.append(_token_label(token_id))
 	var mode := str(interaction.get("mode", "toggle"))
 	var prefix := "排列" if mode == "ordered" else "已保留"
-	selection_label.text = "%s：%s" % [prefix, " → ".join(labels)] if not labels.is_empty() else "尚未选择 · 需要%d项，最多%d项" % [minimum, maximum]
+	selection_label.text = LocalizationSystem.text("%s：%s" % [prefix, " → ".join(labels)] if not labels.is_empty() else "尚未选择 · 需要%d项，最多%d项" % [minimum, maximum])
 	if not completed:
 		var interaction_record := {
 			"mode": mode,
@@ -164,15 +164,15 @@ func _update_interaction_state() -> void:
 				continue
 			var choice_check := GameplayModuleSystem.choice_interaction_check(module_id, choice_id, interaction_record)
 			button.disabled = not ready or not bool(choice_check.get("ok", false))
-			button.tooltip_text = str(choice_check.get("message", "")) if ready and button.disabled else str(choice.get("constraint_note", choice.get("detail", "")))
+			button.tooltip_text = LocalizationSystem.text(choice_check.get("message", "")) if ready and button.disabled else LocalizationSystem.text(choice.get("constraint_note", choice.get("detail", "")))
 		clear_button.disabled = selected_tokens.is_empty()
 		var progress_steps: Array = interaction.get("progress_steps", [])
 		if progress_steps.is_empty():
-			result_label.text = "准备完成，可以选择一种结果。" if ready else "还需要选择%d项。" % max(0, minimum - selected_tokens.size())
+			result_label.text = LocalizationSystem.text("准备完成，可以选择一种结果。" if ready else "还需要选择%d项。" % max(0, minimum - selected_tokens.size()))
 		else:
 			var progress_index: int = mini(selected_tokens.size(), progress_steps.size() - 1)
 			var progress_text := str(progress_steps[progress_index])
-			result_label.text = "%s\n操作已准备，可以决定怎样完成。" % progress_text if ready else "%s\n还需要选择%d项。" % [progress_text, max(0, minimum - selected_tokens.size())]
+			result_label.text = LocalizationSystem.text("%s\n操作已准备，可以决定怎样完成。" % progress_text if ready else "%s\n还需要选择%d项。" % [progress_text, max(0, minimum - selected_tokens.size())])
 		result_label.add_theme_color_override("font_color", INK if ready else MUTED)
 
 
@@ -191,12 +191,12 @@ func _complete_choice(choice_id: String) -> void:
 		"selected_labels": selected_tokens.map(func(token_id: String) -> String: return _token_label(token_id)),
 	}
 	var result := GameplayModuleSystem.complete_choice(choice_id, interaction_record)
-	result_label.text = str(result.get("message", ""))
+	result_label.text = LocalizationSystem.text(str(result.get("message", "")))
 	result_label.add_theme_color_override("font_color", INK if bool(result.get("ok", false)) else TERRACOTTA)
 	if bool(result.get("ok", false)):
 		if not SaveManager.save_or_report("玩法结果保存失败"):
 			GameState.load_save_data(rollback_snapshot)
-			result_label.text = "存档写入失败，本次提交尚未生效；可以重试。"
+			result_label.text = LocalizationSystem.text("存档写入失败，本次提交尚未生效；可以重试。")
 			return
 		completed = true
 		for button in choice_buttons:
@@ -231,7 +231,7 @@ func _panel(parent: Node, at: Vector2, panel_size: Vector2, color: Color, border
 
 func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, font_size: int, color: Color) -> Label:
 	var label := Label.new()
-	label.text = text_value
+	label.text = LocalizationSystem.text(text_value)
 	label.position = at
 	label.size = label_size
 	label.add_theme_font_size_override("font_size", font_size)
@@ -242,8 +242,8 @@ func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, 
 
 func _token_button(parent: Node, token: Dictionary, at: Vector2, button_size: Vector2) -> Button:
 	var button := Button.new()
-	button.text = str(token.get("label", "记录"))
-	button.tooltip_text = str(token.get("detail", ""))
+	button.text = LocalizationSystem.text(token.get("label", "记录"))
+	button.tooltip_text = LocalizationSystem.text(token.get("detail", ""))
 	var icon_path := str(token.get("icon_path", ""))
 	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
 		var loaded_icon = load(icon_path)
@@ -283,7 +283,7 @@ func _style_token(button: Button, selected: bool) -> void:
 
 func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, color: Color) -> Button:
 	var button := Button.new()
-	button.text = text_value
+	button.text = LocalizationSystem.text(text_value)
 	button.position = at
 	button.size = button_size
 	button.add_theme_font_size_override("font_size", 15)

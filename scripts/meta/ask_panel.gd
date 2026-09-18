@@ -13,18 +13,18 @@ func _ready() -> void:
 	box.add_theme_constant_override("separation",12)
 	panel.add_child(box)
 	var title := Label.new()
-	title.text = "问一件事 · %d分钟" % int(MetaExperience.catalog.timing.ask_minutes)
+	title.text = LocalizationSystem.text("问一件事 · %d分钟" % int(MetaExperience.catalog.timing.ask_minutes))
 	box.add_child(title)
 	for row in [["今天什么时候在？","schedule_info"],["附近有什么地方？","town_info"],["最近听到了什么？","rumor"]]:
 		var button := Button.new()
-		button.text = str(row[0])
+		button.text = LocalizationSystem.text(str(row[0]))
 		button.custom_minimum_size.y = 54
 		box.add_child(button)
 		button.pressed.connect(func() -> void:
 			chosen.emit(str(row[1]))
 			queue_free())
 	var close := Button.new()
-	close.text = "先不问了"
+	close.text = LocalizationSystem.text("先不问了")
 	box.add_child(close)
 	close.pressed.connect(queue_free)
 

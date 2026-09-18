@@ -36,11 +36,11 @@ func _ready() -> void:
 	panel.add_child(column)
 	var title := Label.new()
 	var names := {&"go": "围棋", &"gomoku": "五子棋", &"chess": "国际象棋"}
-	title.text = names[game_id] + (" · 开局准备" if setup_mode else " · 规则说明")
+	title.text = LocalizationSystem.text(names[game_id] + (" · 开局准备" if setup_mode else " · 规则说明"))
 	title.add_theme_font_size_override("font_size", 34)
 	column.add_child(title)
 	var intro := Label.new()
-	intro.text = "老棋友：先看看规则，准备好了咱们就开始。" if setup_mode else "老棋友：不着急，看完再接着下。"
+	intro.text = LocalizationSystem.text("老棋友：先看看规则，准备好了咱们就开始。" if setup_mode else "老棋友：不着急，看完再接着下。")
 	intro.add_theme_font_size_override("font_size", 24)
 	column.add_child(intro)
 	if game_id == &"go" and setup_mode:
@@ -51,7 +51,7 @@ func _ready() -> void:
 		size_choice.item_selected.connect(func(index: int): go_size = [9, 13, 19][index])
 		column.add_child(size_choice)
 	var body := RichTextLabel.new()
-	body.text = Text.RULES[game_id]
+	body.text = LocalizationSystem.text(Text.RULES[game_id])
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.custom_minimum_size.y = 340
 	body.add_theme_font_size_override("normal_font_size", 25)
@@ -62,14 +62,14 @@ func _ready() -> void:
 	footer.add_theme_constant_override("separation", 20)
 	column.add_child(footer)
 	var back := Button.new()
-	back.text = "返回选择" if setup_mode else "明白了，继续下棋"
+	back.text = LocalizationSystem.text("返回选择" if setup_mode else "明白了，继续下棋")
 	back.custom_minimum_size = Vector2(280, 60)
 	back.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	back.pressed.connect(func(): closed.emit())
 	footer.add_child(back)
 	if setup_mode:
 		var start := Button.new()
-		start.text = "准备好了，开始对弈"
+		start.text = LocalizationSystem.text("准备好了，开始对弈")
 		start.custom_minimum_size = Vector2(400, 60)
 		start.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		start.pressed.connect(func(): start_requested.emit(go_size))

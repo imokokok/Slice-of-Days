@@ -52,15 +52,15 @@ func _ready() -> void:
 	instructions = room.studio.label("老板：行，这个我收。慢慢包，架子上有位置。", 18)
 	column.add_child(instructions)
 	title_input = LineEdit.new()
-	title_input.placeholder_text = "TITLE / 唱片标题"
+	title_input.placeholder_text = LocalizationSystem.text("TITLE / 唱片标题")
 	title_input.max_length = 60
 	column.add_child(title_input)
 	artist_input = LineEdit.new()
-	artist_input.placeholder_text = "ARTIST / 作者"
+	artist_input.placeholder_text = LocalizationSystem.text("ARTIST / 作者")
 	artist_input.max_length = 40
 	column.add_child(artist_input)
 	note_input = LineEdit.new()
-	note_input.placeholder_text = "ONE LINE NOTE / 一句话，留空也可以"
+	note_input.placeholder_text = LocalizationSystem.text("ONE LINE NOTE / 一句话，留空也可以")
 	note_input.max_length = 160
 	column.add_child(note_input)
 	summary_label = room.studio.label("", 17)
@@ -74,7 +74,7 @@ func _ready() -> void:
 		source_photo_id = ""
 		photo_preview.hide()
 		cover_container.show()
-		next_button.text = "暂停并使用当前帧"))
+		next_button.text = LocalizationSystem.text("暂停并使用当前帧")))
 	cover_sources.add_child(room.studio.button("从本地相册选封面", select_photo_cover))
 	cover_sources.hide()
 	next_button = room.studio.button("完成命名", advance)
@@ -108,7 +108,7 @@ func _ready() -> void:
 	crop_slider.min_value = 0
 	crop_slider.max_value = 1
 	crop_slider.value = 0.5
-	crop_slider.tooltip_text = "封面裁切：左右移动取景"
+	crop_slider.tooltip_text = LocalizationSystem.text("封面裁切：左右移动取景")
 	add_child(crop_slider)
 	crop_slider.hide()
 	crop_overlay = Control.new()
@@ -130,7 +130,7 @@ func advance() -> void:
 	if step == 0:
 		title_input.text = title_input.text.strip_edges()
 		artist_input.text = artist_input.text.strip_edges()
-		if title_input.text.is_empty(): title_input.text = "今天听见的东西"
+		if title_input.text.is_empty(): title_input.text = LocalizationSystem.text("今天听见的东西")
 		if artist_input.text.is_empty(): artist_input.text = "Anonymous"
 		title_input.editable = false
 		artist_input.editable = false
@@ -145,7 +145,7 @@ func advance() -> void:
 		crop_overlay.queue_redraw()
 		cover_container.show()
 		crop_slider.show()
-		next_button.text = "暂停并使用当前帧"
+		next_button.text = LocalizationSystem.text("暂停并使用当前帧")
 	elif step == 1:
 		locked = true
 		await RenderingServer.frame_post_draw
@@ -161,14 +161,14 @@ func advance() -> void:
 		crop_overlay.hide()
 		locked = false
 		step = 2
-		next_button.text = "打印封面纸套"
+		next_button.text = LocalizationSystem.text("打印封面纸套")
 	elif step >= 2 and step <= 10:
 		await complete_action()
 	elif step == 11:
 		room.studio.show()
 		room.queue_free()
 	if step < 11:
-		instructions.text = STEPS[step] + "\n" + HINTS[step]
+		instructions.text = LocalizationSystem.text(STEPS[step]) + "\n" + LocalizationSystem.text(HINTS[step])
 	queue_redraw()
 
 func complete_action() -> void:
@@ -203,7 +203,7 @@ func complete_action() -> void:
 				"payment": payment, "project_path": model.project_path, "created_by": role,
 				"game_day": day, "location": "record_store"}, audio, cover)
 		if saved_record.is_empty():
-			instructions.text = library.last_error
+			instructions.text = LocalizationSystem.text(library.last_error)
 			locked = false
 			next_button.disabled = false
 			return
@@ -214,7 +214,7 @@ func complete_action() -> void:
 				saved_record
 			)
 			SaveManager.save_or_report("唱片压制结果保存失败")
-		instructions.text = "老板：我晚点再听一遍。\n正在把你的唱片放上 LOCAL RECORDINGS……"
+		instructions.text = LocalizationSystem.text("老板：我晚点再听一遍。\n正在把你的唱片放上 LOCAL RECORDINGS……")
 		var tween := create_tween()
 		tween.tween_property(self, "progress", 1.0, 3.5).set_trans(Tween.TRANS_CUBIC)
 		await tween.finished
@@ -224,12 +224,12 @@ func complete_action() -> void:
 	progress = 0
 	stamp_picked = false
 	var buttons := {3: "辅助操作：对齐标签", 4: "辅助操作：压下把手", 5: "辅助操作：滑入内袋", 6: "辅助操作：装进外套", 7: "辅助操作：贴下封签", 8: "辅助操作：拿起并盖章", 9: "辅助操作：插入编号卡", 10: "辅助操作：交给老板", 11: "返回 Studio"}
-	next_button.text = buttons.get(step, "继续")
+	next_button.text = LocalizationSystem.text(buttons.get(step, "继续"))
 	if step == 11:
 		var balance := GameState.money if has_node("/root/GameState") else library.money()
-		instructions.text = "「%s」已上架  +%d / LOCAL RECORDING LICENSE\n游戏内余额：%d · 唱片已本地保存。公共库尚未配置，保持 Local Mode。" % [saved_record.title, saved_record.payment, balance]
+		instructions.text = LocalizationSystem.text("「%s」已上架  +%d / LOCAL RECORDING LICENSE\n游戏内余额：%d · 唱片已本地保存。公共库尚未配置，保持 Local Mode。" % [saved_record.title, saved_record.payment, balance])
 	else:
-		instructions.text = STEPS[step] + "\n" + HINTS[step]
+		instructions.text = LocalizationSystem.text(STEPS[step]) + "\n" + LocalizationSystem.text(HINTS[step])
 	queue_redraw()
 
 func select_photo_cover() -> void:
@@ -248,8 +248,8 @@ func use_photo_cover(image: Image, metadata: Dictionary) -> void:
 	photo_preview.texture = ImageTexture.create_from_image(pending_photo)
 	cover_container.hide()
 	photo_preview.show()
-	next_button.text = "使用这张照片的当前取景"
-	instructions.text = "从本地照片制作封面 · 拖动下方滑条调整裁切。"
+	next_button.text = LocalizationSystem.text("使用这张照片的当前取景")
+	instructions.text = LocalizationSystem.text("从本地照片制作封面 · 拖动下方滑条调整裁切。")
 
 func _process(delta: float) -> void:
 	if holding and step == 4 and not locked:
@@ -333,7 +333,7 @@ func _gui_input(event: InputEvent) -> void:
 		queue_redraw()
 
 func caption(at: Vector2, text: String, font_size: int = 16, color: Color = Color("5a4c39")) -> void:
-	draw_string(get_theme_default_font(), at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+	draw_string(get_theme_default_font(), at, LocalizationSystem.text(text), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 
 func vinyl(at: Vector2, labeled: bool = true, scale_value: float = 1.0) -> void:
 	draw_circle(at + Vector2(6, 9), 112 * scale_value, Color(0, 0, 0, 0.12))

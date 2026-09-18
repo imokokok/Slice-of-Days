@@ -147,7 +147,7 @@ func label(parent: Node, text: String, rect: Rect2, font_size: int = 20, color: 
 	var l := Label.new()
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	l.clip_text = true
-	l.text = text
+	l.text = LocalizationSystem.text(text)
 	l.position = rect.position
 	l.size = rect.size
 	l.add_theme_font_size_override("font_size", font_size)
@@ -161,7 +161,7 @@ func label(parent: Node, text: String, rect: Rect2, font_size: int = 20, color: 
 
 func button(parent: Node, title: String, rect: Rect2, action: Callable, accent: bool = false) -> Button:
 	var b := Button.new()
-	b.text = title
+	b.text = LocalizationSystem.text(title)
 	b.position = rect.position
 	b.size = rect.size
 	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -201,7 +201,7 @@ func card(parent: Node, id: String, rect: Rect2, face: bool = true, sort_enabled
 	c.pivot_offset = rect.size / 2.0
 	c.mouse_filter = Control.MOUSE_FILTER_STOP
 	c.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	c.tooltip_text = deck[id].cn + " · 正位（逆位暂未启用）" if face else "当前全部正位；抽一张、解读一张，卡牌会一直保留"
+	c.tooltip_text = LocalizationSystem.text(deck[id].cn + " · 正位（逆位暂未启用）" if face else "当前全部正位；抽一张、解读一张，卡牌会一直保留")
 	c.picked.connect(on_card)
 	c.swapped.connect(swap_cards)
 	parent.add_child(c)
@@ -323,7 +323,7 @@ func render_draw(spec: Dictionary) -> void:
 		var next := button(content, next_title, Rect2(1240, 816, 285, 51), advance, true)
 		next.disabled = not current_revealed()
 		if next.disabled:
-			next.tooltip_text = "先翻开本轮全部 5 张牌"
+			next.tooltip_text = LocalizationSystem.text("先翻开本轮全部 5 张牌")
 
 func render_collection_strip() -> void:
 	box(content, Rect2(40, 628, 1500, 180), 0.94)
@@ -367,7 +367,7 @@ func draw_round() -> void:
 	await move_packet(piles[2], Vector2(230, 96), 0.43, -0.035)
 	await move_packet(piles[1], Vector2(590, 88), 0.43, 0.025)
 	await get_tree().create_timer(0.16).timeout
-	ritual_caption.text = "合牌 · 展开"
+	ritual_caption.text = LocalizationSystem.text("合牌 · 展开")
 	await move_packet(piles[1], Vector2(407, 88), 0.39, 0.0)
 	await move_packet(piles[2], Vector2(410, 85), 0.39, 0.0)
 	await get_tree().create_timer(0.12).timeout
@@ -562,7 +562,7 @@ func show_card(id: String, flip: bool = false) -> void:
 	question_input = LineEdit.new()
 	question_input.position = Vector2(714, 308)
 	question_input.size = Vector2(624, 62)
-	question_input.placeholder_text = "输入你想问的问题……"
+	question_input.placeholder_text = LocalizationSystem.text("输入你想问的问题……")
 	question_input.max_length = 120
 	question_input.add_theme_font_size_override("font_size", 23)
 	question_input.add_theme_color_override("font_color", INK)
@@ -589,14 +589,14 @@ func show_card(id: String, flip: bool = false) -> void:
 	question_reply.custom_minimum_size.x = 600
 	question_reply.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	question_reply.add_theme_font_size_override("font_size", 19)
-	question_reply.text = "想了解画面也可以直接问；解牌不扣次数。\n提出案件假设时，请写明对象，再确认主持人的理解。"
+	question_reply.text = LocalizationSystem.text("想了解画面也可以直接问；解牌不扣次数。\n提出案件假设时，请写明对象，再确认主持人的理解。")
 	question_feedback.add_child(question_reply)
 	question_input.text_submitted.connect(func(_value): review_question())
 	question_input.text_changed.connect(func(value):
 		question_drafts[id] = value
 		pending_question = {}
 		question_confirm.disabled = true
-		question_reply.text = "输入完成后按 Enter；确认主持人理解正确，再求证。"
+		question_reply.text = LocalizationSystem.text("输入完成后按 Enter；确认主持人理解正确，再求证。")
 		clear_question_suggestions()
 	)
 	label(root, "与塔罗师的对话记录", Rect2(714, 560, 380, 32), 19, GOLD)
@@ -621,7 +621,7 @@ func review_question() -> void:
 	clear_question_suggestions()
 	question_confirm.disabled = true
 	if pending_question.status == "recognized" and not Guidance.allows(case_id, modal_id, pending_question.id):
-		question_reply.text = "我理解你问的是「%s」。但这张牌更适合谈%s。可换一张相关牌继续问；本次不扣次数。" % [pending_question.claim, Guidance.GUIDES[modal_id][0]]
+		question_reply.text = LocalizationSystem.text("我理解你问的是「%s」。但这张牌更适合谈%s。可换一张相关牌继续问；本次不扣次数。" % [pending_question.claim, Guidance.GUIDES[modal_id][0]])
 		var related: Array[String] = []
 		for card_id in revealed:
 			if Guidance.allows(case_id, card_id, pending_question.id): related.append(deck[card_id].cn)
@@ -630,14 +630,14 @@ func review_question() -> void:
 		remember_exchange(question_input.text, question_reply.text)
 		return
 	if pending_question.status != "recognized":
-		question_reply.text = pending_question.message
+		question_reply.text = LocalizationSystem.text(pending_question.message)
 		if pending_question.status in ["unsupported", "clarify_scope"]:
 			var clarifying: bool = pending_question.status == "clarify_scope"
 			var proposals: Array = pending_question.options if clarifying else Questions.suggest(case_id, question_input.text, Guidance.allowed_facts(case_id, modal_id))
 			proposals = proposals.filter(func(p): return Guidance.allows(case_id, modal_id, p.id))
 			if not proposals.is_empty():
 				if not clarifying:
-					question_reply.text = "找到相近方向。下方是改写建议，不是对原句的回答："
+					question_reply.text = LocalizationSystem.text("找到相近方向。下方是改写建议，不是对原句的回答：")
 				question_reply.size.y = 32
 				question_feedback.size.y = 32
 				for i in range(proposals.size()):
@@ -645,14 +645,14 @@ func review_question() -> void:
 					var b := button(modal, ("我指的是：" if clarifying else "改问：") + str(proposal.claim), Rect2(714, 478 + i * 39, 624, 34), func():
 						pending_question = proposal.duplicate(true)
 						clear_question_suggestions()
-						question_reply.text = "已选择改写后的命题：\n「%s」\n确认后才判断；这不是对你原句的直接回答。" % pending_question.claim
+						question_reply.text = LocalizationSystem.text("已选择改写后的命题：\n「%s」\n确认后才判断；这不是对你原句的直接回答。" % pending_question.claim)
 						question_confirm.disabled = false
 					)
 					b.add_theme_font_size_override("font_size", 16)
 					question_suggestions.append(b)
 		remember_exchange(question_input.text, question_reply.text)
 		return
-	question_reply.text = "你想求证的是：\n「%s」\n请检查人物和时间；意思不对可直接修改输入。" % pending_question.claim
+	question_reply.text = LocalizationSystem.text("你想求证的是：\n「%s」\n请检查人物和时间；意思不对可直接修改输入。" % pending_question.claim)
 	question_confirm.disabled = false
 	remember_exchange(question_input.text, "我理解为「%s」。请确认含义后再求证。" % pending_question.claim)
 
@@ -716,7 +716,7 @@ func show_truth_dialogue() -> void:
 	truth_input.position = Vector2(165, 232)
 	truth_input.size = Vector2(580, 482)
 	truth_input.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
-	truth_input.placeholder_text = "用自己的话陈述完整真相……\n\n可以一行一个事实，明确谁做了什么。\n规则故事请说明全部成立条件，而不只是一个成功例子。"
+	truth_input.placeholder_text = LocalizationSystem.text("用自己的话陈述完整真相……\n\n可以一行一个事实，明确谁做了什么。\n规则故事请说明全部成立条件，而不只是一个成功例子。")
 	truth_input.add_theme_font_size_override("font_size", 21)
 	root.add_child(truth_input)
 	truth_input.text = truth_draft
@@ -786,11 +786,11 @@ func confirm_question() -> void:
 	var records: Array = question_records.get(modal_id, [])
 	for record in records:
 		if record.id == pending_question.id:
-			question_reply.text = "这条事实已经问过，不重复扣次数。\n" + Questions.verdict(pending_question)
+			question_reply.text = LocalizationSystem.text("这条事实已经问过，不重复扣次数。\n" + Questions.verdict(pending_question))
 			question_confirm.disabled = true
 			return
 	if records.size() >= 2:
-		question_reply.text = "这张牌的 2 次有效求证已用完；笔记仍可回看，可借其他牌继续发问。"
+		question_reply.text = LocalizationSystem.text("这张牌的 2 次有效求证已用完；笔记仍可回看，可借其他牌继续发问。")
 		question_confirm.disabled = true
 		return
 	var response := pending_question.duplicate(true)
@@ -800,7 +800,7 @@ func confirm_question() -> void:
 	sound.play("yes" if response.answer else "no")
 	save_session()
 	show_card(modal_id, guide_side)
-	question_reply.text = Questions.verdict(response) + "\n已加入笔记；卡牌仍然保留。"
+	question_reply.text = LocalizationSystem.text(Questions.verdict(response) + "\n已加入笔记；卡牌仍然保留。")
 	feedback("YES · 已记录" if response.answer else "NO · 排除这一种可能", Color("94d3b2") if response.answer else GOLD)
 
 func render_choose() -> void:
@@ -1110,20 +1110,20 @@ func smoke_test() -> void:
 	assert(owned.size() == 15 and revealed.size() == 15)
 	var owned_before := owned.duplicate()
 	show_card("09")
-	question_input.text = "两个杯子是爱情吗"
+	question_input.text = LocalizationSystem.text("两个杯子是爱情吗")
 	review_question()
 	confirm_question()
 	assert(pending_question.status == "guidance" and question_records.is_empty())
-	question_input.text = "水果刀上有指纹吗"
+	question_input.text = LocalizationSystem.text("水果刀上有指纹吗")
 	review_question()
 	confirm_question()
 	assert(pending_question.status == "unwritten" and question_records.is_empty())
-	question_input.text = "水果刀是凶器吗"
+	question_input.text = LocalizationSystem.text("水果刀是凶器吗")
 	review_question()
 	confirm_question()
 	assert(pending_question.status == "unrelated" and question_records.is_empty())
 	show_card("16")
-	question_input.text = "报案人进入过房间吗"
+	question_input.text = LocalizationSystem.text("报案人进入过房间吗")
 	review_question()
 	confirm_question()
 	assert(question_records["16"][0].answer == false and owned == owned_before)
@@ -1148,14 +1148,14 @@ func smoke_test() -> void:
 	assert(Rules.evaluate(case_id, main_cards).complete)
 	check_story()
 	assert(is_instance_valid(truth_input))
-	truth_input.text = "女子三杀死了死者"
+	truth_input.text = LocalizationSystem.text("女子三杀死了死者")
 	review_truth()
 	confirm_truth()
 	assert(not truth_review.complete)
 	close_modal()
 	new_case("doors")
 	show_card("01")
-	question_input.text = "不相等就会死"
+	question_input.text = LocalizationSystem.text("不相等就会死")
 	review_question()
 	assert(pending_question.status == "clarify_scope" and question_suggestions.size() == 2)
 	assert(question_records.is_empty())
@@ -1165,19 +1165,19 @@ func smoke_test() -> void:
 	show_question_help("01")
 	close_modal()
 	show_card("06")
-	question_input.text = "测试 4、11、11、24"
+	question_input.text = LocalizationSystem.text("测试 4、11、11、24")
 	review_question()
 	assert(not question_confirm.disabled)
 	confirm_question()
 	assert(question_records["06"].size() == 1 and question_records["06"][0].answer)
-	question_input.text = "测试 24、11、4、11"
+	question_input.text = LocalizationSystem.text("测试 24、11、4、11")
 	review_question()
 	confirm_question()
 	assert(question_records["06"].size() == 1)
 	close_modal()
 	main_cards = Rules.CASES.doors.main.duplicate()
 	check_story()
-	truth_input.text = "四组总人数是五十。最低<中间=中间<最高。换门不影响结果。"
+	truth_input.text = LocalizationSystem.text("四组总人数是五十。最低<中间=中间<最高。换门不影响结果。")
 	review_truth()
 	assert(truth_review.complete and not truth_confirm.disabled)
 	confirm_truth()

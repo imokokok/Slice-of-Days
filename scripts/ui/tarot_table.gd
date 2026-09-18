@@ -87,7 +87,7 @@ func _ready() -> void:
 		_render_draw()
 		_select_card("temperance")
 		_select_image("cups")
-		question_edit.text = "报警的人有没有走进过屋子里？"
+		question_edit.text = LocalizationSystem.text("报警的人有没有走进过屋子里？")
 		_ask_question()
 		capture_prototype.call_deferred("solmere-tarot-wrong-case.png")
 	elif args.has("--capture-response"):
@@ -96,7 +96,7 @@ func _ready() -> void:
 		_render_draw()
 		_select_card("chariot")
 		_select_image("city")
-		question_edit.text = "报警的人有没有走进过屋子里？"
+		question_edit.text = LocalizationSystem.text("报警的人有没有走进过屋子里？")
 		_ask_question()
 		capture_prototype.call_deferred("solmere-tarot-response.png")
 	elif args.has("--capture-detail"):
@@ -188,7 +188,7 @@ func _build_question_panel() -> void:
 	question_edit = LineEdit.new()
 	question_edit.position = Vector2(20, 51)
 	question_edit.size = Vector2(622, 48)
-	question_edit.placeholder_text = "围绕所选牌与意象，输入一个可以用 YES / NO 回答的问题"
+	question_edit.placeholder_text = LocalizationSystem.text("围绕所选牌与意象，输入一个可以用 YES / NO 回答的问题")
 	question_edit.add_theme_font_size_override("font_size", 15)
 	question_edit.add_theme_color_override("font_color", INK)
 	question_edit.add_theme_color_override("font_placeholder_color", Color(MUTED, 0.72))
@@ -299,12 +299,12 @@ func _start_case(index: int) -> void:
 	round_no = 0
 	miss_streak = 0
 	round_locked = false
-	case_eyebrow.text = str(case_data.get("eyebrow", "海龟汤"))
-	case_title.text = str(case_data.get("title", "未命名谜题"))
-	opening_label.text = str(case_data.get("opening", ""))
+	case_eyebrow.text = LocalizationSystem.text(str(case_data.get("eyebrow", "海龟汤")))
+	case_title.text = LocalizationSystem.text(str(case_data.get("title", "未命名谜题")))
+	opening_label.text = LocalizationSystem.text(str(case_data.get("opening", "")))
 	var examples: Array = case_data.get("question_examples", [])
-	question_edit.placeholder_text = "例如：%s" % str(examples[0]) if not examples.is_empty() else "围绕所选牌与意象提出一个 YES / NO 问题"
-	result_label.text = "[color=#806b5c]三张牌会给出三个观察方向。选择一张开始。[/color]"
+	question_edit.placeholder_text = LocalizationSystem.text("例如：%s" % str(examples[0]) if not examples.is_empty() else "围绕所选牌与意象提出一个 YES / NO 问题")
+	result_label.text = LocalizationSystem.text("[color=#806b5c]三张牌会给出三个观察方向。选择一张开始。[/color]")
 	_refresh_case_buttons()
 	_refresh_records()
 	_draw_round()
@@ -318,9 +318,9 @@ func _request_case(index: int) -> void:
 		return
 	pending_case_switch_index = index
 	suggested_case_index = index
-	next_button.text = "确认切换并清空牌阵"
+	next_button.text = LocalizationSystem.text("确认切换并清空牌阵")
 	next_button.disabled = false
-	result_label.text = "[font_size=19][color=#c99545]切换谜题会清空当前牌阵[/color][/font_size]\n如要保留这局，请先继续推理或提交 The World。"
+	result_label.text = LocalizationSystem.text("[font_size=19][color=#c99545]切换谜题会清空当前牌阵[/color][/font_size]\n如要保留这局，请先继续推理或提交 The World。")
 	_refresh_case_buttons()
 
 
@@ -335,19 +335,19 @@ func _draw_round() -> void:
 	_prepare_draw_pile()
 	question_edit.clear()
 	var examples: Array = case_data.get("question_examples", [])
-	question_edit.placeholder_text = "例如：%s" % str(examples[(round_no - 1) % examples.size()]) if not examples.is_empty() else "围绕所选牌与意象提出一个 YES / NO 问题"
+	question_edit.placeholder_text = LocalizationSystem.text("例如：%s" % str(examples[(round_no - 1) % examples.size()]) if not examples.is_empty() else "围绕所选牌与意象提出一个 YES / NO 问题")
 	question_edit.editable = false
 	ask_button.disabled = true
 	next_button.disabled = true
-	next_button.text = "开始下一轮"
+	next_button.text = LocalizationSystem.text("开始下一轮")
 	shuffle_button.disabled = false
-	shuffle_button.text = "翻开三张"
+	shuffle_button.text = LocalizationSystem.text("翻开三张")
 	if miss_streak >= 2:
-		mode_label.text = "牌阵回响 · 本轮保证出现一个未读方向"
-		result_label.text = "[color=#4f7d83]连续两次没有形成线索，牌阵正在把你带回有效路径。[/color]"
+		mode_label.text = LocalizationSystem.text("牌阵回响 · 本轮保证出现一个未读方向")
+		result_label.text = LocalizationSystem.text("[color=#4f7d83]连续两次没有形成线索，牌阵正在把你带回有效路径。[/color]")
 	else:
-		mode_label.text = "牌已洗好 · 翻开本轮的三个方向"
-		result_label.text = "[color=#806b5c]每轮只读一张牌。其余两张会回到本题牌池。[/color]"
+		mode_label.text = LocalizationSystem.text("牌已洗好 · 翻开本轮的三个方向")
+		result_label.text = LocalizationSystem.text("[color=#806b5c]每轮只读一张牌。其余两张会回到本题牌池。[/color]")
 	_render_pile()
 	_render_card_detail("")
 	_set_phase(0)
@@ -368,7 +368,7 @@ func _shuffle_pile() -> void:
 		return
 	animating = true
 	shuffle_button.disabled = true
-	mode_label.text = "牌在桌面上重新排列……"
+	mode_label.text = LocalizationSystem.text("牌在桌面上重新排列……")
 	var shuffle_tween := create_tween()
 	shuffle_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	shuffle_tween.tween_property(card_layer, "rotation", deg_to_rad(-2.2), 0.10)
@@ -385,12 +385,12 @@ func _reveal_cards(forced_draw: Array[String] = [], animate_cards := false) -> v
 	current_draw = draw_pile.duplicate()
 	choosing_cards = false
 	shuffle_button.disabled = true
-	shuffle_button.text = "三张已翻开"
-	round_label.text = "第 %d 轮" % round_no
+	shuffle_button.text = LocalizationSystem.text("三张已翻开")
+	round_label.text = LocalizationSystem.text("第 %d 轮" % round_no)
 	question_edit.editable = true
 	ask_button.disabled = true
-	mode_label.text = "牌阵回响已生效 · 选择一个未读方向" if miss_streak >= 2 else "三张牌给出三个角度 · 选择一张"
-	result_label.text = "[color=#4f7d83]先看牌义，再选择一个牌面意象。[/color]"
+	mode_label.text = LocalizationSystem.text("牌阵回响已生效 · 选择一个未读方向" if miss_streak >= 2 else "三张牌给出三个角度 · 选择一张")
+	result_label.text = LocalizationSystem.text("[color=#4f7d83]先看牌义，再选择一个牌面意象。[/color]")
 	_render_draw()
 	_render_card_detail("")
 	_set_phase(1)
@@ -407,12 +407,12 @@ func _render_pile() -> void:
 		var back := _make_button(card_layer, "✦\nSOLMERE\nTAROT", Vector2(x, y), Vector2(238, 228), "card_back")
 		back.rotation = deg_to_rad(float(index - 1) * 3.2)
 		if index == 2:
-			back.tooltip_text = "翻开本轮三张牌"
+			back.tooltip_text = LocalizationSystem.text("翻开本轮三张牌")
 			back.pressed.connect(_shuffle_pile)
 		else:
 			back.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	reading_caption.text = "6–9 张专属牌池 · 每轮翻 3 张"
-	round_label.text = "第 %d 轮" % round_no
+	reading_caption.text = LocalizationSystem.text("6–9 张专属牌池 · 每轮翻 3 张")
+	round_label.text = LocalizationSystem.text("第 %d 轮" % round_no)
 
 
 func _render_draw() -> void:
@@ -435,13 +435,13 @@ func _render_draw() -> void:
 		sigil.size = Vector2(150, 140)
 		sigil.configure(card_id, card_id == selected_card_id, confirmed_cards.has(card_id))
 		button.add_child(sigil)
-		var title_label := _make_label(button, "%s%s" % [str(card.get("name_zh", "")), deep_mark], Vector2(12, 174), Vector2(234, 28), 16, INK, HORIZONTAL_ALIGNMENT_CENTER)
+		var title_label := _make_label(button, "%s%s" % [_card_display_name(card), deep_mark], Vector2(12, 174), Vector2(234, 28), 16, INK, HORIZONTAL_ALIGNMENT_CENTER)
 		title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var theme_label := _make_label(button, str(card.get("theme", "")), Vector2(12, 204), Vector2(234, 22), 12, MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 		theme_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		button.tooltip_text = str(card.get("theme", ""))
+		button.tooltip_text = LocalizationSystem.text(card.get("theme", ""))
 		button.pressed.connect(_select_card.bind(card_id))
-	reading_caption.text = "其余两张会回到牌池"
+	reading_caption.text = LocalizationSystem.text("其余两张会回到牌池")
 
 
 func _select_card(card_id: String) -> void:
@@ -453,8 +453,8 @@ func _select_card(card_id: String) -> void:
 	ask_button.disabled = true
 	var card := engine.card(card_id)
 	var mode := "深读已有牌" if confirmed_cards.has(card_id) else "读取新牌"
-	mode_label.text = "%s · %s" % [mode, str(card.get("name_zh", ""))]
-	reading_caption.text = "%s · 再选一个意象" % mode
+	mode_label.text = LocalizationSystem.text("%s · %s" % [mode, _card_display_name(card)])
+	reading_caption.text = LocalizationSystem.text("%s · 再选一个意象" % mode)
 	_render_draw()
 	_render_card_detail(card_id)
 	_set_phase(2)
@@ -466,15 +466,15 @@ func _render_card_detail(card_id: String) -> void:
 	_clear_children(image_layer)
 	if card_id.is_empty():
 		if choosing_cards:
-			detail_title.text = "牌堆已洗好"
-			detail_theme.text = "翻开三张牌，看看本轮出现哪三条推理路径。"
+			detail_title.text = LocalizationSystem.text("牌堆已洗好")
+			detail_theme.text = LocalizationSystem.text("翻开三张牌，看看本轮出现哪三条推理路径。")
 		else:
-			detail_title.text = "选择一张牌作为本轮 Reading"
-			detail_theme.text = "三张牌分别代表三条不同的推理路径。"
+			detail_title.text = LocalizationSystem.text("选择一张牌作为本轮 Reading")
+			detail_theme.text = LocalizationSystem.text("三张牌分别代表三条不同的推理路径。")
 		return
 	var card := engine.card(card_id)
-	detail_title.text = "%s  %s  %s" % [str(card.get("number", "")), str(card.get("name", "")), str(card.get("name_zh", ""))]
-	detail_theme.text = str(card.get("theme", ""))
+	detail_title.text = "%s  %s" % [str(card.get("number", "")), _card_display_name(card)]
+	detail_theme.text = LocalizationSystem.text(card.get("theme", ""))
 	var images: Array = card.get("images", [])
 	for index in images.size():
 		var image_data: Dictionary = images[index]
@@ -484,7 +484,7 @@ func _render_card_detail(card_id: String) -> void:
 		var button_text := "%s%s\n%s" % [marker, str(image_data.get("label", "")), str(image_data.get("keywords", ""))]
 		var kind := "image_active" if image_id == selected_image_id else ("image_lit" if already_lit else "image")
 		var button := _make_button(image_layer, button_text, Vector2(index * 202, 0), Vector2(190, 64), kind)
-		button.tooltip_text = "已点亮，可继续深读" if already_lit else "以这个牌面元素限制提问角度"
+		button.tooltip_text = LocalizationSystem.text("已点亮，可继续深读" if already_lit else "以这个牌面元素限制提问角度")
 		button.pressed.connect(_select_image.bind(image_id))
 
 
@@ -500,9 +500,9 @@ func _select_image(image_id: String) -> void:
 		if str(image_data.get("id", "")) == image_id:
 			image_name = str(image_data.get("label", ""))
 			break
-	mode_label.text = "%s · %s" % [str(card.get("name_zh", "")), image_name]
-	reading_caption.text = "已锁定意象 · 写下一个判断"
-	question_edit.placeholder_text = "围绕「%s × %s」写下一个可以判断真假的问题" % [str(card.get("name_zh", "")), image_name]
+	mode_label.text = "%s · %s" % [_card_display_name(card), LocalizationSystem.text(image_name)]
+	reading_caption.text = LocalizationSystem.text("已锁定意象 · 写下一个判断")
+	question_edit.placeholder_text = LocalizationSystem.text("围绕「%s × %s」写下一个可以判断真假的问题" % [_card_display_name(card), LocalizationSystem.text(image_name)])
 	ask_button.disabled = false
 	_set_phase(3)
 	_animate_selected_image(image_id)
@@ -529,13 +529,13 @@ func _select_next_cross_pair() -> void:
 	ask_button.disabled = false
 	var first := engine.card(selected_cross_cards[0])
 	var second := engine.card(selected_cross_cards[1])
-	mode_label.text = "交叉解读 · %s × %s" % [str(first.get("name_zh", "")), str(second.get("name_zh", ""))]
+	mode_label.text = LocalizationSystem.text("交叉解读 · %s × %s" % [_card_display_name(first), _card_display_name(second)])
 	_render_draw()
 	_clear_children(image_layer)
 	detail_title.text = "%s  ×  %s" % [str(first.get("name", "")), str(second.get("name", ""))]
-	detail_theme.text = "围绕两张牌义共同提出一个 YES / NO 问题。"
-	reading_caption.text = "两张确认牌已连线 · 写下交叉判断"
-	question_edit.placeholder_text = "同时围绕「%s × %s」提出一个判断" % [str(first.get("name_zh", "")), str(second.get("name_zh", ""))]
+	detail_theme.text = LocalizationSystem.text("围绕两张牌义共同提出一个 YES / NO 问题。")
+	reading_caption.text = LocalizationSystem.text("两张确认牌已连线 · 写下交叉判断")
+	question_edit.placeholder_text = LocalizationSystem.text("同时围绕「%s × %s」提出一个判断" % [_card_display_name(first), _card_display_name(second)])
 	_set_phase(3)
 	_refresh_cross_button()
 	question_edit.grab_focus()
@@ -545,14 +545,14 @@ func _ask_question() -> void:
 	if round_locked:
 		return
 	if choosing_cards:
-		result_label.text = "[color=#c85f43]请先翻开本轮三张牌。[/color]"
+		result_label.text = LocalizationSystem.text("[color=#c85f43]请先翻开本轮三张牌。[/color]")
 		return
 	var question := question_edit.text.strip_edges()
 	if question.is_empty():
-		result_label.text = "[color=#c85f43]请先输入一个问题。[/color]"
+		result_label.text = LocalizationSystem.text("[color=#c85f43]请先输入一个问题。[/color]")
 		return
 	if selected_cross_cards.is_empty() and (selected_card_id.is_empty() or selected_image_id.is_empty()):
-		result_label.text = "[color=#c85f43]请选择一张牌和一个牌面意象，或启用交叉解读。[/color]"
+		result_label.text = LocalizationSystem.text("[color=#c85f43]请选择一张牌和一个牌面意象，或启用交叉解读。[/color]")
 		return
 	var rule: Dictionary
 	var reading_name := ""
@@ -565,32 +565,32 @@ func _ask_question() -> void:
 		rule = engine.reading_for(case_data, selected_card_id, selected_image_id, question)
 		reading_name = _card_short_name(selected_card_id)
 	if not bool(rule.get("consume_round", true)):
-		result_label.text = "[font_size=21][color=#c85f43]%s[/color][/font_size]\n%s" % [str(rule.get("result", "需要改写")), _bbcode_escape(str(rule.get("reason", "请把问题改写成一个 YES / NO 判断。")))]
+		result_label.text = LocalizationSystem.text("[font_size=21][color=#c85f43]%s[/color][/font_size]\n%s" % [str(rule.get("result", "需要改写")), _bbcode_escape(str(rule.get("reason", "请把问题改写成一个 YES / NO 判断。")))])
 		if str(rule.get("match_kind", "")) == "other_case":
 			pending_case_switch_index = _case_index_for_id(str(rule.get("suggested_case_id", "")))
 			suggested_case_index = pending_case_switch_index
 			if pending_case_switch_index >= 0:
-				next_button.text = "切换到《%s》" % str(engine.case_at(pending_case_switch_index).get("title", "对应案件"))
+				next_button.text = LocalizationSystem.text("切换到《%s》" % str(engine.case_at(pending_case_switch_index).get("title", "对应案件")))
 				next_button.disabled = false
 		else:
 			pending_case_switch_index = -1
 			suggested_case_index = -1
-			next_button.text = "修改问题后继续"
+			next_button.text = LocalizationSystem.text("修改问题后继续")
 			next_button.disabled = true
 		_refresh_case_buttons()
 		question_edit.grab_focus()
 		return
 	var rule_id := str(rule.get("id", ""))
 	if not rule_id.is_empty() and resolved_reading_ids.has(rule_id):
-		result_label.text = "[font_size=20][color=#c99545]已确认过这条线索[/color][/font_size]\n换一个意象或沿现有结论继续深读；重复提问不会消耗时间。"
+		result_label.text = LocalizationSystem.text("[font_size=20][color=#c99545]已确认过这条线索[/color][/font_size]\n换一个意象或沿现有结论继续深读；重复提问不会消耗时间。")
 		question_edit.select_all()
 		question_edit.grab_focus()
 		return
 	pending_case_switch_index = -1
 	suggested_case_index = -1
-	next_button.text = "开始下一轮"
+	next_button.text = LocalizationSystem.text("开始下一轮")
 	if not GameState.use_free_time(10):
-		result_label.text = "[color=#c85f43]当前时间块不足以完成这次 Reading。[/color]"
+		result_label.text = LocalizationSystem.text("[color=#c85f43]当前时间块不足以完成这次 Reading。[/color]")
 		return
 	var answer := str(rule.get("result", "无关"))
 	var fact := str(rule.get("fact", ""))
@@ -646,8 +646,8 @@ func _refresh_records() -> void:
 			var fact_lines: Array[String] = []
 			for raw_fact in state.get("facts", []):
 				fact_lines.append("[color=#3d2d29]%s[/color]" % _bbcode_escape(str(raw_fact)))
-			spread_blocks.append("[bgcolor=#f3e5c9][b] %s  %s [/b][/bgcolor]\n[color=#7d8f59]✦ %s[/color]\n%s" % [str(card.get("number", "")), str(card.get("name_zh", "")), " · ".join(image_names), "\n".join(fact_lines)])
-	spread_label.text = "\n\n".join(spread_blocks)
+			spread_blocks.append("[bgcolor=#f3e5c9][b] %s  %s [/b][/bgcolor]\n[color=#7d8f59]✦ %s[/color]\n%s" % [str(card.get("number", "")), _card_display_name(card), " · ".join(image_names.map(func(value: String) -> String: return LocalizationSystem.text(value))), "\n".join(fact_lines.map(func(value: String) -> String: return LocalizationSystem.text(value)))])
+	spread_label.text = LocalizationSystem.text("\n\n".join(spread_blocks))
 	var history_blocks: Array[String] = []
 	if records.is_empty():
 		history_blocks.append("[color=#806b5c]NO 会成为排除项；无关问题只留在历史中。[/color]")
@@ -662,21 +662,21 @@ func _refresh_records() -> void:
 			if not note.is_empty():
 				line += "\n[color=#806b5c]%s[/color]" % _bbcode_escape(note)
 			history_blocks.append(line)
-	record_label.text = "\n\n".join(history_blocks)
+	record_label.text = LocalizationSystem.text("\n\n".join(history_blocks))
 	if is_instance_valid(insight_label):
 		var glow_count := confirmed_cards.size()
-		insight_label.text = "洞察 %d · %s" % [glow_count, "可以尝试闭环" if glow_count >= 4 else "建议点亮 4–6 张牌"]
+		insight_label.text = LocalizationSystem.text("洞察 %d · %s" % [glow_count, "可以尝试闭环" if glow_count >= 4 else "建议点亮 4–6 张牌"])
 
 
 func _refresh_cross_button() -> void:
 	var pairs := _available_cross_pairs()
 	cross_button.disabled = choosing_cards or round_locked or pairs.is_empty()
 	if pairs.is_empty():
-		cross_button.text = "可用交叉已完成" if not used_cross_pairs.is_empty() else "确认两张关键牌后解锁交叉"
+		cross_button.text = LocalizationSystem.text("可用交叉已完成" if not used_cross_pairs.is_empty() else "确认两张关键牌后解锁交叉")
 	elif selected_cross_cards.is_empty():
-		cross_button.text = "进行交叉解读（%d 组可用）" % pairs.size()
+		cross_button.text = LocalizationSystem.text("进行交叉解读（%d 组可用）" % pairs.size())
 	else:
-		cross_button.text = "%s ── %s · 已连线" % [_card_short_name(selected_cross_cards[0]), _card_short_name(selected_cross_cards[1])]
+		cross_button.text = LocalizationSystem.text("%s ── %s · 已连线" % [_card_short_name(selected_cross_cards[0]), _card_short_name(selected_cross_cards[1])])
 
 
 func _refresh_case_buttons() -> void:
@@ -684,7 +684,8 @@ func _refresh_case_buttons() -> void:
 	for index in case_buttons.size():
 		var active := index == case_index
 		var suggested := index == suggested_case_index and not active
-		case_buttons[index].text = "● %s" % labels[index] if active else ("→ %s" % labels[index] if suggested else labels[index])
+		var localized_label := LocalizationSystem.text(labels[index])
+		case_buttons[index].text = "● %s" % localized_label if active else ("→ %s" % localized_label if suggested else localized_label)
 		_apply_button_style(case_buttons[index], "case_active" if active else ("case_suggested" if suggested else "case"))
 
 
@@ -721,9 +722,9 @@ func _pair_key(pair: Array) -> String:
 
 func _open_world(animate_overlay := true) -> void:
 	world_feedback.text = ""
-	world_progress.text = "已推理 %d 轮 · 点亮 %d 张牌" % [records.size(), confirmed_cards.size()]
+	world_progress.text = LocalizationSystem.text("已推理 %d 轮 · 点亮 %d 张牌" % [records.size(), confirmed_cards.size()])
 	world_submit_button.disabled = false
-	world_submit_button.text = "翻开世界"
+	world_submit_button.text = LocalizationSystem.text("翻开世界")
 	world_overlay.visible = true
 	if animate_overlay:
 		world_overlay.color = Color(INK, 0.0)
@@ -757,12 +758,12 @@ func _close_world() -> void:
 func _submit_world() -> void:
 	var answer := world_answer.text.strip_edges()
 	if answer.is_empty():
-		world_feedback.text = "请先写下你认为完整的汤底。"
+		world_feedback.text = LocalizationSystem.text("请先写下你认为完整的汤底。")
 		return
 	var result := engine.evaluate_solution(case_data, answer)
 	if not bool(result.get("success", false)):
 		var missing: Array = result.get("missing", [])
-		world_feedback.text = "还没有闭环（%d / %d）。继续确认：%s。" % [int(result.get("matched", 0)), int(result.get("required", 0)), "、".join(missing)]
+		world_feedback.text = LocalizationSystem.text("还没有闭环（%d / %d）。继续确认：%s。" % [int(result.get("matched", 0)), int(result.get("required", 0)), "、".join(missing)])
 		var start_position := world_panel.position
 		var shake := create_tween()
 		shake.tween_property(world_panel, "position", start_position + Vector2(-8, 0), 0.05)
@@ -789,10 +790,10 @@ func _submit_world() -> void:
 			"text": "在 Solmere 牌桌用 The World 提交了《%s》的完整汤底。" % str(case_data.get("title", "海龟汤")),
 		})
 		SaveManager.save_or_report("塔罗推理结果保存失败")
-	world_feedback.text = "汤底闭环。The World 已翻开：%s" % str(case_data.get("solution", ""))
-	world_submit_button.text = "世界已翻开"
+	world_feedback.text = LocalizationSystem.text("汤底闭环。The World 已翻开：%s" % str(case_data.get("solution", "")))
+	world_submit_button.text = LocalizationSystem.text("世界已翻开")
 	world_submit_button.disabled = true
-	result_label.text = "[color=#4f7d83][font_size=22]THE WORLD · 推理完成[/font_size][/color]\n%s" % _bbcode_escape(str(case_data.get("solution", "")))
+	result_label.text = LocalizationSystem.text("[color=#4f7d83][font_size=22]THE WORLD · 推理完成[/font_size][/color]\n%s" % _bbcode_escape(str(case_data.get("solution", ""))))
 	_spawn_sparkles(world_panel, Vector2(390, 290), GOLD, 18)
 
 
@@ -801,9 +802,9 @@ func _on_question_submitted(_text: String) -> void:
 
 
 func _refresh_state() -> void:
-	clock_label.text = "第 %d 天  %s" % [GameState.current_day, GameState.clock_text()]
-	money_label.text = "余额  %d" % GameState.money
-	confirmation_label.text = "认识确认  %d / 12" % GameState.residency_confirmations
+	clock_label.text = LocalizationSystem.text("第 %d 天  %s" % [GameState.current_day, GameState.clock_text()])
+	money_label.text = LocalizationSystem.text("余额  %d" % GameState.money)
+	confirmation_label.text = LocalizationSystem.text("认识确认  %d / 12" % GameState.residency_confirmations)
 
 
 func _return_to_town() -> void:
@@ -820,7 +821,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _card_short_name(card_id: String) -> String:
 	var card := engine.card(card_id)
-	return str(card.get("name_zh", card_id))
+	return _card_display_name(card) if not card.is_empty() else card_id
+
+
+func _card_display_name(card: Dictionary) -> String:
+	if SettingsSystem.language() == "en":
+		return str(card.get("name", card.get("name_zh", "")))
+	return str(card.get("name_zh", card.get("name", "")))
 
 
 func _confirmed_image_ids(card_id: String) -> Array:
@@ -984,7 +991,7 @@ func _make_panel(parent: Node, at: Vector2, panel_size: Vector2, color: Color, b
 
 func _make_label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, font_size: int, color: Color, alignment := HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var label := Label.new()
-	label.text = text_value
+	label.text = LocalizationSystem.text(text_value)
 	label.position = at
 	label.size = label_size
 	label.horizontal_alignment = alignment
@@ -997,7 +1004,7 @@ func _make_label(parent: Node, text_value: String, at: Vector2, label_size: Vect
 
 func _make_button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, kind: String) -> Button:
 	var button := Button.new()
-	button.text = text_value
+	button.text = LocalizationSystem.text(text_value)
 	button.position = at
 	button.size = button_size
 	button.focus_mode = Control.FOCUS_ALL

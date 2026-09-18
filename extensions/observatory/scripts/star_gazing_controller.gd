@@ -36,7 +36,7 @@ func build_controls() -> void:
  surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  surface.mouse_default_cursor_shape = Control.CURSOR_DRAG
  surface.gui_input.connect(_sky_input)
- $UI/Instructions.text = "按住鼠标左键拖动，转动望远镜 · 方向键微调 · 对准后停留片刻 · ESC 返回"
+ $UI/Instructions.text = LocalizationSystem.text("按住鼠标左键拖动，转动望远镜 · 方向键微调 · 对准后停留片刻 · ESC 返回")
 func _sky_input(event: InputEvent) -> void:
  if is_capturing: return
  if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
@@ -81,10 +81,10 @@ func update_layout() -> void:
  lines.queue_redraw()
 func refresh_buttons() -> void:
  capture.visible = checker.completed and checker.error < data.error_threshold * 3.0
- capture.text = "已收入观测册 · 再拍一张" if ObservatoryState.collected[data.id] else "拍下这片星光"
+ capture.text = LocalizationSystem.text("已收入观测册 · 再拍一张" if ObservatoryState.collected[data.id] else "拍下这片星光")
  next.visible = ObservatoryState.discovered.bird
- next.text = "寻找鲸鱼 →" if data.id == "bird" else "重访飞鸟 →"
- $UI/Album.text = "观测册 · %d / 2" % (int(ObservatoryState.collected.bird) + int(ObservatoryState.collected.whale))
+ next.text = LocalizationSystem.text("寻找鲸鱼 →" if data.id == "bird" else "重访飞鸟 →")
+ $UI/Album.text = LocalizationSystem.text("观测册 · %d / 2" % (int(ObservatoryState.collected.bird) + int(ObservatoryState.collected.whale)))
 func _unhandled_input(event: InputEvent) -> void:
  if event is InputEventKey and event.pressed and not event.echo:
   match event.keycode:
@@ -101,7 +101,7 @@ func _process(delta: float) -> void:
  field.set_brightness(0.95 + checker.attraction*0.4 + lines.strength*2.2)
  capture.visible = aligned and not is_capturing
  if not checker.completed:
-  hint.text = "观测册  /  " + data.title + "\n" + ("轮廓已对齐，等待星光相连……" if checker.elapsed > 0.05 else data.hint + "\n转动望远镜寻找完整轮廓，对准后停留片刻。")
+  hint.text = LocalizationSystem.text("观测册") + "  /  " + LocalizationSystem.text(data.title) + "\n" + (LocalizationSystem.text("轮廓已对齐，等待星光相连……") if checker.elapsed > 0.05 else LocalizationSystem.text(data.hint) + "\n" + LocalizationSystem.text("转动望远镜寻找完整轮廓，对准后停留片刻。"))
  lines.queue_redraw()
 func found() -> void:
  ObservatoryState.discovered[data.id] = true
@@ -110,8 +110,7 @@ func found() -> void:
  lines.reveal_progress = 0.0
  reveal_tween = create_tween()
  reveal_tween.tween_property(lines,"reveal_progress",1.0,1.4).set_trans(Tween.TRANS_SINE)
- hint.text = "观测册  /  " + data.title + "
-星光在这里相遇了。"
+ hint.text = LocalizationSystem.text("观测册") + "  /  " + LocalizationSystem.text(data.title) + "\n" + LocalizationSystem.text("星光在这里相遇了。")
  refresh_buttons()
 func collect() -> void:
  if is_capturing: return
@@ -128,7 +127,6 @@ func collect() -> void:
  if result == OK:
   ObservatoryState.collected[data.id] = true
   ObservatoryState.save_state()
-  hint.text = "观测册  /  " + data.title + "
-已收藏，星光留在了相册里。"
- else: hint.text = "照片暂时无法保存，请检查存储空间。"
+  hint.text = LocalizationSystem.text("观测册") + "  /  " + LocalizationSystem.text(data.title) + "\n" + LocalizationSystem.text("已收藏，星光留在了相册里。")
+ else: hint.text = LocalizationSystem.text("照片暂时无法保存，请检查存储空间。")
  refresh_buttons()

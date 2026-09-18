@@ -168,7 +168,7 @@ func _capture(filename: String) -> void:
 
 func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, font_size: int, color: Color) -> Label:
 	var label := Label.new()
-	label.text = text_value
+	label.text = LocalizationSystem.text(text_value)
 	label.position = at
 	label.size = label_size
 	label.add_theme_font_size_override("font_size", font_size)
@@ -179,7 +179,7 @@ func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, 
 
 func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, color: Color) -> Button:
 	var button := Button.new()
-	button.text = text_value
+	button.text = LocalizationSystem.text(text_value)
 	button.position = at
 	button.size = button_size
 	button.add_theme_font_size_override("font_size", 16)

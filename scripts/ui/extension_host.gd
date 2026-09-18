@@ -97,14 +97,14 @@ func _build_host_bar() -> void:
 	panel.add_theme_stylebox_override("panel", style)
 	layer.add_child(panel)
 	var title := Label.new()
-	title.text = str(metadata.get("name", module_id))
+	title.text = LocalizationSystem.text(str(metadata.get("name", module_id)))
 	title.position = Vector2(18, 10)
 	title.size = Vector2(250, 28)
 	title.add_theme_font_size_override("font_size", 19)
 	title.add_theme_color_override("font_color", INK)
 	panel.add_child(title)
 	status_label = Label.new()
-	status_label.text = str(metadata.get("completion_hint", "完成这段经历后返回小镇。"))
+	status_label.text = LocalizationSystem.text(str(metadata.get("completion_hint", "完成这段经历后返回小镇。")))
 	status_label.position = Vector2(18, 40)
 	status_label.size = Vector2(370, 37)
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -140,7 +140,7 @@ func _build_host_bar() -> void:
 
 func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, primary: bool) -> Button:
 	var button := Button.new()
-	button.text = text_value
+	button.text = LocalizationSystem.text(text_value)
 	button.position = at
 	button.size = button_size
 	var style := StyleBoxFlat.new()
@@ -163,7 +163,7 @@ func _process(_delta: float) -> void:
 	completion_ready = ready
 	complete_button.disabled = not ready
 	if ready:
-		status_label.text = "这段经历已经完整，可以把结果带回 Solmere。"
+		status_label.text = LocalizationSystem.text("这段经历已经完整，可以把结果带回 Solmere。")
 
 
 func _experience_completed() -> bool:
@@ -193,7 +193,7 @@ func _complete() -> void:
 		var direct_minutes := int(metadata.get("direct_time_minutes", 0))
 		if direct_minutes > 0 and not GameState.use_free_time(direct_minutes):
 			submitting = false
-			status_label.text = "当前时间块已不足 %d 分钟。进度保留在扩展内部，请暂时离开。" % direct_minutes
+			status_label.text = LocalizationSystem.text("当前时间块已不足 %d 分钟。进度保留在扩展内部，请暂时离开。" % direct_minutes)
 			return
 	var outcome := {
 		"choice_id": "extension_complete",
@@ -209,12 +209,12 @@ func _complete() -> void:
 	if not GameplayModuleSystem.complete_external(module_id, outcome, metadata.get("external_results", {})):
 		GameState.load_save_data(rollback_snapshot)
 		submitting = false
-		status_label.text = "结果暂时无法写入主存档，请重试。"
+		status_label.text = LocalizationSystem.text("结果暂时无法写入主存档，请重试。")
 		return
 	if not SaveManager.save_or_report("玩法结果保存失败"):
 		submitting = false
 		GameState.load_save_data(rollback_snapshot)
-		status_label.text = "存档写入失败，本次提交尚未生效；可以重试。"
+		status_label.text = LocalizationSystem.text("存档写入失败，本次提交尚未生效；可以重试。")
 		return
 	WorldSound.play_ui("coin" if GameState.money > money_before else "dialogue")
 	SceneRouter.return_from_gameplay()
@@ -237,7 +237,7 @@ func _cancel() -> void:
 		GameState.commit_active_role_state()
 	if not SaveManager.save_or_report("取消玩法后保存失败"):
 		GameState.load_save_data(rollback_snapshot)
-		status_label.text = "存档暂时没能写入，仍留在当前小游戏。可以重试离开。"
+		status_label.text = LocalizationSystem.text("存档暂时没能写入，仍留在当前小游戏。可以重试离开。")
 		return
 	SceneRouter.return_from_gameplay()
 

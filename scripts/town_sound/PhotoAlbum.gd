@@ -48,7 +48,7 @@ func _ready() -> void:
 	header.custom_minimum_size.y = 50
 	column.add_child(header)
 	var title := Label.new()
-	title.text = "挑一张旅途照片" if selection_mode else "景物相册  /  SOLMERE FIELD NOTES"
+	title.text = LocalizationSystem.text("挑一张旅途照片" if selection_mode else "景物相册  /  SOLMERE FIELD NOTES")
 	title.add_theme_font_size_override("font_size", 27)
 	title.add_theme_color_override("font_color", INK)
 	title.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -58,18 +58,18 @@ func _ready() -> void:
 	if has_node("/root/GameState"):
 		discovered = (GameState.artifacts.get("photo_subjects", []) as Array).size()
 	var stats := Label.new()
-	stats.text = "%d 张照片  ·  %d 个景物" % [photos.size(), discovered]
+	stats.text = LocalizationSystem.text("%d 张照片  ·  %d 个景物" % [photos.size(), discovered])
 	stats.add_theme_font_size_override("font_size", 15)
 	stats.add_theme_color_override("font_color", MUTED)
 	stats.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	header.add_child(stats)
 	var close := Button.new()
-	close.text = "返回  Esc"
+	close.text = LocalizationSystem.text("返回  Esc")
 	close.custom_minimum_size = Vector2(112, 40)
 	close.pressed.connect(queue_free)
 	header.add_child(close)
 	status = Label.new()
-	status.text = "每张照片保存在本机；对焦识别过的景物会带着当时的观察笔记。"
+	status.text = LocalizationSystem.text("每张照片保存在本机；对焦识别过的景物会带着当时的观察笔记。")
 	status.add_theme_color_override("font_color", MUTED)
 	status.add_theme_font_size_override("font_size", 15)
 	column.add_child(status)
@@ -86,7 +86,7 @@ func _ready() -> void:
 	grid.add_theme_constant_override("v_separation", 18)
 	scroll.add_child(grid)
 	if photos.is_empty():
-		status.text = "相册还是空的。回到街道按 C，先寻找取景框中央会亮起名字的景物。"
+		status.text = LocalizationSystem.text("相册还是空的。回到街道按 C，先寻找取景框中央会亮起名字的景物。")
 	for item in photos:
 		_add_photo_card(grid, item)
 
@@ -116,7 +116,7 @@ func _add_photo_card(grid: GridContainer, item: Dictionary) -> void:
 	column.add_theme_constant_override("separation", 6)
 	inset.add_child(column)
 	var category := Label.new()
-	category.text = str(item.get("subject_category", "自由摄影")).to_upper() + ("  ·  景物卡" if item.has("subject_id") else "")
+	category.text = LocalizationSystem.text(str(item.get("subject_category", "自由摄影")).to_upper() + ("  ·  景物卡" if item.has("subject_id") else ""))
 	category.add_theme_font_size_override("font_size", 12)
 	category.add_theme_color_override("font_color", AMBER)
 	column.add_child(category)
@@ -129,7 +129,7 @@ func _add_photo_card(grid: GridContainer, item: Dictionary) -> void:
 	var row := HBoxContainer.new()
 	column.add_child(row)
 	var caption := Label.new()
-	caption.text = str(item.get("subject_name", item.get("title", "小镇的一刻")))
+	caption.text = LocalizationSystem.text(str(item.get("subject_name", item.get("title", "小镇的一刻"))))
 	caption.add_theme_font_size_override("font_size", 19)
 	caption.add_theme_color_override("font_color", INK)
 	caption.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -140,7 +140,7 @@ func _add_photo_card(grid: GridContainer, item: Dictionary) -> void:
 	meta.add_theme_color_override("font_color", MUTED)
 	row.add_child(meta)
 	var action := Button.new()
-	action.text = "用作唱片封面" if selection_mode else "翻看这张照片"
+	action.text = LocalizationSystem.text("用作唱片封面" if selection_mode else "翻看这张照片")
 	action.custom_minimum_size.y = 34
 	action.pressed.connect(func() -> void: _activate_photo(item))
 	column.add_child(action)
@@ -149,7 +149,7 @@ func _add_photo_card(grid: GridContainer, item: Dictionary) -> void:
 func _activate_photo(item: Dictionary) -> void:
 	var selected_image := library.load_photo(str(item.get("photo_id", "")))
 	if selected_image == null:
-		status.text = library.last_error
+		status.text = LocalizationSystem.text(library.last_error)
 		return
 	if selection_mode:
 		photo_selected.emit(selected_image, item)
@@ -168,7 +168,7 @@ func _activate_photo(item: Dictionary) -> void:
 	display.custom_minimum_size = Vector2(800, 450)
 	column.add_child(display)
 	var note := Label.new()
-	note.text = str(item.get("subject_word", item.get("subject_name", ""))) + "\n" + str(item.get("subject_note", "这张自由照片没有附加标签。"))
+	note.text = LocalizationSystem.text(str(item.get("subject_word", item.get("subject_name", ""))) + "\n" + str(item.get("subject_note", "这张自由照片没有附加标签。")))
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	note.add_theme_font_size_override("font_size", 17)
 	note.add_theme_color_override("font_color", MUTED)

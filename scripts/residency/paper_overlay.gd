@@ -59,7 +59,7 @@ func label(parent: Node, text: String, at: Vector2, dimensions: Vector2, point :
 	var node := Label.new()
 	node.position = at
 	node.size = dimensions
-	node.text = text
+	node.text = LocalizationSystem.text(text)
 	node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	node.add_theme_font_size_override("font_size",point)
 	node.add_theme_color_override("font_color",color)
@@ -69,7 +69,7 @@ func label(parent: Node, text: String, at: Vector2, dimensions: Vector2, point :
 
 func button(parent: Node, text: String, at: Vector2, dimensions: Vector2, action: Callable) -> Button:
 	var node := Button.new()
-	node.text = text
+	node.text = LocalizationSystem.text(text)
 	node.position = at
 	node.size = dimensions
 	node.add_theme_color_override("font_color",INK)
@@ -91,7 +91,7 @@ func edit(parent: Node, value: String, at: Vector2, dimensions: Vector2, action:
 	node.position = at
 	node.size = dimensions
 	node.text = value
-	node.placeholder_text = placeholder
+	node.placeholder_text = LocalizationSystem.text(placeholder)
 	node.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	node.add_theme_color_override("font_color",INK)
 	node.add_theme_color_override("background_color",Color("fffaf0"))
@@ -208,7 +208,7 @@ func _dossier_dashboard() -> void:
 		hit.size = row[2]
 		hit.flat = true
 		hit.modulate = Color(1, 1, 1, 0.01)
-		hit.tooltip_text = str({"requirements":"申请要求", "days":"七日作品集", "exploration":"探索材料", "recognition":"居民认可", "personal":"个人页", "proof":"最终文件"}.get(str(row[0]), "档案"))
+		hit.tooltip_text = LocalizationSystem.text(str({"requirements":"申请要求", "days":"七日作品集", "exploration":"探索材料", "recognition":"居民认可", "personal":"个人页", "proof":"最终文件"}.get(str(row[0]), "档案")))
 		hit.pressed.connect(_select_dossier_tab.bind(str(row[0])))
 		body.add_child(hit)
 	var open_pages := Button.new()
@@ -217,7 +217,7 @@ func _dossier_dashboard() -> void:
 	open_pages.size = Vector2(340, 330)
 	open_pages.flat = true
 	open_pages.modulate = Color(1, 1, 1, 0.01)
-	open_pages.tooltip_text = "打开资料袋"
+	open_pages.tooltip_text = LocalizationSystem.text("打开资料袋")
 	open_pages.pressed.connect(func() -> void: tab = "cover"; build())
 	body.add_child(open_pages)
 
@@ -281,7 +281,7 @@ func _starter_packet() -> void:
 		label(sheet,str(paper.get("subtitle","")),Vector2(65,46),Vector2(490,28),20)
 		var open := button(sheet,"展开  →",Vector2(413,78),Vector2(151,31),_open_starter.bind(str(paper.id)))
 		open.name = "Starter_"+str(paper.id)
-	feedback.text = "点一张纸展开。七日作品集单独成册，其他文件各自保留。"
+	feedback.text = LocalizationSystem.text("点一张纸展开。七日作品集单独成册，其他文件各自保留。")
 
 func _open_starter(id: String) -> void:
 	detail_id = ""
@@ -307,7 +307,7 @@ func _starter_reader() -> void:
 	label(sheet,str(paper.get("subtitle","")),Vector2(40,77),Vector2(900,33),21)
 	var rows := scroll_area(sheet,Vector2(42,126),Vector2(926,292))
 	var text := Label.new()
-	text.text = str(paper.text)
+	text.text = LocalizationSystem.text(str(paper.text))
 	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text.custom_minimum_size.x = 895
 	text.add_theme_color_override("font_color",INK)
@@ -356,7 +356,7 @@ func _requirements() -> void:
 		label(row,"%d / %d" % [int(progress.count),int(progress.target)],Vector2(705,4),Vector2(145,32),24)
 		label(row,"已满足" if fulfilled else "未完成",Vector2(920,4),Vector2(200,32),23,INK if fulfilled else Color("947048"))
 	label(sheet,"点选任一要求，查看对应记录。证明领取后仍需亲手归档。",Vector2(30,482),Vector2(1170,35),19)
-	if not audit.submitted.is_empty(): feedback.text = str(audit.submitted.outcome)
+	if not audit.submitted.is_empty(): feedback.text = LocalizationSystem.text(str(audit.submitted.outcome))
 
 func _requirement_open(key: String) -> void:
 	match key:
@@ -394,7 +394,7 @@ func _day_page() -> void:
 	var mark_names: Array[String] = []
 	for resident in page.marks: mark_names.append(str(ScheduleSystem.residents.get(resident,{}).get("display_name",resident)))
 	label(body,"居民签记 %d / 2：%s" % [page.marks.size(),"、".join(mark_names)],Vector2(750,625),Vector2(550,42),18)
-	feedback.text = "%s · 当前 Day %d / 7 · 这页到当天可以填写" % [GameState.current_role,GameState.current_day] if day > GameState.current_day else "%s · 当前 Day %d / 7 · 每天一页，材料按自己的选择收好" % [GameState.current_role,GameState.current_day]
+	feedback.text = LocalizationSystem.text("%s · 当前 Day %d / 7 · 这页到当天可以填写" % [GameState.current_role,GameState.current_day] if day > GameState.current_day else "%s · 当前 Day %d / 7 · 每天一页，材料按自己的选择收好" % [GameState.current_role,GameState.current_day])
 
 func _form_row(rows: VBoxContainer, caption: String, value: String, key: String, height: float) -> void:
 	var row := Control.new()
@@ -424,7 +424,7 @@ func _recognition() -> void:
 			var marked: bool = ResidencySystem.state().pages[i-1].marks.has(resident)
 			var b := button(row,("✓ " if marked else "")+"Day %d" % i,Vector2(339+(i-1)*124,4),Vector2(116,42),func() -> void:
 				if ResidencySystem.assign_mark(resident,i): build()
-				else: feedback.text = "这一页已有两处签记，或日期尚未到来。")
+				else: feedback.text = LocalizationSystem.text("这一页已有两处签记，或日期尚未到来。"))
 			b.disabled = i > GameState.current_day
 	if GameState.confirmed_residents.is_empty(): label(body,"还没有居民签记。先在小镇里一起做些事。",Vector2(70,280),Vector2(1100,80),26)
 
@@ -484,7 +484,7 @@ func _explore_records() -> void:
 	body.add_child(evidence)
 	button(body,"留下这张记录",Vector2(855,435),Vector2(410,44),func() -> void:
 		var result := ResidencySystem.record_exploration(exploration_kind,exploration_location,exploration_text,exploration_evidence)
-		build(); feedback.text = str(result.message)).name = "CreateExploreRecord"
+		build(); feedback.text = LocalizationSystem.text(str(result.message))).name = "CreateExploreRecord"
 	var records := scroll_area(body,Vector2(50,500),Vector2(1215,165))
 	for type in ["discover","revisit","shareplace"]:
 		var id := str(s.explorations.get(type,""))
@@ -756,20 +756,20 @@ func _counter() -> void:
 			if GameState.use_free_time(wait_minutes):
 				ResidencySystem.persist()
 				build()
-				feedback.text = "柜台开门了，可以领取资料。"
-			else: feedback.text = "这段时间已有安排，可以稍后回来。")
+				feedback.text = LocalizationSystem.text("柜台开门了，可以领取资料。")
+			else: feedback.text = LocalizationSystem.text("这段时间已有安排，可以稍后回来。"))
 		wait.name = "WaitForCommunityCounter"
 	var collect := button(body,"展开已领取的资料袋" if ResidencySystem.state().packet else "领取七日资料袋",Vector2(65,260),Vector2(1110,65),func() -> void:
 		var message := ResidencySystem.collect_packet()
 		if ResidencySystem.state().packet: mode = "dossier"; tab = "packet"; build()
-		feedback.text = message)
+		feedback.text = LocalizationSystem.text(message))
 	collect.name = "CollectStarterPacket"
 	collect.disabled = not ResidencySystem.office_open() and not ResidencySystem.state().packet
 	button(body,"查看待补材料",Vector2(65,365),Vector2(1110,65),func() -> void: mode = "dossier"; tab = "requirements"; build())
 	button(body,"提交 · 请值班人逐页查看",Vector2(65,470),Vector2(1110,65),func() -> void:
-		if GameState.current_day != 7 or not ResidencySystem.office_open(): feedback.text = "请在 Day 7 · 09:00–18:00 交件。"
-		elif not ResidencySystem.audit().ready: feedback.text = "还有材料待补齐，可先查看要求页。"
-		elif not ResidencySystem.state().submitted.is_empty(): feedback.text = "档案已经收好，感谢你留下这些记录。"
+		if GameState.current_day != 7 or not ResidencySystem.office_open(): feedback.text = LocalizationSystem.text("请在 Day 7 · 09:00–18:00 交件。")
+		elif not ResidencySystem.audit().ready: feedback.text = LocalizationSystem.text("还有材料待补齐，可先查看要求页。")
+		elif not ResidencySystem.state().submitted.is_empty(): feedback.text = LocalizationSystem.text("档案已经收好，感谢你留下这些记录。")
 		else: review_index = 0; build())
 	button(body,"公共展示 · 领取贡献证明",Vector2(65,570),Vector2(1110,55),func() -> void: mode = "proofs"; build()).name = "CommunityProofCounter"
 
@@ -792,7 +792,7 @@ func _proofs() -> void:
 			var message := ""
 			if needs_placement: message = str(ResidencySystem.accept_contribution(str(item.id),GameState.current_location,{"source":"counter_handover"}).message)
 			else: message = ResidencySystem.collect_proof(str(item.id))
-			build(); feedback.text = message)
+			build(); feedback.text = LocalizationSystem.text(message))
 		b.name = "PlaceContribution_"+str(item.id) if needs_placement else "CollectProof_"+str(item.id)
 		b.disabled = collected and not needs_placement
 	if rows.get_child_count() == 0: label(body,"这里暂时没有待领取的工作证明。",Vector2(65,290),Vector2(1150,100),28)
@@ -841,12 +841,12 @@ func _today() -> void:
 	var opportunities := GuidanceSystem.opportunities()
 	if opportunities.is_empty():
 		var line := Label.new()
-		line.text="问问店主，新的消息会留在这里。"
+		line.text=LocalizationSystem.text("问问店主，新的消息会留在这里。")
 		line.add_theme_color_override("font_color",INK)
 		rows.add_child(line)
 	for opportunity in opportunities:
 		var line := Button.new()
-		line.text=str(opportunity.text)
+		line.text=LocalizationSystem.text(str(opportunity.text))
 		line.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		line.custom_minimum_size=Vector2(1200,62)
 		line.add_theme_color_override("font_color",INK)
@@ -876,7 +876,7 @@ func _knowledge() -> void:
 	var fact_rows := scroll_area(body,Vector2(697,158),Vector2(588,512))
 	for entry in [[money_rows,EconomySystem.notebook_text()],[fact_rows,KnowledgeSystem.text()]]:
 		var text := Label.new()
-		text.text=str(entry[1])
+		text.text=LocalizationSystem.text(str(entry[1]))
 		text.custom_minimum_size.x=552
 		text.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		text.add_theme_color_override("font_color",INK)
@@ -914,7 +914,7 @@ func _map_select(location: String) -> void:
 	label(side,hours_text,Vector2(0,102),Vector2(345,45),18)
 	var known := scroll_area(side,Vector2(0,152),Vector2(345,98))
 	var knowledge := Label.new()
-	knowledge.text=GuidanceSystem.known_at(location)
+	knowledge.text=LocalizationSystem.text(GuidanceSystem.known_at(location))
 	knowledge.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	knowledge.custom_minimum_size.x=325
 	knowledge.add_theme_font_size_override("font_size",18)
@@ -937,12 +937,12 @@ func _map_select(location: String) -> void:
 		var b := button(side,title,Vector2(0,307+i*87),Vector2(340,39),func() -> void: _travel_selected(method))
 		b.name = "TravelWalk" if i == 0 else "TravelTaxi"
 		b.disabled = not available or travel_pending
-		b.tooltip_text = reason
+		b.tooltip_text = LocalizationSystem.text(reason)
 		var consequence := reason if not bool(route.get("available",false)) else GuidanceSystem.preview(int(route.minutes),location)
 		if not reason.is_empty() and bool(route.get("available",false)): consequence=reason+" "+consequence
 		var eta := label(side,consequence,Vector2(0,349+i*87),Vector2(345,43),16)
 		eta.name="TravelETA_"+method
-		eta.tooltip_text=consequence
+		eta.tooltip_text=LocalizationSystem.text(consequence)
 		if method=="taxi" and bool(route.get("available",false)):
 			MetaExperience.queue_important("route_taxi_choice",{"protagonist_id":GameState.current_role,"location_id":GameState.current_location,"taxi_cost":int(route.cost),"to":location})
 	button(side,"取消",Vector2(0,488),Vector2(340,35),func() -> void: _map_select(GameState.current_location)).name = "TravelCancel"
@@ -954,5 +954,5 @@ func _travel_selected(method: String) -> void:
 	if bool(result.get("ok",false)): close()
 	else:
 		travel_pending = false
-		feedback.text = str(result.get("message","当前无法出发。"))
+		feedback.text = LocalizationSystem.text(str(result.get("message","当前无法出发。")))
 		_map_select(map_selected)

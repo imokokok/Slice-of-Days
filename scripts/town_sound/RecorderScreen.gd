@@ -62,11 +62,11 @@ func _ready() -> void:
 	recorder.completed.connect(_on_recorded)
 	recorder.failed.connect(func(message: String) -> void:
 		set_compact(false)
-		status_label.text = message
+		status_label.text = LocalizationSystem.text(message)
 		meter.value = 0
 		_refresh_controls())
 	player.finished.connect(func() -> void:
-		status_label.text = "试听结束。把今天听见的东西留下来。"
+		status_label.text = LocalizationSystem.text("试听结束。把今天听见的东西留下来。")
 		_refresh_controls())
 	_refresh_devices()
 	_refresh_library()
@@ -106,13 +106,13 @@ func _build_theme() -> void:
 
 func _label(text: String, font_size: int = 17) -> Label:
 	var label := Label.new()
-	label.text = text
+	label.text = LocalizationSystem.text(text)
 	label.add_theme_font_size_override("font_size", font_size)
 	return label
 
 func _button(text: String, action: Callable) -> Button:
 	var button := Button.new()
-	button.text = text
+	button.text = LocalizationSystem.text(text)
 	button.pressed.connect(action)
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	return button
@@ -139,7 +139,7 @@ func _build_ui() -> void:
 	heading.add_child(_button("返回小镇", request_close))
 	heading.add_child(_button("♪ 声音设置 / 测试音", func() -> void:
 		if recorder.capturing:
-			status_label.text = "请先停止录音，再切换声音设备。"
+			status_label.text = LocalizationSystem.text("请先停止录音，再切换声音设备。")
 			return
 		get_node("/root/SoundSettings").show_dialog()))
 	heading.add_child(_label("FIELD NOTES   /   01", 15))
@@ -157,8 +157,8 @@ func _build_ui() -> void:
 	body.add_child(left)
 	left.add_child(_label("01  /  TOWN RECORDER", 21))
 	source_picker = OptionButton.new()
-	source_picker.add_item("小镇声音 · 游戏环境与音效（默认）")
-	source_picker.add_item("真实人声 · 使用麦克风（可选）")
+	source_picker.add_item(LocalizationSystem.text("小镇声音 · 游戏环境与音效（默认）"))
+	source_picker.add_item(LocalizationSystem.text("真实人声 · 使用麦克风（可选）"))
 	source_picker.item_selected.connect(func(_index: int) -> void: _refresh_devices())
 	left.add_child(source_picker)
 	source_hint = _label("", 14)
@@ -166,7 +166,7 @@ func _build_ui() -> void:
 	left.add_child(source_hint)
 	left.add_child(_button("听听身边 · 环境互动", func() -> void:
 		get_node("/root/WorldSound").play_detail()
-		status_label.text = get_node("/root/WorldSound").detail_label()))
+		status_label.text = LocalizationSystem.text(get_node("/root/WorldSound").detail_label())))
 	left.add_child(_button("收起面板 · 边逛边录", func() -> void: set_compact(true)))
 	device_row = HBoxContainer.new()
 	left.add_child(device_row)
@@ -199,7 +199,7 @@ func _build_ui() -> void:
 	left.add_child(_label("NAME THIS SOUND", 14))
 	name_input = LineEdit.new()
 	name_input.max_length = 60
-	name_input.placeholder_text = "例如：下午五点的钥匙"
+	name_input.placeholder_text = LocalizationSystem.text("例如：下午五点的钥匙")
 	left.add_child(name_input)
 	var actions := HBoxContainer.new()
 	left.add_child(actions)
@@ -231,10 +231,10 @@ func _build_ui() -> void:
 	column.add_child(status_label)
 	column.add_child(_button("进入 STUDIO / 编排声音", func() -> void:
 		if not can_edit_here():
-			status_label.text = "录音已在本机保存。请先抵达唱片店，再使用编曲工作台。"
+			status_label.text = LocalizationSystem.text("录音已在本机保存。请先抵达唱片店，再使用编曲工作台。")
 			return
 		if recorder.capturing or draft != null:
-			status_label.text = "请先停止并保存，或放弃当前录音。"
+			status_label.text = LocalizationSystem.text("请先停止并保存，或放弃当前录音。")
 			return
 		player.stop()
 		var studio = load("res://scripts/town_sound/studio/StudioScreen.gd").new()
@@ -246,7 +246,7 @@ func _build_ui() -> void:
 	column.add_child(_button("LOCAL RECORDINGS / 唱片店", func() -> void:
 		if not can_edit_here(): return
 		if recorder.capturing or draft != null:
-			status_label.text = "请先保存或放弃当前录音。"
+			status_label.text = LocalizationSystem.text("请先保存或放弃当前录音。")
 			return
 		player.stop()
 		var shelf = load("res://scripts/town_sound/record_shop/RecordShelf.gd").new()
@@ -262,9 +262,9 @@ func _build_ui() -> void:
 	delete_dialog.confirmed.connect(func() -> void:
 		player.stop()
 		if store.delete_sample(pending_delete):
-			status_label.text = "录音已移到本地回收目录。"
+			status_label.text = LocalizationSystem.text("录音已移到本地回收目录。")
 		else:
-			status_label.text = store.last_error
+			status_label.text = LocalizationSystem.text(store.last_error)
 		_refresh_library()
 		_refresh_controls())
 	add_child(delete_dialog)
@@ -309,13 +309,13 @@ func _refresh_devices() -> void:
 	for index in devices.item_count:
 		if devices.get_item_text(index) == selected_device: devices.select(index)
 	device_row.visible = source_picker.selected == 1
-	source_hint.text = "直接录下当前地点的游戏背景声与互动音效，不启用麦克风。" if source_picker.selected == 0 else "仅按下 REC 时启用麦克风。建议戴耳机录制人声。"
+	source_hint.text = LocalizationSystem.text("直接录下当前地点的游戏背景声与互动音效，不启用麦克风。" if source_picker.selected == 0 else "仅按下 REC 时启用麦克风。建议戴耳机录制人声。")
 	if source_picker.selected == 0:
-		status_label.text = "小镇采样已就绪。按 REC，可收起面板边走边录。"
+		status_label.text = LocalizationSystem.text("小镇采样已就绪。按 REC，可收起面板边走边录。")
 	elif devices.item_count == 0:
-		status_label.text = "MICROPHONE NOT AVAILABLE · 未找到麦克风，连接设备后点重试。"
+		status_label.text = LocalizationSystem.text("MICROPHONE NOT AVAILABLE · 未找到麦克风，连接设备后点重试。")
 	else:
-		status_label.text = "录音设备：" + selected_device + "。按 REC 开始采集。"
+		status_label.text = LocalizationSystem.text("录音设备：" + selected_device + "。按 REC 开始采集。")
 	_refresh_controls()
 
 func _start_recording() -> void:
@@ -328,7 +328,7 @@ func _start_recording() -> void:
 	draft_context = _capture_context(source_mode)
 	if recorder.start(devices.get_item_text(devices.selected) if devices.selected >= 0 else "", source_mode):
 		WorldSound.play_ui("record_start")
-		status_label.text = "正在录制 · 录完请按 STOP，最长 60 秒。"
+		status_label.text = LocalizationSystem.text("正在录制 · 录完请按 STOP，最长 60 秒。")
 	_refresh_controls()
 
 func _stop() -> void:
@@ -337,7 +337,7 @@ func _stop() -> void:
 		recorder.stop()
 	else:
 		player.stop()
-		status_label.text = "已停止试听。"
+		status_label.text = LocalizationSystem.text("已停止试听。")
 	_refresh_controls()
 
 func _on_recorded(wav: AudioStreamWAV, warning: String) -> void:
@@ -349,7 +349,7 @@ func _on_recorded(wav: AudioStreamWAV, warning: String) -> void:
 		place = TravelSystem.location_name(place)
 	var minute := int(draft_context.get("game_minute", 0))
 	name_input.text = "%s %02d:%02d" % [place, minute / 60, minute % 60]
-	status_label.text = warning if not warning.is_empty() else "录好了。听一听，给这段声音起个名字，再保存。"
+	status_label.text = LocalizationSystem.text(warning if not warning.is_empty() else "录好了。听一听，给这段声音起个名字，再保存。")
 	meter.value = 0
 	_refresh_controls()
 
@@ -358,15 +358,15 @@ func _preview_draft() -> void:
 		return
 	player.stream = draft
 	player.play()
-	status_label.text = "正在试听未保存的录音。" if audio_peak(draft) > 0.0001 else "这段录音为静音，播放不会出声。请检查所选声源后重录。"
+	status_label.text = LocalizationSystem.text("正在试听未保存的录音。" if audio_peak(draft) > 0.0001 else "这段录音为静音，播放不会出声。请检查所选声源后重录。")
 	_refresh_controls()
 
 func _save_draft() -> void:
 	var metadata := store.save_sample(draft, name_input.text, draft_context)
 	if metadata.is_empty():
-		status_label.text = store.last_error + " 当前录音仍在，可重试。"
+		status_label.text = LocalizationSystem.text(store.last_error + " 当前录音仍在，可重试。")
 		return
-	status_label.text = "已保存：「%s」 · %.2f 秒" % [metadata.name, metadata.duration]
+	status_label.text = LocalizationSystem.text("已保存：「%s」 · %.2f 秒" % [metadata.name, metadata.duration])
 	if has_node("/root/GameState"):
 		GameState.add_artifact("samples", {"id": str(metadata.id), "title": str(metadata.name), "kind": "recording", "duration": float(metadata.duration), "location": str(metadata.get("location", ""))})
 		GameState.add_journal_entry({"id": "sample_%s" % str(metadata.id), "kind": "recording", "text": "在%s录下「%s」并保存在本机。" % [TravelSystem.location_name(str(metadata.get("location", GameState.current_location))), str(metadata.name)]})
@@ -384,7 +384,7 @@ func _discard_draft() -> void:
 	waveform.set_audio(null)
 	name_input.text = ""
 	timer_label.text = "00:00.00"
-	status_label.text = "已放弃未保存的录音，可以重新录制。"
+	status_label.text = LocalizationSystem.text("已放弃未保存的录音，可以重新录制。")
 	_refresh_controls()
 
 func _refresh_library() -> void:
@@ -411,7 +411,7 @@ func _refresh_library() -> void:
 		var row := HBoxContainer.new()
 		card.add_child(row)
 		var listen := _button("▶", func() -> void: _play_sample(item))
-		listen.tooltip_text = "试听这段录音"
+		listen.tooltip_text = LocalizationSystem.text("试听这段录音")
 		listen.set_meta("missing", item.missing)
 		row.add_child(listen)
 		row_buttons.append(listen)
@@ -422,10 +422,10 @@ func _refresh_library() -> void:
 		row.add_child(rename)
 		var rename_button := _button("改名", func() -> void:
 			if store.rename_sample(item.id, rename.text):
-				status_label.text = "名称已保存。"
+				status_label.text = LocalizationSystem.text("名称已保存。")
 				_refresh_library()
 			else:
-				status_label.text = store.last_error
+				status_label.text = LocalizationSystem.text(store.last_error)
 			_refresh_controls())
 		row.add_child(rename_button)
 		row_buttons.append(rename_button)
@@ -435,7 +435,7 @@ func _refresh_library() -> void:
 		row.add_child(remove)
 		row_buttons.append(remove)
 	if not store.last_error.is_empty():
-		status_label.text = store.last_error
+		status_label.text = LocalizationSystem.text(store.last_error)
 
 
 func _capture_context(source_mode: String) -> Dictionary:
@@ -477,12 +477,12 @@ func _sample_memory_text(item: Dictionary) -> String:
 func _play_sample(item: Dictionary) -> void:
 	var wav := store.load_audio(item)
 	if wav == null:
-		status_label.text = store.last_error
+		status_label.text = LocalizationSystem.text(store.last_error)
 		return
 	waveform.set_audio(wav)
 	player.stream = wav
 	player.play()
-	status_label.text = "正在试听：「%s」" % item.name if audio_peak(wav) > 0.0001 else "「%s」没有声音数据。旧录音无法恢复，请检查所选声源后重录。" % item.name
+	status_label.text = LocalizationSystem.text("正在试听：「%s」" % item.name if audio_peak(wav) > 0.0001 else "「%s」没有声音数据。旧录音无法恢复，请检查所选声源后重录。" % item.name)
 	_refresh_controls()
 
 func audio_peak(wav: AudioStreamWAV) -> float:

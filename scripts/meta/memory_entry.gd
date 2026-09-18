@@ -27,12 +27,12 @@ func _draw() -> void:
 
 func _build() -> void:
 	var title := Label.new()
-	title.text = "A · 透光台" if GameState.current_role == "A" else "B · 采样桌"
+	title.text = LocalizationSystem.text("A · 透光台" if GameState.current_role == "A" else "B · 采样桌")
 	title.position = Vector2(80,50)
 	title.add_theme_font_size_override("font_size",32)
 	add_child(title)
 	var hint := Label.new()
-	hint.text = "点开一张纸。声音会先到。"
+	hint.text = LocalizationSystem.text("点开一张纸。声音会先到。")
 	hint.position = Vector2(80,100)
 	add_child(hint)
 	for i in papers.size():
@@ -43,7 +43,7 @@ func _build() -> void:
 		button.position = Vector2(160+i*165,245+(i%2)*50)
 		button.size = Vector2(250,330)
 		button.rotation = deg_to_rad(-5+i*1.5) if GameState.current_role == "A" else 0.0
-		button.tooltip_text = str(papers[i].title)
+		button.tooltip_text = LocalizationSystem.text(papers[i].title)
 		add_child(button)
 		cards.append(button)
 		button.pressed.connect(_enter.bind(i))
@@ -52,7 +52,7 @@ func _build() -> void:
 		caption.size = Vector2(185,65)
 		caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		caption.add_theme_font_size_override("font_size",17)
-		caption.text = str(papers[i].title)
+		caption.text = LocalizationSystem.text(str(papers[i].title))
 		add_child(caption)
 		if GameState.current_role == "B":
 			var stem := AudioStreamPlayer.new()
@@ -62,7 +62,7 @@ func _build() -> void:
 			stem_players.append(stem)
 			var toggle := CheckButton.new()
 			toggle.position = Vector2(150+i*198,705)
-			toggle.text = "听这一层"
+			toggle.text = LocalizationSystem.text("听这一层")
 			add_child(toggle)
 			toggle.toggled.connect(func(on: bool) -> void: stem.play() if on else stem.stop())
 			stem.finished.connect(func() -> void: if toggle.button_pressed: stem.play())
@@ -72,12 +72,12 @@ func _build() -> void:
 			gain.min_value = -30
 			gain.max_value = 0
 			gain.value = -9
-			gain.tooltip_text = "这一层的音量"
+			gain.tooltip_text = LocalizationSystem.text("这一层的音量")
 			gain.value_changed.connect(func(value: float) -> void: stem.volume_db = value)
 			add_child(gain)
 	if GameState.current_role == "A":
 		var combine := CheckButton.new()
-		combine.text = "叠起来看"
+		combine.text = LocalizationSystem.text("叠起来看")
 		combine.position = Vector2(190,740)
 		add_child(combine)
 		combine.toggled.connect(func(on: bool) -> void:
@@ -86,13 +86,13 @@ func _build() -> void:
 				cards[i].size = Vector2(400,380) if on else Vector2(250,330)
 				cards[i].modulate.a = .35 if on else 1.0)
 	var close := Button.new()
-	close.text = "回到房间"
+	close.text = LocalizationSystem.text("回到房间")
 	close.position = Vector2(1330,50)
 	close.size = Vector2(190,50)
 	close.pressed.connect(queue_free)
 	add_child(close)
 	var room_button := Button.new()
-	room_button.text = "看看房间"
+	room_button.text = LocalizationSystem.text("看看房间")
 	room_button.position = Vector2(1100,50)
 	room_button.size = Vector2(190,50)
 	add_child(room_button)

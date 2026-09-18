@@ -96,7 +96,7 @@ func _ready() -> void:
 
 func _label(parent: Node, text: String, at: Vector2, dimensions: Vector2, font_size: int) -> Label:
 	var label:=Label.new()
-	label.text=text
+	label.text=LocalizationSystem.text(text)
 	label.position=at
 	label.size=dimensions
 	label.mouse_filter=MOUSE_FILTER_IGNORE
@@ -172,7 +172,7 @@ func take_photo() -> void:
 	shot.merge({"subject_id":str(current_subject.get("id","")),"subject_name":str(current_subject.get("name","")),"location":GameState.current_location,"role":GameState.current_role},true)
 	shot["title"]=TravelSystem.location_name(GameState.current_location)+" · "+GameState.clock_text()
 	var captured:=FilmSystem.capture(cropped_image(),shot,library)
-	if captured.is_empty(): focus_label.text=FilmSystem.last_error; shutter.disabled=false; return
+	if captured.is_empty(): focus_label.text=LocalizationSystem.text(FilmSystem.last_error); shutter.disabled=false; return
 	WorldSound.play_ui("shutter")
 	flash.modulate.a=1
 	var tween:=create_tween()
@@ -186,9 +186,9 @@ func _refresh_count() -> void:
 	var roll:=FilmSystem.active_roll()
 	var used:=int(roll.get("exposures_used",0))
 	var title:=str(FilmSystem.config.types.get(str(roll.get("film_type","normal")),{}).get("name","胶片"))
-	held_label.text=("%02d / 24  ·  %s\nLMB 查看取景框\nC / Esc 收起" % [24-used,title]) if not roll.is_empty() else "相机里没有胶卷\n到杂货店装一卷\nC / Esc 收起"
+	held_label.text=LocalizationSystem.text(("%02d / 24  ·  %s\nLMB 查看取景框\nC / Esc 收起" % [24-used,title]) if not roll.is_empty() else "相机里没有胶卷\n到杂货店装一卷\nC / Esc 收起")
 	count_label.text="%02d / 24" % used
-	focus_label.text=title+" · 24张" if used<24 else "这一卷已拍满 · 杂货店可送洗"
+	focus_label.text=LocalizationSystem.text(title+" · 24张" if used<24 else "这一卷已拍满 · 杂货店可送洗")
 
 func _viewfinder_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:

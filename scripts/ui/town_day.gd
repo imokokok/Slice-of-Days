@@ -158,10 +158,10 @@ func _build_ui() -> void:
 	for index in tools.size():
 		var button := _button(self, "", Vector2(1220 + index * 54, 15), Vector2(44, 40), "quiet")
 		button.icon = preload("res://scripts/town_sound/MediaTheme.gd").icon(str(tools[index].id))
-		button.tooltip_text = str(tools[index].label)
+		button.tooltip_text = LocalizationSystem.text(tools[index].label)
 		button.pressed.connect(tools[index].action)
 	var notes := _button(self, "Pocket" if GameState.current_role == "A" else "日程本", Vector2(1395, 15), Vector2(78, 40), "quiet")
-	notes.tooltip_text = "J / Tab · 打开随身本"
+	notes.tooltip_text = LocalizationSystem.text("J / Tab · 打开随身本")
 	notes.pressed.connect(_open_journal)
 	var menu := _button(self, "回到主页", Vector2(1480, 15), Vector2(106, 40), "quiet")
 	menu.pressed.connect(_return_to_menu)
@@ -174,10 +174,10 @@ func _refresh() -> void:
 	WorldSound.set_location(GameState.current_location)
 	GameState.refresh_appointments()
 	location_title.text = _location_name(GameState.current_location)
-	clock_label.text = "%s · 第%d天 · %s" % [GameState.current_role,GameState.current_day,GameState.clock_text()]
+	clock_label.text = LocalizationSystem.text("%s · 第%d天 · %s" % [GameState.current_role,GameState.current_day,GameState.clock_text()])
 	var money_changed := displayed_money >= 0 and displayed_money != GameState.money
 	displayed_money = GameState.money
-	wallet_label.text = "%d 元" % GameState.money
+	wallet_label.text = LocalizationSystem.text("%d 元" % GameState.money)
 	if money_changed and is_instance_valid(wallet_icon):
 		wallet_icon.scale = Vector2(1.35, 1.35)
 		wallet_icon.pivot_offset = wallet_icon.size * 0.5
@@ -424,7 +424,7 @@ func _panel(parent: Node, at: Vector2, panel_size: Vector2, color: Color, border
 
 func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, font_size: int, color: Color, align := HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var label := Label.new()
-	label.text = text_value
+	label.text = LocalizationSystem.text(text_value)
 	label.position = at
 	label.size = label_size
 	label.horizontal_alignment = align
@@ -436,7 +436,7 @@ func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, 
 
 func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, kind: String) -> Button:
 	var button := Button.new()
-	button.text = text_value
+	button.text = LocalizationSystem.text(text_value)
 	button.position = at
 	button.size = button_size
 	button.add_theme_font_size_override("font_size", 14)
@@ -511,7 +511,7 @@ func _guard_pocket_audio() -> bool:
 	if is_instance_valid(pocket_panel) and pocket_panel.has_method("set_compact"):
 		if pocket_panel.recorder.capturing or pocket_panel.draft != null:
 			pocket_panel.set_compact(false)
-			pocket_panel.status_label.text = "请先停止并保存，或放弃当前录音，再离开小镇。"
+			pocket_panel.status_label.text = LocalizationSystem.text("请先停止并保存，或放弃当前录音，再离开小镇。")
 			return true
 	return false
 

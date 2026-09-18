@@ -85,7 +85,7 @@ func _build_ui() -> void:
 		var token_id := str(token.get("id", ""))
 		var token_button := _button(side, _token_button_text(token), Vector2(22, 150 + index * (36 if module_id == "cooking" else 52)), Vector2(546, 32 if module_id == "cooking" else 44), false)
 		token_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		token_button.tooltip_text = str(token.get("detail", ""))
+		token_button.tooltip_text = LocalizationSystem.text(token.get("detail", ""))
 		token_button.pressed.connect(_toggle_token.bind(token_id))
 		token_buttons[token_id] = token_button
 
@@ -96,7 +96,7 @@ func _build_ui() -> void:
 		var minutes := int(choice.get("cost", {}).get("minutes", 0))
 		if module_id == "cooking": minutes = int(EconomySystem.cooking_cost(choice.get("cost", {})).get("minutes", minutes))
 		var choice_button := _button(side, "%s · %d分钟" % [str(choice.get("label", choice_id)), minutes], Vector2(22, choice_y), Vector2(546, 42), true)
-		choice_button.tooltip_text = str(choice.get("detail", ""))
+		choice_button.tooltip_text = LocalizationSystem.text(choice.get("detail", ""))
 		choice_button.pressed.connect(_complete_choice.bind(choice_id))
 		choice_buttons[choice_id] = choice_button
 		choice_y += 50
@@ -133,14 +133,14 @@ func _toggle_token(token_id: String) -> void:
 	if completed or playback_active:
 		return
 	if module_id == "cooking" and not EconomySystem.ingredient_available(token_id):
-		status_label.text = "这份材料还没带到厨房，先去采购。"
+		status_label.text = LocalizationSystem.text("这份材料还没带到厨房，先去采购。")
 		return
 	if selected_tokens.has(token_id):
 		selected_tokens.erase(token_id)
 	else:
 		var maximum := int(interaction.get("max_select", 1))
 		if selected_tokens.size() >= maximum:
-			status_label.text = "最多保留 %d 项。先取消一项，作品不会替你丢掉边界。" % maximum
+			status_label.text = LocalizationSystem.text("最多保留 %d 项。先取消一项，作品不会替你丢掉边界。" % maximum)
 			return
 		selected_tokens.append(token_id)
 	stage_ready = false
@@ -159,44 +159,44 @@ func _perform_primary_action() -> void:
 		return
 	var minimum := int(interaction.get("min_select", 0))
 	if selected_tokens.size() < minimum:
-		status_label.text = "还需要选择 %d 项，才能完成这次操作。" % (minimum - selected_tokens.size())
+		status_label.text = LocalizationSystem.text("还需要选择 %d 项，才能完成这次操作。" % (minimum - selected_tokens.size()))
 		return
 	match module_id:
 		"cooking":
 			var heat := value_slider.value
 			if heat < 0.42 or heat > 0.74:
-				status_label.text = "火候还没有进入稳定区。让指针停在陶土色刻度之间。"
+				status_label.text = LocalizationSystem.text("火候还没有进入稳定区。让指针停在陶土色刻度之间。")
 				return
 			stage_ready = true
-			status_label.text = "火候稳定，三样材料已经完成同一轮处理。现在决定怎样出餐。"
+			status_label.text = LocalizationSystem.text("火候稳定，三样材料已经完成同一轮处理。现在决定怎样出餐。")
 		"sound_sampling":
 			playback_active = true
 			playback_cursor = 0.0
 			primary_button.disabled = true
-			status_label.text = "正在试听这条短轨。来源标记与声音片段一起经过播放头……"
+			status_label.text = LocalizationSystem.text("正在试听这条短轨。来源标记与声音片段一起经过播放头……")
 		"photography":
 			var exposure := value_slider.value
 			if exposure < 0.28 or exposure > 0.76:
-				status_label.text = "高光或暗部已经失去细节。先把曝光调回可辨认范围。"
+				status_label.text = LocalizationSystem.text("高光或暗部已经失去细节。先把曝光调回可辨认范围。")
 				return
 			stage_ready = true
 			WorldSound.play_detail(true)
-			status_label.text = "快门落下。取景框内与框外的东西都还在，只是进入了不同记录。"
+			status_label.text = LocalizationSystem.text("快门落下。取景框内与框外的东西都还在，只是进入了不同记录。")
 		"optical_illusion":
 			if selected_tokens.size() != 2:
-				status_label.text = "必须同时保留两份记录，才能寻找它们共同成立的角度。"
+				status_label.text = LocalizationSystem.text("必须同时保留两份记录，才能寻找它们共同成立的角度。")
 				return
 			var target := _perspective_target()
 			if absf(value_slider.value - target) > 0.055:
-				status_label.text = "连接仍然断开。继续改变视角，让门框、楼梯和光线在同一投影中重合。"
+				status_label.text = LocalizationSystem.text("连接仍然断开。继续改变视角，让门框、楼梯和光线在同一投影中重合。")
 				return
 			stage_ready = true
-			status_label.text = "两份矛盾记录在这个角度同时成立。空间没有被纠正，但连接已经出现。"
+			status_label.text = LocalizationSystem.text("两份矛盾记录在这个角度同时成立。空间没有被纠正，但连接已经出现。")
 		"archives":
 			stage_ready = true
 			var has_time_link := selected_tokens.has("tide_log") and selected_tokens.has("station_ticket")
 			var has_sound_link := selected_tokens.has("voice_catalog") and (selected_tokens.has("bus_manifest") or selected_tokens.has("station_ticket"))
-			status_label.text = "来源和地点形成了可复查连接，可以建立交叉索引。" if has_time_link or has_sound_link else "三份记录仍缺少可靠连接。可以明确标出缺口，不必猜测补齐。"
+			status_label.text = LocalizationSystem.text("来源和地点形成了可复查连接，可以建立交叉索引。" if has_time_link or has_sound_link else "三份记录仍缺少可靠连接。可以明确标出缺口，不必猜测补齐。")
 	WorldSound.play_detail(true)
 	_update_state()
 
@@ -209,7 +209,7 @@ func _process(delta: float) -> void:
 		playback_cursor = 1.0
 		playback_active = false
 		stage_ready = true
-		status_label.text = "试听完成。现在可以交付有授权的版本，或把边界不明的片段留作私人采样。"
+		status_label.text = LocalizationSystem.text("试听完成。现在可以交付有授权的版本，或把边界不明的片段留作私人采样。")
 	_update_state()
 	queue_redraw()
 
@@ -220,7 +220,7 @@ func _update_state() -> void:
 	for token_id in selected_tokens:
 		labels.append(_token_label(token_id))
 	var joiner := " → " if str(interaction.get("mode", "toggle")) == "ordered" else "、"
-	selection_label.text = "当前：%s" % joiner.join(labels) if not labels.is_empty() else "尚未选择 · 至少 %d 项" % minimum
+	selection_label.text = LocalizationSystem.text("当前：%s" % joiner.join(labels) if not labels.is_empty() else "尚未选择 · 至少 %d 项" % minimum)
 	for token_id in token_buttons:
 		_style_button(token_buttons[token_id], selected_tokens.has(str(token_id)))
 		token_buttons[token_id].disabled = completed or playback_active
@@ -233,7 +233,7 @@ func _update_state() -> void:
 		var check := GameplayModuleSystem.choice_interaction_check(module_id, str(choice_id), record)
 		choice_buttons[choice_id].disabled = completed or not stage_ready or not bool(check.get("ok", false))
 		if not bool(check.get("ok", false)):
-			choice_buttons[choice_id].tooltip_text = str(check.get("message", "当前素材不符合这个结果。"))
+			choice_buttons[choice_id].tooltip_text = LocalizationSystem.text(str(check.get("message", "当前素材不符合这个结果。")))
 	queue_redraw()
 
 
@@ -243,15 +243,15 @@ func _update_module_value() -> void:
 	match module_id:
 		"cooking":
 			var heat := value_slider.value
-			value_label.text = "火候 %d%% · %s" % [roundi(heat * 100), "稳定" if heat >= 0.42 and heat <= 0.74 else "需要调整"]
+			value_label.text = LocalizationSystem.text("火候 %d%% · %s" % [roundi(heat * 100), "稳定" if heat >= 0.42 and heat <= 0.74 else "需要调整"])
 		"sound_sampling":
-			value_label.text = "试听进度 %d%%" % roundi(playback_cursor * 100)
+			value_label.text = LocalizationSystem.text("试听进度 %d%%" % roundi(playback_cursor * 100))
 		"photography":
-			value_label.text = "曝光 %+d · %s" % [roundi((value_slider.value - 0.5) * 200), "细节可辨" if value_slider.value >= 0.28 and value_slider.value <= 0.76 else "细节丢失"]
+			value_label.text = LocalizationSystem.text("曝光 %+d · %s" % [roundi((value_slider.value - 0.5) * 200), "细节可辨" if value_slider.value >= 0.28 and value_slider.value <= 0.76 else "细节丢失"])
 		"optical_illusion":
-			value_label.text = "观察角度 %d° · %s" % [roundi(value_slider.value * 90), "连接成立" if stage_ready else "目标投影尚未标注"]
+			value_label.text = LocalizationSystem.text("观察角度 %d° · %s" % [roundi(value_slider.value * 90), "连接成立" if stage_ready else "目标投影尚未标注"])
 		"archives":
-			value_label.text = "已展开 %d / 3 份来源记录" % selected_tokens.size()
+			value_label.text = LocalizationSystem.text("已展开 %d / 3 份来源记录" % selected_tokens.size())
 
 
 func _complete_choice(choice_id: String) -> void:
@@ -259,7 +259,7 @@ func _complete_choice(choice_id: String) -> void:
 		return
 	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	var result := GameplayModuleSystem.complete_choice(choice_id, _interaction_record())
-	status_label.text = str(result.get("message", ""))
+	status_label.text = LocalizationSystem.text(str(result.get("message", "")))
 	if not bool(result.get("ok", false)):
 		return
 	if module_id == "cooking": status_label.text += "\n材料已实际用掉，出餐和工资记在今天的工作记录里。"
@@ -267,9 +267,9 @@ func _complete_choice(choice_id: String) -> void:
 	if not SaveManager.save_or_report("玩法结果保存失败"):
 		GameState.load_save_data(rollback_snapshot)
 		completed = false
-		status_label.text = "存档写入失败，本次提交尚未生效；可以重试。"
+		status_label.text = LocalizationSystem.text("存档写入失败，本次提交尚未生效；可以重试。")
 		return
-	return_button.text = "带着结果返回"
+	return_button.text = LocalizationSystem.text("带着结果返回")
 	_update_state()
 
 
@@ -292,7 +292,7 @@ func _return_or_cancel() -> void:
 	if not GameplayModuleSystem.pending_module_id().is_empty():
 		GameplayModuleSystem.cancel_session()
 	if not SaveManager.save_or_report("退出玩法后保存失败"):
-		status_label.text = "状态已撤销，但存档写入失败。"
+		status_label.text = LocalizationSystem.text("状态已撤销，但存档写入失败。")
 		return
 	SceneRouter.return_from_gameplay()
 
@@ -515,7 +515,7 @@ func _panel(parent: Node, at: Vector2, panel_size: Vector2, color: Color, border
 
 func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, font_size: int, color: Color, alignment := HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var label := Label.new()
-	label.text = text_value
+	label.text = LocalizationSystem.text(text_value)
 	label.position = at
 	label.size = label_size
 	label.horizontal_alignment = alignment
@@ -527,7 +527,7 @@ func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, 
 
 func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, primary: bool) -> Button:
 	var button := Button.new()
-	button.text = text_value
+	button.text = LocalizationSystem.text(text_value)
 	button.position = at
 	button.size = button_size
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND

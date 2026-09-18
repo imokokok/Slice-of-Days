@@ -11,12 +11,12 @@ func _ready() -> void:
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	var title := Label.new()
-	title.text = {"notes":"书店 · 便利贴墙","newspaper":"小镇报纸","zines":"寄售的小刊","revisions":"手账 · 改过的记忆","coverage":"开发检查 · 投稿覆盖"}.get(mode,mode)
+	title.text = LocalizationSystem.text({"notes":"书店 · 便利贴墙","newspaper":"小镇报纸","zines":"寄售的小刊","revisions":"手账 · 改过的记忆","coverage":"开发检查 · 投稿覆盖"}.get(mode,mode))
 	title.position = Vector2(100,50)
 	title.add_theme_font_size_override("font_size",32)
 	add_child(title)
 	var close := Button.new()
-	close.text = "收起"
+	close.text = LocalizationSystem.text("收起")
 	close.position = Vector2(1380,50)
 	close.size = Vector2(120,45)
 	add_child(close)
@@ -25,7 +25,7 @@ func _ready() -> void:
 	add_child(content)
 	if mode == "notes":
 		var more := Button.new()
-		more.text = "看看底下还有什么"
+		more.text = LocalizationSystem.text("看看底下还有什么")
 		more.position = Vector2(1150,800)
 		more.size = Vector2(350,50)
 		add_child(more)
@@ -34,12 +34,12 @@ func _ready() -> void:
 		input.position = Vector2(100,800)
 		input.size = Vector2(690,50)
 		input.max_length = 80
-		input.placeholder_text = "留一句话，或一个书名"
+		input.placeholder_text = LocalizationSystem.text("留一句话，或一个书名")
 		add_child(input)
 		var submit := Button.new()
 		submit.position = Vector2(810,800)
 		submit.size = Vector2(150,50)
-		submit.text = "贴上去"
+		submit.text = LocalizationSystem.text("贴上去")
 		add_child(submit)
 		submit.pressed.connect(func() -> void:
 			var value := input.text.strip_edges()
@@ -72,7 +72,7 @@ func _refresh() -> void:
 			var label := Label.new()
 			label.position = Vector2(24,20)
 			label.size = Vector2(393,160)
-			label.text = str(note.get("text",""))+"\n\n"+str(note.get("byline","匿名"))+" · "+str(note.get("date",""))
+			label.text = LocalizationSystem.text(str(note.get("text",""))+"\n\n"+str(note.get("byline","匿名"))+" · "+str(note.get("date","")))
 			label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			label.add_theme_color_override("font_color",Color("304144"))
 			var handwriting := SystemFont.new()
@@ -90,16 +90,16 @@ func _refresh() -> void:
 		content.add_child(text)
 		if mode == "coverage":
 			var report := MetaExperience.coverage_report()
-			text.text = "主角：%d\n现有核心 NPC：%d\n已核实真实投稿者：%d\n等待投稿的席位：%d\n\n匿名示例用于测试排版，独立保留。" % [report.protagonists,report.existing_npcs,report.verified_contributors,report.unassigned]
+			text.text = LocalizationSystem.text("主角：%d\n现有核心 NPC：%d\n已核实真实投稿者：%d\n等待投稿的席位：%d\n\n匿名示例用于测试排版，独立保留。" % [report.protagonists,report.existing_npcs,report.verified_contributors,report.unassigned])
 		elif mode == "revisions":
 			for fact in KnowledgeSystem.facts():
 				for revision in fact.get("revisions",[]):
-					text.append_text("[color=#aebdb3][s]"+_escape(str(revision.text))+"[/s][/color]\n")
-				text.append_text(_escape(str(fact.get("text","")))+(" ？" if float(fact.get("confidence",1)) < 0.8 else "")+"\n\n")
-			if KnowledgeSystem.facts().is_empty(): text.text = "这里留给后来改过的记录。"
+					text.append_text("[color=#aebdb3][s]"+_escape(LocalizationSystem.text(revision.text))+"[/s][/color]\n")
+				text.append_text(_escape(LocalizationSystem.text(fact.get("text","")))+(" ?" if float(fact.get("confidence",1)) < 0.8 else "")+"\n\n")
+			if KnowledgeSystem.facts().is_empty(): text.text = LocalizationSystem.text("这里留给后来改过的记录。")
 		else:
 			for row in MetaExperience.catalog.get("newspaper" if mode == "newspaper" else "zines",[]):
-				text.append_text("[b]"+_escape(str(row.get("kind",row.get("title",""))))+"[/b]\n"+_escape(str(row.text))+"\n\n")
+				text.append_text("[b]"+_escape(LocalizationSystem.text(row.get("kind",row.get("title",""))))+"[/b]\n"+_escape(LocalizationSystem.text(row.text))+"\n\n")
 
 func _escape(value: String) -> String:
 	return value.replace("[","[lb]")

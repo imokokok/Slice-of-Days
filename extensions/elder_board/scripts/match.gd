@@ -48,7 +48,7 @@ func _ready() -> void:
 
 func label_at(text: String, p: Vector2, width: float, font_size: int) -> Label:
 	var label := Label.new()
-	label.text = text
+	label.text = LocalizationSystem.text(text)
 	label.position = p
 	label.size.x = width
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -60,7 +60,7 @@ func label_at(text: String, p: Vector2, width: float, font_size: int) -> Label:
 
 func button_at(text: String, p: Vector2, action: Callable) -> Button:
 	var button := Button.new()
-	button.text = text
+	button.text = LocalizationSystem.text(text)
 	button.position = p
 	button.size = Vector2(420, 62)
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -84,7 +84,7 @@ func _build_ui() -> void:
 	button_at("规则说明", Vector2(1000, 805), show_rules)
 	label_at("点击棋盘落子；国际象棋先选棋子，再选目标格。", Vector2(110, 850), 800, 23)
 	promotion = OptionButton.new()
-	for item in ["升变：后", "升变：车", "升变：象", "升变：马"]: promotion.add_item(item)
+	for item in ["升变：后", "升变：车", "升变：象", "升变：马"]: promotion.add_item(LocalizationSystem.text(item))
 	promotion.position = Vector2(1000, 460)
 	promotion.size = Vector2(420, 62)
 	promotion.visible = game_id == &"chess"
@@ -116,13 +116,13 @@ func restart() -> void:
 		legal_moves = Chess.legal(chess)
 		history[Chess.key(chess)] = 1
 	else: history[Grid.key(board)] = true
-	status.text = "轮到你了"
+	status.text = LocalizationSystem.text("轮到你了")
 	var descriptions := {
 		&"go": "这次用 %d 路棋盘。你拿黑子先下，我拿白子。先找个喜欢的位置，不用急着围住所有地方。\n不清楚的地方，随时点“规则说明”。" % n,
 		&"gomoku": "来，黑子给你。咱们轮流下，谁先连成五个谁赢。横竖斜着都算，可别只盯着一个方向哦。",
 		&"chess": "你用白棋，先走。点一下棋子，我会把它能走的位置标出来。想复习走法，就打开“规则说明”。"
 	}
-	detail.text = descriptions[game_id]
+	detail.text = LocalizationSystem.text(descriptions[game_id])
 	queue_redraw()
 
 func _draw() -> void:
@@ -201,8 +201,8 @@ func play_stone(i: int, side: int) -> bool:
 	if game_id == &"go":
 		var move := Grid.go_move(board, i, side, n, history)
 		if move.is_empty():
-			status.text = "此处不能落子（无气或同形）"
-			detail.text = "这一步暂时不能下：落子后要有气，也不能重复之前的棋盘局面。换个点试试？"
+			status.text = LocalizationSystem.text("此处不能落子（无气或同形）")
+			detail.text = LocalizationSystem.text("这一步暂时不能下：落子后要有气，也不能重复之前的棋盘局面。换个点试试？")
 			return false
 		board = move.board
 		if move.captured > 0:
@@ -244,7 +244,7 @@ func play_chess(move: Dictionary) -> void:
 func ai_turn() -> void:
 	busy = true
 	pass_button.disabled = true
-	status.text = "老棋友正在思考…"
+	status.text = LocalizationSystem.text("老棋友正在思考…")
 	var token := generation
 	await get_tree().create_timer(0.35).timeout
 	if not is_inside_tree() or generation != token or ended: return
@@ -260,20 +260,20 @@ func ai_turn() -> void:
 			passes += 1
 			turn = 1
 			if passes >= 2: begin_score()
-			else: status.text = "老棋友停一手，轮到你了。"
+			else: status.text = LocalizationSystem.text("老棋友停一手，轮到你了。")
 		else: play_stone(i, -1)
 	busy = false
 	pass_button.disabled = false
 	if not ended and not scoring:
-		status.text = "轮到你了" if passes == 0 else "老棋友停一手，轮到你了。"
-		if game_id == &"chess" and Chess.in_check(chess, 1): status.text = "你被将军了，请应将。"
+		status.text = LocalizationSystem.text("轮到你了" if passes == 0 else "老棋友停一手，轮到你了。")
+		if game_id == &"chess" and Chess.in_check(chess, 1): status.text = LocalizationSystem.text("你被将军了，请应将。")
 		if game_id == &"chess" and Chess.in_check(chess, 1):
-			detail.text = "将军啦。这一步得先照顾你的王：移开、挡住攻击，或者吃掉攻击它的棋子。"
+			detail.text = LocalizationSystem.text("将军啦。这一步得先照顾你的王：移开、挡住攻击，或者吃掉攻击它的棋子。")
 		elif passes > 0:
-			detail.text = "我先停一手。你可以接着下；如果也觉得差不多了，就停手一起数子。"
-		elif not feedback.is_empty(): detail.text = feedback
+			detail.text = LocalizationSystem.text("我先停一手。你可以接着下；如果也觉得差不多了，就停手一起数子。")
+		elif not feedback.is_empty(): detail.text = LocalizationSystem.text(feedback)
 		else:
-			detail.text = Text.LINES[game_id][talk_index % Text.LINES[game_id].size()]
+			detail.text = LocalizationSystem.text(Text.LINES[game_id][talk_index % Text.LINES[game_id].size()])
 			talk_index += 1
 	queue_redraw()
 
@@ -289,8 +289,8 @@ func begin_score() -> void:
 	busy = false
 	pass_button.hide()
 	score_button.show()
-	status.text = "双方停手，请确认死子。"
-	detail.text = "那咱们一起数数。点击棋子标记整块死子，点错了再点一次就能取消。确认好红叉，再算分数。白方会加上 7.5 子。"
+	status.text = LocalizationSystem.text("双方停手，请确认死子。")
+	detail.text = LocalizationSystem.text("那咱们一起数数。点击棋子标记整块死子，点错了再点一次就能取消。确认好红叉，再算分数。白方会加上 7.5 子。")
 
 func finish_score() -> void:
 	if not scoring or ended: return
@@ -313,16 +313,16 @@ func finish(message: String) -> void:
 	if ended: return
 	ended = true
 	busy = false
-	status.text = message
+	status.text = LocalizationSystem.text(message)
 	pass_button.disabled = true
 	if "你赢了" in message:
-		detail.text = "这局是你赢了，下得好！愿意的话再来一盘，我也想试试新的走法。"
+		detail.text = LocalizationSystem.text("这局是你赢了，下得好！愿意的话再来一盘，我也想试试新的走法。")
 	elif "和棋" in message:
-		detail.text = "这回不分胜负。能下到这里也很有意思，咱们换个开局再试试？"
+		detail.text = LocalizationSystem.text("这回不分胜负。能下到这里也很有意思，咱们换个开局再试试？")
 	elif "认输" in message:
-		detail.text = "好，这局就到这里。休息一下也行，换种棋也行，我在这儿等你。"
+		detail.text = LocalizationSystem.text("好，这局就到这里。休息一下也行，换种棋也行，我在这儿等你。")
 	else:
-		detail.text = "这局我先拿下了。别在意，多下一盘就多一点经验。要不要再来？"
+		detail.text = LocalizationSystem.text("这局我先拿下了。别在意，多下一盘就多一点经验。要不要再来？")
 	match_finished.emit(message)
 
 func show_rules() -> void:

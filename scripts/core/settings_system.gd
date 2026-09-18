@@ -1,9 +1,12 @@
 extends Node
 
 signal settings_changed
+signal language_changed(locale: String)
 
 const SETTINGS_PATH := "user://solmere_settings.json"
+const SUPPORTED_LANGUAGES := ["zh_CN", "en"]
 const DEFAULTS := {
+	"language": "zh_CN",
 	"master_volume": 80,
 	"fullscreen": false,
 	"reduced_motion": false,
@@ -75,18 +78,25 @@ func save_settings(path := SETTINGS_PATH) -> bool:
 
 
 func apply_settings() -> void:
+	TranslationServer.set_locale(language())
 	var bus_index := AudioServer.get_bus_index("Master")
 	if bus_index >= 0:
 		var volume := clampf(float(values.get("master_volume", 80)), 0.0, 100.0)
 		AudioServer.set_bus_mute(bus_index, volume <= 0.0)
 		AudioServer.set_bus_volume_db(bus_index, linear_to_db(maxf(volume / 100.0, 0.0001)))
 	if not DisplayServer.get_name().contains("headless"):
+		DisplayServer.window_set_title(LocalizationSystem.text("Solmere · 七日档案 · 走动修复"))
 		var target_mode := DisplayServer.WINDOW_MODE_FULLSCREEN if bool(values.get("fullscreen", false)) else DisplayServer.WINDOW_MODE_WINDOWED
 		DisplayServer.window_set_mode(target_mode)
 
 
 func master_volume() -> int:
 	return int(values.get("master_volume", 80))
+
+
+func language() -> String:
+	var configured := str(values.get("language", "zh_CN"))
+	return configured if SUPPORTED_LANGUAGES.has(configured) else "zh_CN"
 
 
 func reduced_motion() -> bool:
@@ -114,4 +124,16 @@ func set_fullscreen(enabled: bool) -> void:
 	values["fullscreen"] = enabled
 	apply_settings()
 	save_settings()
+	settings_changed.emit()
+
+
+func set_language(locale: String) -> void:
+	if not SUPPORTED_LANGUAGES.has(locale) or locale == language():
+		return
+	values["language"] = locale
+	TranslationServer.set_locale(locale)
+	if not DisplayServer.get_name().contains("headless"):
+		DisplayServer.window_set_title(LocalizationSystem.text("Solmere · 七日档案 · 走动修复"))
+	save_settings()
+	language_changed.emit(locale)
 	settings_changed.emit()

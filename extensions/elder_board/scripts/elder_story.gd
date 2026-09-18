@@ -59,10 +59,10 @@ func _ready() -> void:
 
 func refresh() -> void:
 	var beat: Dictionary = CHAPTERS[chapter][page]
-	gesture.text = beat.action
-	words.text = beat.text
-	next.text = beat.choices[0]
-	alternative.text = beat.choices[1]
+	gesture.text = LocalizationSystem.text(beat.action)
+	words.text = LocalizationSystem.text(beat.text)
+	next.text = LocalizationSystem.text(beat.choices[0])
+	alternative.text = LocalizationSystem.text(beat.choices[1])
 	alternative.show()
 	reacting = false
 
@@ -71,9 +71,9 @@ func choose(index: int) -> void:
 		advance()
 		return
 	var beat: Dictionary = CHAPTERS[chapter][page]
-	words.text = beat.replies[index]
-	gesture.text = "他听完你的话，轻轻点了点头。" if "（" not in beat.choices[index] else "你们安静地坐了一会儿。他又开了口。"
-	next.text = "（听他说下去）" if page < 2 else ("把纸笔接过来" if chapter == 4 else "（帮他把棋收好）")
+	words.text = LocalizationSystem.text(beat.replies[index])
+	gesture.text = LocalizationSystem.text("他听完你的话，轻轻点了点头。" if "（" not in beat.choices[index] else "你们安静地坐了一会儿。他又开了口。")
+	next.text = LocalizationSystem.text("（听他说下去）" if page < 2 else ("把纸笔接过来" if chapter == 4 else "（帮他把棋收好）"))
 	alternative.hide()
 	reacting = true
 
@@ -93,7 +93,7 @@ func advance() -> void:
 		else: closed.emit()
 		return
 	if not Memory.finish_chapter(chapter):
-		gesture.text = "本地记录暂时未保存，可重试或稍后离开。"
+		gesture.text = LocalizationSystem.text("本地记录暂时未保存，可重试或稍后离开。")
 		return
 	if chapter == 4: teach_requested.emit()
 	else: closed.emit()

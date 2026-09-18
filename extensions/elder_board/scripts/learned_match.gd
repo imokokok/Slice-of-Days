@@ -48,13 +48,13 @@ func restart() -> void:
 	ended = false
 	busy = false
 	side = 1 if rule.first == "player" else -1
-	words.text = "我记得，这套是%s教的。%s先走，对吧？来，摆好了。" % [profile.get("taught_by", "你"), "你" if side == 1 else "我"]
+	words.text = LocalizationSystem.text("我记得，这套是%s教的。%s先走，对吧？来，摆好了。" % [profile.get("taught_by", "你"), "你" if side == 1 else "我"])
 	refresh()
 	if side == -1: call_deferred("ai_turn")
 
 func refresh() -> void:
 	moves = Rules.legal(board, side, rule)
-	if not ended: status.text = "轮到你了" if side == 1 else "让我照着规则想想…"
+	if not ended: status.text = LocalizationSystem.text("轮到你了" if side == 1 else "让我照着规则想想…")
 	queue_redraw()
 
 func _draw() -> void:
@@ -114,7 +114,7 @@ func ai_turn() -> void:
 	var move := Rules.ai(board, rule)
 	if not move.is_empty(): play(move)
 	busy = false
-	if not ended: words.text = ["我下这儿。该你了。", "嗯，就这么走。你看。", "这一手我想好了。来。", "我把手拿开，你看仔细点。"][move_count % 4]
+	if not ended: words.text = LocalizationSystem.text(["我下这儿。该你了。", "嗯，就这么走。你看。", "这一手我想好了。来。", "我把手拿开，你看仔细点。"][move_count % 4])
 	refresh()
 
 func finish(text: String) -> void:
@@ -122,8 +122,8 @@ func finish(text: String) -> void:
 	ended = true
 	busy = false
 	generation += 1
-	status.text = text
-	words.text = "这棋有意思。我把刚才那几步再摆摆。你要有空，咱们再来；有事就先去忙。"
+	status.text = LocalizationSystem.text(text)
+	words.text = LocalizationSystem.text("这棋有意思。我把刚才那几步再摆摆。你要有空，咱们再来；有事就先去忙。")
 	match_finished.emit(text)
 
 func show_rules() -> void:

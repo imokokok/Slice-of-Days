@@ -20,21 +20,21 @@ func _ready() -> void:
 	words.add_theme_color_override("font_color", Color("ddd0b8"))
 	var next := ChapterSystem.next_chapter()
 	if str(next.get("role", "")) == "choice":
-		words.text = "最后一天，先从哪一扇窗醒来？\n随后，另一位也将度过她的第七天。"
+		words.text = LocalizationSystem.text("最后一天，先从哪一扇窗醒来？\n随后，另一位也将度过她的第七天。")
 		add_child(words)
 		for index in 2:
 			var role := "A" if index == 0 else "B"
 			var choice := Button.new()
-			choice.text = "进入 " + role + " 的最后一天"
+			choice.text = LocalizationSystem.text("进入 " + role + " 的最后一天")
 			choice.position = Vector2(470 + index * 360, 570)
 			choice.size = Vector2(300, 60)
 			choice.pressed.connect(func() -> void:
 				if ChapterSystem.choose_final_role(role): _continue_journey())
 			add_child(choice)
 		return
-	words.text = "灯熄了。海还醒着。" if next.is_empty() else "灯熄了。\n另一扇窗，正透进清晨。"
+	words.text = LocalizationSystem.text("灯熄了。海还醒着。" if next.is_empty() else "灯熄了。\n另一扇窗，正透进清晨。")
 	if bool(GameState.shared_state.get("midnight_rest", false)):
-		words.text = "夜深了，小镇渐渐安静下来。" if next.is_empty() else "夜深了，小镇渐渐安静下来。\n醒来时，又是新的一天。"
+		words.text = LocalizationSystem.text("夜深了，小镇渐渐安静下来。" if next.is_empty() else "夜深了，小镇渐渐安静下来。\n醒来时，又是新的一天。")
 	add_child(words)
 	words.modulate.a = 0.0
 	var fade := create_tween()
@@ -54,7 +54,7 @@ func _continue_journey() -> void:
 	if not SaveManager.save_or_report("章节切换保存失败"):
 		GameState.load_save_data(rollback_snapshot)
 		continuing = false
-		words.text = "存档写入失败，请检查磁盘空间后重试。"
+		words.text = LocalizationSystem.text("存档写入失败，请检查磁盘空间后重试。")
 		words.modulate.a = 1.0
 		return
 	if bool(result.get("complete", false)): SceneRouter.ending()

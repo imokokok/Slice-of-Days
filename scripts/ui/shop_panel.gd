@@ -80,14 +80,14 @@ func _build_ui() -> void:
 func _refresh() -> void:
 	if balance_label == null:
 		return
-	balance_label.text = "钱包  %d 元" % GameState.money
+	balance_label.text = LocalizationSystem.text("钱包  %d 元" % GameState.money)
 	budget_label.text = GameState.spending_plan_text()
 	budget_label.add_theme_color_override("font_color", TERRACOTTA if int(GameState.daily_spending_plan().over) > 0 else SEA)
 	for child in item_list.get_children():
 		item_list.remove_child(child)
 		child.queue_free()
 	if shop.is_empty():
-		status_label.text = "摊位数据没有加载成功。"
+		status_label.text = LocalizationSystem.text("摊位数据没有加载成功。")
 		return
 	for raw in EconomySystem.stock(shop_id):
 		var item: Dictionary = raw.duplicate(true)
@@ -110,13 +110,13 @@ func _refresh() -> void:
 		copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		line.add_child(copy)
 		var name := Label.new()
-		name.text = "%s  ·  %d元%s" % [str(item.get("name", "商品")), int(item.get("price", 0)), "  ·  已有%d" % count if count > 0 else ""]
+		name.text = LocalizationSystem.text("%s  ·  %d元%s" % [str(item.get("name", "商品")), int(item.get("price", 0)), "  ·  已有%d" % count if count > 0 else ""])
 		if str(item.get("category", "")) == "collection": name.text += "  ·  今日余%d件" % int(item.remaining)
 		name.add_theme_font_size_override("font_size", 20)
 		name.add_theme_color_override("font_color", INK)
 		copy.add_child(name)
 		var description := Label.new()
-		description.text = str(item.get("description", ""))
+		description.text = LocalizationSystem.text(str(item.get("description", "")))
 		description.add_theme_font_size_override("font_size", 15)
 		description.add_theme_color_override("font_color", MUTED)
 		copy.add_child(description)
@@ -125,7 +125,7 @@ func _refresh() -> void:
 		buy.pressed.connect(_buy.bind(item))
 		if GameState.current_role == "A" and str(item.get("category", "")) == "collection":
 			MetaExperience.queue_important("a_odd_collection", {"item_id":str(item.id)})
-	status_label.text = "买到的食材会进入随身物品；在饭店选中同名材料完成出餐时会优先消耗。"
+	status_label.text = LocalizationSystem.text("买到的食材会进入随身物品；在饭店选中同名材料完成出餐时会优先消耗。")
 
 
 func _buy(item: Dictionary) -> void:
@@ -136,13 +136,13 @@ func _buy(item: Dictionary) -> void:
 		buying = false
 		WorldSound.play_ui("error")
 		_refresh()
-		status_label.text = str(result.get("message", "这次没能买下。"))
+		status_label.text = LocalizationSystem.text(str(result.get("message", "这次没能买下。")))
 		return
 	WorldSound.play_ui("coin")
 	last_purchase_msec = Time.get_ticks_msec()
 	buying = false
 	_refresh()
-	status_label.text = str(result.get("message", ""))
+	status_label.text = LocalizationSystem.text(str(result.get("message", "")))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -153,7 +153,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _label(parent: Node, value: String, at: Vector2, label_size: Vector2, font_size: int, color: Color, align := HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var label := Label.new()
-	label.text = value
+	label.text = LocalizationSystem.text(value)
 	label.position = at
 	label.size = label_size
 	label.horizontal_alignment = align
@@ -165,7 +165,7 @@ func _label(parent: Node, value: String, at: Vector2, label_size: Vector2, font_
 
 func _button(parent: Node, value: String, at: Vector2, button_size: Vector2, primary: bool) -> Button:
 	var button := Button.new()
-	button.text = value
+	button.text = LocalizationSystem.text(value)
 	button.position = at
 	button.size = button_size
 	button.custom_minimum_size = button_size

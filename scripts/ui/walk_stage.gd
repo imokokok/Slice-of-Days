@@ -140,7 +140,7 @@ func _draw() -> void:
 		elif kind == "echo" and not illustrated:
 			draw_rect(Rect2(x-55,572,110,118),Color("4c4937"))
 			draw_rect(Rect2(x-49,580,98,102),Color("203f43"))
-			draw_string(ThemeDB.fallback_font,Vector2(x-35,615),"今日的菜",HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("f1e6c6"))
+			draw_string(ThemeDB.fallback_font,Vector2(x-35,615),LocalizationSystem.text("今日的菜"),HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("f1e6c6"))
 		elif kind == "wait_open" or (kind == "bench" and not illustrated):
 			draw_rect(Rect2(x - 40, 679, 80, 8), Color("9a7e60"))
 			draw_line(Vector2(x - 30, 687), Vector2(x - 30, 715), Color("776b5f"), 4)
@@ -331,7 +331,7 @@ func _draw_facade(x: float, kind: String, title: String) -> void:
 	draw_rect(Rect2(x - 36, 573, 72, 115), Color("398d9b"))
 	draw_line(Vector2(x + 23, 641), Vector2(x + 23, 664), Color("d8c49d"), 3)
 	draw_rect(Rect2(x - 149, 508, 298, 36), Color("cec0a0"))
-	draw_string(ThemeDB.fallback_font, Vector2(x - 144, 533), title, HORIZONTAL_ALIGNMENT_CENTER, 288, 22, Color("3d5551"))
+	draw_string(ThemeDB.fallback_font, Vector2(x - 144, 533), LocalizationSystem.text(title), HORIZONTAL_ALIGNMENT_CENTER, 288, 22, Color("3d5551"))
 	if kind in ["restaurant", "grocery", "records"]:
 		draw_colored_polygon(PackedVector2Array([Vector2(x - 258, 544), Vector2(x + 258, 544), Vector2(x + 278, 562), Vector2(x - 278, 562)]), Color("a5ad60"))
 	if kind == "post":
@@ -361,7 +361,7 @@ func _draw_room() -> void:
 		draw_line(Vector2(x, 365), Vector2(x + 210, 365), Color("a5a18d"), 7)
 		draw_colored_polygon(PackedVector2Array([Vector2(x + 210, 475), Vector2(x, 475), Vector2(x - 130, 718), Vector2(x + 330, 718)]), Color("dcceb0", 0.07))
 	draw_rect(Rect2(55, 540, 65, 178), Color("18282e"))
-	draw_string(ThemeDB.fallback_font, Vector2(160, 202), room_name, HORIZONTAL_ALIGNMENT_LEFT, 1000, 30, Color("dac9aa"))
+	draw_string(ThemeDB.fallback_font, Vector2(160, 202), LocalizationSystem.text(room_name), HORIZONTAL_ALIGNMENT_LEFT, 1000, 30, Color("dac9aa"))
 	draw_line(Vector2(800, 100), Vector2(800, 325), Color("18282e"), 3)
 	draw_colored_polygon(PackedVector2Array([Vector2(770, 350), Vector2(790, 325), Vector2(810, 325), Vector2(830, 350)]), Color("d0b585"))
 	_draw_room_details()

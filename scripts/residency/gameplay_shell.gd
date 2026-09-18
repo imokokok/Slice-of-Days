@@ -34,7 +34,7 @@ func _ready() -> void:
 	folder.position = Vector2(25,25)
 	folder.size = Vector2(109,61)
 	folder.text = "RP-07"
-	folder.tooltip_text = "F · 居住档案"
+	folder.tooltip_text = LocalizationSystem.text("F · 居住档案")
 	folder.add_theme_font_size_override("font_size",22)
 	folder.add_theme_color_override("font_color",Color("495955"))
 	var paper := StyleBoxFlat.new()
@@ -122,7 +122,7 @@ func _process(delta: float) -> void:
 	guidance_tick -= delta
 	if guidance_tick <= 0:
 		guidance_tick = 1.0
-		next_button.text = "NEXT  "+str(GuidanceSystem.next_step().text)+"\nT · 今日"
+		next_button.text = LocalizationSystem.text("NEXT  "+str(GuidanceSystem.next_step().text)+"\nT · 今日")
 	next_button.visible = not _blocked() and not is_instance_valid(tool)
 	if last_location != GameState.current_location:
 		last_location = GameState.current_location
@@ -143,7 +143,7 @@ func _process(delta: float) -> void:
 		context_id = id
 		hint_age = 0
 		var lines: Array[String] = []
-		for line in str(context.text).split("\n"):
+		for line in LocalizationSystem.text(str(context.text)).split("\n"):
 			var parts := str(line).split("  ",true,1)
 			lines.append("[bgcolor=#a8cedb][color=#354c56] "+str(parts[0])+" [/color][/bgcolor] "+(str(parts[1]) if parts.size()>1 else ""))
 		hint_label.text = "\n".join(lines)

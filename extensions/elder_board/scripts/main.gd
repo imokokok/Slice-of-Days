@@ -72,7 +72,7 @@ func _panel_style(color: Color, border: Color = Color.TRANSPARENT) -> StyleBoxFl
 
 func _button(text_value: String) -> Button:
 	var button := Button.new()
-	button.text = text_value
+	button.text = LocalizationSystem.text(text_value)
 	button.custom_minimum_size = Vector2(220, 65)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -102,34 +102,34 @@ func _build_dialogue() -> void:
 	column.add_theme_constant_override("separation", 15)
 	margin.add_child(column)
 	var speaker := Label.new()
-	speaker.text = "老棋友"
+	speaker.text = LocalizationSystem.text("老棋友")
 	speaker.add_theme_color_override("font_color", Color("bdbdbd"))
 	var heading := HBoxContainer.new()
 	speaker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.add_child(speaker)
 	role_choice = OptionButton.new()
-	role_choice.add_item("角色 A")
-	role_choice.add_item("角色 B")
+	role_choice.add_item(LocalizationSystem.text("角色 A"))
+	role_choice.add_item(LocalizationSystem.text("角色 B"))
 	role_choice.select(0 if Memory.role == "A" else 1)
 	role_choice.add_theme_font_size_override("font_size", 21)
 	role_choice.item_selected.connect(func(index: int):
 		Memory.role = "A" if index == 0 else "B"
-		dialogue.text = "%s，来坐。另一位教过的棋也记在棋谱里。\n想下一局，还是教我点新的？" % Memory.role
+		dialogue.text = LocalizationSystem.text("%s，来坐。另一位教过的棋也记在棋谱里。\n想下一局，还是教我点新的？" % Memory.role)
 	)
 	heading.add_child(role_choice)
 	var teach_button := Button.new()
-	teach_button.text = "教棋 / 共享棋谱"
+	teach_button.text = LocalizationSystem.text("教棋 / 共享棋谱")
 	teach_button.add_theme_font_size_override("font_size", 21)
 	teach_button.pressed.connect(_open_teaching)
 	heading.add_child(teach_button)
 	var chat_button := Button.new()
-	chat_button.text = "聊两句"
+	chat_button.text = LocalizationSystem.text("聊两句")
 	chat_button.add_theme_font_size_override("font_size", 22)
 	chat_button.pressed.connect(_chat)
 	heading.add_child(chat_button)
 	column.add_child(heading)
 	dialogue = Label.new()
-	dialogue.text = Text.GREETINGS[0]
+	dialogue.text = LocalizationSystem.text(Text.GREETINGS[0])
 	dialogue.add_theme_font_size_override("font_size", 26)
 	dialogue.add_theme_color_override("font_color", Color("f2f2f2"))
 	dialogue.custom_minimum_size.y = 78
@@ -159,7 +159,7 @@ func _select_game(index: int) -> void:
 
 func _chat() -> void:
 	greeting_index = (greeting_index + 1) % Text.GREETINGS.size()
-	dialogue.text = Text.GREETINGS[greeting_index]
+	dialogue.text = LocalizationSystem.text(Text.GREETINGS[greeting_index])
 
 func _cancel_setup() -> void:
 	if is_instance_valid(setup_view): setup_view.queue_free()
@@ -174,7 +174,7 @@ func _start_match(go_size: int) -> void:
 
 func _reset_selection() -> void:
 	selected_game = &""
-	dialogue.text = "回来啦。想再下一局，还是换种棋试试？\n选围棋的话，也可以换一张更大的棋盘。"
+	dialogue.text = LocalizationSystem.text("回来啦。想再下一局，还是换种棋试试？\n选围棋的话，也可以换一张更大的棋盘。")
 	back_button.hide()
 	choices.show()
 	buttons[0].grab_focus()

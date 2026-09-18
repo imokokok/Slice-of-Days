@@ -29,7 +29,7 @@ func _ready() -> void:
 		var button := Button.new()
 		button.name = "Destination_" + str(id)
 		button.set_meta("location", id)
-		button.tooltip_text = TravelSystem.location_name(str(id))
+		button.tooltip_text = LocalizationSystem.text(TravelSystem.location_name(str(id)))
 		button.position = Vector2(points[id]) - Vector2(25, 25)
 		button.size = Vector2(50, 50)
 		button.flat = true

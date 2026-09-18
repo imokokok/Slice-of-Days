@@ -51,7 +51,7 @@ func _ready() -> void:
 	input = TextEdit.new()
 	input.position = Vector2(65, 605)
 	input.size = Vector2(660, 135)
-	input.placeholder_text = "例如：这是井字棋，3×3，横竖斜连成3子就赢，我先下。也可以画在右边。"
+	input.placeholder_text = LocalizationSystem.text("例如：这是井字棋，3×3，横竖斜连成3子就赢，我先下。也可以画在右边。")
 	input.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	input.add_theme_font_size_override("font_size", 24)
 	add_child(input)
@@ -59,7 +59,7 @@ func _ready() -> void:
 	send_button = UI.button(self, "告诉老人", Rect2(65, 755, 200, 56), send_message)
 	retry_button = UI.button(self, "重试回答", Rect2(285, 755, 200, 56), retry)
 	UI.button(self, "试教井字棋", Rect2(505, 755, 220, 56), func():
-		if not busy: input.text = "我教您井字棋，3×3，横竖斜连成3子就赢，长连也算，我先下。"
+		if not busy: input.text = LocalizationSystem.text("我教您井字棋，3×3，横竖斜连成3子就赢，长连也算，我先下。")
 	)
 	retry_button.disabled = true
 	library = OptionButton.new()
@@ -83,7 +83,7 @@ func _ready() -> void:
 	UI.button(self, "导入图片", Rect2(1155, 480, 160, 45), func(): file_dialog.popup_centered(Vector2i(850, 650)))
 	UI.button(self, "换笔颜色", Rect2(1330, 480, 165, 45), func(): pad.ink = Color("b44949") if pad.ink != Color("b44949") else Color("29352d"))
 	attach = CheckButton.new()
-	attach.text = "发送时带上这张图（网格只是画纸辅助线）"
+	attach.text = LocalizationSystem.text("发送时带上这张图（网格只是画纸辅助线）")
 	attach.position = Vector2(805, 532)
 	attach.size = Vector2(690, 40)
 	attach.add_theme_font_size_override("font_size", 21)
@@ -112,7 +112,7 @@ func _ready() -> void:
 	refresh()
 
 func refresh() -> void:
-	mode_label.text = "实时模型教学：点击发送会将本次教学文字与勾选附图交给所配置的服务。" if AI.enabled else "离线练习：可教连线棋；不会识图。任意文字理解和读图需要在「模型连接」启用服务。"
+	mode_label.text = LocalizationSystem.text("实时模型教学：点击发送会将本次教学文字与勾选附图交给所配置的服务。" if AI.enabled else "离线练习：可教连线棋；不会识图。任意文字理解和读图需要在「模型连接」启用服务。")
 	transcript.text = ""
 	for message in messages:
 		transcript.text += ("你：" if message.role == "user" else "老棋友：") + str(message.content) + (" [附图]" if not message.get("image", "").is_empty() else "") + "\n\n"
@@ -124,7 +124,7 @@ func refresh() -> void:
 	library.disabled = busy
 	input.editable = not busy
 	pad.mouse_filter = Control.MOUSE_FILTER_IGNORE if busy else Control.MOUSE_FILTER_STOP
-	send_button.text = "老人正在想…" if busy else "告诉老人"
+	send_button.text = LocalizationSystem.text("老人正在想…" if busy else "告诉老人")
 
 func mark_edited() -> void:
 	if restoring: return
@@ -251,9 +251,9 @@ func confirm_lesson() -> void:
 func refresh_library() -> void:
 	profiles = Memory.read().profiles
 	library.clear()
-	library.add_item("棋谱 · 选择以前教过的棋")
+	library.add_item(LocalizationSystem.text("棋谱 · 选择以前教过的棋"))
 	for profile in profiles:
-		library.add_item("%s · %s教的" % [profile.get("name", "未命名"), profile.get("taught_by", "棋友")])
+		library.add_item(LocalizationSystem.text("%s · %s教的" % [profile.get("name", "未命名"), profile.get("taught_by", "棋友")]))
 
 func load_lesson(index: int) -> void:
 	if busy or index == 0: return
@@ -294,7 +294,7 @@ func show_settings() -> void:
 	UI.panel(settings, Rect2(260, 180, 1050, 650))
 	UI.label(settings, "实时教学 · 模型连接", Rect2(305, 210, 950, 45), 32)
 	enable_field = CheckButton.new()
-	enable_field.text = "启用能看图的模型服务"
+	enable_field.text = LocalizationSystem.text("启用能看图的模型服务")
 	enable_field.position = Vector2(305, 275)
 	enable_field.button_pressed = AI.enabled
 	settings.add_child(enable_field)

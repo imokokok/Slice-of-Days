@@ -13,7 +13,7 @@ func _ready() -> void:
 	var label := Label.new()
 	label.position = Vector2(26 if kind == "note" else 195,25)
 	label.size = Vector2(580 if kind == "note" else 410,145)
-	label.text = heading + "\n\n" + caption
+	label.text = LocalizationSystem.text(heading) + "\n\n" + LocalizationSystem.text(caption)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.add_theme_font_size_override("font_size",21)
 	label.add_theme_color_override("font_color",Color("435752"))
@@ -22,8 +22,8 @@ func _ready() -> void:
 		var pin := Button.new()
 		pin.position = Vector2(420,164)
 		pin.size = Vector2(190,34)
-		pin.text = "夹住这个地点"
-		pin.pressed.connect(func() -> void: WorldGraph.toggle_pin(place); pin.text = "已夹好" if WorldGraph.pins().has(place) else "夹住这个地点")
+		pin.text = LocalizationSystem.text("夹住这个地点")
+		pin.pressed.connect(func() -> void: WorldGraph.toggle_pin(place); pin.text = LocalizationSystem.text("已夹好" if WorldGraph.pins().has(place) else "夹住这个地点"))
 		add_child(pin)
 func _draw() -> void:
 	if kind == "postcard":

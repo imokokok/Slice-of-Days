@@ -28,15 +28,15 @@ func _ready() -> void:
 	status.add_theme_color_override("font_color",Color("375456"))
 	status.add_theme_font_size_override("font_size",18)
 	card.add_child(status)
-	status.text = "R 开始 / 停止 · A / D 走动\nSpace 留下标记\nEsc 保存并收起"
+	status.text = LocalizationSystem.text("R 开始 / 停止 · A / D 走动\nSpace 留下标记\nEsc 保存并收起")
 	recorder = FieldRecorder.new()
 	add_child(recorder)
 	recorder.meter_changed.connect(func(peak: float, seconds: float) -> void:
 		levels.append(peak)
 		if levels.size()>95: levels.pop_front()
-		status.text = "●  录音  %02d:%02d\nR 停止 · Space 标记\n已留 %d 个标记" % [int(seconds)/60,int(seconds)%60,marks.size()]
+		status.text = LocalizationSystem.text("●  录音  %02d:%02d\nR 停止 · Space 标记\n已留 %d 个标记" % [int(seconds)/60,int(seconds)%60,marks.size()])
 		queue_redraw())
-	recorder.failed.connect(func(message: String) -> void: status.text = message; close_after = false)
+	recorder.failed.connect(func(message: String) -> void: status.text = LocalizationSystem.text(message); close_after = false)
 	recorder.completed.connect(_complete)
 
 func _draw() -> void:
@@ -53,12 +53,12 @@ func _save(warning := "") -> void:
 	if pending_wav == null: return
 	var store := SampleStore.new(store_path)
 	var item := store.save_sample(pending_wav,TravelSystem.location_name(GameState.current_location)+" · "+GameState.clock_text(),{"role":GameState.current_role,"game_day":GameState.current_day,"game_minute":GameState.current_minute,"location":GameState.current_location,"source_mode":"game","consent_status":"game_audio","usage_scope":"local_game","markers":marks})
-	if item.is_empty(): status.text = store.last_error+"\nR 重试保存 · Esc 保留窗口"; close_after = false; return
+	if item.is_empty(): status.text = LocalizationSystem.text(store.last_error+"\nR 重试保存 · Esc 保留窗口"); close_after = false; return
 	GameState.add_artifact("samples",{"id":str(item.id),"title":str(item.name),"duration":float(item.duration),"day":GameState.current_day,"location":GameState.current_location,"markers":marks.duplicate()})
 	ResidencySystem.persist()
 	pending_wav = null
 	saved = true
-	status.text = "已保存到素材本\n"+warning+"\nB 查看 · 即将收起"
+	status.text = LocalizationSystem.text("已保存到素材本\n"+warning+"\nB 查看 · 即将收起")
 	if close_after: queue_free()
 	else: _dismiss_saved()
 

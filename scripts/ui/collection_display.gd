@@ -34,4 +34,4 @@ func _draw() -> void:
 				draw_rect(Rect2(at+Vector2(-19,-31),Vector2(38,30)),color)
 				draw_line(at+Vector2(-15,-13),at+Vector2(16,-19),Color("739199"),8)
 		var title := str(item.nickname) if not str(item.nickname).is_empty() else str(item.name)
-		draw_string(ThemeDB.fallback_font,at+Vector2(-30,32),title.left(10),HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("39483f"))
+		draw_string(ThemeDB.fallback_font,at+Vector2(-30,32),LocalizationSystem.text(title).left(10),HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("39483f"))

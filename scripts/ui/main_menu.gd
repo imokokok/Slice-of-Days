@@ -10,6 +10,11 @@ const TERRACOTTA := Color("c85f43")
 const TEAL := Color("4f7d83")
 const SAGE := Color("7d8f59")
 const LINE := Color("b88963")
+const NAVIGATION_TITLES := {
+	"NewGame": "新游戏",
+	"Chapters": "章节",
+	"Settings": "设置",
+}
 
 var modal_overlay: ColorRect
 var modal_panel: Panel
@@ -28,6 +33,7 @@ var intro_background: ColorRect
 
 func _ready() -> void:
 	WorldSound.set_active(false)
+	SettingsSystem.language_changed.connect(_refresh_navigation_language)
 	_build_living_cover()
 	_build_navigation()
 	_build_modal_shell()
@@ -104,12 +110,12 @@ func _build_navigation() -> void:
 	var titles := ["新游戏","章节","设置"]
 	var actions := [_launch_new_game,_show_chapters,_show_settings]
 	var menu_font := SystemFont.new()
-	menu_font.font_names = PackedStringArray(["Microsoft YaHei UI","Microsoft YaHei"])
+	menu_font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Arial", "sans-serif"])
 	menu_font.font_weight = 300
 	for i in titles.size():
 		var button := Button.new()
 		button.name = ["NewGame","Chapters","Settings"][i]
-		button.text = titles[i]
+		button.text = LocalizationSystem.text(titles[i])
 		button.position = Vector2(40,24+i*44)
 		button.size = Vector2(250,40)
 		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -129,6 +135,15 @@ func _build_navigation() -> void:
 		navigation.add_child(button)
 		button.pressed.connect(actions[i])
 	navigation.modulate.a = 0
+
+
+func _refresh_navigation_language(_locale := "") -> void:
+	if not is_instance_valid(navigation):
+		return
+	for button_name in NAVIGATION_TITLES:
+		var button := navigation.get_node_or_null(button_name) as Button
+		if button != null:
+			button.text = LocalizationSystem.text(NAVIGATION_TITLES[button_name])
 
 func _launch_new_game() -> void:
 	if entering: return
@@ -247,36 +262,52 @@ func _on_new_game_pressed() -> void:
 
 func _show_settings() -> void:
 	_prepare_modal()
-	modal_panel.size.y = 570
+	modal_panel.size.y = 640
 	_make_label(modal_panel, "设置", Vector2(34, 28), Vector2(522, 42), 27, INK)
-	_make_label(modal_panel, "显示模式", Vector2(34, 92), Vector2(160, 30), 16, MUTED)
+	_make_label(modal_panel, "语言", Vector2(34, 92), Vector2(160, 30), 16, MUTED)
+	var language_picker := OptionButton.new()
+	language_picker.position = Vector2(210, 82)
+	language_picker.size = Vector2(300, 44)
+	language_picker.add_item(LocalizationSystem.text("简体中文"))
+	language_picker.set_item_metadata(0, "zh_CN")
+	language_picker.add_item("English")
+	language_picker.set_item_metadata(1, "en")
+	language_picker.select(0 if SettingsSystem.language() == "zh_CN" else 1)
+	language_picker.add_theme_font_size_override("font_size", 17)
+	modal_panel.add_child(language_picker)
+	language_picker.item_selected.connect(func(index: int) -> void:
+		SettingsSystem.set_language(str(language_picker.get_item_metadata(index)))
+		_show_settings()
+	)
+
+	_make_label(modal_panel, "显示模式", Vector2(34, 153), Vector2(160, 30), 16, MUTED)
 	var display_text := "切换为窗口模式" if SettingsSystem.fullscreen() else "切换为全屏模式"
-	var display_button := _make_button(modal_panel, display_text, Vector2(210, 78), Vector2(300, 48), "teal")
+	var display_button := _make_button(modal_panel, display_text, Vector2(210, 139), Vector2(300, 48), "teal")
 	display_button.pressed.connect(_toggle_fullscreen)
-	_make_label(modal_panel, "主音量", Vector2(34, 159), Vector2(160, 30), 16, MUTED)
+	_make_label(modal_panel, "主音量", Vector2(34, 220), Vector2(160, 30), 16, MUTED)
 	var volume := HSlider.new()
-	volume.position = Vector2(210, 150)
-	volume.size = Vector2(300, 38)
+	volume.position = Vector2(210, 211)
+	volume.size = Vector2(275, 38)
 	volume.min_value = 0
 	volume.max_value = 100
 	volume.step = 5
 	volume.value = SettingsSystem.master_volume()
 	modal_panel.add_child(volume)
-	var volume_value := _make_label(modal_panel, "%d%%" % SettingsSystem.master_volume(), Vector2(500, 159), Vector2(54, 28), 14, MUTED)
+	var volume_value := _make_label(modal_panel, "%d%%" % SettingsSystem.master_volume(), Vector2(500, 220), Vector2(54, 28), 14, MUTED)
 	volume.value_changed.connect(func(value: float) -> void:
 		SettingsSystem.set_master_volume(value)
 		volume_value.text = "%d%%" % int(value)
 	)
 
-	_make_label(modal_panel, "减少动态效果", Vector2(34, 226), Vector2(160, 30), 16, MUTED)
+	_make_label(modal_panel, "减少动态效果", Vector2(34, 287), Vector2(160, 30), 16, MUTED)
 	var motion_text := "已开启" if SettingsSystem.reduced_motion() else "未开启"
-	var motion := _make_button(modal_panel, motion_text, Vector2(210, 212), Vector2(300, 48), "regular")
+	var motion := _make_button(modal_panel, motion_text, Vector2(210, 273), Vector2(300, 48), "regular")
 	motion.pressed.connect(_toggle_reduced_motion)
-	var hint := _make_label(modal_panel, "减少章节转场中的画面位移；不会跳过任何内容。", Vector2(34, 286), Vector2(522, 54), 14, MUTED)
+	var hint := _make_label(modal_panel, "减少章节转场中的画面位移；不会跳过任何内容。", Vector2(34, 347), Vector2(522, 54), 14, MUTED)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_make_label(modal_panel,"心声字号",Vector2(34,340),Vector2(160,30),16,MUTED)
+	_make_label(modal_panel,"心声字号",Vector2(34,401),Vector2(160,30),16,MUTED)
 	var voice_size := HSlider.new()
-	voice_size.position = Vector2(210,334)
+	voice_size.position = Vector2(210,395)
 	voice_size.size = Vector2(300,38)
 	voice_size.min_value = 17
 	voice_size.max_value = 30
@@ -286,9 +317,9 @@ func _show_settings() -> void:
 	voice_size.value_changed.connect(func(value: float) -> void:
 		SettingsSystem.values.voice_size = int(value)
 		SettingsSystem.save_settings())
-	_make_label(modal_panel,"心声透明度",Vector2(34,404),Vector2(160,30),16,MUTED)
+	_make_label(modal_panel,"心声透明度",Vector2(34,465),Vector2(160,30),16,MUTED)
 	var opacity := HSlider.new()
-	opacity.position = Vector2(210,398)
+	opacity.position = Vector2(210,459)
 	opacity.size = Vector2(300,38)
 	opacity.min_value = 0
 	opacity.max_value = 1
@@ -298,7 +329,7 @@ func _show_settings() -> void:
 	opacity.value_changed.connect(func(value: float) -> void:
 		SettingsSystem.values.voice_opacity = value
 		SettingsSystem.save_settings())
-	var close := _make_button(modal_panel, "完成", Vector2(200, 490), Vector2(190, 46), "primary")
+	var close := _make_button(modal_panel, "完成", Vector2(200, 560), Vector2(190, 46), "primary")
 	close.pressed.connect(_hide_modal)
 
 
@@ -356,7 +387,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _make_label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, font_size: int, color: Color) -> Label:
 	var label := Label.new()
-	label.text = text_value
+	label.text = LocalizationSystem.text(text_value)
 	label.position = at
 	label.size = label_size
 	label.add_theme_font_size_override("font_size", font_size)
@@ -367,7 +398,7 @@ func _make_label(parent: Node, text_value: String, at: Vector2, label_size: Vect
 
 func _make_button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, kind: String) -> Button:
 	var button := Button.new()
-	button.text = text_value
+	button.text = LocalizationSystem.text(text_value)
 	button.position = at
 	button.size = button_size
 	button.focus_mode = Control.FOCUS_ALL

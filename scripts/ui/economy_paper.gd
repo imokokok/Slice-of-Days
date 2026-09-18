@@ -30,7 +30,7 @@ func _ready() -> void:
 
 func label(text: String, size := 21, color := Color("39483f")) -> Label:
 	var item := Label.new()
-	item.text = text
+	item.text = LocalizationSystem.text(text)
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	item.add_theme_font_size_override("font_size",size)
 	item.add_theme_color_override("font_color",color)
@@ -39,7 +39,7 @@ func label(text: String, size := 21, color := Color("39483f")) -> Label:
 
 func button(text: String, action: Callable, disabled := false) -> Button:
 	var item := Button.new()
-	item.text = text
+	item.text = LocalizationSystem.text(text)
 	item.custom_minimum_size.y = 48
 	item.add_theme_font_size_override("font_size",20)
 	item.disabled = disabled
@@ -110,13 +110,13 @@ func collections() -> void:
 		var item: Dictionary = entries[id]
 		label(str(item.name),23)
 		var nickname := LineEdit.new()
-		nickname.placeholder_text = "给它起个名字"
-		nickname.text = str(item.nickname)
+		nickname.placeholder_text = LocalizationSystem.text("给它起个名字")
+		nickname.text = LocalizationSystem.text(str(item.nickname))
 		nickname.max_length = 32
 		body.add_child(nickname)
 		var note := LineEdit.new()
-		note.placeholder_text = "为什么想留着它"
-		note.text = str(item.note)
+		note.placeholder_text = LocalizationSystem.text("为什么想留着它")
+		note.text = LocalizationSystem.text(str(item.note))
 		note.max_length = 240
 		body.add_child(note)
 		var slot := OptionButton.new()

@@ -56,7 +56,7 @@ func show_dialog() -> void:
 	if panel == null: build_dialog()
 	fill_picker(input_picker, AudioServer.get_input_device_list(), input_device)
 	fill_picker(output_picker, AudioServer.get_output_device_list(), output_device)
-	message.text = "先点测试音确认输出，再选择麦克风重新录一段。\n全静音的旧录音无法恢复声音，需要重新录制。"
+	message.text = LocalizationSystem.text("先点测试音确认输出，再选择麦克风重新录一段。\n全静音的旧录音无法恢复声音，需要重新录制。")
 	panel.popup_centered(Vector2i(650, 340))
 
 func fill_picker(picker: OptionButton, devices: PackedStringArray, current: String) -> void:
@@ -74,23 +74,23 @@ func build_dialog() -> void:
 	column.add_theme_constant_override("separation", 10)
 	panel.add_child(column)
 	var output_label := Label.new()
-	output_label.text = "播放设备 / 扬声器或耳机"
+	output_label.text = LocalizationSystem.text("播放设备 / 扬声器或耳机")
 	column.add_child(output_label)
 	output_picker = OptionButton.new()
 	output_picker.item_selected.connect(func(index: int) -> void:
 		output_device = output_picker.get_item_text(index)
 		AudioServer.output_device = output_device
 		save_settings()
-		message.text = "已选择：" + output_device + "。点击测试音。")
+		message.text = LocalizationSystem.text("已选择：" + output_device + "。点击测试音。"))
 	column.add_child(output_picker)
 	var test := Button.new()
-	test.text = "♪ 播放测试音（两声）"
+	test.text = LocalizationSystem.text("♪ 播放测试音（两声）")
 	test.pressed.connect(play_test_tone)
 	column.add_child(test)
 	var volume_row := HBoxContainer.new()
 	column.add_child(volume_row)
 	var volume_label := Label.new()
-	volume_label.text = "游戏音量 %d%%" % int(volume * 100)
+	volume_label.text = LocalizationSystem.text("游戏音量 %d%%" % int(volume * 100))
 	volume_row.add_child(volume_label)
 	var slider := HSlider.new()
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -103,11 +103,11 @@ func build_dialog() -> void:
 			get_node("/root/SettingsSystem").set_master_volume(value * 100)
 		AudioServer.set_bus_mute(0, volume <= 0)
 		AudioServer.set_bus_volume_db(0, linear_to_db(maxf(volume, 0.00001)))
-		volume_label.text = "游戏音量 %d%%" % int(volume * 100)
+		volume_label.text = LocalizationSystem.text("游戏音量 %d%%" % int(volume * 100))
 		save_settings())
 	volume_row.add_child(slider)
 	var input_label := Label.new()
-	input_label.text = "录音设备 / 麦克风"
+	input_label.text = LocalizationSystem.text("录音设备 / 麦克风")
 	column.add_child(input_label)
 	input_picker = OptionButton.new()
 	input_picker.item_selected.connect(func(index: int) -> void: select_input(input_picker.get_item_text(index)))
@@ -136,4 +136,4 @@ func play_test_tone() -> void:
 	if AudioServer.get_driver_name() != "Dummy":
 		test_player.play()
 	if message != null:
-		message.text = "测试音输出到：" + output_device + "\n若仍听不到，换一个输出设备，并检查系统音量。" if AudioServer.get_driver_name() != "Dummy" else "当前没有可用的音频输出驱动。"
+		message.text = LocalizationSystem.text("测试音输出到：" + output_device + "\n若仍听不到，换一个输出设备，并检查系统音量。" if AudioServer.get_driver_name() != "Dummy" else "当前没有可用的音频输出驱动。")

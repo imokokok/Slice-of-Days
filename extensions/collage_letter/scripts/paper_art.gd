@@ -6,7 +6,7 @@ var ink := Color("374a45")
 var font: Font
 
 func word(s: String, p: Vector2, size: int = 22, color: Color = ink) -> void:
-	draw_string(font, p, s, HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
+	draw_string(font, p, LocalizationSystem.text(s), HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
 
 func _draw() -> void:
 	var colors := [Color("eee7d5"), Color("e7d4b9"), Color("f4ecdb"), Color("c8cbb2"), Color("ede5d5")]

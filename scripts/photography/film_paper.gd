@@ -17,11 +17,11 @@ func _ready() -> void:
 	rebuild()
 
 func _progress(index: int, total: int) -> void:
-	if is_instance_valid(status): status.text="把照片装进纸袋 · %d / %d" % [index,total]
+	if is_instance_valid(status): status.text=LocalizationSystem.text("把照片装进纸袋 · %d / %d" % [index,total])
 
 func label(parent: Node, text: String, at: Vector2, dimensions: Vector2, font_size := 21) -> Label:
 	var l:=Label.new()
-	l.text=text
+	l.text=LocalizationSystem.text(text)
 	l.position=at
 	l.size=dimensions
 	l.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
@@ -32,7 +32,7 @@ func label(parent: Node, text: String, at: Vector2, dimensions: Vector2, font_si
 
 func button(parent: Node, title: String, at: Vector2, dimensions: Vector2, action: Callable, disabled := false) -> Button:
 	var b:=Button.new()
-	b.text=title
+	b.text=LocalizationSystem.text(title)
 	b.position=at
 	b.size=dimensions
 	b.disabled=disabled

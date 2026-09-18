@@ -54,7 +54,7 @@ func _ready() -> void:
 	controls.add_child(studio.button("返回 Studio", func() -> void:
 		model.prompt = prompt_input.text
 		if not model.save_project():
-			status.text = model.error
+			status.text = LocalizationSystem.text(model.error)
 			return
 		studio.show()
 		queue_free()))
@@ -68,9 +68,9 @@ func generate() -> bool:
 	model.prompt = prompt_input.text
 	canvas.configure(audio, model.prompt, model.seed_value)
 	if not model.save_project():
-		status.text = model.error
+		status.text = LocalizationSystem.text(model.error)
 		return false
-	status.text = "本地生成完成 · Seed %d" % model.seed_value
+	status.text = LocalizationSystem.text("本地生成完成 · Seed %d" % model.seed_value)
 	return true
 
 func _process(_delta: float) -> void:
@@ -82,11 +82,11 @@ func submit() -> void:
 	var unique: Dictionary = {}
 	for clip in model.clips: unique[clip.sample_id] = true
 	if unique.size() < 2 or model.clips.size() < 2 or model.length() < 8.0:
-		status.text = "老板：这个还像个草稿。再弄一点，我给你留着位置。\n需要至少 2 种录音、2 个片段、8 秒作品。"
+		status.text = LocalizationSystem.text("老板：这个还像个草稿。再弄一点，我给你留着位置。\n需要至少 2 种录音、2 个片段、8 秒作品。")
 		return
 	if pressing != null or submitting: return
 	if not generate(): return
-	status.text = "老板：新做的？行，放吧。\n正在试听作品（8 秒）……"
+	status.text = LocalizationSystem.text("老板：新做的？行，放吧。\n正在试听作品（8 秒）……")
 	player.stream_paused = false
 	player.play()
 	# Submission is locked during listening; returning frees this node and cancels the continuation.

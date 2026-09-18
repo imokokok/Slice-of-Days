@@ -62,7 +62,7 @@ func update_target() -> void:
 	var item: Dictionary = hit.collider.get_meta("memory_item")
 	if origin.distance_to(hit.position)>float(item.get("range",2.1)):return
 	selected = item
-	prompt.text = "E · "+str(item.name)
+	prompt.text = "E · " + LocalizationSystem.text(str(item.name))
 
 func interact(item: Dictionary = {}) -> void:
 	if not view.ready_to_walk: return
@@ -90,7 +90,7 @@ func interact(item: Dictionary = {}) -> void:
 		"toggle":
 			if str(item.name) in ["屏幕","电脑","录音设备"]:
 				_toggle_display(node)
-				view.caption.text = str(item.get("text",""))
+				view.caption.text = LocalizationSystem.text(str(item.get("text","")))
 				view.elapsed = 0
 				return
 			if str(item.name)=="水龙头":
@@ -118,7 +118,7 @@ func interact(item: Dictionary = {}) -> void:
 		"leave":
 			view._leave()
 			return
-	view.caption.text = str(item.get("text",""))
+	view.caption.text = LocalizationSystem.text(str(item.get("text","")))
 	view.elapsed = 0
 
 func _toggle_display(node: Node3D) -> void:
@@ -164,7 +164,7 @@ func open_paper(item: Dictionary) -> void:
 	column.add_theme_constant_override("separation",22)
 	reading.add_child(column)
 	var heading := Label.new()
-	heading.text = str(item.name)
+	heading.text = LocalizationSystem.text(str(item.name))
 	heading.add_theme_font_size_override("font_size",25)
 	heading.add_theme_color_override("font_color",Color("354b49"))
 	column.add_child(heading)
@@ -182,7 +182,7 @@ func open_paper(item: Dictionary) -> void:
 	column.add_child(nav)
 	for action in ["上一页","下一页","放回去"]:
 		var button := Button.new()
-		button.text = action
+		button.text = LocalizationSystem.text(action)
 		button.disabled = pages.size()<2 and action!="放回去"
 		nav.add_child(button)
 		button.pressed.connect(func() -> void:
@@ -193,7 +193,7 @@ func open_paper(item: Dictionary) -> void:
 	_show_page()
 
 func _show_page() -> void:
-	page_text.text = str(pages[page])
+	page_text.text = LocalizationSystem.text(str(pages[page]))
 	paper_sound.play()
 
 func close_paper() -> void:

@@ -9,7 +9,7 @@ func _ready() -> void:
 	selected = str(GameState.shared_state.get("map_destination", ""))
 	GameState.shared_state.erase("map_destination")
 	var title := Label.new()
-	title.text = "SOLMERE   /   小镇地图      %s · 第%d天 · %s · %d元" % [GameState.current_role, GameState.current_day, GameState.clock_text(), GameState.money]
+	title.text = LocalizationSystem.text("SOLMERE   /   小镇地图      %s · 第%d天 · %s · %d元" % [GameState.current_role, GameState.current_day, GameState.clock_text(), GameState.money])
 	title.position = Vector2(42, 28)
 	title.add_theme_font_size_override("font_size", 24)
 	add_child(title)
@@ -43,7 +43,7 @@ func _ready() -> void:
 	var back := Button.new()
 	back.position = Vector2(1340, 28)
 	back.size = Vector2(210, 48)
-	back.text = "合上地图  M / Esc"
+	back.text = LocalizationSystem.text("合上地图  M / Esc")
 	back.pressed.connect(SceneRouter.return_from_gameplay)
 	add_child(back)
 	_select(selected)
@@ -59,7 +59,7 @@ func _draw() -> void:
 	for path in [[Vector2(720,360),Vector2(720,230),Vector2(350,230),Vector2(350,150)], [Vector2(720,360),Vector2(720,490),Vector2(160,490),Vector2(160,620)], [Vector2(890,360),Vector2(995,360),Vector2(995,190),Vector2(930,190)]]:
 		for i in range(1, path.size()): draw_line(path[i-1],path[i],Color("8b9b86"),4,true)
 	for caption in [["住宅区 · A 的家 / B 的家 / 停车区",Vector2(300,100)],["主街 · 从左侧公交站出发",Vector2(40,315)],["文化街支路 · 巷尾可以转身返回",Vector2(100,570)],["海边观景台",Vector2(835,135)]]:
-		draw_string(ThemeDB.fallback_font,caption[1],caption[0],HORIZONTAL_ALIGNMENT_LEFT,-1,20,Color("294f56"))
+		draw_string(ThemeDB.fallback_font,caption[1],LocalizationSystem.text(caption[0]),HORIZONTAL_ALIGNMENT_LEFT,-1,20,Color("294f56"))
 	draw_rect(Rect2(1038,90,540,745),Color("faf2de"))
 func _map_point(index: int) -> Vector2:
 	return _point(WorldGraph.street_locations[index])
@@ -68,7 +68,7 @@ func _point(id: String) -> Vector2:
 	return Vector2(float(point[0]), float(point[1]))
 func _text(value: String, font_size := 21) -> Label:
 	var label := Label.new()
-	label.text = value
+	label.text = LocalizationSystem.text(value)
 	label.add_theme_color_override("font_color", Color("294f56"))
 	label.add_theme_font_size_override("font_size", font_size)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -86,7 +86,7 @@ func _select(id: String) -> void:
 		return
 	_text(TravelSystem.location_name(id),28)
 	var pin := Button.new()
-	pin.text = "取消标记" if WorldGraph.pins().has(id) else "夹一张地点便签" if GameState.current_role == "A" else "Pin 到日程本"
+	pin.text = LocalizationSystem.text("取消标记" if WorldGraph.pins().has(id) else "夹一张地点便签" if GameState.current_role == "A" else "Pin 到日程本")
 	pin.pressed.connect(func() -> void: WorldGraph.toggle_pin(id); _select(id))
 	info.add_child(pin)
 	if id == "park": _text("观景台在街道最右端，每天 21:00 开放。",18)
@@ -98,6 +98,6 @@ func _select(id: String) -> void:
 	notice = _text("合上地图，用 A / D 或方向键继续走。",17)
 func _depart(method: String) -> void:
 	var result := SceneRouter.travel_to(selected,method)
-	if not bool(result.get("ok",false)): notice.text = str(result.get("message","现在无法出发。"))
+	if not bool(result.get("ok",false)): notice.text = LocalizationSystem.text(str(result.get("message","现在无法出发。")))
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and (event.is_action_pressed("open_map") or event.is_action_pressed("ui_cancel")): SceneRouter.return_from_gameplay()

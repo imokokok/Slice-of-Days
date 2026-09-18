@@ -416,7 +416,7 @@ func _current_memory() -> int:
 
 
 func _text(value: String, baseline: Vector2, font_size: int, color: Color, font: Font = null) -> void:
-	draw_string(body_font if font == null else font, baseline, value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+	draw_string(body_font if font == null else font, baseline, LocalizationSystem.text(value), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 
 
 func _center_text(value: String, baseline: float, font_size: int, color: Color, x: float = 0, width: float = 1280, font: Font = null) -> void:

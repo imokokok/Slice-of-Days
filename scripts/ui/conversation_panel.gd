@@ -42,7 +42,7 @@ func _ready() -> void:
 	speaker_label = _label(panel,Vector2(18,12),Vector2(394,26),17,Color("d6b58d"))
 	text_label = _label(panel,Vector2(18,47),Vector2(394,93),22,Color("f0e2c5"))
 	hint_label = _label(panel,Vector2(18,149),Vector2(394,25),13,Color("a8bbb7"))
-	hint_label.text = "Space 继续 · Esc 离开"
+	hint_label.text = LocalizationSystem.text("Space 继续 · Esc 离开")
 	typewriter = bool(GameState.shared_state.get("typewriter",true))
 	if shop_id.is_empty() or npc in ["beetman", "grocery"]:
 		_build_conversation()
@@ -97,8 +97,8 @@ func _build_conversation() -> void:
 func _show_line() -> void:
 	var speaker := speakers[index]
 	_position_card(speaker)
-	speaker_label.text = "你" if speaker == "player" else "" if speaker == "narrator" else shop_name if not shop_name.is_empty() else str(ScheduleSystem.residents.get(npc,{}).get("display_name",npc))
-	text_label.text = lines[index]
+	speaker_label.text = LocalizationSystem.text("你" if speaker == "player" else "" if speaker == "narrator" else shop_name if not shop_name.is_empty() else str(ScheduleSystem.residents.get(npc,{}).get("display_name",npc)))
+	text_label.text = LocalizationSystem.text(lines[index])
 	DialogueSystem.present_line({"npc":npc,"speaker":speaker,"text":lines[index],"index":index,"total":lines.size(),"location":GameState.current_location,"owner":self,"conversation_id":get_instance_id(),"dialogue_id":dialogue_id,"line_id":line_ids[index],"topic":starting_topic})
 	progress = 0
 	text_label.visible_characters = 0 if typewriter else -1
@@ -124,7 +124,7 @@ func _finish() -> void:
 			if not SaveManager.save_or_report("保存谈话失败"):
 				GameState.load_save_data(before)
 				commit_retry = true
-				text_label.text = "这段谈话暂时没能保存，按空格重试。"
+				text_label.text = LocalizationSystem.text("这段谈话暂时没能保存，按空格重试。")
 				text_label.visible_characters = -1
 				return
 			vendor_committed = true
@@ -144,7 +144,7 @@ func _finish() -> void:
 		GameState.load_save_data(snapshot)
 		commit_retry = true
 		speaker_label.text = ""
-		text_label.text = "这段谈话暂时没能保存，点击或按空格重试。"
+		text_label.text = LocalizationSystem.text("这段谈话暂时没能保存，点击或按空格重试。")
 		text_label.visible_characters = -1
 		return
 	# Only walking up to a game point requests entry. Casual chat returns to walking.
@@ -163,8 +163,8 @@ func _show_vendor_choices() -> void:
 	if is_instance_valid(vendor_choices): return
 	speech_card.size.y = 340
 	_position_card("npc")
-	speaker_label.text = "BEETMAN" if npc == "beetman" else "杂货店老板"
-	text_label.text = "我就在摊边。你想接着聊，还是看看今天的罐头？" if npc == "beetman" else "你慢慢看。想买什么、冲照片，或者再说几句都可以。"
+	speaker_label.text = LocalizationSystem.text("BEETMAN" if npc == "beetman" else "杂货店老板")
+	text_label.text = LocalizationSystem.text("我就在摊边。你想接着聊，还是看看今天的罐头？" if npc == "beetman" else "你慢慢看。想买什么、冲照片，或者再说几句都可以。")
 	text_label.visible_characters = -1
 	text_label.size.y = 58
 	hint_label.hide()
@@ -176,7 +176,7 @@ func _show_vendor_choices() -> void:
 	var options := [["再聊一会儿 · 15分钟", "chat"], ["看看今天的罐头" if npc == "beetman" else "看看货架", "shop"], ["问点事 · 5分钟", "ask"], ["约个时间挑旧标签" if npc == "beetman" else "摄影与冲洗", "appointment" if npc == "beetman" else "film"], ["先走了", "leave"]]
 	for option in options:
 		var button := Button.new()
-		button.text = str(option[0])
+		button.text = LocalizationSystem.text(str(option[0]))
 		button.custom_minimum_size.y = 36
 		button.add_theme_font_size_override("font_size", 17)
 		button.add_theme_color_override("font_color", Color("e8e0c9"))
@@ -201,7 +201,7 @@ func _vendor_action(action: String) -> void:
 	elif action == "chat":
 		_restart_vendor("greeting")
 	elif action == "appointment":
-		text_label.text = str(EconomySystem.book_vendor_visit().message)
+		text_label.text = LocalizationSystem.text(str(EconomySystem.book_vendor_visit().message))
 	elif action == "film":
 		shopping = true
 		hide()

@@ -150,9 +150,9 @@ func _select_object(index: int) -> void:
 	if index < 0 or index >= objects.size(): return
 	selected_index = index
 	var item: Dictionary = objects[index]
-	name_label.text = str(space.get("name", ""))
-	cue_label.text = str(item.get("name", ""))
-	detail_label.text = str(item.get("detail", ""))
+	name_label.text = LocalizationSystem.text(str(space.get("name", "")))
+	cue_label.text = LocalizationSystem.text(str(item.get("name", "")))
+	detail_label.text = LocalizationSystem.text(str(item.get("detail", "")))
 
 
 func _open_selected() -> void:
@@ -175,7 +175,7 @@ func _open_selected() -> void:
 		return
 	if str(item.get("kind", "")) == "observe":
 		room_dialogue.show()
-		cue_label.text = str(item.get("detail", ""))
+		cue_label.text = LocalizationSystem.text(str(item.get("detail", "")))
 		return
 	if str(item.get("kind", "")) == "book_notes":
 		_show_book_notes()
@@ -190,9 +190,9 @@ func _open_selected() -> void:
 		var result := GameState.complete_next_commitment()
 		WorldSound.play_ui("coin" if bool(result.get("ok", false)) else "dialogue")
 		room_dialogue.show()
-		name_label.text = "B的工作日程"
-		cue_label.text = str(result.get("message", ""))
-		detail_label.text = "余额 %d元 · Space / Enter 收起" % GameState.money
+		name_label.text = LocalizationSystem.text("B的工作日程")
+		cue_label.text = LocalizationSystem.text(str(result.get("message", "")))
+		detail_label.text = LocalizationSystem.text("余额 %d元 · Space / Enter 收起" % GameState.money)
 		SaveManager.save_or_report("工作结算后保存失败")
 		return
 	var module_id := str(item.get("module_id", ""))
@@ -206,9 +206,9 @@ func _open_selected() -> void:
 		if not DialogueSystem.invitation_for(str(invite.npc)).is_empty():
 			_start_conversation(str(invite.npc),"minigame_hook")
 		else:
-			name_label.text = "工作台旁留着便签"
-			cue_label.text = "先和店主聊聊，听听今天的委托。"
-			detail_label.text = "Space / Enter · 继续"
+			name_label.text = LocalizationSystem.text("工作台旁留着便签")
+			cue_label.text = LocalizationSystem.text("先和店主聊聊，听听今天的委托。")
+			detail_label.text = LocalizationSystem.text("Space / Enter · 继续")
 			room_dialogue.show()
 		return
 	if not module_id.is_empty():
@@ -216,9 +216,9 @@ func _open_selected() -> void:
 		var direct_minutes := int(metadata.get("direct_time_minutes", 0))
 		if direct_minutes > 0 and not GameState.can_fit_now(direct_minutes):
 			room_dialogue.show()
-			name_label.text = "时间提醒"
-			cue_label.text = "这段经历需要完整的 %d 分钟" % direct_minutes
-			detail_label.text = "当前时间块放不下它。返回街道推进到下一个可行动时段后再来。"
+			name_label.text = LocalizationSystem.text("时间提醒")
+			cue_label.text = LocalizationSystem.text("这段经历需要完整的 %d 分钟" % direct_minutes)
+			detail_label.text = LocalizationSystem.text("当前时间块放不下它。返回街道推进到下一个可行动时段后再来。")
 			return
 	WorldSound.play_detail(true)
 	match str(item.get("kind", "module")):
@@ -265,14 +265,14 @@ func _talk_to_resident() -> void:
 	var resident_id := str(nearest.id)
 	var event_id := _conversation_event_id(resident_id)
 	if GameState.has_event(event_id):
-		name_label.text = "室内对话"
-		cue_label.text = "今天已经认真聊过了"
-		detail_label.text = "留一点空白，下次见面时新的话题才会出现。"
+		name_label.text = LocalizationSystem.text("室内对话")
+		cue_label.text = LocalizationSystem.text("今天已经认真聊过了")
+		detail_label.text = LocalizationSystem.text("留一点空白，下次见面时新的话题才会出现。")
 		return
 	if not GameState.can_fit_now(20):
-		name_label.text = "时间提醒"
-		cue_label.text = "现在的可行动时间不足 20 分钟"
-		detail_label.text = "可以先返回街道，处理下一个预约或时间块。"
+		name_label.text = LocalizationSystem.text("时间提醒")
+		cue_label.text = LocalizationSystem.text("现在的可行动时间不足 20 分钟")
+		detail_label.text = LocalizationSystem.text("可以先返回街道，处理下一个预约或时间块。")
 		return
 	var minute_before := GameState.current_minute
 	GameState.use_free_time(20)
@@ -298,7 +298,7 @@ func _talk_to_resident() -> void:
 	SaveManager.save_or_report("室内互动后保存失败")
 	name_label.text = resident_name.to_upper()
 	cue_label.text = "“%s”" % line
-	detail_label.text = "Space / Enter · 继续"
+	detail_label.text = LocalizationSystem.text("Space / Enter · 继续")
 
 
 func _next_conversation_resident() -> String:
@@ -369,9 +369,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		var nearest: Dictionary = stage.nearest()
 		match str(nearest.get("kind", "")):
 			"echo":
-				name_label.text = "黑板"
-				cue_label.text = str(nearest.text)
-				detail_label.text = "Space / Enter · 收起视线"
+				name_label.text = LocalizationSystem.text("黑板")
+				cue_label.text = LocalizationSystem.text(str(nearest.text))
+				detail_label.text = LocalizationSystem.text("Space / Enter · 收起视线")
 				room_dialogue.show()
 				MetaExperience.observe(GameState.current_location,str(nearest.text),{"kind":"place","event_id":"echo_"+GameState.current_location})
 			"exit": SceneRouter.leave_space()
@@ -410,7 +410,7 @@ func _panel(parent: Node, at: Vector2, panel_size: Vector2, color: Color, border
 
 func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, font_size: int, color: Color, alignment := HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var label := Label.new()
-	label.text = text_value
+	label.text = LocalizationSystem.text(text_value)
 	label.position = at
 	label.size = label_size
 	label.horizontal_alignment = alignment
@@ -422,7 +422,7 @@ func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, 
 
 func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, kind: String) -> Button:
 	var button := Button.new()
-	button.text = text_value
+	button.text = LocalizationSystem.text(text_value)
 	button.position = at
 	button.size = button_size
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -492,9 +492,9 @@ func _return_home() -> void:
 	SceneRouter.room_positions[SceneRouter.active_space_id] = stage.player_x
 	GameState.commit_active_role_state()
 	if not SaveManager.save_or_report("回到主页前保存失败"):
-		name_label.text = "暂时无法返回"
-		cue_label.text = "进度还没保存成功，请稍后再试。"
-		detail_label.text = "E · 继续"
+		name_label.text = LocalizationSystem.text("暂时无法返回")
+		cue_label.text = LocalizationSystem.text("进度还没保存成功，请稍后再试。")
+		detail_label.text = LocalizationSystem.text("E · 继续")
 		room_dialogue.show()
 		return
 	SceneRouter.main_menu()

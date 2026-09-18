@@ -137,7 +137,7 @@ func _ready() -> void:
 
 func label_at(text: String, rect: Rect2, size: int = 18, color: Color = INK) -> Label:
 	var node := Label.new()
-	node.text = text
+	node.text = LocalizationSystem.text(text)
 	node.position = rect.position
 	node.size = rect.size
 	node.add_theme_font_override("font",font)
@@ -148,7 +148,7 @@ func label_at(text: String, rect: Rect2, size: int = 18, color: Color = INK) -> 
 
 func button(text: String, rect: Rect2, action: Callable, active: bool = false) -> Button:
 	var node := Button.new()
-	node.text = text
+	node.text = LocalizationSystem.text(text)
 	node.position = rect.position
 	node.size = rect.size
 	node.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -194,7 +194,7 @@ func build_ui() -> void:
 		category_picker.add_theme_font_override("font",font)
 		var categories: Array=["全部","日常","路途","自然","心绪","连接"]
 		for item in categories:
-			category_picker.add_item(item+" / 素材夹")
+			category_picker.add_item("%s / %s" % [LocalizationSystem.text(item), LocalizationSystem.text("素材夹")])
 		category_picker.select(maxi(0,categories.find(category)))
 		category_picker.item_selected.connect(func(index): category=categories[index]; material_page=0; update_material_slots(); build_ui())
 		ui.add_child(category_picker)
@@ -209,7 +209,7 @@ func build_ui() -> void:
 			entry = LineEdit.new()
 			entry.position = Vector2(481,716)
 			entry.size = Vector2(345,36)
-			entry.placeholder_text = "写一小段自己的话…"
+			entry.placeholder_text = LocalizationSystem.text("写一小段自己的话…")
 			entry.max_length = 40
 			entry.add_theme_font_override("font",font)
 			ui.add_child(entry)
@@ -274,7 +274,7 @@ func phase_title() -> String:
 func say(text: String) -> void:
 	hint = text
 	if is_instance_valid(status_label):
-		status_label.text = hint
+		status_label.text = LocalizationSystem.text(hint)
 
 func _draw() -> void:
 	if not font:
@@ -371,7 +371,7 @@ func _draw() -> void:
 			draw_texture_rect(letter_preview,Rect2(104,270,306,370),false)
 
 func text_at(text: String, at: Vector2, size: int = 20, color: Color = INK) -> void:
-	draw_string(font,at,text,HORIZONTAL_ALIGNMENT_LEFT,-1,size,color)
+	draw_string(font,at,LocalizationSystem.text(text),HORIZONTAL_ALIGNMENT_LEFT,-1,size,color)
 
 func paper(rect: Rect2, color: Color) -> void:
 	draw_rect(Rect2(rect.position+Vector2(5,7),rect.size),Color(0.27,0.23,0.17,0.12))

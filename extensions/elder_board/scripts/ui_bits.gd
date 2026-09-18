@@ -13,7 +13,7 @@ static func panel(parent: Node, rect: Rect2) -> Panel:
 
 static func label(parent: Node, text: String, rect: Rect2, font_size: int = 26) -> Label:
 	var item := Label.new()
-	item.text = text
+	item.text = LocalizationSystem.text(text)
 	item.position = rect.position
 	item.size = rect.size
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -24,7 +24,7 @@ static func label(parent: Node, text: String, rect: Rect2, font_size: int = 26) 
 
 static func button(parent: Node, text: String, rect: Rect2, action: Callable) -> Button:
 	var item := Button.new()
-	item.text = text
+	item.text = LocalizationSystem.text(text)
 	item.position = rect.position
 	item.size = rect.size
 	item.add_theme_font_size_override("font_size", 24)

@@ -81,7 +81,7 @@ func _refresh() -> void:
 	if balance_label == null:
 		return
 	balance_label.text = LocalizationSystem.text("钱包  %d 元" % GameState.money)
-	budget_label.text = GameState.spending_plan_text()
+	budget_label.text = LocalizationSystem.text(GameState.spending_plan_text())
 	budget_label.add_theme_color_override("font_color", TERRACOTTA if int(GameState.daily_spending_plan().over) > 0 else SEA)
 	for child in item_list.get_children():
 		item_list.remove_child(child)
@@ -111,7 +111,7 @@ func _refresh() -> void:
 		line.add_child(copy)
 		var name := Label.new()
 		name.text = LocalizationSystem.text("%s  ·  %d元%s" % [str(item.get("name", "商品")), int(item.get("price", 0)), "  ·  已有%d" % count if count > 0 else ""])
-		if str(item.get("category", "")) == "collection": name.text += "  ·  今日余%d件" % int(item.remaining)
+		if str(item.get("category", "")) == "collection": name.text += LocalizationSystem.text("  ·  今日余%d件" % int(item.remaining))
 		name.add_theme_font_size_override("font_size", 20)
 		name.add_theme_color_override("font_color", INK)
 		copy.add_child(name)

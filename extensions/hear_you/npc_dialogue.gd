@@ -212,9 +212,10 @@ func _draw_dialogue() -> void:
 		var side := int(current_line[0])
 		var color := RED if bool(current_line[2]) else INK
 		_text(NAMES[side],Vector2(137,679),19,color,title_font)
-		var visible_text := str(current_line[1]).substr(0,int(typed))
+		var full_text := LocalizationSystem.text(str(current_line[1]))
+		var visible_text := full_text.substr(0,int(typed))
 		_wrapped_text(visible_text,Vector2(137,730),27,color,980,42)
-		_text("点击，继续听  ↵" if typed>=str(current_line[1]).length() else "点击显示整句",Vector2(956,824),14,MUTED)
+		_text("点击，继续听  ↵" if typed>=full_text.length() else "点击显示整句",Vector2(956,824),14,MUTED)
 
 
 func _next_line() -> void:
@@ -249,8 +250,9 @@ func _continue() -> void:
 	if finished:
 		_reset()
 	elif not waiting:
-		if typed<str(current_line[1]).length():
-			typed=float(str(current_line[1]).length())
+		var full_text := LocalizationSystem.text(str(current_line[1]))
+		if typed<full_text.length():
+			typed=float(full_text.length())
 		else:
 			_next_line()
 

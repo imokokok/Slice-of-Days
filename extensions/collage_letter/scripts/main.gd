@@ -245,7 +245,7 @@ func build_ui() -> void:
 			title_entry.position=Vector2(490,280)
 			title_entry.size=Vector2(460,43)
 			title_entry.max_length=40
-			title_entry.text=letter_title
+			title_entry.text=LocalizationSystem.text(letter_title)
 			title_entry.editable=bottle_request_id.is_empty()
 			title_entry.add_theme_font_override("font",font)
 			title_entry.text_changed.connect(func(value): letter_title=value; save_game())

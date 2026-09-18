@@ -29,7 +29,7 @@ var solmere_completed := false
 func _ready() -> void:
 	if has_node("/root/GameState"):
 		Memory.role = str(get_node("/root/GameState").current_role)
-	DisplayServer.window_set_title("Solmere · 老棋友")
+	DisplayServer.window_set_title(LocalizationSystem.text("Solmere · 老棋友"))
 	var ui_theme := Theme.new()
 	var font := SystemFont.new()
 	font.font_names = PackedStringArray(["Microsoft YaHei", "Noto Sans CJK SC", "PingFang SC", "sans-serif"])

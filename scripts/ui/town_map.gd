@@ -18,7 +18,7 @@ func _ready() -> void:
 		var b := Button.new()
 		b.position = _map_point(index) - Vector2(69, 24)
 		b.size = Vector2(138, 48)
-		b.text = ("● " if str(id) == GameState.current_location else "") + TravelSystem.location_name(str(id))
+		b.text = ("● " if str(id) == GameState.current_location else "") + LocalizationSystem.text(TravelSystem.location_name(str(id)))
 		b.add_theme_font_size_override("font_size", 16)
 		var face := StyleBoxFlat.new()
 		face.bg_color = Color("e6ba79") if id == GameState.current_location else Color("fff7e5")

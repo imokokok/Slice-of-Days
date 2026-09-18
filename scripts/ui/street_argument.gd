@@ -43,7 +43,7 @@ func _draw() -> void:
 	elif waiting: words = "两个人都停了一下。也许先让对方看见自己想到的画面。"
 	elif not current_line.is_empty():
 		speaker = NAMES[int(current_line[0])]
-		words = str(current_line[1]).substr(0,int(typed))
+		words = LocalizationSystem.text(str(current_line[1])).substr(0,int(typed))
 	_text(speaker,WORDS.position+Vector2(26,29),18,Color("d6b58d"))
 	_wrapped_text(words,WORDS.position+Vector2(26,64),22,Color("f4ead7"),1190,30)
 	_text("拖动记忆到对方身上 · Esc 暂时离开" if waiting else "点击 / 空格继续 · Esc 暂时离开",WORDS.position+Vector2(26,124),14,Color("a8bbb7"))

@@ -45,7 +45,7 @@ func _ready() -> void:
 	column.add_child(intro)
 	if game_id == &"go" and setup_mode:
 		size_choice = OptionButton.new()
-		for item in ["9 路 · 短局入门", "13 路 · 中盘练习", "19 路 · 完整棋盘"]: size_choice.add_item(item)
+		for item in ["9 路 · 短局入门", "13 路 · 中盘练习", "19 路 · 完整棋盘"]: size_choice.add_item(LocalizationSystem.text(item))
 		size_choice.select([9, 13, 19].find(go_size))
 		size_choice.custom_minimum_size.y = 52
 		size_choice.item_selected.connect(func(index: int): go_size = [9, 13, 19][index])

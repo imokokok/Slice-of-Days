@@ -47,7 +47,7 @@ func _process(_delta: float) -> void:
 	report.text=LocalizationSystem.text("心声\n"+JSON.stringify(info,"  ")+"\n\n地点留言\n"+JSON.stringify(MetaExperience.marginalia_debug,"  "))
 	var scene := get_tree().current_scene
 	if scene != null and scene.has_node("GameplayShell"):
-		report.text += "\n\n场景提示\n"+JSON.stringify(scene.get_node("GameplayShell").hint_debug,"  ")
+		report.text += LocalizationSystem.text("\n\n场景提示\n")+JSON.stringify(scene.get_node("GameplayShell").hint_debug,"  ")
 		var audit := ResidencySystem.audit()
 		var s := ResidencySystem.state()
-		report.text += "\n\n档案\n"+JSON.stringify({"role":GameState.current_role,"day":GameState.current_day,"pages":audit.pages_complete,"marks":audit.recognitions,"missing":audit.missing,"materials":s.materials.size(),"filed":s.filing.size(),"submitted":not s.submitted.is_empty()},"  ")
+		report.text += LocalizationSystem.text("\n\n档案\n")+JSON.stringify({"role":GameState.current_role,"day":GameState.current_day,"pages":audit.pages_complete,"marks":audit.recognitions,"missing":audit.missing,"materials":s.materials.size(),"filed":s.filing.size(),"submitted":not s.submitted.is_empty()},"  ")

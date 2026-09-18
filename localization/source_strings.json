@@ -717,6 +717,9 @@
   "A · 透光台": [
     "scripts/meta/memory_entry.gd"
   ],
+  "A 决定按标价买下它；帮忙换旧相机是 B 的生活交换。": [
+    "scripts/photography/film_system.gd"
+  ],
   "A 的 Pocket / 随身物件": [
     "scripts/ui/journal.gd"
   ],

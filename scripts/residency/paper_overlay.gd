@@ -460,14 +460,14 @@ func _explore_records() -> void:
 	var kind := OptionButton.new()
 	kind.name = "ExploreKind"
 	kind.position = Vector2(50,202); kind.size = Vector2(575,43)
-	for title in ["自己发现的地方","换个时段的回访","愿意带别人去的地方"]: kind.add_item(title)
+	for title in ["自己发现的地方","换个时段的回访","愿意带别人去的地方"]: kind.add_item(LocalizationSystem.text(title))
 	kind.select(kinds.find(exploration_kind))
 	kind.item_selected.connect(func(index: int) -> void: exploration_kind = str(kinds[index]))
 	body.add_child(kind)
 	var places := OptionButton.new()
 	places.name = "ExploreLocation"
 	places.position = Vector2(650,202); places.size = Vector2(620,43)
-	for location in visited: places.add_item(TravelSystem.location_name(str(location)))
+	for location in visited: places.add_item(LocalizationSystem.text(TravelSystem.location_name(str(location))))
 	places.select(visited.find(exploration_location))
 	places.item_selected.connect(func(index: int) -> void: exploration_location = str(visited[index]); build())
 	body.add_child(places)
@@ -476,11 +476,11 @@ func _explore_records() -> void:
 	var evidence := OptionButton.new()
 	evidence.position = Vector2(50,437); evidence.size = Vector2(760,40)
 	evidence.name = "ExploreEvidence"
-	evidence.add_item("文字观察 · 可以附一件同地点的照片或声音")
+	evidence.add_item(LocalizationSystem.text("文字观察 · 可以附一件同地点的照片或声音"))
 	var evidence_ids: Array[String] = [""]
 	for item in s.materials.values():
 		if item.kind not in ["photo","sound"] or str(item.get("location_id",item.get("location",""))) != exploration_location: continue
-		evidence_ids.append(str(item.id)); evidence.add_item(str(item.title))
+		evidence_ids.append(str(item.id)); evidence.add_item(LocalizationSystem.text(str(item.title)))
 	if not evidence_ids.has(exploration_evidence): exploration_evidence = ""
 	evidence.select(evidence_ids.find(exploration_evidence))
 	evidence.item_selected.connect(func(index: int) -> void: exploration_evidence = evidence_ids[index])

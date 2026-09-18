@@ -136,5 +136,5 @@ func show_rules() -> void:
 	shade.color = Color(0, 0, 0, 0.7)
 	rule_view.add_child(shade)
 	UI.panel(rule_view, Rect2(290, 200, 1000, 580))
-	UI.rich(rule_view, Rect2(340, 240, 900, 410), 28).text = Rules.summary(rule)
+	UI.rich(rule_view, Rect2(340, 240, 900, 410), 28).text = LocalizationSystem.text(Rules.summary(rule))
 	UI.button(rule_view, "嗯，继续下", Rect2(660, 690, 580, 60), func(): rule_view.queue_free(); rule_view = null)

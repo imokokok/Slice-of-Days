@@ -120,7 +120,7 @@ func collections() -> void:
 		note.max_length = 240
 		body.add_child(note)
 		var slot := OptionButton.new()
-		for name in ["架子","桌面","墙上","抽屉展格"]: slot.add_item(name)
+		for name in ["架子","桌面","墙上","抽屉展格"]: slot.add_item(LocalizationSystem.text(name))
 		slot.select(["shelf","desk","wall","drawer"].find(str(item.slot)))
 		body.add_child(slot)
 		button("摆好并记下",func() -> void:

@@ -173,7 +173,7 @@ func _refresh() -> void:
 	if not is_instance_valid(street) or not is_instance_valid(location_title): return
 	WorldSound.set_location(GameState.current_location)
 	GameState.refresh_appointments()
-	location_title.text = _location_name(GameState.current_location)
+	location_title.text = LocalizationSystem.text(_location_name(GameState.current_location))
 	clock_label.text = LocalizationSystem.text("%s · 第%d天 · %s" % [GameState.current_role,GameState.current_day,GameState.clock_text()])
 	var money_changed := displayed_money >= 0 and displayed_money != GameState.money
 	displayed_money = GameState.money
@@ -182,8 +182,8 @@ func _refresh() -> void:
 		wallet_icon.scale = Vector2(1.35, 1.35)
 		wallet_icon.pivot_offset = wallet_icon.size * 0.5
 		create_tween().tween_property(wallet_icon, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	time_guidance_label.text = _time_guidance_text()
-	if GameState.current_day == 6 and GameState.current_minute >= 1200: clock_label.text += " · 确认%d/12" % GameState.residency_confirmations
+	time_guidance_label.text = LocalizationSystem.text(_time_guidance_text())
+	if GameState.current_day == 6 and GameState.current_minute >= 1200: clock_label.text += LocalizationSystem.text(" · 确认%d/12" % GameState.residency_confirmations)
 	street.walk_limit = _world_x(street_order.find("park"), 1060) if GameState.current_minute < WorldGraph.LOOKOUT_OPEN and street_order.has("park") else INF
 	if street.player_x > street.walk_limit:
 		street.player_x = street.walk_limit
@@ -763,7 +763,7 @@ func _show_line(speaker: String, text: String) -> void:
 	spoken_line = line
 	line.visible_characters = 0
 	speech_tween = create_tween()
-	speech_tween.tween_property(line, "visible_characters", text.length(), maxf(0.3, text.length() / 28.0))
+	speech_tween.tween_property(line, "visible_characters", line.text.length(), maxf(0.3, line.text.length() / 28.0))
 	var next := _button(event_panel, "继续  Space / Enter", Vector2(430, 288), Vector2(265, 43), "dialogue")
 	next.pressed.connect(func() -> void: event_overlay.hide())
 	dialogue_choices.append(next)

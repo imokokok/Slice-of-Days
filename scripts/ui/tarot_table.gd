@@ -473,7 +473,7 @@ func _render_card_detail(card_id: String) -> void:
 			detail_theme.text = LocalizationSystem.text("三张牌分别代表三条不同的推理路径。")
 		return
 	var card := engine.card(card_id)
-	detail_title.text = "%s  %s" % [str(card.get("number", "")), _card_display_name(card)]
+	detail_title.text = LocalizationSystem.text("%s  %s" % [str(card.get("number", "")), _card_display_name(card)])
 	detail_theme.text = LocalizationSystem.text(card.get("theme", ""))
 	var images: Array = card.get("images", [])
 	for index in images.size():
@@ -532,7 +532,7 @@ func _select_next_cross_pair() -> void:
 	mode_label.text = LocalizationSystem.text("交叉解读 · %s × %s" % [_card_display_name(first), _card_display_name(second)])
 	_render_draw()
 	_clear_children(image_layer)
-	detail_title.text = "%s  ×  %s" % [str(first.get("name", "")), str(second.get("name", ""))]
+	detail_title.text = "%s  ×  %s" % [_card_display_name(first), _card_display_name(second)]
 	detail_theme.text = LocalizationSystem.text("围绕两张牌义共同提出一个 YES / NO 问题。")
 	reading_caption.text = LocalizationSystem.text("两张确认牌已连线 · 写下交叉判断")
 	question_edit.placeholder_text = LocalizationSystem.text("同时围绕「%s × %s」提出一个判断" % [_card_display_name(first), _card_display_name(second)])
@@ -596,7 +596,7 @@ func _ask_question() -> void:
 	var fact := str(rule.get("fact", ""))
 	var color := "#4f7d83" if answer == "YES" else ("#b54f3a" if answer == "NO" else "#806b5c")
 	var detail := str(rule.get("reason", fact if not fact.is_empty() else "牌义与这个问题没有形成有效连接。"))
-	result_label.text = "[font_size=25][color=%s]%s[/color][/font_size]\n%s" % [color, answer, _bbcode_escape(detail)]
+	result_label.text = "[font_size=25][color=%s]%s[/color][/font_size]\n%s" % [color, LocalizationSystem.text(answer), _bbcode_escape(LocalizationSystem.text(detail))]
 	var lit_card := answer == "YES" and bool(rule.get("critical", true)) and not selected_card_id.is_empty()
 	records.append({"round": round_no, "reading": reading_name, "question": question, "answer": answer, "fact": fact, "note": detail, "rule_id": rule_id})
 	if lit_card:

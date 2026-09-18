@@ -296,8 +296,8 @@ func _talk_to_resident() -> void:
 		"text": "%s在%s说：“%s”" % [resident_name, str(space.get("name", "室内")), line],
 	})
 	SaveManager.save_or_report("室内互动后保存失败")
-	name_label.text = resident_name.to_upper()
-	cue_label.text = "“%s”" % line
+	name_label.text = LocalizationSystem.text(resident_name).to_upper()
+	cue_label.text = LocalizationSystem.text("“%s”" % line)
 	detail_label.text = LocalizationSystem.text("Space / Enter · 继续")
 
 

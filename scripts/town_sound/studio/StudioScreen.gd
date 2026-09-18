@@ -56,7 +56,7 @@ func _ready() -> void:
 			get_parent().show()
 			queue_free()
 		else:
-			status.text = model.error))
+			status.text = LocalizationSystem.text(model.error)))
 	var transport := HBoxContainer.new()
 	root_column.add_child(transport)
 	transport.add_child(button("▶ 播放", play))
@@ -70,7 +70,7 @@ func _ready() -> void:
 			changed()
 			status.text = LocalizationSystem.text("工程已恢复。")
 		else:
-			status.text = model.error))
+			status.text = LocalizationSystem.text(model.error)))
 	transport.add_child(button("Visual / 唱片店", open_visual))
 	clock_label = label("00:00 / 00:00")
 	transport.add_child(clock_label)
@@ -114,7 +114,7 @@ func _ready() -> void:
 	for item in SampleStore.new().list_samples():
 		var drag := DragButton.new()
 		drag.sample = item
-		drag.text = str(item.name).left(12)
+		drag.text = LocalizationSystem.text(str(item.name)).left(12)
 		drag.tooltip_text = LocalizationSystem.text("%s · %.2f 秒" % [item.name, item.duration])
 		drag.disabled = item.missing
 		drag.pressed.connect(func() -> void:
@@ -230,7 +230,7 @@ func field(row: HBoxContainer, title: String, key: String, low: float, high: flo
 		model.clips[selected][key] = value
 		dirty = true
 		stop()
-		if not model.save_project(): status.text = model.error)
+		if not model.save_project(): status.text = LocalizationSystem.text(model.error))
 	row.add_child(spin)
 
 func build_inspector() -> void:

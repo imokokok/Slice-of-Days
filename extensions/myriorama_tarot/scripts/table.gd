@@ -625,7 +625,7 @@ func review_question() -> void:
 		var related: Array[String] = []
 		for card_id in revealed:
 			if Guidance.allows(case_id, card_id, pending_question.id): related.append(deck[card_id].cn)
-		if not related.is_empty(): question_reply.text += "\n你已翻开的「" + "、".join(related.slice(0, 3)) + "」可继续这个方向。"
+		if not related.is_empty(): question_reply.text += LocalizationSystem.text("\n你已翻开的「" + "、".join(related.slice(0, 3)) + "」可继续这个方向。")
 		pending_question.status = "unrelated"
 		remember_exchange(question_input.text, question_reply.text)
 		return
@@ -675,7 +675,7 @@ func scroll_text(parent: Control, text: String, rect: Rect2, font_size: int) -> 
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	parent.add_child(scroll)
 	var body := Label.new()
-	body.text = text
+	body.text = LocalizationSystem.text(text)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.custom_minimum_size.x = rect.size.x - 22
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL

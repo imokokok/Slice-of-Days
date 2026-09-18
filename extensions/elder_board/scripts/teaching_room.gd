@@ -115,8 +115,8 @@ func refresh() -> void:
 	mode_label.text = LocalizationSystem.text("实时模型教学：点击发送会将本次教学文字与勾选附图交给所配置的服务。" if AI.enabled else "离线练习：可教连线棋；不会识图。任意文字理解和读图需要在「模型连接」启用服务。")
 	transcript.text = ""
 	for message in messages:
-		transcript.text += ("你：" if message.role == "user" else "老棋友：") + str(message.content) + (" [附图]" if not message.get("image", "").is_empty() else "") + "\n\n"
-	summary.text = Rules.summary(candidate)
+		transcript.text += LocalizationSystem.text("你：" if message.role == "user" else "老棋友：") + LocalizationSystem.text(str(message.content)) + (LocalizationSystem.text(" [附图]") if not message.get("image", "").is_empty() else "") + "\n\n"
+	summary.text = LocalizationSystem.text(Rules.summary(candidate))
 	confirm_button.disabled = busy or not ready_to_confirm
 	play_button.disabled = busy or confirmed_profile.is_empty()
 	send_button.disabled = busy

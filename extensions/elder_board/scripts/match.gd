@@ -300,7 +300,7 @@ func finish_score() -> void:
 	scoring = false
 	score_button.hide()
 	finish("你赢了！" if result.x > result.y else "老棋友获胜。")
-	detail.text += "\n黑方：%.1f 子；白方：%.1f 子（含贴子）。" % [result.x, result.y]
+	detail.text += LocalizationSystem.text("\n黑方：%.1f 子；白方：%.1f 子（含贴子）。" % [result.x, result.y])
 
 func resign() -> void:
 	if ended: return

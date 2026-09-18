@@ -68,7 +68,7 @@ func _draw() -> void:
 				var height := float(peak_cache[key][clampi(int(source_time / duration * 300), 0, 299)]) * 15
 				var center := rect.position + Vector2(pixel, 35)
 				draw_line(center - Vector2(0, maxf(1, height)), center + Vector2(0, maxf(1, height)), Color("506052"), 1)
-		draw_string(get_theme_default_font(), rect.position + Vector2(5, 17), str(clip.name), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 10, 12, Color("273d31"))
+		draw_string(get_theme_default_font(), rect.position + Vector2(5, 17), LocalizationSystem.text(str(clip.name)), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 10, 12, Color("273d31"))
 	if range_begin >= 0 and range_end >= 0:
 		var begin := minf(range_begin, range_end)
 		var end := maxf(range_begin, range_end)

@@ -257,8 +257,8 @@ func _build_ui() -> void:
 	column.get_child(column.get_child_count() - 1).visible = can_edit_here()
 	if not can_edit_here(): column.add_child(_label("素材随身保存；编曲、试听成品与压片，请到唱片店。", 16))
 	delete_dialog = ConfirmationDialog.new()
-	delete_dialog.title = "删除这段录音？"
-	delete_dialog.dialog_text = "将从录音库移除，文件会移到本地 samples/trash 回收目录。"
+	delete_dialog.title = LocalizationSystem.text("删除这段录音？")
+	delete_dialog.dialog_text = LocalizationSystem.text("将从录音库移除，文件会移到本地 samples/trash 回收目录。")
 	delete_dialog.confirmed.connect(func() -> void:
 		player.stop()
 		if store.delete_sample(pending_delete):
@@ -269,9 +269,9 @@ func _build_ui() -> void:
 		_refresh_controls())
 	add_child(delete_dialog)
 	quit_dialog = ConfirmationDialog.new()
-	quit_dialog.title = "还有未保存的录音"
-	quit_dialog.dialog_text = "退出会丢弃当前未保存的录音。已保存的录音不会受影响。"
-	quit_dialog.ok_button_text = "放弃并退出"
+	quit_dialog.title = LocalizationSystem.text("还有未保存的录音")
+	quit_dialog.dialog_text = LocalizationSystem.text("退出会丢弃当前未保存的录音。已保存的录音不会受影响。")
+	quit_dialog.ok_button_text = LocalizationSystem.text("放弃并退出")
 	quit_dialog.confirmed.connect(func() -> void:
 		if closing_to_town: queue_free()
 		else: get_tree().quit())
@@ -292,7 +292,7 @@ func can_edit_here() -> bool:
 func request_close() -> void:
 	if recorder.capturing or draft != null:
 		closing_to_town = true
-		quit_dialog.dialog_text = "当前这段录音尚未保存。返回小镇会放弃它，已保存素材不受影响。"
+		quit_dialog.dialog_text = LocalizationSystem.text("当前这段录音尚未保存。返回小镇会放弃它，已保存素材不受影响。")
 		quit_dialog.popup_centered()
 	else:
 		queue_free()
@@ -348,7 +348,7 @@ func _on_recorded(wav: AudioStreamWAV, warning: String) -> void:
 	if has_node("/root/TravelSystem"):
 		place = TravelSystem.location_name(place)
 	var minute := int(draft_context.get("game_minute", 0))
-	name_input.text = "%s %02d:%02d" % [place, minute / 60, minute % 60]
+	name_input.text = "%s %02d:%02d" % [LocalizationSystem.text(place), minute / 60, minute % 60]
 	status_label.text = LocalizationSystem.text(warning if not warning.is_empty() else "录好了。听一听，给这段声音起个名字，再保存。")
 	meter.value = 0
 	_refresh_controls()
@@ -397,7 +397,7 @@ func _refresh_library() -> void:
 	var prompts := ["在小镇录下一段背景声", "试试环境互动的短音", "换个地点，寻找另一种声音", "可选：用麦克风加一段人声"]
 	tutorial_label.text = "MAKE A SONG FROM WHERE YOU ARE\n"
 	for i in range(4):
-		tutorial_label.text += ("✓ " if items.size() > i else "○ ") + str(i + 1) + ". " + prompts[i] + ("    " if i % 2 == 0 else "\n")
+		tutorial_label.text += ("✓ " if items.size() > i else "○ ") + str(i + 1) + ". " + LocalizationSystem.text(prompts[i]) + ("    " if i % 2 == 0 else "\n")
 	if items.is_empty():
 		library.add_child(_label("这里还很安静。\n录下第一种声音，它就会留在这里。", 18))
 	for item in items:
@@ -416,7 +416,7 @@ func _refresh_library() -> void:
 		row.add_child(listen)
 		row_buttons.append(listen)
 		var rename := LineEdit.new()
-		rename.text = str(item.name)
+		rename.text = LocalizationSystem.text(str(item.name))
 		rename.max_length = 60
 		rename.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(rename)

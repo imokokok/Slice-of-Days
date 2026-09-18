@@ -67,8 +67,8 @@ func fill_picker(picker: OptionButton, devices: PackedStringArray, current: Stri
 
 func build_dialog() -> void:
 	panel = AcceptDialog.new()
-	panel.title = "Town Sound · 声音设置"
-	panel.ok_button_text = "完成"
+	panel.title = LocalizationSystem.text("Town Sound · 声音设置")
+	panel.ok_button_text = LocalizationSystem.text("完成")
 	add_child(panel)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 10)

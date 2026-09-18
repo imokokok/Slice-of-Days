@@ -101,7 +101,7 @@ func _build() -> void:
 		memory_view = preload("res://scripts/meta/memory_view.gd").new()
 		var room: Dictionary = papers[0].duplicate(true)
 		room.id = GameState.current_role+"0"
-		room.title = "A的房间" if GameState.current_role=="A" else "B的房间"
+		room.title = LocalizationSystem.text("A的房间" if GameState.current_role=="A" else "B的房间")
 		room.model = "res://art/memories/"+str(room.id)+".glb"
 		room.beat = "桌上的七张纸还在那里。"
 		memory_view.definition = room

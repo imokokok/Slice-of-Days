@@ -421,14 +421,17 @@ func _text(value: String, baseline: Vector2, font_size: int, color: Color, font:
 
 func _center_text(value: String, baseline: float, font_size: int, color: Color, x: float = 0, width: float = 1280, font: Font = null) -> void:
 	var used_font: Font = body_font if font == null else font
-	var text_width := used_font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	_text(value, Vector2(x + (width - text_width) / 2.0, baseline), font_size, color, used_font)
+	var translated := LocalizationSystem.text(value)
+	var text_width := used_font.get_string_size(translated, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	_text(translated, Vector2(x + (width - text_width) / 2.0, baseline), font_size, color, used_font)
 
 
 func _wrapped_text(value: String, baseline: Vector2, font_size: int, color: Color, width: float, line_height: float) -> void:
 	var line := ""
 	var y := baseline.y
-	for character in value:
+	# Translate before measuring and wrapping. Splitting the Chinese source first
+	# creates fragments that have no catalog entry and leaks Chinese into English.
+	for character in LocalizationSystem.text(value):
 		var next := line + character
 		if body_font.get_string_size(next, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > width and not line.is_empty():
 			_text(line, Vector2(baseline.x, y), font_size, color)

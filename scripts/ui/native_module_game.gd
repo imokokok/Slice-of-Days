@@ -262,7 +262,7 @@ func _complete_choice(choice_id: String) -> void:
 	status_label.text = LocalizationSystem.text(str(result.get("message", "")))
 	if not bool(result.get("ok", false)):
 		return
-	if module_id == "cooking": status_label.text += "\n材料已实际用掉，出餐和工资记在今天的工作记录里。"
+	if module_id == "cooking": status_label.text += LocalizationSystem.text("\n材料已实际用掉，出餐和工资记在今天的工作记录里。")
 	completed = true
 	if not SaveManager.save_or_report("玩法结果保存失败"):
 		GameState.load_save_data(rollback_snapshot)

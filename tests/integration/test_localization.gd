@@ -27,6 +27,12 @@ func run() -> void:
 	check(localization.text("设置") == "Settings", "English catalog is registered")
 	check(localization.text("第3天") == "Day 3", "Formatted runtime text is localized")
 	check(localization.text("7 张照片  ·  12 个景物") == "7 Photos · 12 Scenes", "Repeated placeholder types keep their values in order")
+	check(localization.text("当前：稳定") == "Current: Stable", "Authored values inside translated templates are localized")
+	check(
+		localization.text("今日花钱计划 80元 · 已花 20元 · 还可安排 60元")
+		== "Today's spending plan 80 yuan · Spent 20 yuan · 60 yuan can also be arranged",
+		"Nested formatted status text does not mix Chinese into English"
+	)
 
 	settings.values = settings.DEFAULTS.duplicate(true)
 	check(settings.language() == "zh_CN", "Fresh settings default to Chinese")

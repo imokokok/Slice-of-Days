@@ -10,6 +10,7 @@ const ENGLISH_OVERRIDE_PATH := "res://localization/en_overrides.json"
 var _english_translation: Translation
 var _english_catalog: Dictionary = {}
 var _dynamic_cache: Dictionary = {}
+var _translation_stack: Dictionary = {}
 var _templates: Array[Dictionary] = []
 var _fragment_sources: Array[String] = []
 var _placeholder_regex := RegEx.new()
@@ -69,9 +70,16 @@ func text(source: Variant) -> String:
 		return str(_english_catalog[source_text])
 	if _dynamic_cache.has(source_text):
 		return str(_dynamic_cache[source_text])
+	# A formatted sentence can contain other authored strings as its runtime
+	# values (location names, card names, states, etc.).  Translate those values
+	# recursively, while protecting malformed/self-referential templates.
+	if _translation_stack.has(source_text):
+		return source_text
+	_translation_stack[source_text] = true
 	var translated := _translate_template(source_text)
 	if translated == source_text:
 		translated = _translate_fragments(source_text)
+	_translation_stack.erase(source_text)
 	_dynamic_cache[source_text] = translated
 	return translated
 
@@ -144,7 +152,7 @@ func _fill_template(template: String, source_placeholders: Array, captures: Arra
 		if capture_index < 0:
 			capture_index = sequential_index
 		if capture_index < captures.size():
-			result += captures[capture_index]
+			result += text(captures[capture_index])
 		else:
 			result += target_placeholder
 		sequential_index += 1

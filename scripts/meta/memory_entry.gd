@@ -56,6 +56,7 @@ func _build() -> void:
 		add_child(caption)
 		if GameState.current_role == "B":
 			var stem := AudioStreamPlayer.new()
+			stem.bus = "Music"
 			stem.stream = load(str(papers[i].audio))
 			stem.volume_db = -9
 			add_child(stem)

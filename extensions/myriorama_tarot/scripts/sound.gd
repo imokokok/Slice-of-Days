@@ -11,6 +11,7 @@ var variants: Dictionary = {}
 func _ready() -> void:
 	for i in range(6):
 		var player := AudioStreamPlayer.new()
+		player.bus = "SoundEffects"
 		player.volume_db = -10.0
 		add_child(player)
 		players.append(player)

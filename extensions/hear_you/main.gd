@@ -74,6 +74,7 @@ func _ready() -> void:
 	for item: Dictionary in MEMORIES:
 		textures.append(load("res://extensions/hear_you/assets/%s.svg" % item.icon))
 	audio_player = AudioStreamPlayer.new()
+	audio_player.bus = "SoundEffects"
 	audio_player.volume_db = -13.0
 	add_child(audio_player)
 	if "--qa" in OS.get_cmdline_user_args():

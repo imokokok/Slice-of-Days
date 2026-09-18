@@ -62,6 +62,7 @@ func _build_living_cover() -> void:
 	add_child(cover)
 	cover_video = VideoStreamPlayer.new()
 	cover_video.stream = preload("res://art/ui/cover-film.ogv")
+	cover_video.bus = "Music"
 	cover_video.expand = true
 	cover_video.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	cover_video.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -181,6 +182,7 @@ func _play_opening_animation() -> void:
 	intro_video = VideoStreamPlayer.new()
 	intro_video.name = "OpeningAnimation"
 	intro_video.stream = preload("res://art/ui/new-game-intro.ogv")
+	intro_video.bus = "Music"
 	intro_video.expand = true
 	intro_video.loop = false
 	intro_video.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -268,11 +270,12 @@ func _on_new_game_pressed() -> void:
 
 func _show_settings() -> void:
 	_prepare_modal()
-	modal_panel.size.y = 640
-	_make_label(modal_panel, "设置", Vector2(34, 28), Vector2(522, 42), 27, INK)
-	_make_label(modal_panel, "语言", Vector2(34, 92), Vector2(160, 30), 16, MUTED)
+	modal_panel.position = Vector2(505, 75)
+	modal_panel.size.y = 750
+	_make_label(modal_panel, "设置", Vector2(34, 20), Vector2(522, 42), 27, INK)
+	_make_label(modal_panel, "语言", Vector2(34, 72), Vector2(160, 30), 16, MUTED)
 	var language_picker := OptionButton.new()
-	language_picker.position = Vector2(210, 82)
+	language_picker.position = Vector2(210, 62)
 	language_picker.size = Vector2(300, 44)
 	language_picker.add_item(LocalizationSystem.text("简体中文"))
 	language_picker.set_item_metadata(0, "zh_CN")
@@ -286,34 +289,28 @@ func _show_settings() -> void:
 		_show_settings()
 	)
 
-	_make_label(modal_panel, "显示模式", Vector2(34, 153), Vector2(160, 30), 16, MUTED)
+	_make_label(modal_panel, "显示模式", Vector2(34, 128), Vector2(160, 30), 16, MUTED)
 	var display_text := "切换为窗口模式" if SettingsSystem.fullscreen() else "切换为全屏模式"
-	var display_button := _make_button(modal_panel, display_text, Vector2(210, 139), Vector2(300, 48), "teal")
+	var display_button := _make_button(modal_panel, display_text, Vector2(210, 114), Vector2(300, 44), "teal")
 	display_button.pressed.connect(_toggle_fullscreen)
-	_make_label(modal_panel, "主音量", Vector2(34, 220), Vector2(160, 30), 16, MUTED)
-	var volume := HSlider.new()
-	volume.position = Vector2(210, 211)
-	volume.size = Vector2(275, 38)
-	volume.min_value = 0
-	volume.max_value = 100
-	volume.step = 5
-	volume.value = SettingsSystem.master_volume()
-	modal_panel.add_child(volume)
-	var volume_value := _make_label(modal_panel, "%d%%" % SettingsSystem.master_volume(), Vector2(500, 220), Vector2(54, 28), 14, MUTED)
-	volume.value_changed.connect(func(value: float) -> void:
-		SettingsSystem.set_master_volume(value)
-		volume_value.text = "%d%%" % int(value)
-	)
+	_add_settings_volume_slider("主音量", 182, SettingsSystem.master_volume(), SettingsSystem.set_master_volume)
+	_add_settings_volume_slider("音乐音量", 230, SettingsSystem.music_volume(), SettingsSystem.set_music_volume)
+	_add_settings_volume_slider("音效音量", 278, SettingsSystem.sound_effects_volume(), SettingsSystem.set_sound_effects_volume)
+	var mute_text := "取消静音" if SettingsSystem.is_audio_muted() else "全部静音"
+	var mute := _make_button(modal_panel, mute_text, Vector2(210, 316), Vector2(300, 40), "regular")
+	mute.pressed.connect(func() -> void:
+		SettingsSystem.set_audio_muted(not SettingsSystem.is_audio_muted())
+		_show_settings())
 
-	_make_label(modal_panel, "减少动态效果", Vector2(34, 287), Vector2(160, 30), 16, MUTED)
+	_make_label(modal_panel, "减少动态效果", Vector2(34, 384), Vector2(160, 30), 16, MUTED)
 	var motion_text := "已开启" if SettingsSystem.reduced_motion() else "未开启"
-	var motion := _make_button(modal_panel, motion_text, Vector2(210, 273), Vector2(300, 48), "regular")
+	var motion := _make_button(modal_panel, motion_text, Vector2(210, 370), Vector2(300, 44), "regular")
 	motion.pressed.connect(_toggle_reduced_motion)
-	var hint := _make_label(modal_panel, "减少章节转场中的画面位移；不会跳过任何内容。", Vector2(34, 347), Vector2(522, 54), 14, MUTED)
+	var hint := _make_label(modal_panel, "减少章节转场中的画面位移；不会跳过任何内容。", Vector2(34, 424), Vector2(522, 42), 14, MUTED)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_make_label(modal_panel,"心声字号",Vector2(34,401),Vector2(160,30),16,MUTED)
+	_make_label(modal_panel,"心声字号",Vector2(34,478),Vector2(160,30),16,MUTED)
 	var voice_size := HSlider.new()
-	voice_size.position = Vector2(210,395)
+	voice_size.position = Vector2(210,472)
 	voice_size.size = Vector2(300,38)
 	voice_size.min_value = 17
 	voice_size.max_value = 30
@@ -323,9 +320,9 @@ func _show_settings() -> void:
 	voice_size.value_changed.connect(func(value: float) -> void:
 		SettingsSystem.values.voice_size = int(value)
 		SettingsSystem.save_settings())
-	_make_label(modal_panel,"心声透明度",Vector2(34,465),Vector2(160,30),16,MUTED)
+	_make_label(modal_panel,"心声透明度",Vector2(34,532),Vector2(160,30),16,MUTED)
 	var opacity := HSlider.new()
-	opacity.position = Vector2(210,459)
+	opacity.position = Vector2(210,526)
 	opacity.size = Vector2(300,38)
 	opacity.min_value = 0
 	opacity.max_value = 1
@@ -335,8 +332,25 @@ func _show_settings() -> void:
 	opacity.value_changed.connect(func(value: float) -> void:
 		SettingsSystem.values.voice_opacity = value
 		SettingsSystem.save_settings())
-	var close := _make_button(modal_panel, "完成", Vector2(200, 560), Vector2(190, 46), "primary")
+	var close := _make_button(modal_panel, "完成", Vector2(200, 666), Vector2(190, 46), "primary")
 	close.pressed.connect(_hide_modal)
+
+
+func _add_settings_volume_slider(title: String, y: float, value: int, setter: Callable) -> void:
+	_make_label(modal_panel, title, Vector2(34, y), Vector2(160, 30), 16, MUTED)
+	var slider := HSlider.new()
+	slider.position = Vector2(210, y - 9)
+	slider.size = Vector2(275, 38)
+	slider.min_value = 0
+	slider.max_value = 100
+	slider.step = 1
+	slider.value = value
+	slider.tooltip_text = LocalizationSystem.text("%s，0 到 100" % title)
+	modal_panel.add_child(slider)
+	var value_label := _make_label(modal_panel, "%d%%" % value, Vector2(500, y), Vector2(54, 28), 14, MUTED)
+	slider.value_changed.connect(func(changed_value: float) -> void:
+		setter.call(changed_value)
+		value_label.text = "%d%%" % int(round(changed_value)))
 
 
 func _show_credits() -> void:
@@ -358,6 +372,7 @@ func _show_quit_confirmation() -> void:
 
 
 func _prepare_modal() -> void:
+	modal_panel.position = Vector2(505, 210)
 	modal_panel.size = Vector2(590,480)
 	for child in modal_panel.get_children():
 		modal_panel.remove_child(child)

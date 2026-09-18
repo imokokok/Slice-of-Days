@@ -32,6 +32,7 @@ func _ready() -> void:
 		return
 	_configure_role_project()
 	player = AudioStreamPlayer.new()
+	player.bus = "Music"
 	add_child(player)
 	player.finished.connect(func() -> void: paused_at = 0.0)
 	var scroll := ScrollContainer.new()

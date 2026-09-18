@@ -3,12 +3,14 @@ extends Node
 const PATH := "user://audio_settings.cfg"
 var input_device := "Default"
 var output_device := "Default"
-var volume := 0.8
 var panel: AcceptDialog
 var input_picker: OptionButton
 var output_picker: OptionButton
 var message: Label
 var test_player: AudioStreamPlayer
+var volume_sliders: Dictionary = {}
+var volume_labels: Dictionary = {}
+var mute_button: Button
 signal input_changed(device: String)
 
 func _ready() -> void:
@@ -16,12 +18,11 @@ func _ready() -> void:
 	config.load(PATH)
 	input_device = choose_device(AudioServer.get_input_device_list(), str(config.get_value("audio", "input", "")))
 	output_device = choose_device(AudioServer.get_output_device_list(), str(config.get_value("audio", "output", "")))
-	volume = clampf(float(config.get_value("audio", "volume", 0.8)), 0, 1)
-	if has_node("/root/SettingsSystem"):
-		volume = float(get_node("/root/SettingsSystem").master_volume()) / 100
 	apply_devices()
 	test_player = AudioStreamPlayer.new()
+	test_player.bus = "SoundEffects"
 	add_child(test_player)
+	SettingsSystem.audio_settings_changed.connect(_on_audio_settings_changed)
 
 static func choose_device(available: PackedStringArray, saved: String) -> String:
 	if not saved.is_empty() and available.has(saved): return saved
@@ -36,14 +37,11 @@ static func choose_device(available: PackedStringArray, saved: String) -> String
 func apply_devices() -> void:
 	AudioServer.input_device = input_device
 	AudioServer.output_device = output_device
-	AudioServer.set_bus_mute(0, volume <= 0.0)
-	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(volume, 0.00001)))
 
 func save_settings() -> void:
 	var config := ConfigFile.new()
 	config.set_value("audio", "input", input_device)
 	config.set_value("audio", "output", output_device)
-	config.set_value("audio", "volume", volume)
 	config.save(PATH)
 
 func select_input(device: String) -> void:
@@ -54,10 +52,11 @@ func select_input(device: String) -> void:
 
 func show_dialog() -> void:
 	if panel == null: build_dialog()
+	_sync_volume_controls()
 	fill_picker(input_picker, AudioServer.get_input_device_list(), input_device)
 	fill_picker(output_picker, AudioServer.get_output_device_list(), output_device)
 	message.text = LocalizationSystem.text("先点测试音确认输出，再选择麦克风重新录一段。\n全静音的旧录音无法恢复声音，需要重新录制。")
-	panel.popup_centered(Vector2i(650, 340))
+	panel.popup_centered(Vector2i(650, 470))
 
 func fill_picker(picker: OptionButton, devices: PackedStringArray, current: String) -> void:
 	picker.clear()
@@ -87,25 +86,12 @@ func build_dialog() -> void:
 	test.text = LocalizationSystem.text("♪ 播放测试音（两声）")
 	test.pressed.connect(play_test_tone)
 	column.add_child(test)
-	var volume_row := HBoxContainer.new()
-	column.add_child(volume_row)
-	var volume_label := Label.new()
-	volume_label.text = LocalizationSystem.text("游戏音量 %d%%" % int(volume * 100))
-	volume_row.add_child(volume_label)
-	var slider := HSlider.new()
-	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider.max_value = 1
-	slider.step = 0.01
-	slider.value = volume
-	slider.value_changed.connect(func(value: float) -> void:
-		volume = value
-		if has_node("/root/SettingsSystem"):
-			get_node("/root/SettingsSystem").set_master_volume(value * 100)
-		AudioServer.set_bus_mute(0, volume <= 0)
-		AudioServer.set_bus_volume_db(0, linear_to_db(maxf(volume, 0.00001)))
-		volume_label.text = LocalizationSystem.text("游戏音量 %d%%" % int(volume * 100))
-		save_settings())
-	volume_row.add_child(slider)
+	_add_volume_control(column, "master", "主音量", SettingsSystem.master_volume(), SettingsSystem.set_master_volume)
+	_add_volume_control(column, "music", "音乐音量", SettingsSystem.music_volume(), SettingsSystem.set_music_volume)
+	_add_volume_control(column, "sound_effects", "音效音量", SettingsSystem.sound_effects_volume(), SettingsSystem.set_sound_effects_volume)
+	mute_button = Button.new()
+	mute_button.pressed.connect(func() -> void: SettingsSystem.set_audio_muted(not SettingsSystem.is_audio_muted()))
+	column.add_child(mute_button)
 	var input_label := Label.new()
 	input_label.text = LocalizationSystem.text("录音设备 / 麦克风")
 	column.add_child(input_label)
@@ -115,6 +101,57 @@ func build_dialog() -> void:
 	message = Label.new()
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(message)
+	_sync_volume_controls()
+
+
+func _add_volume_control(parent: VBoxContainer, key: String, title: String, value: int, setter: Callable) -> void:
+	var row := HBoxContainer.new()
+	parent.add_child(row)
+	var title_label := Label.new()
+	title_label.text = LocalizationSystem.text(title)
+	title_label.custom_minimum_size.x = 120
+	row.add_child(title_label)
+	var slider := HSlider.new()
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.min_value = 0
+	slider.max_value = 100
+	slider.step = 1
+	slider.value = value
+	slider.tooltip_text = LocalizationSystem.text("%s，0 到 100" % title)
+	row.add_child(slider)
+	var value_label := Label.new()
+	value_label.custom_minimum_size.x = 52
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	value_label.text = "%d%%" % value
+	row.add_child(value_label)
+	volume_sliders[key] = slider
+	volume_labels[key] = value_label
+	slider.value_changed.connect(func(changed_value: float) -> void:
+		setter.call(changed_value)
+		value_label.text = "%d%%" % int(round(changed_value)))
+
+
+func _on_audio_settings_changed(_master: int, _music: int, _sound_effects: int, _muted: bool) -> void:
+	_sync_volume_controls()
+
+
+func _sync_volume_controls() -> void:
+	if volume_sliders.is_empty():
+		return
+	var current := {
+		"master": SettingsSystem.master_volume(),
+		"music": SettingsSystem.music_volume(),
+		"sound_effects": SettingsSystem.sound_effects_volume(),
+	}
+	for key in current:
+		var slider := volume_sliders.get(key) as HSlider
+		var value_label := volume_labels.get(key) as Label
+		if slider != null:
+			slider.set_value_no_signal(float(current[key]))
+		if value_label != null:
+			value_label.text = "%d%%" % int(current[key])
+	if mute_button != null:
+		mute_button.text = LocalizationSystem.text("取消静音" if SettingsSystem.is_audio_muted() else "全部静音")
 
 func play_test_tone() -> void:
 	var wav := AudioStreamWAV.new()

@@ -366,6 +366,11 @@
   "%s里已有 %d 件由旅程留下的记录。": [
     "scripts/ui/interactive_space.gd"
   ],
+  "%s，0 到 100": [
+    "scripts/residency/paper_overlay.gd",
+    "scripts/town_sound/audio/SoundSettings.gd",
+    "scripts/ui/main_menu.gd"
+  ],
   "%s，在小镇的日程里维持自己的工作与生活": [
     "scripts/core/resident_profile_system.gd"
   ],
@@ -1043,9 +1048,6 @@
   ],
   "DRIZZLE · 细雨": [
     "data/photography/subjects.json"
-  ],
-  "Day %d / 7   ·   当前进度来自存档中的真实记录": [
-    "scripts/residency/paper_overlay.gd"
   ],
   "Day %d / 7  ·  已收 %d 件材料": [
     "scripts/residency/paper_overlay.gd"
@@ -2786,6 +2788,8 @@
     "scripts/meta/trace_panel.gd"
   ],
   "主音量": [
+    "scripts/residency/paper_overlay.gd",
+    "scripts/town_sound/audio/SoundSettings.gd",
     "scripts/ui/main_menu.gd"
   ],
   "之前": [
@@ -5038,6 +5042,11 @@
   "全部证明": [
     "scripts/residency/paper_overlay.gd"
   ],
+  "全部静音": [
+    "scripts/residency/paper_overlay.gd",
+    "scripts/town_sound/audio/SoundSettings.gd",
+    "scripts/ui/main_menu.gd"
+  ],
   "八": [
     "extensions/elder_board/scripts/teaching_ai.gd"
   ],
@@ -6197,6 +6206,11 @@
   ],
   "取消玩法后保存失败": [
     "scripts/ui/extension_host.gd"
+  ],
+  "取消静音": [
+    "scripts/residency/paper_overlay.gd",
+    "scripts/town_sound/audio/SoundSettings.gd",
+    "scripts/ui/main_menu.gd"
   ],
   "取片记录暂时没有保存，请重试。": [
     "scripts/photography/film_system.gd"
@@ -14789,9 +14803,6 @@
   "海风   车票   等待": [
     "scripts/core/economy_system.gd"
   ],
-  "海风与小镇的声音": [
-    "scripts/residency/paper_overlay.gd"
-  ],
   "海风从身旁经过。": [
     "scripts/ui/town_day.gd"
   ],
@@ -14908,9 +14919,6 @@
   ],
   "游戏声景尚未就绪，请返回小镇重试。": [
     "scripts/town_sound/audio/AudioRecorder.gd"
-  ],
-  "游戏音量 %d%%": [
-    "scripts/town_sound/audio/SoundSettings.gd"
   ],
   "漂流瓶 #%d 已留在海上。\n下一步：读一封来信，给另一个人回信。": [
     "extensions/collage_letter/scripts/main.gd"
@@ -18522,6 +18530,9 @@
   "调整": [
     "data/tarot/cases.json"
   ],
+  "调整会立即生效，并在下次启动时保留。": [
+    "scripts/residency/paper_overlay.gd"
+  ],
   "调整固定视角，让分散的星点在正确投影中相遇": [
     "data/gameplay/modules.json"
   ],
@@ -20906,6 +20917,16 @@
   ],
   "音乐、书信与阅读": [
     "data/residency/portfolio.json"
+  ],
+  "音乐音量": [
+    "scripts/residency/paper_overlay.gd",
+    "scripts/town_sound/audio/SoundSettings.gd",
+    "scripts/ui/main_menu.gd"
+  ],
+  "音效音量": [
+    "scripts/residency/paper_overlay.gd",
+    "scripts/town_sound/audio/SoundSettings.gd",
+    "scripts/ui/main_menu.gd"
   ],
   "音效：关": [
     "extensions/myriorama_tarot/scripts/table.gd"

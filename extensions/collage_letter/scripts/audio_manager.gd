@@ -12,6 +12,7 @@ func _ready() -> void:
 		for variant in 4:
 			bank[event].append(synthesize(event,variant))
 	var ambience := AudioStreamPlayer.new()
+	ambience.bus = "Music"
 	var stream := synthesize("AMBIENCE",0)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_end = stream.data.size()/2
@@ -58,6 +59,7 @@ func play(event: String, strength: float = 1.0) -> void:
 	if muted or not bank.has(event):
 		return
 	var player := AudioStreamPlayer.new()
+	player.bus = "SoundEffects"
 	player.stream = bank[event][rng.randi_range(0,3)]
 	player.pitch_scale = rng.randf_range(0.94,1.06)
 	player.volume_db = -14+linear_to_db(clampf(strength,0.15,1.5))

@@ -33,11 +33,13 @@ func setup(owner_view: Control, room: Node) -> void:
 	prompt.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	view.add_child(prompt)
 	spatial_sound = AudioStreamPlayer3D.new()
+	spatial_sound.bus = "SoundEffects"
 	spatial_sound.max_distance = 9
 	spatial_sound.unit_size = 2
 	spatial_sound.volume_db = -12
 	view.world.add_child(spatial_sound)
 	paper_sound = AudioStreamPlayer.new()
+	paper_sound.bus = "SoundEffects"
 	paper_sound.stream = load("res://audio/meta/v2_paper.wav")
 	paper_sound.volume_db = -16
 	add_child(paper_sound)

@@ -95,6 +95,7 @@ func _ready() -> void:
 	world.add_child(body)
 	body.position = Vector3(0,.08,2.7)
 	sound = AudioStreamPlayer.new()
+	sound.bus = "Music"
 	sound.stream = load(str(definition.audio))
 	sound.volume_db = -7
 	add_child(sound)

@@ -2,6 +2,8 @@ extends Node
 ## Authored procedural game ambience. Only this bus is captured in town mode;
 ## preview, pressing sounds and real microphones never feed it.
 const BUS := "TownWorld"
+const MUSIC_BUS := "TownWorldMusic"
+const SOUND_EFFECTS_BUS := "TownWorldSoundEffects"
 const RATE := 22050
 var ambience: AudioStreamPlayer
 var foley: AudioStreamPlayer
@@ -18,14 +20,18 @@ var generating_location := ""
 var requested_location := ""
 
 func _ready() -> void:
-	if AudioServer.get_bus_index(BUS) < 0:
-		AudioServer.add_bus()
-		AudioServer.set_bus_name(AudioServer.bus_count - 1, BUS)
+	_ensure_bus(BUS, "Master")
+	_ensure_bus(MUSIC_BUS, BUS)
+	_ensure_bus(SOUND_EFFECTS_BUS, BUS)
 	ambience = AudioStreamPlayer.new()
 	foley = AudioStreamPlayer.new()
 	coast = AudioStreamPlayer.new()
 	ui = AudioStreamPlayer.new()
-	coast.bus = BUS
+	ambience.bus = MUSIC_BUS
+	coast.bus = MUSIC_BUS
+	foley.bus = SOUND_EFFECTS_BUS
+	# Interface feedback is deliberately not part of Town World's recorder mix.
+	ui.bus = "SoundEffects"
 	# Keep the authored stream available even with the Dummy driver so tests,
 	# waveform capture and accessibility previews can inspect the real sound.
 	# Playback itself remains disabled below when no audio driver exists.
@@ -34,8 +40,16 @@ func _ready() -> void:
 	add_child(coast)
 	add_child(ui)
 	for player in [ambience, foley]:
-		player.bus = BUS
 		add_child(player)
+
+
+func _ensure_bus(bus_name: String, send_name: String) -> void:
+	var bus_index := AudioServer.get_bus_index(bus_name)
+	if bus_index < 0:
+		AudioServer.add_bus()
+		bus_index = AudioServer.bus_count - 1
+		AudioServer.set_bus_name(bus_index, bus_name)
+	AudioServer.set_bus_send(bus_index, send_name)
 
 func set_active(value: bool) -> void:
 	active = value

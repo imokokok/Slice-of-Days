@@ -121,6 +121,7 @@ func _ready() -> void:
 	add_child(crop_overlay)
 	crop_slider.value_changed.connect(func(_value: float) -> void: crop_overlay.queue_redraw())
 	sound = AudioStreamPlayer.new()
+	sound.bus = "SoundEffects"
 	sound.volume_db = -12.0
 	add_child(sound)
 	queue_redraw()

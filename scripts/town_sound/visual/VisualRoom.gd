@@ -34,6 +34,7 @@ func _ready() -> void:
 	canvas.configure(audio, model.prompt, model.seed_value)
 	viewport.add_child(canvas)
 	player = AudioStreamPlayer.new()
+	player.bus = "Music"
 	player.stream = audio
 	add_child(player)
 	prompt_input = LineEdit.new()

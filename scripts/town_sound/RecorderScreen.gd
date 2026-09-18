@@ -51,6 +51,7 @@ func _ready() -> void:
 	recorder = Recorder.new()
 	add_child(recorder)
 	player = AudioStreamPlayer.new()
+	player.bus = "Music"
 	add_child(player)
 	_build_ui()
 	get_node("/root/SoundSettings").input_changed.connect(func(_device: String) -> void: _refresh_devices())

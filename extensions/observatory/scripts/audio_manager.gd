@@ -3,6 +3,8 @@ var waves := AudioStreamPlayer.new()
 var tone := AudioStreamPlayer.new()
 var fade: Tween
 func _ready() -> void:
+ waves.bus = "Music"
+ tone.bus = "SoundEffects"
  add_child(waves)
  add_child(tone)
  # Solmere supplies its sea through WorldSound. The standalone observatory

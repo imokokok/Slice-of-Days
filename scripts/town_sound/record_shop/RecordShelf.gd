@@ -13,6 +13,7 @@ func _ready() -> void:
 		monitor_locked = true
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	player = AudioStreamPlayer.new()
+	player.bus = "Music"
 	add_child(player)
 	var scroll := ScrollContainer.new()
 	scroll.set_anchors_and_offsets_preset(PRESET_FULL_RECT)

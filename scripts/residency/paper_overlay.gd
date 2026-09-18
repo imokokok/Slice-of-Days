@@ -704,6 +704,7 @@ func _show_detail(id: String) -> void:
 			if str(sample.id) != id: continue
 			if bool(sample.get("missing",false)): break
 			audio_player = AudioStreamPlayer.new()
+			audio_player.bus = "Music"
 			audio_player.stream = AudioStreamWAV.load_from_file(str(sample.file_path))
 			detail.add_child(audio_player)
 			label(detail,"声音采样 · %.1f 秒" % float(sample.duration),Vector2(35,110),Vector2(620,55),26)
@@ -798,16 +799,15 @@ func _organize() -> void:
 
 func _home() -> void:
 	if mode == "settings":
-		label(body,"海风与小镇的声音",Vector2(90,160),Vector2(1050,50),28)
-		var slider := HSlider.new()
-		slider.position = Vector2(100,245)
-		slider.size = Vector2(850,50)
-		slider.max_value = 100
-		slider.value = SettingsSystem.master_volume()
-		slider.value_changed.connect(SettingsSystem.set_master_volume)
-		body.add_child(slider)
-		button(body,"全屏 / 窗口",Vector2(95,360),Vector2(850,65),func() -> void: SettingsSystem.set_fullscreen(not SettingsSystem.fullscreen()))
-		button(body,"减弱动效："+("开" if SettingsSystem.reduced_motion() else "关"),Vector2(95,460),Vector2(850,65),func() -> void: SettingsSystem.set_reduced_motion(not SettingsSystem.reduced_motion()); build())
+		label(body,"声音",Vector2(95,92),Vector2(1050,42),28)
+		_add_settings_volume_slider("主音量",155,SettingsSystem.master_volume(),SettingsSystem.set_master_volume)
+		_add_settings_volume_slider("音乐音量",230,SettingsSystem.music_volume(),SettingsSystem.set_music_volume)
+		_add_settings_volume_slider("音效音量",305,SettingsSystem.sound_effects_volume(),SettingsSystem.set_sound_effects_volume)
+		var mute_text := "取消静音" if SettingsSystem.is_audio_muted() else "全部静音"
+		button(body,mute_text,Vector2(95,390),Vector2(400,58),func() -> void: SettingsSystem.set_audio_muted(not SettingsSystem.is_audio_muted()); build())
+		button(body,"全屏 / 窗口",Vector2(520,390),Vector2(425,58),func() -> void: SettingsSystem.set_fullscreen(not SettingsSystem.fullscreen()))
+		button(body,"减弱动效："+("开" if SettingsSystem.reduced_motion() else "关"),Vector2(95,478),Vector2(850,58),func() -> void: SettingsSystem.set_reduced_motion(not SettingsSystem.reduced_motion()); build())
+		label(body,"调整会立即生效，并在下次启动时保留。",Vector2(95,565),Vector2(900,40),20,Color("6f7770"))
 		return
 	if mode == "controls":
 		label(body,"A / D    沿街行走\nE    交谈、门、路口与物件     1    问点事\nC    相机     Space    拍照\nR    录音与停止     Space    留标记\nG    相册     Tab    地图     B    素材本\nF    居住档案     H    随身物品     J    私人手记\nEsc    返回上一层，再暂停",Vector2(100,135),Vector2(1140,420),28)
@@ -824,6 +824,23 @@ func _home() -> void:
 	var objects = load("res://scripts/residency/pocket_objects.gd").new()
 	objects.position = Vector2(755,105)
 	body.add_child(objects)
+
+
+func _add_settings_volume_slider(title: String, y: float, value: int, setter: Callable) -> void:
+	label(body,title,Vector2(95,y),Vector2(190,42),23)
+	var slider := HSlider.new()
+	slider.position = Vector2(305,y-5)
+	slider.size = Vector2(640,48)
+	slider.min_value = 0
+	slider.max_value = 100
+	slider.step = 1
+	slider.value = value
+	slider.tooltip_text = LocalizationSystem.text("%s，0 到 100" % title)
+	body.add_child(slider)
+	var value_label := label(body,"%d%%" % value,Vector2(970,y),Vector2(100,42),22)
+	slider.value_changed.connect(func(changed_value: float) -> void:
+		setter.call(changed_value)
+		value_label.text = "%d%%" % int(round(changed_value)))
 
 func _filing_name(destination: String) -> String:
 	if destination.begins_with("day_"): return "第 %s 天" % destination.trim_prefix("day_")

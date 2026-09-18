@@ -379,7 +379,7 @@ func _open_event(event_id: String) -> void:
 func _spend_action_time(minutes: int) -> bool:
 	if GameState.use_free_time(minutes):
 		return true
-	status_message = "这一刻太短了。可以在长椅上坐一会，或回家休息。"
+	status_message = "这一刻太短了。可以回家休息，或换件事做。"
 	_show_line("", status_message)
 	_refresh()
 	return false
@@ -616,19 +616,9 @@ func _remember_position() -> void:
 func _rebuild_hotspots() -> void:
 	street.hotspots.clear()
 	street.queue_redraw()
-	for index in street_order.size():
-		var bench = Atlas.street(street_order[index]).get("bench_x")
-		if bench != null:
-			street.hotspots.append({"x":_world_x(index, float(bench)),"kind":"bench","label":"坐一会"})
-	if street.sitting:
-		street.hotspots.append({"x":street.player_x,"kind":"bench","label":"长椅"})
-	# Keep exits on the actual movement limits. The old right exit shared the
-	# same x position as the final bench, so nearest() always selected the bench
-	# and made the road interaction unreachable.
 	var center := _world_x(current_index, float(Atlas.street(GameState.current_location).get("door_x",800)))
 	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
 		street.hotspots.append({"x":_world_x(current_index, 1060), "kind":"closed", "label":"观景台 · 21:00 开放"})
-		street.hotspots.append({"x":_world_x(current_index, 930), "kind":"wait_open", "label":"坐下等到 21:00"})
 		return
 	# Outdoor residents remain available even after the shop closes.
 	var people := DialogueSystem.people_at(GameState.current_location)
@@ -640,15 +630,6 @@ func _rebuild_hotspots() -> void:
 			elif people[index] == "ahe": local_x = 1120
 			elif people[index] == "chen_chuan": local_x = 1370
 		street.hotspots.append({"x":_world_x(current_index, local_x), "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
-	var hours: Array = locations.get(GameState.current_location,{}).get("hours",[])
-	var open_now := hours.is_empty() or hours.any(func(h: Array) -> bool: return GameState.current_minute >= int(h[0]) and GameState.current_minute < int(h[1]))
-	# The community-centre lobby opens before its 09:00 service counter so a
-	# Day 1 player who follows the first map instruction can enter and wait at
-	# the real counter.  After closing time the exterior remains locked.
-	var waiting_lobby_open := GameState.current_location == "print_shop" and not hours.is_empty() and GameState.current_minute < int(hours[0][0])
-	if not open_now and not waiting_lobby_open:
-		street.hotspots.append({"x":center,"kind":"shop_closed","label":"门已经合上了"})
-		return
 	if GameState.current_location in ["residence", "dorm"]:
 		var own_home := "residence" if GameState.current_role == "A" else "dorm"
 		if GameState.current_location == own_home:
@@ -685,14 +666,10 @@ func _interact() -> void:
 	_remember_position()
 	SaveManager.save_or_report("地点互动前保存失败")
 	match str(item.kind):
-		"shop_closed":
-			_show_line("", "门内很安静，桌上留着半杯咖啡。晚一点或明天再来。")
-			MetaExperience.observe(GameState.current_location,"门内很安静，桌上留着半杯咖啡。",{"kind":"place","event_id":"shop_closed_"+GameState.current_location})
 		"echo":
 			_show_line("",str(item.get("text","")))
 			MetaExperience.observe(GameState.current_location,str(item.get("text","")),{"kind":"place","event_id":"echo_"+GameState.current_location})
-		"closed": _show_line("", "观景台将在晚上九点开放。可以在旁边的长椅坐一会。")
-		"wait_open": _sit_on_bench(item)
+		"closed": _show_line("", "观景台将在晚上九点开放。")
 		"home": SceneRouter.enter_space("home_a" if GameState.current_role == "A" else "home_b")
 		"door":
 			if not _guard_pocket_audio(): SceneRouter.enter_space(str(item.id))
@@ -707,7 +684,6 @@ func _interact() -> void:
 				else: _show_line("", "棋盘摆好了，对面的椅子还空着。等棋友来再聊聊。")
 			else: SceneRouter.gameplay_module(str(item.id), "street:" + GameState.current_location)
 		"event": _open_event(str(item.id))
-		"bench": _sit_on_bench(item)
 
 func _talk_to_nearest() -> void:
 	var item: Dictionary = street.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
@@ -832,11 +808,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if SceneRouter.transitioning: return
 	if _pocket_blocks_walking() or pocket_opening: return
 	if event_overlay.visible:
-		if street.sitting and event.is_action_pressed("interact"):
-			if not dialogue_choices.is_empty(): dialogue_choices[0].pressed.emit()
-		elif event.is_action_pressed("ui_cancel"):
-			if street.sitting: _stand_from_bench()
-			else: event_overlay.hide()
+		if event.is_action_pressed("ui_cancel"):
+			event_overlay.hide()
 		elif (event.is_action_pressed("dialogue_advance") or event.is_action_pressed("ui_accept")) and dialogue_choices.size() == 1:
 			if is_instance_valid(spoken_line) and spoken_line.visible_characters >= 0 and spoken_line.visible_characters < spoken_line.text.length():
 				if speech_tween: speech_tween.kill()
@@ -891,41 +864,3 @@ func _open_map() -> void:
 		return
 	SceneRouter.town_map()
 
-func _sit_on_bench(item: Dictionary) -> void:
-	street.player_x = float(item.x)
-	street.velocity = 0.0
-	street.gait_weight = 0.0
-	street.sitting = true
-	street.queue_redraw()
-	_bench_menu()
-func _bench_menu() -> void:
-	_clear_dialogue()
-	_label(event_panel,"坐在长椅上 · " + GameState.clock_text(),Vector2(30,20),Vector2(670,40),24,Color("f0e3c7"))
-	_label(event_panel,"海风从身旁经过。",Vector2(30,70),Vector2(670,40),22,Color("c9d8cd"))
-	var minutes := mini(30, GameState.current_block_remaining())
-	if minutes > 0:
-		var wait := _button(event_panel,"坐一会 · %d分钟" % minutes,Vector2(30,132),Vector2(660,45),"dialogue")
-		wait.pressed.connect(_wait_on_bench.bind(minutes))
-		dialogue_choices.append(wait)
-	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN and GameState.can_fit_now(WorldGraph.LOOKOUT_OPEN - GameState.current_minute):
-		var until_open := _button(event_panel,"等到观景台开放 · 21:00",Vector2(30,188),Vector2(660,45),"dialogue")
-		until_open.pressed.connect(_wait_on_bench.bind(WorldGraph.LOOKOUT_OPEN-GameState.current_minute))
-		dialogue_choices.append(until_open)
-	var stand := _button(event_panel,"站起来 · Esc",Vector2(30,264),Vector2(660,45),"dialogue")
-	stand.pressed.connect(_stand_from_bench)
-	dialogue_choices.append(stand)
-	dialogue_choices[0].grab_focus()
-func _wait_on_bench(minutes: int) -> void:
-	if not GameState.use_free_time(minutes):
-		status_message = "这段空闲时间不够，不能一直等到那个时刻。"
-		_show_line("", status_message)
-		return
-	if not street.hotspots.any(func(h: Dictionary) -> bool: return str(h.kind) in ["bench","wait_open"] and absf(float(h.x)-street.player_x)<1):
-		street.hotspots.append({"x":street.player_x,"kind":"bench","label":"长椅"})
-	_remember_position()
-	SaveManager.save_or_report("长椅等待后保存失败")
-	_bench_menu()
-func _stand_from_bench() -> void:
-	street.sitting = false
-	street.queue_redraw()
-	event_overlay.hide()

@@ -21,7 +21,6 @@ var composition_anchor := 710.0
 var enabled := true
 var indoor := false
 var walking := false
-var sitting := false
 var facing := 1.0
 var phase := 0.0
 var velocity := 0.0
@@ -75,7 +74,7 @@ func _walk_axis() -> float:
 	return 0.0
 
 func move_player(axis: float, delta: float, hurry := false) -> void:
-	var target := axis * SPEED * (1.6 if hurry else 1.0) if enabled and not sitting else 0.0
+	var target := axis * SPEED * (1.6 if hurry else 1.0) if enabled else 0.0
 	if enabled and not is_zero_approx(axis) and not is_equal_approx(facing, signf(axis)):
 		velocity = 0.0
 		facing = move_toward(facing,signf(axis),delta*12.0)
@@ -151,13 +150,9 @@ func _draw() -> void:
 			draw_rect(Rect2(x-55,572,110,118),Color("4c4937"))
 			draw_rect(Rect2(x-49,580,98,102),Color("203f43"))
 			draw_string(ThemeDB.fallback_font,Vector2(x-35,615),LocalizationSystem.text("今日的菜"),HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("f1e6c6"))
-		elif kind == "wait_open" or (kind == "bench" and not illustrated):
-			draw_rect(Rect2(x - 40, 679, 80, 8), Color("9a7e60"))
-			draw_line(Vector2(x - 30, 687), Vector2(x - 30, 715), Color("776b5f"), 4)
-			draw_line(Vector2(x + 30, 687), Vector2(x + 30, 715), Color("776b5f"), 4)
 		elif indoor and kind == "object" and not illustrated:
 			_draw_furniture(x, str(item.get("prop", "table")))
-	_draw_person(Vector2(player_x - camera_x, ground), Color("48535c") if GameState.current_role == "A" else Color("5e9999"), phase, gait_weight, facing, sitting, GameState.current_role)
+	_draw_person(Vector2(player_x - camera_x, ground), Color("48535c") if GameState.current_role == "A" else Color("5e9999"), phase, gait_weight, facing, false, GameState.current_role)
 	if is_finite(walk_limit) and not illustrated:
 		var gate_x := walk_limit - camera_x + 18
 		draw_line(Vector2(gate_x, 640), Vector2(gate_x, 718), Color("40544e"), 7)

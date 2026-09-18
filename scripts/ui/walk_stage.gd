@@ -424,6 +424,13 @@ func _draw_outdoor(x: float, kind: String) -> void:
 			draw_circle(Vector2(x - 304, 437), 34, Color("647c79"))
 			draw_string(ThemeDB.fallback_font, Vector2(x - 325, 445), "BUS", HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("f0e3c8"))
 			draw_rect(Rect2(x - 259, 653, 38, 65), Color("788478"))
+			# The Solmere direction sign belongs beside the station, on its right.
+			var sign_post_x := x + 284.0
+			draw_rect(Rect2(sign_post_x, 500, 9, 218), wood)
+			draw_rect(Rect2(x + 244, 516, 304, 55), Color("b5a27a"))
+			draw_string(ThemeDB.fallback_font, Vector2(x + 266, 553), "SOLMERE   →", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("3e5350"))
+		"street":
+			pass
 		"lookout":
 			for i in range(8): draw_line(Vector2(x - 340 + i * 96, 613), Vector2(x - 340 + i * 96, 715), wood, 5)
 			draw_line(Vector2(x - 350, 626), Vector2(x + 350, 626), wood, 6)
@@ -445,9 +452,7 @@ func _draw_outdoor(x: float, kind: String) -> void:
 				draw_colored_polygon(PackedVector2Array([Vector2(px - 90, 636), Vector2(px - 55, 597), Vector2(px + 50, 597), Vector2(px + 94, 636)]), Color("8b9e9f"))
 				for wheel in [-1, 1]: draw_circle(Vector2(px + wheel * 69, 701), 16, Color("364345"))
 		_:
-			draw_line(Vector2(x, 500), Vector2(x, 718), wood, 8)
-			draw_rect(Rect2(x - 120, 516, 240, 35), Color("b5a27a"))
-			draw_string(ThemeDB.fallback_font, Vector2(x - 100, 542), "SOLMERE   →", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("3e5350"))
+			pass
 
 func _draw_room_details() -> void:
 	if room_kind in ["record_shop", "public_archive", "grocery", "letter_office"]:

@@ -427,7 +427,7 @@ func _draw_outdoor(x: float, kind: String) -> void:
 			# The Solmere direction sign belongs beside the station, on its right.
 			var sign_post_x := x + 284.0
 			draw_rect(Rect2(sign_post_x, 500, 9, 218), wood)
-			draw_rect(Rect2(x + 244, 516, 304, 55), Color("b5a27a"))
+			draw_rect(Rect2(x + 244, 516, 190, 55), Color("b5a27a"))
 			draw_string(ThemeDB.fallback_font, Vector2(x + 266, 553), "SOLMERE   →", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("3e5350"))
 		"street":
 			pass

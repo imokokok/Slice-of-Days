@@ -30,6 +30,7 @@ const DEFAULT_INPUT_ACTIONS := {
 	"move_left": [KEY_A, KEY_LEFT],
 	"move_right": [KEY_D, KEY_RIGHT],
 	"move_fast": [KEY_SHIFT],
+	"talk": [KEY_W],
 	"interact": [KEY_E],
 	"ask_directly": [KEY_1],
 	"dialogue_advance": [KEY_SPACE, KEY_ENTER],

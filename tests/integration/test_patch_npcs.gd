@@ -53,11 +53,14 @@ func run() -> void:
 	town._refresh()
 	check(walk_to(town, "beetman"), "The scheduled real vendor has a person hotspot")
 	check(not town.street.hotspots.any(func(p: Dictionary) -> bool: return str(p.get("kind", "")) == "shop" and str(p.get("id", "")) == "produce_stall"), "The produce counter cannot bypass conversation")
+	check(str(town.get_node("GameplayShell")._context().text).begins_with("W  聊一会"), "Nearby person hint advertises W for conversation")
 	var before_minute: int = state.current_minute
 	var before_money: int = state.money
 	press(town, KEY_E)
-	check(is_instance_valid(town.conversation) and town.conversation.npc == "beetman", "Normal E opens BEETMAN conversation")
-	check(not is_instance_valid(town.pocket_panel), "E never forces the shop open")
+	check(not is_instance_valid(town.conversation) and state.current_minute == before_minute, "E no longer starts a person conversation")
+	press(town.get_node("GameplayShell"), KEY_W)
+	check(is_instance_valid(town.conversation) and town.conversation.npc == "beetman", "Normal W opens BEETMAN conversation")
+	check(not is_instance_valid(town.pocket_panel), "W never forces the shop open")
 	check(state.current_minute == before_minute + 15 and state.money == before_money, "One chat advances fifteen minutes without payment")
 	var first = town.conversation
 	check(first.line_ids[0] == "beetman.greeting.0.0", "First vendor line has the stable authored Inner Voice trigger")
@@ -118,8 +121,8 @@ func run() -> void:
 	check(town.street.hotspots.any(func(p: Dictionary) -> bool: return p.kind == "argument_observation"), "Afterward the real scene exposes an observation trigger")
 	for person in ["ahe", "chen_chuan"]:
 		check(walk_to(town, person), "Each original shopper remains individually reachable: " + person)
-		press(town, KEY_E)
-		check(is_instance_valid(town.conversation) and town.conversation.npc == person, "E opens an individual post-event dialogue: " + person)
+		press(town, KEY_W)
+		check(is_instance_valid(town.conversation) and town.conversation.npc == person, "W opens an individual post-event dialogue: " + person)
 		check(town.conversation.dialogue_id.contains("post_argument"), "Post-event pool is selected: " + person)
 		check(not " ".join(town.conversation.lines).contains("争吵"), "Ordinary post-event smalltalk has no task or demand to judge: " + person)
 		drain(town.conversation)

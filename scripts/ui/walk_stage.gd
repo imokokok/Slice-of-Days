@@ -96,9 +96,13 @@ func move_player(axis: float, delta: float, hurry := false) -> void:
 	camera_x = lerpf(camera_x, camera_target, 1.0 - exp(-5.0 * delta)) if delta > 0.0 else camera_target
 
 func nearest() -> Dictionary:
+	return nearest_of([])
+
+func nearest_of(kinds: Array) -> Dictionary:
 	var result: Dictionary = {}
 	var distance := REACH
 	for item in hotspots:
+		if not kinds.is_empty() and str(item.get("kind", "")) not in kinds: continue
 		var gap := absf(float(item.get("x", 0.0)) - player_x)
 		# A pair can be addressed from beside them, without standing between them.
 		if str(item.get("kind","")) == "argument": gap = maxf(0,gap-55)

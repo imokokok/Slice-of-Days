@@ -165,10 +165,12 @@ func _context() -> Dictionary:
 			return {"id":"work_"+str(commitment.get("id","")),"text":"Tab  %02d:%02d 前回家工作\nH  随身物品" % [due/60,due%60]}
 	var special := _special()
 	if not special.is_empty(): return {"id":special,"text":"E  "+str({"counter":"资料领取 / 提交","organize":"整理桌上的材料","proofs":"领取工作证明","residence":"居住确认"}.get(special,special))+"\nF  居住档案"}
+	var talk_near: Dictionary = stage.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
+	if not talk_near.is_empty():
+		return {"id":str(talk_near),"text":"W  聊一会 · %d 分钟 · %s结束\n1  问点事 · %d 分钟" % [int(MetaExperience.catalog.timing.chat_minutes),GuidanceSystem.time_text(GameState.current_minute+int(MetaExperience.catalog.timing.chat_minutes)),int(MetaExperience.catalog.timing.ask_minutes)]}
 	var near: Dictionary = stage.nearest()
 	if not near.is_empty():
 		var text := "E  "+str(near.get("label","互动"))
-		if str(near.get("kind","")) in ["person","npc","resident","shopkeeper"]: text = "E  聊一会 · %d 分钟 · %s结束\n1  问点事 · %d 分钟" % [int(MetaExperience.catalog.timing.chat_minutes),GuidanceSystem.time_text(GameState.current_minute+int(MetaExperience.catalog.timing.chat_minutes)),int(MetaExperience.catalog.timing.ask_minutes)]
 		return {"id":str(near),"text":text}
 	return {"id":"walk_"+last_location,"text":"A / D  走走\nTab  去社区中心" if not ResidencySystem.state().packet else "A / D  走走\nTab  地图    T  今日"}
 
@@ -208,6 +210,14 @@ func _handle_shortcut(event: InputEvent) -> void:
 	if modes.has(key): open_paper(str(modes[key]))
 	elif key == KEY_C: open_tool("camera")
 	elif key == KEY_R: open_tool("recorder")
+	elif event.is_action_pressed("talk"):
+		var near: Dictionary = stage.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
+		if near.is_empty(): return
+		if host.has_method("_talk_to_nearest"):
+			host.call("_talk_to_nearest")
+		elif host.has_method("_start_conversation") and str(near.get("kind", "")) == "person":
+			host.call("_start_conversation", str(near.get("id", "")))
+		else: return
 	elif key == KEY_E and not _special().is_empty():
 		var special := _special()
 		if special == "residence": GameState.message_posted.emit(ResidencySystem.residence_proof()); open_paper("fieldbook")

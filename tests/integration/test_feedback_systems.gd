@@ -43,7 +43,7 @@ func run() -> void:
 	check(not photo.is_empty() and str(photo.get("role", "")) == "B" and int(photo.get("game_minute", 0)) == 660, "Pocket photos should keep journey time and role metadata")
 	photo_lib.save_photo(test_image, {"location":"dorm"})
 	check(photo_lib.list_photos().size() == 1, "Identical photos should not create duplicate local files")
-	for action in ["interact", "dialogue_advance", "open_camera", "open_recorder", "open_album", "open_journal"]:
+	for action in ["talk", "interact", "dialogue_advance", "open_camera", "open_recorder", "open_album", "open_journal"]:
 		check(InputMap.has_action(action), "Semantic input action should exist: %s" % action)
 	change_scene_to_file("res://scenes/town_day.tscn")
 	await create_timer(0.8).timeout
@@ -59,15 +59,16 @@ func run() -> void:
 	dialogue.npc = "zhou_xiaoliu"
 	current_scene.add_child(dialogue)
 	dialogue.typewriter = false
+	check(dialogue.hint_label.text == "Space 继续 · Esc 离开", "Conversation card advertises Space as the continue key")
 	var key := InputEventKey.new()
 	key.physical_keycode = KEY_S
 	key.pressed = true
 	root.push_input(key, true)
 	check(dialogue.index == 0, "S does not navigate a removed topic menu")
-	key.physical_keycode = KEY_ENTER
-	key.keycode = KEY_ENTER
+	key.physical_keycode = KEY_SPACE
+	key.keycode = KEY_SPACE
 	root.push_input(key, true)
-	check(is_instance_valid(dialogue.text_label) and dialogue.index == 1, "Enter advances exactly one spoken line")
+	check(is_instance_valid(dialogue.text_label) and dialogue.index == 1, "Space advances exactly one spoken line")
 	dialogue._close()
 	await process_frame
 	var modules = root.get_node("GameplayModuleSystem")

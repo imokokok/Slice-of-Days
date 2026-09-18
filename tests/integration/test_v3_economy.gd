@@ -62,8 +62,8 @@ func run() -> void:
 	for spot in town.street.hotspots:
 		if str(spot.get("id","")) == "beetman": town.street.player_x = float(spot.x)
 	var chat_start: int = state.current_minute
-	press(town, KEY_E)
-	check(is_instance_valid(town.conversation), "Actual market vendor E still opens ordinary chat")
+	press(town, KEY_W)
+	check(is_instance_valid(town.conversation), "Actual market vendor W opens ordinary chat")
 	if not is_instance_valid(town.conversation): quit(1); return
 	drain(town.conversation)
 	check(state.current_minute == chat_start+15, "Full vendor chat charges once")

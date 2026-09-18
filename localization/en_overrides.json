@@ -1,5 +1,11 @@
 {
 	"Solmere · 七日档案 · 走动修复": "Solmere · Seven-Day Archive · Walking Restoration",
+  "W  聊一会 · %d 分钟 · %s结束\n1  问点事 · %d 分钟": "W  Chat · %d minutes · ends at %s\n1  Ask a question · %d minutes",
+  "Space · 继续": "Space · Continue",
+  "Space · 收起视线": "Space · Look away",
+  "余额 %d元 · Space 收起": "Balance ¥%d · Space to close",
+  "继续  Space": "Continue  Space",
+  "A / D    沿街行走\nW    与人交谈     E    门、路口与物件     1    问点事\nSpace    继续对话     C    相机 / 拍照\nR    录音与停止     Space    留标记\nG    相册     Tab    地图     B    素材本\nF    居住档案     H    随身物品     J    私人手记\nEsc    返回上一层，再暂停": "A / D    Walk\nW    Talk to people     E    Doors, crossings, and objects     1    Ask a question\nSpace    Continue dialogue     C    Camera / Photo\nR    Start or stop recording     Space    Add a marker\nG    Gallery     Tab    Map     B    Fieldbook\nF    Residency dossier     H    Belongings     J    Private notebook\nEsc    Back one layer, then pause",
   "A 决定按标价买下它；帮忙换旧相机是 B 的生活交换。": "A chooses to pay the listed price; trading help for the second-hand camera is B's arrangement.",
   "A的家": "A's Home",
   "B的家": "B's Home",

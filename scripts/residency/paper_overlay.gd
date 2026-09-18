@@ -908,7 +908,7 @@ func _home() -> void:
 		label(body,"调整会立即生效，并在下次启动时保留。",Vector2(95,565),Vector2(900,40),20,Color("6f7770"))
 		return
 	if mode == "controls":
-		label(body,"A / D    沿街行走\nE    交谈、门、路口与物件     1    问点事\nC    相机     Space    拍照\nR    录音与停止     Space    留标记\nG    相册     Tab    地图     B    素材本\nF    居住档案     H    随身物品     J    私人手记\nEsc    返回上一层，再暂停",Vector2(100,135),Vector2(1140,420),28)
+		label(body,"A / D    沿街行走\nW    与人交谈     E    门、路口与物件     1    问点事\nSpace    继续对话     C    相机 / 拍照\nR    录音与停止     Space    留标记\nG    相册     Tab    地图     B    素材本\nF    居住档案     H    随身物品     J    私人手记\nEsc    返回上一层，再暂停",Vector2(100,135),Vector2(1140,420),28)
 		label(body,"地图、档案和整理时，游戏时间暂停。拍照与录音时，小镇继续生活。",Vector2(100,580),Vector2(1150,70),22)
 		return
 	var items: Array = [["相机  C","camera"],["录音机  R","recorder"],["相册  G","gallery"],["随身地图  Tab","map"],["素材本  B","fieldbook"],["居住档案  F","dossier"],["私人手记  J","notebook"],["操作","controls"],["设置","settings"]]

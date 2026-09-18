@@ -36,7 +36,7 @@ Latest playtest fixes: full-body facing flip and stopped turn before reversing; 
 
 ## September playtest feedback pass
 
-World interaction now uses E/F while dialogue advances with Space/Enter and full-sentence clickable replies; R/C/P and J/Tab provide dedicated recorder, camera, album and notebook controls. The HUD exposes wallet balance plus fragmented/full time guidance. B has authored return deadlines and computer-started work commitments that consume time, pay income, or become missed work when B remains away.
+Talking now uses W, physical-world interaction uses E, and dialogue advances with Space (Enter remains a compatibility shortcut) or full-sentence clickable replies; R/C/P and J/Tab provide dedicated recorder, camera, album and notebook controls. The HUD exposes wallet balance plus fragmented/full time guidance. B has authored return deadlines and computer-started work commitments that consume time, pay income, or become missed work when B remains away.
 
 The produce stall and grocery counter now sell priced goods into persistent inventory with a visible money ledger. Purchased cooking ingredients are marked on the kitchen workbench and consumed when selected. Pocket photos and saved recordings write local media metadata and journey artifacts. `test_feedback_systems.gd` covers purchases, inventory consumption, work timing/payment, semantic input actions, HUD presence and shop construction.
 

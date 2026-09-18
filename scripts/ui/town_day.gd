@@ -679,6 +679,8 @@ func _rebuild_hotspots() -> void:
 func _interact() -> void:
 	var item: Dictionary = street.nearest()
 	if item.is_empty(): return
+	# Talking has its own W binding; E is reserved for the physical world.
+	if str(item.get("kind", "")) in ["person", "npc", "resident", "shopkeeper", "invitation"]: return
 	if str(item.kind) in ["home", "door", "module"] and _guard_pocket_audio(): return
 	_remember_position()
 	SaveManager.save_or_report("地点互动前保存失败")
@@ -695,10 +697,8 @@ func _interact() -> void:
 		"door":
 			if not _guard_pocket_audio(): SceneRouter.enter_space(str(item.id))
 		"shop": _open_shop(str(item.id))
-		"shopkeeper": _talk_shopkeeper(str(item.id))
 		"argument": _start_market_encounter()
 		"argument_observation": _observe_market_afterward()
-		"invitation": _talk_nearby(str(item.id),"minigame_hook")
 		"module":
 			if _guard_pocket_audio(): return
 			var invite := DialogueSystem.invitation_for_module(str(item.id))
@@ -707,8 +707,14 @@ func _interact() -> void:
 				else: _show_line("", "棋盘摆好了，对面的椅子还空着。等棋友来再聊聊。")
 			else: SceneRouter.gameplay_module(str(item.id), "street:" + GameState.current_location)
 		"event": _open_event(str(item.id))
-		"person": _talk_nearby(str(item.id))
 		"bench": _sit_on_bench(item)
+
+func _talk_to_nearest() -> void:
+	var item: Dictionary = street.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
+	match str(item.get("kind", "")):
+		"person", "npc", "resident": _talk_nearby(str(item.id))
+		"shopkeeper": _talk_shopkeeper(str(item.id))
+		"invitation": _talk_nearby(str(item.id), "minigame_hook")
 
 func _talk_nearby(resident_id: String, topic := "greeting") -> void:
 	if is_instance_valid(conversation): return
@@ -764,7 +770,7 @@ func _show_line(speaker: String, text: String) -> void:
 	line.visible_characters = 0
 	speech_tween = create_tween()
 	speech_tween.tween_property(line, "visible_characters", line.text.length(), maxf(0.3, line.text.length() / 28.0))
-	var next := _button(event_panel, "继续  Space / Enter", Vector2(430, 288), Vector2(265, 43), "dialogue")
+	var next := _button(event_panel, "继续  Space", Vector2(430, 288), Vector2(265, 43), "dialogue")
 	next.pressed.connect(func() -> void: event_overlay.hide())
 	dialogue_choices.append(next)
 
@@ -843,8 +849,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("open_camera"): _open_pocket_camera()
 	elif event.is_action_pressed("open_recorder"): _open_pocket_recorder()
 	elif event.is_action_pressed("open_album"): _open_pocket_album()
+	elif event.is_action_pressed("talk"): _talk_to_nearest()
 	elif event.is_action_pressed("ask_directly"):
-		var target: Dictionary = street.nearest()
+		var target: Dictionary = street.nearest_of(["person", "resident", "npc", "shopkeeper"])
 		if str(target.get("kind", "")) in ["person", "resident", "npc", "shopkeeper"]:
 			var ask := preload("res://scripts/meta/ask_panel.gd").new()
 			ask.npc = str(target.id)

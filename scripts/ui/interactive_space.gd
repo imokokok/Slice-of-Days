@@ -192,7 +192,7 @@ func _open_selected() -> void:
 		room_dialogue.show()
 		name_label.text = LocalizationSystem.text("B的工作日程")
 		cue_label.text = LocalizationSystem.text(str(result.get("message", "")))
-		detail_label.text = LocalizationSystem.text("余额 %d元 · Space / Enter 收起" % GameState.money)
+		detail_label.text = LocalizationSystem.text("余额 %d元 · Space 收起" % GameState.money)
 		SaveManager.save_or_report("工作结算后保存失败")
 		return
 	var module_id := str(item.get("module_id", ""))
@@ -208,7 +208,7 @@ func _open_selected() -> void:
 		else:
 			name_label.text = LocalizationSystem.text("工作台旁留着便签")
 			cue_label.text = LocalizationSystem.text("先和店主聊聊，听听今天的委托。")
-			detail_label.text = LocalizationSystem.text("Space / Enter · 继续")
+			detail_label.text = LocalizationSystem.text("Space · 继续")
 			room_dialogue.show()
 		return
 	if not module_id.is_empty():
@@ -298,7 +298,7 @@ func _talk_to_resident() -> void:
 	SaveManager.save_or_report("室内互动后保存失败")
 	name_label.text = LocalizationSystem.text(resident_name).to_upper()
 	cue_label.text = LocalizationSystem.text("“%s”" % line)
-	detail_label.text = LocalizationSystem.text("Space / Enter · 继续")
+	detail_label.text = LocalizationSystem.text("Space · 继续")
 
 
 func _next_conversation_resident() -> String:
@@ -358,8 +358,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		SceneRouter.journal()
 	elif event.is_action_pressed("open_map"):
 		SceneRouter.town_map()
+	elif event.is_action_pressed("talk"):
+		var target: Dictionary = stage.nearest_of(["person"])
+		if str(target.get("kind", "")) == "person":
+			_start_conversation(str(target.id))
 	elif event.is_action_pressed("ask_directly"):
-		var target: Dictionary = stage.nearest()
+		var target: Dictionary = stage.nearest_of(["person"])
 		if str(target.get("kind", "")) == "person":
 			notes_overlay = preload("res://scripts/meta/ask_panel.gd").new()
 			notes_overlay.npc = str(target.id)
@@ -371,11 +375,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			"echo":
 				name_label.text = LocalizationSystem.text("黑板")
 				cue_label.text = LocalizationSystem.text(str(nearest.text))
-				detail_label.text = LocalizationSystem.text("Space / Enter · 收起视线")
+				detail_label.text = LocalizationSystem.text("Space · 收起视线")
 				room_dialogue.show()
 				MetaExperience.observe(GameState.current_location,str(nearest.text),{"kind":"place","event_id":"echo_"+GameState.current_location})
 			"exit": SceneRouter.leave_space()
-			"person": _start_conversation(str(nearest.id))
 			"object":
 				_select_object(int(nearest.index))
 				_open_selected()
@@ -494,7 +497,7 @@ func _return_home() -> void:
 	if not SaveManager.save_or_report("回到主页前保存失败"):
 		name_label.text = LocalizationSystem.text("暂时无法返回")
 		cue_label.text = LocalizationSystem.text("进度还没保存成功，请稍后再试。")
-		detail_label.text = LocalizationSystem.text("E · 继续")
+		detail_label.text = LocalizationSystem.text("Space · 继续")
 		room_dialogue.show()
 		return
 	SceneRouter.main_menu()

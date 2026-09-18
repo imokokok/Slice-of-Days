@@ -101,7 +101,7 @@ func run() -> void:
 	check(not follow_up.is_empty(),"One of the existing shoppers remains individually reachable after the argument")
 	if not follow_up.is_empty():
 		town.street.player_x = float(follow_up.x)
-		town._interact()
+		town._talk_to_nearest()
 		check(is_instance_valid(town.conversation) and town.conversation.dialogue_id.contains("post_argument"),"Talking again opens ordinary post-event smalltalk")
 		if is_instance_valid(town.conversation): town.conversation._close()
 	state.current_location = "night_market"

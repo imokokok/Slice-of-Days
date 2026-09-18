@@ -11,6 +11,7 @@ const Atlas = preload("res://scripts/ui/scene_atlas.gd")
 const COAST_ART = preload("res://art/user_scenes/lookout_approach.png")
 const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
 const BUS_ART = preload("res://art/user_scenes/bus_stop.png")
+const TAROT_ART = preload("res://art/user_scenes/tarot_shop.png")
 var original_resident: Sprite2D
 var player_x := 500.0
 var world_width := 1800.0
@@ -282,6 +283,9 @@ func _draw_street_middle() -> void:
 		var place: Dictionary = places[i]
 		var x := float(place.x) - camera_x
 		if x < -700 or x > 2300: continue
+		if str(place.get("kind", "")) == "tarot":
+			_draw_user_scene(TAROT_ART, Rect2(113, 141, 995, 484), x, 710.0)
+			continue
 		if not bool(place.get("interior", true)):
 			_draw_outdoor(x, str(place.get("kind", "street")))
 			continue
@@ -392,43 +396,14 @@ func _draw_outdoor(x: float, kind: String) -> void:
 	var wood := Color("48554e")
 	match kind:
 		"chess":
-			# Composition from the supplied sketch: trees, suspended board-cloths, low table.
-			draw_colored_polygon(PackedVector2Array([Vector2(x - 350, 718), Vector2(x - 260, 718), Vector2(x - 300, 535), Vector2(x - 348, 420), Vector2(x - 355, 225), Vector2(x - 376, 208), Vector2(x - 370, 450)]), wood)
-			draw_line(Vector2(x - 335, 425), Vector2(x + 310, 460), wood, 12)
-			draw_line(Vector2(x - 350, 397), Vector2(x - 442, 286), wood, 9)
-			draw_line(Vector2(x + 300, 718), Vector2(x + 325, 355), wood, 10)
-			for i in range(3):
-				var left := x - 220 + i * 160
-				var top := 440.0 + i * 16
-				var cloth := Color("d7d0b8") if i == 2 else (Color("52665e") if i == 0 else Color("b0b9a4"))
-				draw_colored_polygon(PackedVector2Array([Vector2(left, top), Vector2(left + 225, top + 13), Vector2(left + 237, top + 187), Vector2(left - 8, top + 175)]), cloth)
-				for line in range(7):
-					draw_line(Vector2(left + 20 + line * 30, top + 20), Vector2(left + 25 + line * 30, top + 163), Color("7b8978"), 2)
-					draw_line(Vector2(left + 15, top + 22 + line * 23), Vector2(left + 210, top + 33 + line * 23), Color("7b8978"), 2)
-			draw_rect(Rect2(x - 105, 684, 210, 15), wood)
-			draw_rect(Rect2(x - 84, 699, 12, 19), wood)
-			draw_rect(Rect2(x + 72, 699, 12, 19), wood)
-			draw_rect(Rect2(x - 171, 702, 44, 14), Color("71674f"))
-			draw_rect(Rect2(x + 127, 702, 44, 14), Color("71674f"))
+			_draw_user_scene(CHESS_ART, Rect2(68, 13, 1423, 1014), x, 900.0)
 		"bus":
-			for i in range(4):
-				var post := x - 190 + i * 133.0
-				draw_line(Vector2(post, 452), Vector2(post, 718), wood, 7)
-				if i < 3: draw_rect(Rect2(post + 12, 475, 109, 210), Color("c0cfcc", 0.32))
-			draw_colored_polygon(PackedVector2Array([Vector2(x - 224, 456), Vector2(x - 195, 424), Vector2(x + 210, 424), Vector2(x + 236, 456)]), Color("c6c4ab"))
-			for line in range(3): draw_rect(Rect2(x - 161, 639 + line * 16, 330, 9), wood)
-			draw_rect(Rect2(x - 180, 687, 367, 11), wood)
-			draw_line(Vector2(x - 145, 690), Vector2(x - 145, 718), wood, 8)
-			draw_line(Vector2(x + 145, 690), Vector2(x + 145, 718), wood, 8)
-			draw_line(Vector2(x - 304, 464), Vector2(x - 304, 718), wood, 5)
-			draw_circle(Vector2(x - 304, 437), 34, Color("647c79"))
-			draw_string(ThemeDB.fallback_font, Vector2(x - 325, 445), "BUS", HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("f0e3c8"))
-			draw_rect(Rect2(x - 259, 653, 38, 65), Color("788478"))
+			_draw_user_scene(BUS_ART, Rect2(447, 501, 835, 419), x, 650.0)
 			# The Solmere direction sign belongs beside the station, on its right.
-			var sign_post_x := x + 284.0
+			var sign_post_x := x + 380.0
 			draw_rect(Rect2(sign_post_x, 500, 9, 218), wood)
-			draw_rect(Rect2(x + 244, 516, 190, 55), Color("b5a27a"))
-			draw_string(ThemeDB.fallback_font, Vector2(x + 266, 553), "SOLMERE   →", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("3e5350"))
+			draw_rect(Rect2(x + 340, 516, 190, 55), Color("b5a27a"))
+			draw_string(ThemeDB.fallback_font, Vector2(x + 362, 553), "SOLMERE   →", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("3e5350"))
 		"street":
 			pass
 		"lookout":
@@ -453,6 +428,11 @@ func _draw_outdoor(x: float, kind: String) -> void:
 				for wheel in [-1, 1]: draw_circle(Vector2(px + wheel * 69, 701), 16, Color("364345"))
 		_:
 			pass
+
+func _draw_user_scene(texture: Texture2D, source: Rect2, x: float, width: float) -> void:
+	var height := width * source.size.y / source.size.x
+	var destination := Rect2(x - width * 0.5, 718.0 - height, width, height)
+	draw_texture_rect_region(texture, destination, source, _scene_art_tint())
 
 func _draw_room_details() -> void:
 	if room_kind in ["record_shop", "public_archive", "grocery", "letter_office"]:

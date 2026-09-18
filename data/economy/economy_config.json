@@ -1,0 +1,12 @@
+{
+  "version": 3,
+  "starting_balance": {"A": 12000, "B": 1600},
+  "b_budget": {"生活":450,"交通":250,"工作周转":220,"创作与社交":180,"应急":200,"私人安全线":300},
+  "work": {"restaurant":{"minutes":90,"pay":160},"letter":{"minutes":50,"pay":90},"sound":{"minutes":60,"pay":120}},
+  "procurement": {"items":["tomato","herbs"],"strange_options":["sea_beans","star_salt"],"owner":"shi_yongqi","reimbursement_source":"night_market","locations":["produce_stall","cafe"],"pantry":["bread","cheese","lemon"]},
+  "film_prices": {"normal":32,"expired":18,"bw":35,"night":40},
+  "processing_prices": {"standard":18,"rush":42,"first_standard_after_help":12},
+  "camera_price":240,
+  "shop_hours": {"produce_stall":[630,1110],"grocery":[480,1320]},
+  "collection_slots": {"shelf":[375,430],"desk":[775,610],"wall":[1100,360],"drawer":[1200,650]}
+}

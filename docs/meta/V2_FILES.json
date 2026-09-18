@@ -1,0 +1,224 @@
+[
+  {
+    "status": "changed",
+    "path": "project.godot",
+    "bytes": 2245,
+    "sha256": "6b4f08c4ab6450996189bb1e7c69c7d9e5ad22fd9afc3768a246090f0ecb23c5"
+  },
+  {
+    "status": "changed",
+    "path": "scripts/core/dialogue_system.gd",
+    "bytes": 11711,
+    "sha256": "e8086a280cd79d688b91414b45cd8095e76441fcb19c492130d3dd262d55dde9"
+  },
+  {
+    "status": "changed",
+    "path": "scripts/ui/conversation_panel.gd",
+    "bytes": 6247,
+    "sha256": "6e534343bf580c7b0d91ec3871e92e20854ceab81d4f64d01af779be2f412c6e"
+  },
+  {
+    "status": "changed",
+    "path": "scripts/meta/meta_experience.gd",
+    "bytes": 8303,
+    "sha256": "a43659893e0285ccdee117a8fc28ecc81a68f8aff8b3cf7fc3d70fded7ffaf80"
+  },
+  {
+    "status": "changed",
+    "path": "scripts/meta/place_layer.gd",
+    "bytes": 6281,
+    "sha256": "e4d2280d207d1ad5c7f7e729e525895636adad902c13b5acf4e5eeaee78bd7e9"
+  },
+  {
+    "status": "changed",
+    "path": "scripts/meta/memory_view.gd",
+    "bytes": 9041,
+    "sha256": "dd5525ec0bbc3e2cfe3a20d8077b995aef857d8cf2fbb4d0ae5d8d557ada1d2b"
+  },
+  {
+    "status": "changed",
+    "path": "scripts/meta/memory_entry.gd",
+    "bytes": 5032,
+    "sha256": "aa38f29d4a20b773cee37ea95cd4ffdb01723adc53293b607460f2f7d7cfa358"
+  },
+  {
+    "status": "changed",
+    "path": "scripts/ui/main_menu.gd",
+    "bytes": 16587,
+    "sha256": "fb6eb69c420e2ba8781cc8ae3e02e8a780e6f3af2a6474e135add725dca6717d"
+  },
+  {
+    "status": "changed",
+    "path": "data/meta/catalog.json",
+    "bytes": 76072,
+    "sha256": "9ce92021031dddf480af310b20c6a29102dedf44c9cb27e64c3dab19484d4439"
+  },
+  {
+    "status": "changed",
+    "path": "model_sources/Solmere_memory_rooms.blend",
+    "bytes": 1733852,
+    "sha256": "35b4e44afe5d01f405ef3c8027cbef29f98d2ed1d7253ffe30f70f27442d72a5"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/A1.glb",
+    "bytes": 499456,
+    "sha256": "5e5a80a1717892a680ac1f580a823c8ada68a5faa95e9bcb5ffda8613fa53c8c"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/A2.glb",
+    "bytes": 386772,
+    "sha256": "8a910b6c4c07894dfeb1fe4510afb01b315a0975005c382537de07c7542dbed6"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/A3.glb",
+    "bytes": 478740,
+    "sha256": "ec56bc6aa2821b5484214a109a0db26e471ac79f0e7bba80eb73ca9395c80fbc"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/A4.glb",
+    "bytes": 564604,
+    "sha256": "8d49277c57347480b4fddc0ec4f7f9fd1615bb52a3f6e406ea40f815733de710"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/A5.glb",
+    "bytes": 1072652,
+    "sha256": "a9d6f72955e2d9fef86be348d2846b4f5d34d0d5bdfa6755f49d28054b9fe799"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/A6.glb",
+    "bytes": 1182608,
+    "sha256": "023e3dea10175d2638a530340d35aa1db20f44aaf5492df04b5e53b156462f7d"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/A7.glb",
+    "bytes": 448336,
+    "sha256": "2b2d7fc09dd96ee3b35e9c429260fba3bce466ed938c6d0510aab1dbf8db3d71"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/B1.glb",
+    "bytes": 457460,
+    "sha256": "644c60aab65091233ed13a9aaa6ae79590bee1d9ddeecae9946508e6bd237a17"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/B2.glb",
+    "bytes": 409256,
+    "sha256": "62c6df4173520266cc879b6ee3c99de6f9d073b353e6b28a26e5b0e2a989fe82"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/B3.glb",
+    "bytes": 740864,
+    "sha256": "7a04857e08436e28f2a3d271407a4fd173616f10ed12b14d934e528365f8658a"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/B4.glb",
+    "bytes": 433076,
+    "sha256": "b04914dcdcddef12b796084328897d6e1913c3685d15c9a84ceda8a9c4380b81"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/B5.glb",
+    "bytes": 1414284,
+    "sha256": "c344d98ac1c7b990c5d52bb451a8efcef6eb6d5b0a9f397c2cda9dd6413bf6b7"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/B6.glb",
+    "bytes": 459160,
+    "sha256": "5bc904dfd1b0b7e0759cd885e2d3e5e0276a6fec3304b3ae2bfc4da40e676b3c"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/B7.glb",
+    "bytes": 766580,
+    "sha256": "5ca0a028666aa7dbe935c41c9bbe0efc8b0e9f8e46a3ab94e25cd37352e1a6a5"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/A0.glb",
+    "bytes": 436276,
+    "sha256": "534916dc3e8d214f42e65c18d2da582bbf54d26b3c76cf26ea4f449ca55a0f73"
+  },
+  {
+    "status": "changed",
+    "path": "art/memories/B0.glb",
+    "bytes": 762644,
+    "sha256": "9aa3b835d87a134da0dc29f9da1bc169b4b02d4fe0dbf13ffa2ff26f6c8492fb"
+  },
+  {
+    "status": "new",
+    "path": "scripts/meta/memory_objects.gd",
+    "bytes": 7554,
+    "sha256": "c212c5f00fd69d657e1acc824fe16866093a09782492cb1dd1fe711753a1c426"
+  },
+  {
+    "status": "new",
+    "path": "scripts/meta/runtime_debug.gd",
+    "bytes": 1771,
+    "sha256": "467b6a6fc7e457b5057d32215836206180a909784975e79af00fcf4c218dd869"
+  },
+  {
+    "status": "new",
+    "path": "data/meta/memory_interactions.json",
+    "bytes": 52667,
+    "sha256": "ba0381310b57932868e37494f019aa20715561e8316b743ea657e400351b08ae"
+  },
+  {
+    "status": "new",
+    "path": "tests/integration/test_v2_runtime.gd",
+    "bytes": 5986,
+    "sha256": "241187d4a9738f0a0269d90dc192134b185562b75ae5b37c5be369a6520fbe10"
+  },
+  {
+    "status": "new",
+    "path": "tests/integration/test_v2_entry_debug.gd",
+    "bytes": 1958,
+    "sha256": "e4c35cc6ed345956109cc37e0556363101b9b1e73f675a51a82f3e7f1694a408"
+  },
+  {
+    "status": "new",
+    "path": "audio/meta/v2_paper.wav",
+    "bytes": 35324,
+    "sha256": "650a2ef2372399141948ad3dcd540eab6181c506a2173226831e3824dcc79451"
+  },
+  {
+    "status": "new",
+    "path": "audio/meta/v2_drawer.wav",
+    "bytes": 57374,
+    "sha256": "0f4b50d8bebbdc053b1a625fa03e73ee49a6d2cd0f66fe7862b7625559bdcd0e"
+  },
+  {
+    "status": "new",
+    "path": "audio/meta/v2_alarm.wav",
+    "bytes": 97064,
+    "sha256": "f300119dc64e951ff5cfc66a2419a795db0d05cbca856c6432a5d8057e0e70e5"
+  },
+  {
+    "status": "new",
+    "path": "audio/meta/v2_clink.wav",
+    "bytes": 70604,
+    "sha256": "4b3fc6e379b504f4f8dbeb28fa44afc9fcbc3256bf7e75739835c9fb59420fbe"
+  },
+  {
+    "status": "new",
+    "path": "audio/meta/v2_room.wav",
+    "bytes": 308744,
+    "sha256": "a2d5f0ae4aa7cf030ab09659628bfb04d0de11df269a3c3383635287461a7264"
+  },
+  {
+    "status": "new",
+    "path": "audio/meta/v2_water.wav",
+    "bytes": 308744,
+    "sha256": "d38926f45fc38bfbfb1e20594a50e208c8d6947bd241d9b61419671ee8bae00c"
+  }
+]

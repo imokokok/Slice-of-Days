@@ -14,10 +14,22 @@ const LINE := Color("b88963")
 var modal_overlay: ColorRect
 var modal_panel: Panel
 var pending_slot := 1
+var cover_video: VideoStreamPlayer
+var cover_elapsed := 0.0
+var cover_loop_offset := 0.0
+var cover_last_position := 0.0
+var entering := false
+var navigation: Control
+var navigation_ready := false
+var intro_video: VideoStreamPlayer
+var intro_wash: ColorRect
+var intro_background: ColorRect
 
 
 func _ready() -> void:
-	_build_menu()
+	WorldSound.set_active(false)
+	_build_living_cover()
+	_build_navigation()
 	_build_modal_shell()
 	if OS.get_cmdline_user_args().has("--fresh-preview"):
 		_on_new_game_pressed()
@@ -31,39 +43,175 @@ func _draw() -> void:
 	var sy := size.y / 900.0
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(sx, sy))
 	draw_rect(Rect2(0, 0, 1600, 900), PAPER)
-	draw_texture_rect(MENU_BACKGROUND, Rect2(0, 0, 1600, 900), false)
-	draw_rect(Rect2(0, 0, 570, 900), Color("f9efd9", 0.20))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
-func _build_menu() -> void:
-	var title := _make_label(self, "SOLMERE", Vector2(86, 78), Vector2(430, 110), 58, PAPER)
-	title.add_theme_color_override("font_shadow_color", Color(INK, 0.42))
-	title.add_theme_constant_override("shadow_offset_x", 3)
-	title.add_theme_constant_override("shadow_offset_y", 4)
+func _build_living_cover() -> void:
+	var cover := TextureRect.new()
+	cover.texture = preload("res://art/ui/cover-film-poster.png")
+	cover.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	cover.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	cover.stretch_mode = TextureRect.STRETCH_SCALE
+	cover.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(cover)
+	cover_video = VideoStreamPlayer.new()
+	cover_video.stream = preload("res://art/ui/cover-film.ogv")
+	cover_video.expand = true
+	cover_video.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	cover_video.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cover_video.loop = true
+	cover_video.volume_db = 0.0
+	add_child(cover_video)
+	cover_video.play()
 
-	var subtitle := _make_label(self, "THE TOWN BEFORE THE SEVENTH DAY", Vector2(92, 194), Vector2(430, 26), 15, Color(PAPER, 0.92))
-	subtitle.add_theme_color_override("font_shadow_color", Color(INK, 0.35))
-	subtitle.add_theme_constant_override("shadow_offset_x", 2)
-	subtitle.add_theme_constant_override("shadow_offset_y", 2)
+func _process(_delta: float) -> void:
+	if is_instance_valid(intro_video):
+		var ending := smoothstep(10.9,11.75,intro_video.stream_position)
+		if ending > 0:
+			intro_wash.color.a = ending
+			intro_video.volume_db = linear_to_db(maxf(.0001,1.0-ending))
+		return
+	# Use playback time so decoder startup cannot reveal the menu early.
+	var playback := cover_video.stream_position
+	if playback + 0.5 < cover_last_position:
+		cover_loop_offset += cover_last_position
+	cover_last_position = playback
+	cover_elapsed = cover_loop_offset + playback
+	if entering: return
+	var reveal := smoothstep(2.0,4.0,cover_elapsed)
+	navigation.modulate.a = reveal
+	for child in navigation.get_children():
+		if child is Button:
+			child.disabled = reveal < .98
+			child.focus_mode = Control.FOCUS_ALL if reveal >= .98 else Control.FOCUS_NONE
+	if reveal >= .98 and not navigation_ready:
+		navigation_ready = true
+		navigation.get_node("NewGame").grab_focus()
 
-	var continue_button := _make_button(self, "继续游戏", Vector2(92, 310), Vector2(260, 52), "regular")
-	var new_game := _make_button(self, "开始新游戏", Vector2(92, 376), Vector2(260, 52), "primary")
-	var settings := _make_button(self, "设置", Vector2(92, 442), Vector2(260, 52), "regular")
-	var credits := _make_button(self, "制作人员", Vector2(92, 508), Vector2(260, 52), "regular")
-	var quit := _make_button(self, "退出", Vector2(92, 574), Vector2(260, 52), "regular")
+func _build_navigation() -> void:
+	navigation = Control.new()
+	navigation.position = Vector2(635,570)
+	navigation.size = Vector2(330,182)
+	navigation.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(navigation)
+	for y in [0,180]:
+		var rule := ColorRect.new()
+		rule.position = Vector2(0,y)
+		rule.size = Vector2(330,1)
+		rule.color = Color("fff7e6",.42)
+		rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		navigation.add_child(rule)
+	var titles := ["新游戏","章节","设置"]
+	var actions := [_launch_new_game,_show_chapters,_show_settings]
+	var menu_font := SystemFont.new()
+	menu_font.font_names = PackedStringArray(["Microsoft YaHei UI","Microsoft YaHei"])
+	menu_font.font_weight = 300
+	for i in titles.size():
+		var button := Button.new()
+		button.name = ["NewGame","Chapters","Settings"][i]
+		button.text = titles[i]
+		button.position = Vector2(40,24+i*44)
+		button.size = Vector2(250,40)
+		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		button.disabled = true
+		button.focus_mode = Control.FOCUS_NONE
+		button.add_theme_font_size_override("font_size",23)
+		button.add_theme_font_override("font",menu_font)
+		button.add_theme_constant_override("outline_size",0)
+		for state in ["normal","hover","pressed","focus"]:
+			button.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+		button.add_theme_color_override("font_color",Color("fff7e6",.80))
+		button.add_theme_color_override("font_hover_color",Color("fffdf6"))
+		button.add_theme_color_override("font_focus_color",Color("fffdf6"))
+		button.add_theme_color_override("font_pressed_color",Color("f4dfb0"))
+		button.add_theme_color_override("font_shadow_color",Color("183e4e",.8))
+		button.add_theme_constant_override("shadow_offset_y",1)
+		navigation.add_child(button)
+		button.pressed.connect(actions[i])
+	navigation.modulate.a = 0
 
-	continue_button.disabled = not SaveManager.has_any_save()
-	continue_button.pressed.connect(_continue_latest)
-	new_game.pressed.connect(_on_new_game_pressed)
-	settings.pressed.connect(_show_settings)
-	credits.pressed.connect(_show_credits)
-	quit.pressed.connect(_show_quit_confirmation)
+func _launch_new_game() -> void:
+	if entering: return
+	entering = true
+	intro_wash = ColorRect.new()
+	intro_wash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	intro_wash.color = Color(1,1,1,0)
+	intro_wash.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(intro_wash)
+	var fade := create_tween().set_parallel(true)
+	fade.tween_property(cover_video,"volume_db",-60.0,.65)
+	fade.tween_property(navigation,"modulate:a",0.0,.4)
+	fade.tween_property(intro_wash,"color:a",1.0,.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	await fade.finished
+	navigation.hide()
+	cover_video.stop()
+	WorldSound.set_active(false)
+	await _play_opening_animation()
+	_on_new_game_pressed()
+	if not SceneRouter.transitioning:
+		entering = false
+		intro_background.queue_free()
+		intro_video = null
+		intro_wash.queue_free()
+		navigation.show()
+		cover_video.volume_db = 0
+		cover_video.play()
 
-	var hint := "还没有保存的旅程" if continue_button.disabled else "已有旅程正在等你"
-	_make_label(self, hint, Vector2(94, 646), Vector2(300, 24), 13, Color(PAPER, 0.92))
-	_make_label(self, "七天 · 两种时间 · 一座慢慢认识你的海边小镇", Vector2(92, 814), Vector2(520, 28), 14, Color(PAPER, 0.90))
+func _play_opening_animation() -> void:
+	# The encoded stream contains only the newly authored sound design.
+	intro_background = ColorRect.new()
+	intro_background.color = Color.WHITE
+	intro_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(intro_background)
+	intro_video = VideoStreamPlayer.new()
+	intro_video.name = "OpeningAnimation"
+	intro_video.stream = preload("res://art/ui/new-game-intro.ogv")
+	intro_video.expand = true
+	intro_video.loop = false
+	intro_video.mouse_filter = Control.MOUSE_FILTER_STOP
+	intro_background.add_child(intro_video)
+	_layout_opening_animation()
+	resized.connect(_layout_opening_animation)
+	move_child(intro_wash,get_child_count()-1)
+	intro_video.volume_db = -60.0
+	intro_video.play()
+	await RenderingServer.frame_post_draw
+	var reveal := create_tween().set_parallel(true)
+	reveal.tween_property(intro_wash,"color:a",0.0,.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	reveal.tween_property(intro_video,"volume_db",0.0,.85)
+	await intro_video.finished
+	intro_wash.color.a = 1.0
+	await get_tree().create_timer(.15).timeout
 
+func _layout_opening_animation() -> void:
+	if not is_instance_valid(intro_video): return
+	var frame_width := minf(size.x*.8,size.y*.8*16.0/9.0)
+	intro_video.size = Vector2(frame_width,frame_width*9.0/16.0)
+	intro_video.position = (size-intro_video.size)*.5
+
+func _show_chapters() -> void:
+	_prepare_modal()
+	modal_panel.size.y = 610
+	_make_label(modal_panel,"章节",Vector2(34,24),Vector2(522,42),27,INK)
+	_make_label(modal_panel,"从已保存的章节继续",Vector2(34,72),Vector2(522,30),16,MUTED)
+	var saved_days: Dictionary = {}
+	for slot in range(1,SaveManager.SLOT_COUNT+1):
+		var summary := SaveManager.slot_summary(slot)
+		if not summary.get("exists",false): continue
+		var key := "%s_%d" % [str(summary.get("role","A")),int(summary.day)]
+		if not saved_days.has(key) or int(summary.modified)>int(saved_days[key].modified): saved_days[key]=summary
+	for day in range(1,8):
+		for role in ["A","B"]:
+			var key := "%s_%d" % [role,day]
+			var available := saved_days.has(key)
+			var button := _make_button(modal_panel,"%s · 第 %d 天%s" % [role,day,"" if available else " · —"],Vector2(44 if role=="A" else 304,115+(day-1)*53),Vector2(244,44),"regular")
+			button.disabled = not available
+			if available: button.pressed.connect(_resume_chapter.bind(int(saved_days[key].slot)))
+	var close := _make_button(modal_panel,"返回",Vector2(200,530),Vector2(190,46),"primary")
+	close.pressed.connect(_hide_modal)
+
+func _resume_chapter(slot: int) -> void:
+	if SaveManager.load_slot(slot): SceneRouter.town_day()
 
 func _build_modal_shell() -> void:
 	modal_overlay = ColorRect.new()
@@ -94,11 +242,12 @@ func _on_new_game_pressed() -> void:
 	ChapterSystem.start_new_game()
 	if not SaveManager.save_or_report("新旅程保存失败"):
 		return
-	SceneRouter.town_day()
+	SceneRouter.town_day(.75)
 
 
 func _show_settings() -> void:
 	_prepare_modal()
+	modal_panel.size.y = 570
 	_make_label(modal_panel, "设置", Vector2(34, 28), Vector2(522, 42), 27, INK)
 	_make_label(modal_panel, "显示模式", Vector2(34, 92), Vector2(160, 30), 16, MUTED)
 	var display_text := "切换为窗口模式" if SettingsSystem.fullscreen() else "切换为全屏模式"
@@ -125,7 +274,31 @@ func _show_settings() -> void:
 	motion.pressed.connect(_toggle_reduced_motion)
 	var hint := _make_label(modal_panel, "减少章节转场中的画面位移；不会跳过任何内容。", Vector2(34, 286), Vector2(522, 54), 14, MUTED)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var close := _make_button(modal_panel, "完成", Vector2(200, 388), Vector2(190, 46), "primary")
+	_make_label(modal_panel,"心声字号",Vector2(34,340),Vector2(160,30),16,MUTED)
+	var voice_size := HSlider.new()
+	voice_size.position = Vector2(210,334)
+	voice_size.size = Vector2(300,38)
+	voice_size.min_value = 17
+	voice_size.max_value = 30
+	voice_size.step = 1
+	voice_size.value = SettingsSystem.values.get("voice_size",21)
+	modal_panel.add_child(voice_size)
+	voice_size.value_changed.connect(func(value: float) -> void:
+		SettingsSystem.values.voice_size = int(value)
+		SettingsSystem.save_settings())
+	_make_label(modal_panel,"心声透明度",Vector2(34,404),Vector2(160,30),16,MUTED)
+	var opacity := HSlider.new()
+	opacity.position = Vector2(210,398)
+	opacity.size = Vector2(300,38)
+	opacity.min_value = 0
+	opacity.max_value = 1
+	opacity.step = .05
+	opacity.value = SettingsSystem.values.get("voice_opacity",.86)
+	modal_panel.add_child(opacity)
+	opacity.value_changed.connect(func(value: float) -> void:
+		SettingsSystem.values.voice_opacity = value
+		SettingsSystem.save_settings())
+	var close := _make_button(modal_panel, "完成", Vector2(200, 490), Vector2(190, 46), "primary")
 	close.pressed.connect(_hide_modal)
 
 
@@ -148,6 +321,7 @@ func _show_quit_confirmation() -> void:
 
 
 func _prepare_modal() -> void:
+	modal_panel.size = Vector2(590,480)
 	for child in modal_panel.get_children():
 		modal_panel.remove_child(child)
 		child.queue_free()
@@ -255,3 +429,7 @@ func _capture(filename: String) -> void:
 func _continue_latest() -> void:
 	if SaveManager.load_latest():
 		SceneRouter.town_day()
+
+func _preview_role(role: String) -> void:
+	GameState.begin_vertical_slice(role)
+	SceneRouter.enter_space("home_a" if role == "A" else "home_b")

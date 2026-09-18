@@ -1,0 +1,1727 @@
+{
+  "version": 2,
+  "rooms": {
+    "A1": {
+      "items": [
+        {
+          "id": "A1_read_0",
+          "name": "日历边角",
+          "kind": "read",
+          "pages": [
+            "今天：去学校。\n\n先把面包吃完。",
+            "早上的闹钟已经关了。\n又坐了好一会儿。"
+          ],
+          "text": "今天：去学校。\n\n先把面包吃完。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A1_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "A1_read_1",
+          "name": "草稿纸",
+          "kind": "read",
+          "pages": [
+            "想画一扇门。\n门外只画两道脚步。"
+          ],
+          "text": "想画一扇门。\n门外只画两道脚步。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A1_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "A1_read_2",
+          "name": "手机背面的便签",
+          "kind": "read",
+          "pages": [
+            "钥匙。\n\n上次写了，还是忘带。"
+          ],
+          "text": "钥匙。\n\n上次写了，还是忘带。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A1_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "A1_prop_0",
+          "name": "闹钟",
+          "kind": "listen",
+          "prefix": "Phone_alarm",
+          "text": "按一下，短短响两声。",
+          "visual": "recorder",
+          "node": "INT_A1_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "A1_prop_1",
+          "name": "校服",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "袖口翻进去了一点。",
+          "visual": "object",
+          "node": "INT_A1_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "A1_prop_2",
+          "name": "窗帘",
+          "kind": "toggle",
+          "prefix": "",
+          "text": "让一小条光透进来。",
+          "visual": "lamp",
+          "node": "INT_A1_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "A1_prop_3",
+          "name": "门",
+          "kind": "leave",
+          "prefix": "Front_wall",
+          "text": "门外已经安静了。",
+          "visual": "object",
+          "node": "INT_A1_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "A1_prop_4",
+          "name": "床边拖鞋",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "两只朝着不同方向。",
+          "visual": "object",
+          "node": "INT_A1_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "A1_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_A1_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "A screenplay scenes 1–7"
+    },
+    "A2": {
+      "items": [
+        {
+          "id": "A2_read_0",
+          "name": "成绩单背面",
+          "kind": "read",
+          "pages": [
+            "第一。\n\n恭喜一次好像也够了。"
+          ],
+          "text": "第一。\n\n恭喜一次好像也够了。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A2_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "A2_read_1",
+          "name": "修音箱的纸",
+          "kind": "read",
+          "pages": [
+            "螺丝放碟子里。\n先别把外壳扣回去。"
+          ],
+          "text": "螺丝放碟子里。\n先别把外壳扣回去。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A2_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "A2_read_2",
+          "name": "晚饭便签",
+          "kind": "read",
+          "pages": [
+            "随便。\n[s]随便。[/s]\n\n得选一个。"
+          ],
+          "text": "随便。\n[s]随便。[/s]\n\n得选一个。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A2_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "A2_prop_0",
+          "name": "坏音箱",
+          "kind": "listen",
+          "prefix": "Speaker",
+          "text": "先是一声低响，随后停住。",
+          "visual": "recorder",
+          "node": "INT_A2_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "A2_prop_1",
+          "name": "螺丝刀",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "手柄边上有一圈旧磨痕。",
+          "visual": "object",
+          "node": "INT_A2_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "A2_prop_2",
+          "name": "音箱线",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "插头松了一点。",
+          "visual": "object",
+          "node": "INT_A2_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "A2_prop_3",
+          "name": "沙发上的包",
+          "kind": "inspect",
+          "prefix": "Sofa_cushion",
+          "text": "成绩单原来塞在侧袋里。",
+          "visual": "object",
+          "node": "INT_A2_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "A2_prop_4",
+          "name": "小抽屉",
+          "kind": "drawer",
+          "prefix": "",
+          "text": "里面还有一颗没拧回去的螺丝。",
+          "visual": "drawer",
+          "node": "INT_A2_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "A2_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_A2_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "A screenplay scenes 1–7"
+    },
+    "A3": {
+      "items": [
+        {
+          "id": "A3_read_0",
+          "name": "冰箱上的纸",
+          "kind": "read",
+          "pages": [
+            "水果在里面。\n杯子洗完倒扣。"
+          ],
+          "text": "水果在里面。\n杯子洗完倒扣。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A3_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "A3_read_1",
+          "name": "收据",
+          "kind": "read",
+          "pages": [
+            "已经付过。\n\n再坐下去也不会退钱。"
+          ],
+          "text": "已经付过。\n\n再坐下去也不会退钱。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A3_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "A3_read_2",
+          "name": "桌边随手记",
+          "kind": "read",
+          "pages": [
+            "杯子里的冰化了一半。\n吸管戳不到刚才那一块了。"
+          ],
+          "text": "杯子里的冰化了一半。\n吸管戳不到刚才那一块了。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A3_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "A3_prop_0",
+          "name": "冰水",
+          "kind": "listen",
+          "prefix": "Cup_body",
+          "text": "吸管碰到杯沿。",
+          "visual": "recorder",
+          "node": "INT_A3_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "A3_prop_1",
+          "name": "吸管",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "已经弯过一次。",
+          "visual": "object",
+          "node": "INT_A3_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "A3_prop_2",
+          "name": "杯架",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "杯子全都倒扣着。",
+          "visual": "object",
+          "node": "INT_A3_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "A3_prop_3",
+          "name": "水果盒",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "盖子留了一道缝。",
+          "visual": "object",
+          "node": "INT_A3_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "A3_prop_4",
+          "name": "水龙头",
+          "kind": "toggle",
+          "prefix": "Tap",
+          "text": "转小一点，水声也细了。",
+          "visual": "lamp",
+          "node": "INT_A3_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "A3_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_A3_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "A screenplay scenes 1–7"
+    },
+    "A4": {
+      "items": [
+        {
+          "id": "A4_read_0",
+          "name": "二十七号",
+          "kind": "read",
+          "pages": [
+            "27号了？\n\n海边。便利店。临时坐车。\n还有那盘不知道是什么的东西。",
+            "都挺开心的。\n\n就是怎么一下就27号了。"
+          ],
+          "text": "27号了？\n\n海边。便利店。临时坐车。\n还有那盘不知道是什么的东西。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A4_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "A4_read_1",
+          "name": "车票背面",
+          "kind": "read",
+          "pages": [
+            "醒了再决定。\n\n这回真的坐到最后一站看看。"
+          ],
+          "text": "醒了再决定。\n\n这回真的坐到最后一站看看。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A4_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "A4_read_2",
+          "name": "朋友的画",
+          "kind": "read",
+          "pages": [
+            "盘子里画了一团东西。\n旁边写着：这是什么？\n另一支笔：不知道。"
+          ],
+          "text": "盘子里画了一团东西。\n旁边写着：这是什么？\n另一支笔：不知道。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A4_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "A4_prop_0",
+          "name": "沙滩小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "一颗被水磨圆的石头。",
+          "visual": "object",
+          "node": "INT_A4_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "A4_prop_1",
+          "name": "便利店袋",
+          "kind": "listen",
+          "prefix": "",
+          "text": "提起来的时候，袋子轻轻响。",
+          "visual": "recorder",
+          "node": "INT_A4_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "A4_prop_2",
+          "name": "公交扶手",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "手握过的地方很光。",
+          "visual": "object",
+          "node": "INT_A4_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "A4_prop_3",
+          "name": "饮料瓶",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "还剩最后一点。",
+          "visual": "object",
+          "node": "INT_A4_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "A4_prop_4",
+          "name": "小抽屉",
+          "kind": "drawer",
+          "prefix": "",
+          "text": "那张临时买的车票在最底下。",
+          "visual": "drawer",
+          "node": "INT_A4_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "A4_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_A4_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "A screenplay scenes 1–7"
+    },
+    "A5": {
+      "items": [
+        {
+          "id": "A5_read_0",
+          "name": "明天的日程",
+          "kind": "read",
+          "pages": [
+            "09:00 WORK\n11:00 READ\n14:00 PROJECT\n17:00 GYM\n20:00 FILM",
+            "不要改。\n\n08:47\n……"
+          ],
+          "text": "09:00 WORK\n11:00 READ\n14:00 PROJECT\n17:00 GYM\n20:00 FILM",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A5_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "A5_read_1",
+          "name": "电影清单",
+          "kind": "read",
+          "pages": [
+            "先看完这一部。\n别又开新的。"
+          ],
+          "text": "先看完这一部。\n别又开新的。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A5_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "A5_read_2",
+          "name": "书里的纸条",
+          "kind": "read",
+          "pages": [
+            "读到这里。\n下次从这一行开始。"
+          ],
+          "text": "读到这里。\n下次从这一行开始。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A5_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "A5_prop_0",
+          "name": "闹钟",
+          "kind": "listen",
+          "prefix": "Phone_alarm",
+          "text": "08:30。按掉以后，很安静。",
+          "visual": "recorder",
+          "node": "INT_A5_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "A5_prop_1",
+          "name": "书",
+          "kind": "inspect",
+          "prefix": "Stacked_book",
+          "text": "书签还在前一天那页。",
+          "visual": "object",
+          "node": "INT_A5_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "A5_prop_2",
+          "name": "运动包",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "鞋装在侧面的小袋里。",
+          "visual": "object",
+          "node": "INT_A5_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "A5_prop_3",
+          "name": "台灯",
+          "kind": "toggle",
+          "prefix": "",
+          "text": "灯光落在排满的日历上。",
+          "visual": "lamp",
+          "node": "INT_A5_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "A5_prop_4",
+          "name": "手机",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "08:47。没有新消息。",
+          "visual": "object",
+          "node": "INT_A5_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "A5_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_A5_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "A screenplay scenes 1–7"
+    },
+    "A6": {
+      "items": [
+        {
+          "id": "A6_read_0",
+          "name": "项目手记",
+          "kind": "read",
+          "pages": [
+            "RIGHT.\n\n如果炸了明天再修。\n先做。",
+            "测试过了。\n又过了一次。\n\n明天九点。"
+          ],
+          "text": "RIGHT.\n\n如果炸了明天再修。\n先做。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A6_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "A6_read_1",
+          "name": "测试记录",
+          "kind": "read",
+          "pages": [
+            "左 / 右\n\n右边保留。\n再跑一遍。"
+          ],
+          "text": "左 / 右\n\n右边保留。\n再跑一遍。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A6_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "A6_read_2",
+          "name": "外卖盒上的字",
+          "kind": "read",
+          "pages": [
+            "谁还没吃？\n\n凉了也先吃两口。"
+          ],
+          "text": "谁还没吃？\n\n凉了也先吃两口。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A6_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "A6_prop_0",
+          "name": "键盘",
+          "kind": "listen",
+          "prefix": "Computer_keyboard",
+          "text": "敲了几下，又停下来等。",
+          "visual": "recorder",
+          "node": "INT_A6_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "A6_prop_1",
+          "name": "咖啡杯",
+          "kind": "inspect",
+          "prefix": "Cup_body",
+          "text": "已经空了，杯底有一圈颜色。",
+          "visual": "object",
+          "node": "INT_A6_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "A6_prop_2",
+          "name": "数据线",
+          "kind": "inspect",
+          "prefix": "Coiled_cable",
+          "text": "先绕过椅子腿。",
+          "visual": "object",
+          "node": "INT_A6_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "A6_prop_3",
+          "name": "屏幕",
+          "kind": "toggle",
+          "prefix": "Monitor_glass",
+          "text": "右边那个版本亮起来。",
+          "visual": "lamp",
+          "node": "INT_A6_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "A6_prop_4",
+          "name": "椅子",
+          "kind": "inspect",
+          "prefix": "Chair_seat",
+          "text": "拉过来就坐下了。",
+          "visual": "object",
+          "node": "INT_A6_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "A6_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_A6_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "A screenplay scenes 1–7"
+    },
+    "A7": {
+      "items": [
+        {
+          "id": "A7_read_0",
+          "name": "撕下的任务纸",
+          "kind": "read",
+          "pages": [
+            "TEST\nBUILD\nFINAL\nDEADLINE",
+            "都擦掉以后，\n白板比想的还大。"
+          ],
+          "text": "TEST\nBUILD\nFINAL\nDEADLINE",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A7_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "A7_read_1",
+          "name": "群消息打印页",
+          "kind": "read",
+          "pages": [
+            "辛苦了！！！\n\n最后一条停在昨晚。"
+          ],
+          "text": "辛苦了！！！\n\n最后一条停在昨晚。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A7_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "A7_read_2",
+          "name": "上传记录",
+          "kind": "read",
+          "pages": [
+            "FINAL\n上传完成。\n\n文件名里已经有两个 final。"
+          ],
+          "text": "FINAL\n上传完成。\n\n文件名里已经有两个 final。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_A7_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "A7_prop_0",
+          "name": "板擦",
+          "kind": "toggle",
+          "prefix": "Eraser",
+          "text": "擦到最后，只剩一小片灰。",
+          "visual": "lamp",
+          "node": "INT_A7_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "A7_prop_1",
+          "name": "记号笔",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "笔尖悬了一会儿。",
+          "visual": "object",
+          "node": "INT_A7_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "A7_prop_2",
+          "name": "电脑",
+          "kind": "listen",
+          "prefix": "Computer_keyboard",
+          "text": "风扇转了一阵，慢下来。",
+          "visual": "recorder",
+          "node": "INT_A7_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "A7_prop_3",
+          "name": "瓶盖",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "庆祝时滚到了桌脚。",
+          "visual": "object",
+          "node": "INT_A7_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "A7_prop_4",
+          "name": "旧抽屉",
+          "kind": "drawer",
+          "prefix": "",
+          "text": "里面压着最后一张任务纸。",
+          "visual": "drawer",
+          "node": "INT_A7_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "A7_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_A7_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "A screenplay scenes 1–7"
+    },
+    "B1": {
+      "items": [
+        {
+          "id": "B1_read_0",
+          "name": "菜单边角",
+          "kind": "read",
+          "pages": [
+            "这个好吃。\n\n下次记得名字。"
+          ],
+          "text": "这个好吃。\n\n下次记得名字。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B1_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "B1_read_1",
+          "name": "随手记",
+          "kind": "read",
+          "pages": [
+            "今天可以再点。\n\n但已经点完了。"
+          ],
+          "text": "今天可以再点。\n\n但已经点完了。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B1_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "B1_read_2",
+          "name": "考试便签",
+          "kind": "read",
+          "pages": [
+            "考试时间：回去再确认。\n先把这口吃完。"
+          ],
+          "text": "考试时间：回去再确认。\n先把这口吃完。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B1_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "B1_prop_0",
+          "name": "杯子",
+          "kind": "listen",
+          "prefix": "Cup_body",
+          "text": "杯底轻轻碰到桌子。",
+          "visual": "recorder",
+          "node": "INT_B1_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "B1_prop_1",
+          "name": "餐盘",
+          "kind": "inspect",
+          "prefix": "Dinner_plate",
+          "text": "边沿有一道细花纹。",
+          "visual": "object",
+          "node": "INT_B1_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "B1_prop_2",
+          "name": "筷子",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "还没摆齐就开始吃了。",
+          "visual": "object",
+          "node": "INT_B1_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "B1_prop_3",
+          "name": "桌灯",
+          "kind": "toggle",
+          "prefix": "",
+          "text": "灯把桌面照得暖一点。",
+          "visual": "lamp",
+          "node": "INT_B1_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "B1_prop_4",
+          "name": "纸巾盒",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "最后一张露在外面。",
+          "visual": "object",
+          "node": "INT_B1_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "B1_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_B1_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "B screenplay scenes 1–7"
+    },
+    "B2": {
+      "items": [
+        {
+          "id": "B2_read_0",
+          "name": "Plan B",
+          "kind": "read",
+          "pages": [
+            "学费 → 就业 → 城市\n时间\nPlan B",
+            "最上面这张先放这里。\n想看的那张压在下面。"
+          ],
+          "text": "学费 → 就业 → 城市\n时间\nPlan B",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B2_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "B2_read_1",
+          "name": "课程比较",
+          "kind": "read",
+          "pages": [
+            "期限 / 费用 / 之后能做什么\n\n空着的地方再查。"
+          ],
+          "text": "期限 / 费用 / 之后能做什么\n\n空着的地方再查。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B2_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "B2_read_2",
+          "name": "水果旁的纸",
+          "kind": "read",
+          "pages": [
+            "别弄太晚。\n\n这几个字比表格大。"
+          ],
+          "text": "别弄太晚。\n\n这几个字比表格大。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B2_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "B2_prop_0",
+          "name": "水果碗",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "水果被推到离她近一点的地方。",
+          "visual": "object",
+          "node": "INT_B2_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "B2_prop_1",
+          "name": "文件夹",
+          "kind": "drawer",
+          "prefix": "",
+          "text": "下面那张，是刚才看得最久的。",
+          "visual": "drawer",
+          "node": "INT_B2_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "B2_prop_2",
+          "name": "茶几",
+          "kind": "inspect",
+          "prefix": "Table_oak_top",
+          "text": "资料铺开后，杯子只能放边上。",
+          "visual": "object",
+          "node": "INT_B2_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "B2_prop_3",
+          "name": "杯子",
+          "kind": "listen",
+          "prefix": "Cup_body",
+          "text": "杯沿有一点轻响。",
+          "visual": "recorder",
+          "node": "INT_B2_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "B2_prop_4",
+          "name": "台灯",
+          "kind": "toggle",
+          "prefix": "",
+          "text": "纸页上的字亮起来。",
+          "visual": "lamp",
+          "node": "INT_B2_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "B2_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_B2_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "B screenplay scenes 1–7"
+    },
+    "B3": {
+      "items": [
+        {
+          "id": "B3_read_0",
+          "name": "声音笔记",
+          "kind": "read",
+          "pages": [
+            "cup — 太脆\nkeys — 可以\nradiator — 低频很好",
+            "0:18 再进 keys\n0:31 不改了\n\n听完再说。"
+          ],
+          "text": "cup — 太脆\nkeys — 可以\nradiator — 低频很好",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B3_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "B3_read_1",
+          "name": "音轨草稿",
+          "kind": "read",
+          "pages": [
+            "杯子 / 钥匙 / 暖气片\n\n这一遍只听。"
+          ],
+          "text": "杯子 / 钥匙 / 暖气片\n\n这一遍只听。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B3_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "B3_read_2",
+          "name": "桌角随手记",
+          "kind": "read",
+          "pages": [
+            "好听。\n\n以后能做什么，以后再说。"
+          ],
+          "text": "好听。\n\n以后能做什么，以后再说。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B3_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "B3_prop_0",
+          "name": "杯子",
+          "kind": "listen",
+          "prefix": "Cup_body",
+          "text": "这一下太脆。",
+          "visual": "recorder",
+          "node": "INT_B3_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "B3_prop_1",
+          "name": "钥匙",
+          "kind": "listen",
+          "prefix": "",
+          "text": "两声短响，接到音轨里。",
+          "visual": "recorder",
+          "node": "INT_B3_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "B3_prop_2",
+          "name": "暖气片",
+          "kind": "listen",
+          "prefix": "Radiator_fin",
+          "text": "低处有一点持续的振动。",
+          "visual": "recorder",
+          "node": "INT_B3_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "B3_prop_3",
+          "name": "录音设备",
+          "kind": "toggle",
+          "prefix": "Audio_interface",
+          "text": "红灯亮了。",
+          "visual": "lamp",
+          "node": "INT_B3_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "B3_prop_4",
+          "name": "MIDI键盘",
+          "kind": "listen",
+          "prefix": "MIDI_body",
+          "text": "一个音，再留一点空白。",
+          "visual": "recorder",
+          "node": "INT_B3_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "B3_prop_5",
+          "name": "耳机",
+          "kind": "inspect",
+          "prefix": "Headphone_cup",
+          "text": "海绵边缘有点软了。",
+          "visual": "object",
+          "node": "INT_B3_prop_5",
+          "range": 2.1
+        }
+      ],
+      "source": "B screenplay scenes 1–7"
+    },
+    "B4": {
+      "items": [
+        {
+          "id": "B4_read_0",
+          "name": "周三",
+          "kind": "read",
+          "pages": [
+            "步行20分钟。\n公交后再走5分钟。\n远一点，时间更合适。",
+            "我是不是又在给她排计划。\n\n让她自己选。"
+          ],
+          "text": "步行20分钟。\n公交后再走5分钟。\n远一点，时间更合适。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B4_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "B4_read_1",
+          "name": "舞蹈传单",
+          "kind": "read",
+          "pages": [
+            "周三晚上。\n\n上面压着一袋菜。"
+          ],
+          "text": "周三晚上。\n\n上面压着一袋菜。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B4_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "B4_read_2",
+          "name": "日历小字",
+          "kind": "read",
+          "pages": [
+            "回来吃饭。\n\n课程那件事今天没问。"
+          ],
+          "text": "回来吃饭。\n\n课程那件事今天没问。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B4_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "B4_prop_0",
+          "name": "菜袋",
+          "kind": "inspect",
+          "prefix": "Grocery_bag",
+          "text": "压住传单，也压出一条折痕。",
+          "visual": "object",
+          "node": "INT_B4_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "B4_prop_1",
+          "name": "灶台",
+          "kind": "listen",
+          "prefix": "Hob",
+          "text": "抽油烟机盖住了半句话。",
+          "visual": "recorder",
+          "node": "INT_B4_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "B4_prop_2",
+          "name": "家里的杯子",
+          "kind": "inspect",
+          "prefix": "Cup_body",
+          "text": "杯柄有一点掉色。",
+          "visual": "object",
+          "node": "INT_B4_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "B4_prop_3",
+          "name": "台灯",
+          "kind": "toggle",
+          "prefix": "",
+          "text": "纸面亮了，袋子影子移了一点。",
+          "visual": "lamp",
+          "node": "INT_B4_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "B4_prop_4",
+          "name": "抽屉",
+          "kind": "drawer",
+          "prefix": "",
+          "text": "一叠折起来的旧购物袋。",
+          "visual": "drawer",
+          "node": "INT_B4_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "B4_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_B4_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "B screenplay scenes 1–7"
+    },
+    "B5": {
+      "items": [
+        {
+          "id": "B5_read_0",
+          "name": "制作排期",
+          "kind": "read",
+          "pages": [
+            "THU — location\n11:00 — equipment deadline\nbackup ready\nmove his part later",
+            "export\n[s]check once[/s]\n再看一遍。"
+          ],
+          "text": "THU — location\n11:00 — equipment deadline\nbackup ready\nmove his part later",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B5_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "B5_read_1",
+          "name": "设备清单",
+          "kind": "read",
+          "pages": [
+            "十一点前。\n\n到不了就用备用。"
+          ],
+          "text": "十一点前。\n\n到不了就用备用。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B5_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "B5_read_2",
+          "name": "消息抄页",
+          "kind": "read",
+          "pages": [
+            "别什么事情都往自己身上揽。\n\n屏幕还开着。"
+          ],
+          "text": "别什么事情都往自己身上揽。\n\n屏幕还开着。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B5_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "B5_prop_0",
+          "name": "电脑",
+          "kind": "toggle",
+          "prefix": "Monitor_glass",
+          "text": "EXPORT COMPLETE。再看一遍。",
+          "visual": "lamp",
+          "node": "INT_B5_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "B5_prop_1",
+          "name": "键盘",
+          "kind": "listen",
+          "prefix": "Computer_keyboard",
+          "text": "几下短促的敲击。",
+          "visual": "recorder",
+          "node": "INT_B5_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "B5_prop_2",
+          "name": "咖啡杯",
+          "kind": "inspect",
+          "prefix": "Cup_body",
+          "text": "杯子里已经没咖啡了。",
+          "visual": "object",
+          "node": "INT_B5_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "B5_prop_3",
+          "name": "备用设备",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "标签贴得很牢。",
+          "visual": "object",
+          "node": "INT_B5_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "B5_prop_4",
+          "name": "线材盒",
+          "kind": "drawer",
+          "prefix": "",
+          "text": "备用线绑在最上面。",
+          "visual": "drawer",
+          "node": "INT_B5_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "B5_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_B5_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "B screenplay scenes 1–7"
+    },
+    "B6": {
+      "items": [
+        {
+          "id": "B6_read_0",
+          "name": "招聘比较",
+          "kind": "read",
+          "pages": [
+            "职位 / 薪资 / 福利 / 发展\n\nSolmere — 待看。"
+          ],
+          "text": "职位 / 薪资 / 福利 / 发展\n\nSolmere — 待看。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B6_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "B6_read_1",
+          "name": "网页打印页",
+          "kind": "read",
+          "pages": [
+            "唱片店。剧院。小型现场。\n棋社。艺术空间。\n\n往回滑了一次。"
+          ],
+          "text": "唱片店。剧院。小型现场。\n棋社。艺术空间。\n\n往回滑了一次。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B6_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "B6_read_2",
+          "name": "页边旋律",
+          "kind": "read",
+          "pages": [
+            "两段短线，一个停顿。\n\n写在工作信息旁边。"
+          ],
+          "text": "两段短线，一个停顿。\n\n写在工作信息旁边。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B6_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "B6_prop_0",
+          "name": "手机",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "页面又停在唱片店那张图。",
+          "visual": "object",
+          "node": "INT_B6_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "B6_prop_1",
+          "name": "餐盘",
+          "kind": "inspect",
+          "prefix": "Dinner_plate",
+          "text": "饭还没吃完。",
+          "visual": "object",
+          "node": "INT_B6_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "B6_prop_2",
+          "name": "杯子",
+          "kind": "listen",
+          "prefix": "Cup_body",
+          "text": "放下时有一声轻响。",
+          "visual": "recorder",
+          "node": "INT_B6_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "B6_prop_3",
+          "name": "台灯",
+          "kind": "toggle",
+          "prefix": "",
+          "text": "页边的短旋律也照亮了。",
+          "visual": "lamp",
+          "node": "INT_B6_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "B6_prop_4",
+          "name": "文件夹",
+          "kind": "drawer",
+          "prefix": "",
+          "text": "招聘页放在上面。",
+          "visual": "drawer",
+          "node": "INT_B6_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "B6_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_B6_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "B screenplay scenes 1–7"
+    },
+    "B7": {
+      "items": [
+        {
+          "id": "B7_read_0",
+          "name": "行李笔记",
+          "kind": "read",
+          "pages": [
+            "交通 / 住宿 / 预算\n工作机会 / 七天\n12份认可 / 返程",
+            "[s]回来以后——[/s]\n\n先合上。"
+          ],
+          "text": "交通 / 住宿 / 预算\n工作机会 / 七天\n12份认可 / 返程",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B7_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "B7_read_1",
+          "name": "随身清单",
+          "kind": "read",
+          "pages": [
+            "录音设备。\n耳机。\n充电线。\n\n这几样是拿去玩的。"
+          ],
+          "text": "录音设备。\n耳机。\n充电线。\n\n这几样是拿去玩的。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B7_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "B7_read_2",
+          "name": "衣服上的纸",
+          "kind": "read",
+          "pages": [
+            "留一点空位。\n\n要带回来的东西还不知道。"
+          ],
+          "text": "留一点空位。\n\n要带回来的东西还不知道。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "screenplay_adaptation",
+          "node": "INT_B7_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "B7_prop_0",
+          "name": "录音设备",
+          "kind": "listen",
+          "prefix": "",
+          "text": "先试一下，能录。",
+          "visual": "recorder",
+          "node": "INT_B7_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "B7_prop_1",
+          "name": "行李箱",
+          "kind": "drawer",
+          "prefix": "Suitcase_lid",
+          "text": "还有一件折好的衣服。",
+          "visual": "drawer",
+          "node": "INT_B7_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "B7_prop_2",
+          "name": "耳机",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "和线一起装进小袋。",
+          "visual": "object",
+          "node": "INT_B7_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "B7_prop_3",
+          "name": "衣服",
+          "kind": "inspect",
+          "prefix": "Folded_clothes",
+          "text": "折痕比她叠的那几件齐。",
+          "visual": "object",
+          "node": "INT_B7_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "B7_prop_4",
+          "name": "床头灯",
+          "kind": "toggle",
+          "prefix": "",
+          "text": "合上本子以前，灯还亮着。",
+          "visual": "lamp",
+          "node": "INT_B7_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "B7_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_B7_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "B screenplay scenes 1–7"
+    },
+    "A0": {
+      "items": [
+        {
+          "id": "A0_read_0",
+          "name": "透光台旁",
+          "kind": "read",
+          "pages": [
+            "薄纸放上层。\n刻刀用完收好。\n\n这张蓝色留着。"
+          ],
+          "text": "薄纸放上层。\n刻刀用完收好。\n\n这张蓝色留着。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "authored_present_room",
+          "node": "INT_A0_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "A0_read_1",
+          "name": "墙边草稿",
+          "kind": "read",
+          "pages": [
+            "鞋的形状很奇怪。\n穿上更奇怪。\n\n还挺喜欢。"
+          ],
+          "text": "鞋的形状很奇怪。\n穿上更奇怪。\n\n还挺喜欢。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "authored_present_room",
+          "node": "INT_A0_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "A0_read_2",
+          "name": "便签",
+          "kind": "read",
+          "pages": [
+            "今天先把窗户开一下。"
+          ],
+          "text": "今天先把窗户开一下。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "authored_present_room",
+          "node": "INT_A0_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "A0_prop_0",
+          "name": "小龙灯",
+          "kind": "toggle",
+          "prefix": "Baby_dragon_body",
+          "text": "暖粉色的光落在薄纸旁边。",
+          "visual": "lamp",
+          "node": "INT_A0_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "A0_prop_1",
+          "name": "奇怪的鞋",
+          "kind": "inspect",
+          "prefix": "Quirky_shoe",
+          "text": "左右两只的形状略有不同。",
+          "visual": "object",
+          "node": "INT_A0_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "A0_prop_2",
+          "name": "刻刀",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "刀帽放在手边。",
+          "visual": "object",
+          "node": "INT_A0_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "A0_prop_3",
+          "name": "纸抽屉",
+          "kind": "drawer",
+          "prefix": "",
+          "text": "还有几张没用过的蓝色。",
+          "visual": "drawer",
+          "node": "INT_A0_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "A0_prop_4",
+          "name": "窗边",
+          "kind": "listen",
+          "prefix": "Night_window",
+          "text": "从窗缝里能听见一点海风。",
+          "visual": "recorder",
+          "node": "INT_A0_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "A0_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_A0_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "A screenplay scenes 1–7"
+    },
+    "B0": {
+      "items": [
+        {
+          "id": "B0_read_0",
+          "name": "采样桌旁",
+          "kind": "read",
+          "pages": [
+            "输入电平再低一点。\n线绕松一点。\n\n今晚只听，不改。"
+          ],
+          "text": "输入电平再低一点。\n线绕松一点。\n\n今晚只听，不改。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "authored_present_room",
+          "node": "INT_B0_read_0",
+          "range": 1.2
+        },
+        {
+          "id": "B0_read_1",
+          "name": "声响清单",
+          "kind": "read",
+          "pages": [
+            "窗缝 / 杯沿 / 远处的车\n\n还缺一个收尾。"
+          ],
+          "text": "窗缝 / 杯沿 / 远处的车\n\n还缺一个收尾。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "authored_present_room",
+          "node": "INT_B0_read_1",
+          "range": 1.2
+        },
+        {
+          "id": "B0_read_2",
+          "name": "预算页",
+          "kind": "read",
+          "pages": [
+            "住处。车费。吃饭。\n\n买唱片这一栏先空着。"
+          ],
+          "text": "住处。车费。吃饭。\n\n买唱片这一栏先空着。",
+          "prefix": "",
+          "visual": "notebook",
+          "source_status": "authored_present_room",
+          "node": "INT_B0_read_2",
+          "range": 1.2
+        },
+        {
+          "id": "B0_prop_0",
+          "name": "录音设备",
+          "kind": "listen",
+          "prefix": "Audio_interface",
+          "text": "房间里最小的声响也录进来了。",
+          "visual": "recorder",
+          "node": "INT_B0_prop_0",
+          "range": 2.1
+        },
+        {
+          "id": "B0_prop_1",
+          "name": "MIDI键盘",
+          "kind": "listen",
+          "prefix": "MIDI_body",
+          "text": "轻轻按一个音。",
+          "visual": "recorder",
+          "node": "INT_B0_prop_1",
+          "range": 2.1
+        },
+        {
+          "id": "B0_prop_2",
+          "name": "吉他",
+          "kind": "inspect",
+          "prefix": "Guitar_body",
+          "text": "弦上留着手指的痕迹。",
+          "visual": "object",
+          "node": "INT_B0_prop_2",
+          "range": 2.1
+        },
+        {
+          "id": "B0_prop_3",
+          "name": "桌灯",
+          "kind": "toggle",
+          "prefix": "",
+          "text": "电脑旁边暖了一点。",
+          "visual": "lamp",
+          "node": "INT_B0_prop_3",
+          "range": 2.1
+        },
+        {
+          "id": "B0_prop_4",
+          "name": "收纳抽屉",
+          "kind": "drawer",
+          "prefix": "",
+          "text": "线材各绕一圈，松松放着。",
+          "visual": "drawer",
+          "node": "INT_B0_prop_4",
+          "range": 2.1
+        },
+        {
+          "id": "B0_spare",
+          "name": "桌边小物",
+          "kind": "inspect",
+          "prefix": "",
+          "text": "放下时忘了摆正。现在这样也行。",
+          "visual": "object",
+          "node": "INT_B0_spare",
+          "range": 2.1
+        }
+      ],
+      "source": "B screenplay scenes 1–7"
+    }
+  }
+}

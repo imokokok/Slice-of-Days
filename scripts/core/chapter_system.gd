@@ -31,7 +31,18 @@ func chapter_sequence() -> Array[Dictionary]:
 		var role := str(roles[index])
 		if role == "choice": role = str(GameState.shared_state.get("final_role", "choice"))
 		result.append({"id":"day_%d_%s" % [index+1,role.to_lower()], "day":index+1, "role":role})
+		var other := "B" if role == "A" else "A" if role == "B" else "choice"
+		result.append({"id":"day_%d_%s" % [index+1,other.to_lower()], "day":index+1, "role":other})
 	return result
+
+func align_saved_chapter() -> void:
+	if GameState.current_day == 7 and not GameState.shared_state.has("final_role"): GameState.shared_state["final_role"] = GameState.current_role
+	var sequence := chapter_sequence()
+	for index in sequence.size():
+		if int(sequence[index].day) == GameState.current_day and str(sequence[index].role) == GameState.current_role:
+			GameState.shared_state["chapter_index"] = index
+			GameState.shared_state["residency_calendar_version"] = 2
+			return
 
 func choose_final_role(role: String) -> bool:
 	if GameState.current_day != 6 or role not in ["A","B"] or not bool(GameState.shared_state.get("sleep_pending",false)): return false
@@ -145,7 +156,8 @@ func residency_audit(role: String) -> Dictionary:
 		"role": role,
 		"confirmed": confirmations.size(),
 		"required": 12,
-		"passed": confirmations.size() >= 12,
+		"passed": bool(ResidencySystem.audit(role).get("ready", false)) and not ResidencySystem.audit(role).get("submitted", {}).is_empty(),
+		"dossier": ResidencySystem.audit(role),
 		"refused": refused,
 		"pending": pending,
 		"withdrawn": withdrawn,
@@ -182,10 +194,11 @@ func sleep_at_home() -> bool:
 
 func _process(_delta: float) -> void:
 	var sleep_at := int(GameState.schedule_for(GameState.current_role, GameState.current_day).get("sleep_at", 1320))
-	if GameState.current_minute < sleep_at or SceneRouter.transitioning: return
+	if GameState.current_minute < sleep_at or SceneRouter.transitioning or MetaExperience.modal_open(): return
 	if bool(GameState.shared_state.get("sleep_pending", false)) or bool(GameState.shared_state.get("game_complete", false)): return
 	var scene := get_tree().current_scene
 	if scene == null or scene.scene_file_path not in [SceneRouter.TOWN_DAY, SceneRouter.INTERACTIVE_SPACE]: return
+	if scene.has_node("GameplayShell") and not scene.get_node("GameplayShell").finish_recording_for_exit(): return
 	# Finish any minigame/transition before ending the day on return to exploration.
 	GameState.shared_state["sleep_pending"] = true
 	GameState.shared_state["midnight_rest"] = true

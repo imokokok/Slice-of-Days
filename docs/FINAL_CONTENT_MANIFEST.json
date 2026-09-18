@@ -1,0 +1,38 @@
+[
+  {
+    "file": "scripts/residency/gameplay_shell.gd",
+    "sha256": "fadb4a90f0999fb7c856b610fa95869dfa034cebcadca74d9c0e518cfdcf026c"
+  },
+  {
+    "file": "scripts/residency/map_paper.gd",
+    "sha256": "1064169b01bfd3b2095ce6f25cc095a3202d98f7cf8461fbaff7ab117d299d1f"
+  },
+  {
+    "file": "scripts/residency/paper_overlay.gd",
+    "sha256": "ad7a8fe070a3c8714eded4dd7a1c722ca0c42b99c3e4afcb9a1f2f2364003b46"
+  },
+  {
+    "file": "scripts/residency/paper_piece.gd",
+    "sha256": "41292a11b530bee7f448ac204bb07cd094a8472450f459b3970de9d0c36a85da"
+  },
+  {
+    "file": "scripts/residency/pocket_objects.gd",
+    "sha256": "4dc6b64913a00d7a742c8aea9082c615e978e7c55d26fed49f0d2603ce634005"
+  },
+  {
+    "file": "scripts/residency/recorder_lite.gd",
+    "sha256": "7c279638d37b9857d16942b090997dcf3de9dbc850ef44aaf3868f933566feaa"
+  },
+  {
+    "file": "scripts/residency/residency_system.gd",
+    "sha256": "e2e044b4c7bf69c7e4b35262304e7fd7451d09be4978a3d4759f34a44292758a"
+  },
+  {
+    "file": "scripts/residency/sound_paper.gd",
+    "sha256": "5f220d1dfaf8bd686310df586d55205b5e2dcb55a4500a4839e5ffc5a38f8af5"
+  },
+  {
+    "file": "data/residency/portfolio.json",
+    "sha256": "2dba77250dde1f2e6a84fdca28a0c50c920d0613b7c022914e674eb509ecfa91"
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "source": "2026-09-13/github-slice-of-days/work/Slice-of-Days",
+  "integration": {
+    "time": "GameState.use_free_time, 7-day calendar retained",
+    "save": "shared_state versioned meta payload, atomic SaveManager",
+    "notebook": "KnowledgeSystem revisions, existing Journal",
+    "traces": "EchoSystem extended",
+    "dialogue": "existing ConversationPanel and invitation flow",
+    "rooms": "interactive_spaces home_a/home_b object entry",
+    "minigames": "GameplayModuleSystem + EchoSystem outcomes retained"
+  },
+  "plan": [
+    "content and modular text layer",
+    "contextual UI and time costs",
+    "ambient/offline trace updates",
+    "Blender rooms and first-person memory entry",
+    "regression and visual checks"
+  ]
+}

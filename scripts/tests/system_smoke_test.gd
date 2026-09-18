@@ -52,7 +52,7 @@ func _test_calendar_and_role_isolation() -> void:
 
 func _test_schedule_and_route() -> void:
 	ChapterSystem.start_new_game("A")
-	_check(ScheduleSystem.residents.size() == 100, "The graybox roster should expand to 100 stable residents")
+	_check(ScheduleSystem.residents.size() == 102, "The 100-resident graybox roster also includes the two existing market shoppers")
 	_check(not ScheduleSystem.activity_at("town_resident_033", 1, 780).is_empty(), "A generated resident should expose a real schedule")
 	var found_day_lead := false
 	for lead in EventSystem.day_leads():

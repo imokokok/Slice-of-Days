@@ -13,17 +13,28 @@ func ensure_resident(resident_id: String) -> Dictionary:
 			"confirmation": "unknown",
 			"last_day": 0,
 			"last_event": "",
+			"encounter_events": [],
 		}
-	return GameState.relationships[resident_id]
+	var stored: Dictionary = GameState.relationships[resident_id]
+	if not stored.has("encounter_events"):
+		# Older saves remember only their latest source. Retain earned signatures,
+		# but do not turn an unverifiable legacy counter into new recognition.
+		stored["encounter_events"] = []
+		var last := str(stored.get("last_event",""))
+		if not last.is_empty(): stored.encounter_events.append(last)
+	return stored
 
 
 func record_encounter(resident_id: String, event_id := "", flags: Array = []) -> void:
 	var state := ensure_resident(resident_id)
 	if state.is_empty():
 		return
+	var token: String = event_id if not event_id.is_empty() else "visit_d%d_%s" % [GameState.current_day,GameState.current_location]
+	if state.encounter_events.has(token): return
+	state.encounter_events.append(token)
 	state["encounters"] = int(state.get("encounters", 0)) + 1
 	state["last_day"] = GameState.current_day
-	state["last_event"] = event_id
+	state["last_event"] = token
 	var stored_flags: Array = state.get("flags", [])
 	for flag in flags:
 		var value := str(flag)
@@ -91,11 +102,11 @@ func confirmation_request_preview(resident_id: String) -> Dictionary:
 	# generic conversation action is reserved for draft/free-roam residents.
 	if resident.is_empty() or not bool(resident.get("draft", false)):
 		return {"available": false}
-	var state: Dictionary = GameState.relationships.get(resident_id, {})
+	var state: Dictionary = ensure_resident(resident_id)
 	if state.is_empty():
 		return {"available": false}
 	var status := str(state.get("confirmation", "unknown"))
-	var encounters := int(state.get("encounters", 0))
+	var encounters: int = state.get("encounter_events", []).size()
 	if status == "granted" or status == "withdrawn" or encounters <= 0:
 		return {"available": false}
 	if status == "refused":
@@ -120,7 +131,7 @@ func request_confirmation(resident_id: String) -> Dictionary:
 		return {"ok": false, "message": "现在还不适合提出这个请求。"}
 	var state := ensure_resident(resident_id)
 	var previous := str(state.get("confirmation", "unknown"))
-	var encounters := int(state.get("encounters", 0))
+	var encounters: int = state.get("encounter_events", []).size()
 	var resident: Dictionary = ScheduleSystem.residents.get(resident_id, {})
 	var name := str(resident.get("display_name", resident_id))
 	var next_status := previous

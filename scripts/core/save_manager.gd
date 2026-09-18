@@ -52,6 +52,7 @@ func save_game(path := "") -> bool:
 	var file := FileAccess.open(temporary_path, FileAccess.WRITE)
 	if file == null:
 		return _save_error("无法创建临时存档：%s" % error_string(FileAccess.get_open_error()))
+	GameState.shared_state["meta_checkpoint"] = {"version":1,"timestamp":Time.get_unix_time_from_system()}
 	var payload := JSON.stringify(GameState.to_save_data(), "\t")
 	file.store_string(payload)
 	file.flush()
@@ -96,10 +97,18 @@ func load_game(path := "") -> bool:
 	if not FileAccess.file_exists(source_path):
 		return false
 	var file := FileAccess.open(source_path, FileAccess.READ)
+	if file == null:
+		return _save_error("无法读取存档：%s" % error_string(FileAccess.get_open_error()))
 	var parsed = JSON.parse_string(file.get_as_text())
+	# Release the Windows read handle before ambient updates replace this file.
+	file.close()
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return false
 	GameState.load_save_data(parsed)
+	if EchoSystem.resume_ambient():
+		if not save_game(target_path):
+			GameState.load_save_data(parsed)
+			return false
 	if source_path != SAVE_PATH:
 		if target_path == SAVE_PATH:
 			save_game(SAVE_PATH)

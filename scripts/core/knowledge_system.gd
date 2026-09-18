@@ -1,6 +1,10 @@
 extends Node
 func facts() -> Array:
-	return GameState.shared_state.get("knowledge_"+GameState.current_role,[])
+	var rows: Array = GameState.shared_state.get("knowledge_"+GameState.current_role,[]).duplicate(true)
+	for item in rows:
+		var stale := str(item.get("predicate", "")) == "schedule" and int(item.get("learned_day", 0)) != GameState.current_day
+		item["status"] = "Outdated" if stale else "Heard" if float(item.get("confidence", 1.0)) < 0.8 else "Confirmed"
+	return rows
 func learn(fact: Dictionary) -> void:
 	var rows := facts().duplicate(true)
 	var item := fact.duplicate(true)
@@ -9,6 +13,10 @@ func learn(fact: Dictionary) -> void:
 	var replaced := false
 	for index in rows.size():
 		if str(rows[index].get("id","")) == str(item.get("id","")):
+			var history: Array = rows[index].get("revisions", []).duplicate(true)
+			if str(rows[index].get("text", "")) != str(item.get("text", "")):
+				history.append({"text":rows[index].get("text", ""), "day":rows[index].get("learned_day",1), "source":rows[index].get("source_npc_id", "")})
+			item["revisions"] = history
 			rows[index] = item
 			replaced = true
 	if not replaced: rows.append(item)

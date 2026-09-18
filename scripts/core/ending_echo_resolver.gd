@@ -118,6 +118,7 @@ func _artifact_in_state_or_world(state: Dictionary, artifact_id: String, collect
 
 func _artifact_in_collections(collections: Dictionary, artifact_id: String, requested_collection: String = "", artifact_kind: String = "") -> Dictionary:
 	for collection_id_value in collections:
+		if not collections[collection_id_value] is Array: continue
 		var collection_id := str(collection_id_value)
 		if not requested_collection.is_empty() and collection_id != requested_collection:
 			continue

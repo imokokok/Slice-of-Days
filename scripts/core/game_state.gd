@@ -3,9 +3,10 @@ extends Node
 signal state_changed
 signal message_posted(message: String)
 signal role_changed(role: String)
+signal money_recorded(transaction: Dictionary)
 
 const REAL_SECONDS_PER_GAME_MINUTE := 4.0
-const SAVE_VERSION := 5
+const SAVE_VERSION := 6
 const CALENDAR_PATH := "res://data/story/calendar.json"
 
 var current_role := "A"
@@ -61,6 +62,7 @@ func _initialize_new_state(start_role: String) -> void:
 	shared_state = {
 		"starting_budget_version": 3,
 		"chapter_index": 0,
+		"residency_calendar_version": 2,
 		"chapter_start_role": start_role if role_states.has(start_role) else "A",
 		"completed_chapters": [],
 		"completed_transitions": [],
@@ -74,10 +76,11 @@ func _initialize_new_state(start_role: String) -> void:
 
 func _default_role_state(role: String) -> Dictionary:
 	var schedule := schedule_for(role, 1)
+	var economy := _load_json("res://data/economy/economy_config.json")
 	return {
 		"day": 1,
 		"minute": int(schedule.get("start", 9 * 60)),
-		"money": int(schedule.get("starting_money", 12000 if role == "A" else 1600)),
+		"money": int(economy.get("starting_balance", {}).get(role, schedule.get("starting_money", 12000 if role == "A" else 1600))),
 		"location": "residence",
 		"completed_events": [],
 		"confirmed_residents": [],
@@ -352,7 +355,7 @@ func complete_next_commitment() -> Dictionary:
 	shared_state.erase("pending_commitment")
 	var payment := int(commitment.get("pay", 0))
 	if payment > 0:
-		earn_money(payment, str(commitment.get("label", "工作收入")))
+		earn_money(payment, str(commitment.get("label", "工作收入")), {"work_minutes":minutes,"commitment":commitment_id})
 	var commitment_kind := str(commitment.get("kind", "work"))
 	var journal_text := "%s · 用时%d分钟" % [str(commitment.get("label", "完成日程")), minutes]
 	if payment > 0:
@@ -389,20 +392,23 @@ func spend_money(amount: int, reason := "消费") -> bool:
 	return true
 
 
-func earn_money(amount: int, reason := "收入") -> void:
+func earn_money(amount: int, reason := "收入", details: Dictionary = {}) -> void:
 	if amount <= 0:
 		return
 	money += amount
-	_record_money(amount, reason)
+	_record_money(amount, reason, details)
 	commit_active_role_state()
 	state_changed.emit()
 
 
-func _record_money(amount: int, reason: String) -> void:
+func _record_money(amount: int, reason: String, details: Dictionary = {}) -> void:
 	if amount < 0:
 		var day_key := str(current_day)
 		daily_spending[day_key] = int(daily_spending.get(day_key, 0)) - amount
-	money_ledger.append({"day": current_day, "minute": current_minute, "amount": amount, "reason": reason, "balance": money})
+	money_ledger.append({"day": current_day, "minute": current_minute, "amount": amount, "reason": reason, "balance": money, "transaction_id": Crypto.new().generate_random_bytes(10).hex_encode()})
+	for key in ["work_minutes", "commitment", "kind", "issuer", "source"]:
+		if details.has(key): money_ledger[-1][key] = details[key]
+	money_recorded.emit(money_ledger[-1].duplicate(true))
 	if money_ledger.size() > 80:
 		money_ledger = money_ledger.slice(money_ledger.size() - 80)
 
@@ -756,6 +762,7 @@ func load_save_data(data: Dictionary) -> void:
 		if current_day == 7: shared_state["final_role"] = current_role
 		shared_state["chapter_index"] = current_day - 1
 		shared_state.erase("street_positions")
+	ChapterSystem.align_saved_chapter()
 	commit_active_role_state()
 	state_changed.emit()
 

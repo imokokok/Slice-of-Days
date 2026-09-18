@@ -201,6 +201,11 @@ func _complete() -> void:
 		"source_event_id": source_event_id,
 		"interaction": {"mode": "extension", "selected_labels": [str(metadata.get("name", module_id))]},
 	}
+	if module_id == "ghostwriting":
+		# END is reached only after NPC delivery or a successful real public publish.
+		var public_id := int(experience.get("bottle_published_id"))
+		outcome["contribution_accepted"] = str(experience.get("letter_mode")) == "npc" or public_id > 0
+		outcome["acceptance"] = {"location":"handcraft_shop","source":"public_letter_publish" if public_id > 0 else "npc_letter_delivery","external_id":str(public_id),"stage":str(experience.get("stage"))}
 	if not GameplayModuleSystem.complete_external(module_id, outcome, metadata.get("external_results", {})):
 		GameState.load_save_data(rollback_snapshot)
 		submitting = false

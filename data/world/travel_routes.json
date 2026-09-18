@@ -82,6 +82,8 @@
     }
   ],
   "transport": {
+    "taxi_fares": {"short":30,"medium":50,"long":75},
+    "shortcuts": [{"fact":"beetman_shopping","from":"produce_stall","to":"night_market","minutes":1}],
     "bus_stops": [
       "bus_stop",
       "residence",
@@ -109,5 +111,67 @@
       "residence",
       "dorm"
     ]
+  },
+  "arrivals": {
+    "town_entrance": {
+      "local_x": 690,
+      "facing": 1
+    },
+    "night_market": {
+      "local_x": 1010,
+      "facing": 1
+    },
+    "produce_stall": {
+      "local_x": 710,
+      "facing": 1
+    },
+    "handcraft_shop": {
+      "local_x": 810,
+      "facing": 1
+    },
+    "cafe": {
+      "local_x": 310,
+      "facing": 1
+    },
+    "residence": {
+      "local_x": 700,
+      "facing": 1
+    },
+    "dorm": {
+      "local_x": 1060,
+      "facing": 1
+    },
+    "tarot_stall": {
+      "local_x": 960,
+      "facing": 1
+    },
+    "chess_stall": {
+      "local_x": 660,
+      "facing": 1
+    },
+    "park": {
+      "local_x": 1030,
+      "facing": 1
+    },
+    "bus_stop": {
+      "local_x": 700,
+      "facing": 1
+    },
+    "port": {
+      "local_x": 690,
+      "facing": 1
+    },
+    "record_store": {
+      "local_x": 885,
+      "facing": 1
+    },
+    "print_shop": {
+      "local_x": 1050,
+      "facing": 1
+    },
+    "library": {
+      "local_x": 1000,
+      "facing": 1
+    }
   }
 }

@@ -10,9 +10,15 @@ config_version=5
 
 [application]
 
-config/name="Solmere"
+config/name="Solmere · 七日档案 · 走动修复"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="Solmere_Playable_Meta"
 run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.7")
+
+[audio]
+
+driver/enable_input=true
 
 [autoload]
 
@@ -36,10 +42,11 @@ WorldSound="*res://scripts/town_sound/audio/WorldSound.gd"
 SoundSettings="*res://scripts/town_sound/audio/SoundSettings.gd"
 ObservatoryState="*res://extensions/observatory/scripts/game_state.gd"
 ObservatoryAudio="*res://extensions/observatory/scripts/audio_manager.gd"
-
-[audio]
-
-driver/enable_input=true
+MetaExperience="*res://scripts/meta/meta_experience.gd"
+ResidencySystem="*res://scripts/residency/residency_system.gd"
+EconomySystem="*res://scripts/core/economy_system.gd"
+FilmSystem="*res://scripts/photography/film_system.gd"
+GuidanceSystem="*res://scripts/core/guidance_system.gd"
 
 [display]
 
@@ -48,12 +55,10 @@ window/size/viewport_height=900
 window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 
 [gui]
 
 theme/default_font_multichannel_signed_distance_field=true
-
 
 [rendering]
 

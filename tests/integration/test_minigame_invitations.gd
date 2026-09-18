@@ -95,8 +95,15 @@ func run() -> void:
 	check(state.current_minute == minute+30,"Completed conversation accounts for time once")
 	check(root.get_node("GameplayModuleSystem").latest_outcome("translation").interaction.mode == "conversation","Conversation result remains available to the notebook and story")
 	check(root.get_node("GameplayModuleSystem").pending_module_id().is_empty(),"No pending game remains after the street conversation")
-	town._interact()
-	check(town.event_overlay.visible and not is_instance_valid(town.conversation),"Talking again produces a peaceful follow-up rather than another argument")
+	var follow_up: Dictionary = {}
+	for point in town.street.hotspots:
+		if str(point.get("id", "")) == "ahe": follow_up = point
+	check(not follow_up.is_empty(),"One of the existing shoppers remains individually reachable after the argument")
+	if not follow_up.is_empty():
+		town.street.player_x = float(follow_up.x)
+		town._interact()
+		check(is_instance_valid(town.conversation) and town.conversation.dialogue_id.contains("post_argument"),"Talking again opens ordinary post-event smalltalk")
+		if is_instance_valid(town.conversation): town.conversation._close()
 	state.current_location = "night_market"
 	check(root.get_node("DialogueSystem").invitation_for("beetman").is_empty(),"Misunderstanding offer must not appear away from produce stall")
 	current_scene.queue_free()

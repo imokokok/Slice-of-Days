@@ -37,15 +37,10 @@ func walking_distance(from: String, destination: String, from_x := -1.0) -> floa
 	return ax + absf(a_entry - b_entry) + bx
 
 func directions(from: String, destination: String) -> String:
-	var a := segment_for(from)
-	var b := segment_for(destination)
-	if a.id == b.id: return "沿路往右" if location_x(destination) > location_x(from) else "沿路往左"
-	var prefix := "先往左回到主街，" if a.id != "main_street" else ""
-	match str(b.id):
-		"residential": return prefix + "在主街拱门路口向上进入住宅区"
-		"cultural_street": return prefix + "在主街拱门路口向下进入文化街"
-		"lookout_route": return prefix + "经过社区中心，继续向右走到海边"
-	return prefix + "沿主街找到" + TravelSystem.location_name(destination)
+	if from == destination: return "你已经在这里。"
+	var names := {"main_street":"主街","residential":"住宅区","cultural_street":"文化街","lookout_route":"海边观景路线"}
+	return str(names.get(str(segment_for(destination).id),"小镇"))+"
+选择步行或打车前往。"
 
 func legacy_segment_for(location: String) -> Dictionary:
 	var segments: Array = config.get("legacy_segments", [])
@@ -54,7 +49,7 @@ func legacy_segment_for(location: String) -> Dictionary:
 	return segments[0] if not segments.is_empty() else {}
 
 func walk_minutes(from: String, destination: String) -> int:
-	return int(ceil(walking_distance(from, destination) / 300.0 / 4.0))
+	return maxi(0,TravelSystem._shortest_walk_minutes(from,destination))
 func neighbours(location: String) -> Array:
 	return TravelSystem.adjacency.get(location, [])
 func pins() -> Array:

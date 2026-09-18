@@ -2,6 +2,8 @@ extends Node2D
 class_name CollagePiece
 
 var source_id := 0
+var photo_id := ""
+var collection_id := ""
 var texture: Texture2D
 var polygon := PackedVector2Array()
 var uv := PackedVector2Array()
@@ -48,4 +50,4 @@ func serialize() -> Dictionary:
 		poly.append([p.x,p.y])
 	for p in uv:
 		uvs.append([p.x,p.y])
-	return {"source":source_id,"polygon":poly,"uv":uvs,"position":[position.x,position.y],"rotation":rotation,"scale":[scale.x,scale.y],"taped":is_taped,"text":handwriting}
+	return {"source":source_id,"photo_id":photo_id,"collection_id":collection_id,"polygon":poly,"uv":uvs,"position":[position.x,position.y],"rotation":rotation,"scale":[scale.x,scale.y],"taped":is_taped,"text":handwriting}

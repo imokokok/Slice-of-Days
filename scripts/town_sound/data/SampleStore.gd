@@ -77,6 +77,7 @@ func save_sample(wav: AudioStreamWAV, sample_name: String, context: Dictionary =
 		"nearby_npcs": context.get("nearby_npcs", []).duplicate(),
 		"event_tag": str(context.get("event_tag", "")),
 		"usage_scope": str(context.get("usage_scope", "local_only")),
+		"markers": context.get("markers", []).duplicate(),
 		"consent_status": str(context.get("consent_status", "unknown")),
 	}
 	if not _write_json(root_path.path_join(id + ".json"), metadata):

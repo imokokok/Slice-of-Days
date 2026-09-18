@@ -13,9 +13,12 @@ var balance_label: Label
 var budget_label: Label
 var status_label: Label
 var item_list: VBoxContainer
+var buying := false
+var last_purchase_msec := -1000
 
 
 func _ready() -> void:
+	add_to_group("meta_modal")
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_load_shop()
@@ -55,10 +58,13 @@ func _build_ui() -> void:
 	var title := _label(panel, str(shop.get("name", "小镇商店")), Vector2(32, 24), Vector2(570, 45), 29, INK)
 	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	balance_label = _label(panel, "", Vector2(620, 30), Vector2(275, 35), 21, TERRACOTTA, HORIZONTAL_ALIGNMENT_RIGHT)
-	_label(panel, "点选商品即可购买 · 每次挑选会经过 5 分钟", Vector2(34, 75), Vector2(750, 30), 16, MUTED)
+	_label(panel, "按标价结算 · 食材进入随身物品 · 每笔保留小票", Vector2(34, 75), Vector2(750, 30), 16, MUTED)
 	budget_label = _label(panel, "", Vector2(34, 108), Vector2(870, 28), 17, SEA)
 	var close := _button(panel, "收起  Esc", Vector2(744, 622), Vector2(160, 44), false)
 	close.pressed.connect(queue_free)
+	if shop_id == "grocery":
+		var photo := _button(panel, "摄影与冲洗", Vector2(744, 567), Vector2(160, 44), false)
+		photo.pressed.connect(func() -> void: FilmSystem.open_counter(get_parent()); queue_free())
 	var scroll := ScrollContainer.new()
 	scroll.position = Vector2(32, 150)
 	scroll.size = Vector2(876, 400)
@@ -83,7 +89,7 @@ func _refresh() -> void:
 	if shop.is_empty():
 		status_label.text = "摊位数据没有加载成功。"
 		return
-	for raw in shop.get("items", []):
+	for raw in EconomySystem.stock(shop_id):
 		var item: Dictionary = raw.duplicate(true)
 		item["shop_name"] = str(shop.get("name", "小镇商店"))
 		var count := int(GameState.inventory.get(str(item.get("id", "")), 0))
@@ -105,6 +111,7 @@ func _refresh() -> void:
 		line.add_child(copy)
 		var name := Label.new()
 		name.text = "%s  ·  %d元%s" % [str(item.get("name", "商品")), int(item.get("price", 0)), "  ·  已有%d" % count if count > 0 else ""]
+		if str(item.get("category", "")) == "collection": name.text += "  ·  今日余%d件" % int(item.remaining)
 		name.add_theme_font_size_override("font_size", 20)
 		name.add_theme_color_override("font_color", INK)
 		copy.add_child(name)
@@ -114,26 +121,26 @@ func _refresh() -> void:
 		description.add_theme_color_override("font_color", MUTED)
 		copy.add_child(description)
 		var buy := _button(line, "买一个", Vector2.ZERO, Vector2(130, 54), true)
-		buy.disabled = GameState.money < int(item.get("price", 0)) or not GameState.can_fit_now(int(item.get("minutes", 5)))
+		buy.disabled = GameState.money < int(item.get("price", 0)) or int(item.remaining) <= 0 or not EconomySystem.shop_open(shop_id)
 		buy.pressed.connect(_buy.bind(item))
+		if GameState.current_role == "A" and str(item.get("category", "")) == "collection":
+			MetaExperience.queue_important("a_odd_collection", {"item_id":str(item.id)})
 	status_label.text = "买到的食材会进入随身物品；在饭店选中同名材料完成出餐时会优先消耗。"
 
 
 func _buy(item: Dictionary) -> void:
-	var snapshot := GameState.to_save_data().duplicate(true)
-	var result := GameState.buy_item(item)
+	if buying or Time.get_ticks_msec() - last_purchase_msec < 350: return
+	buying = true
+	var result := EconomySystem.purchase(shop_id, str(item.id))
 	if not bool(result.get("ok", false)):
+		buying = false
 		WorldSound.play_ui("error")
 		_refresh()
 		status_label.text = str(result.get("message", "这次没能买下。"))
 		return
-	if not SaveManager.save_or_report("购买商品后保存失败"):
-		GameState.load_save_data(snapshot)
-		WorldSound.play_ui("error")
-		_refresh()
-		status_label.text = "存档暂时没能写入，本次购买已撤销，没有扣款。可以稍后重试。"
-		return
 	WorldSound.play_ui("coin")
+	last_purchase_msec = Time.get_ticks_msec()
+	buying = false
 	_refresh()
 	status_label.text = str(result.get("message", ""))
 

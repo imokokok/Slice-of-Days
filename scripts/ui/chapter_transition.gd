@@ -20,7 +20,7 @@ func _ready() -> void:
 	words.add_theme_color_override("font_color", Color("ddd0b8"))
 	var next := ChapterSystem.next_chapter()
 	if str(next.get("role", "")) == "choice":
-		words.text = "最后一天，想从哪一扇窗醒来？"
+		words.text = "最后一天，先从哪一扇窗醒来？\n随后，另一位也将度过她的第七天。"
 		add_child(words)
 		for index in 2:
 			var role := "A" if index == 0 else "B"

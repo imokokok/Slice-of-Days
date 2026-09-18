@@ -6,9 +6,9 @@ const SPEED := 300.0
 const REACH := 85.0
 const ACTOR_BASE_HEIGHT := 121.0
 const Atlas = preload("res://scripts/ui/scene_atlas.gd")
-const COAST_ART = preload("res://art/user_scenes/lookout_approach.jpg")
+const COAST_ART = preload("res://art/user_scenes/lookout_approach.png")
 const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
-const BUS_ART = preload("res://art/user_scenes/bus_stop.jpg")
+const BUS_ART = preload("res://art/user_scenes/bus_stop.png")
 var original_resident: Sprite2D
 var player_x := 500.0
 var world_width := 1800.0
@@ -125,10 +125,6 @@ func _draw() -> void:
 			draw_rect(Rect2(x-55,572,110,118),Color("4c4937"))
 			draw_rect(Rect2(x-49,580,98,102),Color("203f43"))
 			draw_string(ThemeDB.fallback_font,Vector2(x-35,615),"今日的菜",HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("f1e6c6"))
-		elif kind == "roads" and not illustrated:
-			draw_line(Vector2(x, 625),Vector2(x,715),Color("557052"),5)
-			draw_colored_polygon(PackedVector2Array([Vector2(x-45,627),Vector2(x+35,627),Vector2(x+55,642),Vector2(x+35,657),Vector2(x-45,657)]),Color("efd39a"))
-			draw_string(ThemeDB.fallback_font,Vector2(x-35,649),"小镇路口",HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("245664"))
 		elif kind == "wait_open" or (kind == "bench" and not illustrated):
 			draw_rect(Rect2(x - 40, 679, 80, 8), Color("9a7e60"))
 			draw_line(Vector2(x - 30, 687), Vector2(x - 30, 715), Color("776b5f"), 4)
@@ -140,24 +136,6 @@ func _draw() -> void:
 		var gate_x := walk_limit - camera_x + 18
 		draw_line(Vector2(gate_x, 640), Vector2(gate_x, 718), Color("40544e"), 7)
 		draw_line(Vector2(gate_x, 655), Vector2(gate_x + 145, 680), Color("c6b798"), 4)
-	var near := nearest()
-	if enabled and not near.is_empty():
-		var text := "E / F  ·  " + str(near.get("label", "互动"))
-		var font := ThemeDB.fallback_font
-		var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 21).x
-		var x := clampf(float(near.x) - camera_x - width / 2.0, 32.0, 1568.0 - width)
-		var hint_y := maxf(80.0, ground - _actor_height() - 64.0)
-		draw_rect(Rect2(x - 16, hint_y, width + 32, 46), Color("10161c", 0.94))
-		draw_string(font, Vector2(x, hint_y + 30), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color("f5e8d0"))
-	# Letterbox framing keeps the world visually separate from optional overlays.
-	if not indoor and route_id == "main_street":
-		var sign_x := WorldGraph.JUNCTION_X - 200 - camera_x
-		if sign_x > -100 and sign_x < 1700:
-			draw_line(Vector2(sign_x, 602), Vector2(sign_x, 714), Color("435f58"), 6)
-			draw_rect(Rect2(sign_x - 90, 560, 180, 66), Color("203c40", 0.95))
-			draw_string(ThemeDB.fallback_font, Vector2(sign_x - 74, 585), "↑ 住宅区", HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff1cb"))
-			draw_string(ThemeDB.fallback_font, Vector2(sign_x - 74, 612), "↓ 文化街", HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff1cb"))
-	draw_rect(Rect2(0, 0, 1600, 70), Color("10161c",0.72))
 
 func _draw_atlas() -> bool:
 	if indoor:
@@ -166,7 +144,9 @@ func _draw_atlas() -> bool:
 		draw_texture_rect(texture,Rect2(0,0,1600,900),false)
 		return true
 	if places.is_empty(): return false
-	if route_id == "lookout_route": _draw_lookout_approach()
+	if route_id == "lookout_route":
+		_draw_lookout_approach()
+		return true
 	for i in places.size():
 		var place: Dictionary = places[i]
 		var block_width := float(place.get("width", 1600))
@@ -208,27 +188,19 @@ func _draw_street_divider(x: float) -> void:
 	draw_set_transform(Vector2.ZERO)
 
 func _ground_at(world_x: float) -> float:
-	if not indoor and route_id == "lookout_route" and GameState.current_minute >= WorldGraph.LOOKOUT_OPEN:
-		return lerpf(713.0,805.0,smoothstep(2900,3200,world_x))
 	return 713.0
 
 func _draw_lookout_approach() -> void:
-	# The supplied panorama is one continuous coastal drawing, not repeated tiles.
-	# Preserve its aspect ratio; extend its flat sky and ground to fill the stage.
-	var tint := _scene_art_tint()
-	var sky := Color("e0e0e0") * tint
-	draw_rect(Rect2(0,70,1600,830),sky)
-	var art_width := 3200.0
-	var art_height := art_width * COAST_ART.get_height() / COAST_ART.get_width()
-	var art_top := 713.0 - art_height * 0.795
-	draw_texture_rect(COAST_ART,Rect2(-camera_x,art_top,art_width,art_height),false,tint)
-	var path := PackedVector2Array()
-	for step in range(17):
-		var x := step * 100.0
-		path.append(Vector2(x,_ground_at(x+camera_x)))
-	path.append(Vector2(1600,900))
-	path.append(Vector2(0,900))
-	draw_colored_polygon(path,Color("969696") * tint)
+	# One full-height original panorama. Horizontal camera movement reveals it;
+	# no replacement sky, road patch, stretched proportions, or overlaid plates.
+	var area := coast_art_rect()
+	draw_texture_rect(COAST_ART,area,false,_scene_art_tint())
+
+func coast_art_rect() -> Rect2:
+	var art_width := 900.0 * COAST_ART.get_width() / COAST_ART.get_height()
+	var world_width := float(WorldGraph.config.segments.filter(func(s: Dictionary)->bool:return s.id=="lookout_route")[0].width)
+	var progress := clampf(camera_x/maxf(1,world_width-1600),0,1)
+	return Rect2(-progress*(art_width-1600),0,art_width,900)
 
 func _scene_art_tint() -> Color:
 	match Atlas.phase(GameState.current_minute):
@@ -248,9 +220,11 @@ func _sync_original_resident() -> void:
 
 func _draw_bus_stop(left: float, width: float) -> void:
 	var tint := _scene_art_tint()
-	draw_rect(Rect2(left,0,width,900),Color("9c9c9c") * tint)
-	# Crop only the white presentation margin, not the shelter or its mountain.
-	draw_texture_rect_region(BUS_ART,Rect2(left,-77,width,900),Rect2(140,134,1215,822),tint)
+	draw_rect(Rect2(left,0,width,900),Color("88bcd1") * tint)
+	# Preserve PNG transparency and align the shelter feet with the walk line.
+	var art_height := width * BUS_ART.get_height() / BUS_ART.get_width()
+	var art_top := 713.0 - art_height * (920.0 / 1080.0)
+	draw_texture_rect(BUS_ART,Rect2(left,art_top,width,art_height),false,tint)
 
 func _draw_chess_stall(left: float, width: float) -> void:
 	# The user's PNG has real transparency: keep the cloth and branches intact,

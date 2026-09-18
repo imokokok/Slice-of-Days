@@ -83,10 +83,12 @@ func _result_panel(at: Vector2, result: Dictionary, outcome_copy: Dictionary) ->
 	add_child(panel)
 	_label(panel, "%s 的七天" % str(result.get("role", "?")), Vector2(34, 30), Vector2(300, 40), 27, INK)
 	_label(panel, "居民认可  %d / %d" % [int(result.get("confirmed", 0)), int(result.get("required", 12))], Vector2(34, 90), Vector2(500, 42), 23, TERRACOTTA)
-	var status := "通过试居审核" if bool(result.get("passed", false)) else "没有达到12份认可"
+	var dossier: Dictionary = result.get("dossier",{})
+	var status := "档案已收存" if bool(result.get("passed", false)) else "申请材料尚未完整交齐"
 	_label(panel, status, Vector2(34, 145), Vector2(500, 34), 18, TEAL if bool(result.get("passed", false)) else MUTED)
 	var copy_key := "passed" if bool(result.get("passed", false)) else "failed"
-	var outcome := _label(panel, str(outcome_copy.get(copy_key, "这七天已经被记录。")), Vector2(34, 198), Vector2(532, 58), 15, INK)
+	var conclusion := str(dossier.get("submitted",{}).get("outcome",outcome_copy.get(copy_key,"这七天已经被记录。")))
+	var outcome := _label(panel, conclusion, Vector2(34, 198), Vector2(532, 72), 17, INK)
 	outcome.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label(panel, "完成经历 %d · 私人记录 %d" % [int(result.get("completed_events", 0)), int(result.get("journal_entries", 0))], Vector2(34, 270), Vector2(532, 28), 15, MUTED)
 	_label(panel, "待定 %d · 拒绝 %d · 撤回 %d" % [

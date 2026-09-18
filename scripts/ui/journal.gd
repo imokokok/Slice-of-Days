@@ -15,6 +15,11 @@ var location_names: Dictionary = {}
 func _ready() -> void:
 	_load_location_names()
 	_build_ui()
+	var revisions := _button(self, "改过的记忆", Vector2(1120,28), Vector2(230,44), TEAL)
+	revisions.pressed.connect(func() -> void:
+		var page := preload("res://scripts/meta/trace_panel.gd").new()
+		page.mode = "revisions"
+		add_child(page))
 
 
 func _draw() -> void:
@@ -121,6 +126,7 @@ func _memory_text() -> String:
 	for entry in GameState.journal_entries:
 		lines.append("第%d天  %s" % [int(entry.get("day", GameState.current_day)), str(entry.get("text", ""))])
 	for collection in GameState.artifacts:
+		if not GameState.artifacts[collection] is Array: continue
 		var rows: Array = GameState.artifacts[collection]
 		lines.append("\n%s（%d）" % [str(collection), rows.size()])
 		for artifact in rows:

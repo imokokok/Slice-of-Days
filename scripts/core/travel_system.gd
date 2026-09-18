@@ -6,6 +6,8 @@ const LOCATIONS_PATH := "res://data/world/locations.json"
 var adjacency: Dictionary = {}
 var transport: Dictionary = {}
 var location_names: Dictionary = {}
+var arrivals: Dictionary = {}
+var travel_in_progress := false
 
 
 func _ready() -> void:
@@ -24,6 +26,7 @@ func load_route_data(path: String) -> void:
 		push_error("Invalid travel route data: %s" % path)
 		return
 	transport = parsed.get("transport", {})
+	arrivals = parsed.get("arrivals", {})
 	for edge in parsed.get("edges", []):
 		var from_id := str(edge.get("from", ""))
 		var to_id := str(edge.get("to", ""))
@@ -86,8 +89,9 @@ func route(from_id: String, to_id: String, method: String, role: String, minute:
 			label = "公交"
 		"taxi":
 			wait = int(transport.taxi_wait)
-			cost = int(transport.taxi_cost)
+			cost = int(transport.get("taxi_fares",{}).get("short",30)) if walking <= 18 else int(transport.get("taxi_fares",{}).get("medium",50)) if walking <= 35 else int(transport.get("taxi_fares",{}).get("long",75))
 			duration = maxi(int(transport.taxi_minimum), int(ceil(walking * float(transport.taxi_factor)))) + wait
+			if duration >= walking: return {"available":false, "reason":"这段路很近，步行更快。"}
 			label = "出租车"
 		"friend":
 			var npc := str(transport.friend_npc)
@@ -109,6 +113,7 @@ func route(from_id: String, to_id: String, method: String, role: String, minute:
 	return {"available":true, "minutes":duration, "cost":cost, "wait":wait, "arrival":minute+duration, "label":label, "conflicts":conflicts}
 
 func travel(to_id: String, method: String) -> Dictionary:
+	if travel_in_progress: return {"ok":false,"message":"还在路上。"}
 	var option := route(
 		GameState.current_location,
 		to_id,
@@ -124,10 +129,17 @@ func travel(to_id: String, method: String) -> Dictionary:
 		return {"ok": false, "message": "今天已没有足够时间完成这段路程。"}
 	if cost > 0 and GameState.money < cost:
 		return {"ok": false, "message": "余额不足。"}
-	if cost > 0:
-		GameState.spend_money(cost, "%s前往%s" % [str(option.get("label", "交通")), location_name(to_id)])
+	var snapshot := GameState.to_save_data().duplicate(true)
+	var from_id := GameState.current_location
+	travel_in_progress = true
 	if not GameState.use_free_time(duration):
-		return {"ok": false, "message": "当前空闲时段不足以完成这段路程。"}
+		travel_in_progress = false
+		GameState.load_save_data(snapshot)
+		return {"ok":false,"message":"当前空闲时段不足以完成这段路程。"}
+	if cost > 0 and not GameState.spend_money(cost, "%s前往%s" % [str(option.get("label", "交通")), location_name(to_id)]):
+		travel_in_progress = false
+		GameState.load_save_data(snapshot)
+		return {"ok":false,"message":"余额不足，本次出行已撤销。"}
 	if method == "friend":
 		var used: Array = GameState.shared_state.get("used_rides", [])
 		used.append("%d_%s" % [GameState.current_day, str(transport.friend_npc)])
@@ -135,8 +147,10 @@ func travel(to_id: String, method: String) -> Dictionary:
 	if method == "bus":
 		GameState.add_journal_entry({"kind":"ticket", "text":"一张公交票 · " + location_name(to_id)})
 	GameState.current_location = to_id
+	if method == "walk": _walk_keepsake(from_id,to_id)
 	GameState.commit_active_role_state()
 	GameState.state_changed.emit()
+	travel_in_progress = false
 	return {
 		"ok": true,
 		"message": "%s用了%d分钟，花费%d元。" % [str(option.get("label", "移动")), duration, cost],
@@ -164,7 +178,29 @@ func _shortest_walk_minutes(from_id: String, to_id: String) -> int:
 		unvisited.erase(current)
 		for edge in adjacency.get(current, []):
 			var neighbor := str(edge.get("to", ""))
-			var candidate := best + int(edge.get("minutes", 0))
+			var edge_minutes := int(edge.get("minutes",0))
+			for shortcut in transport.get("shortcuts",[]):
+				if [current,neighbor].has(str(shortcut.from)) and [current,neighbor].has(str(shortcut.to)) and KnowledgeSystem.facts().any(func(f: Dictionary)->bool:return str(f.get("id",""))==str(shortcut.fact)):
+					edge_minutes=mini(edge_minutes,int(shortcut.minutes))
+			var candidate := best + edge_minutes
 			if candidate < int(distances.get(neighbor, 1 << 30)):
 				distances[neighbor] = candidate
 	return -1
+
+func _walk_keepsake(from_id: String, to_id: String) -> void:
+	var key := "walk_keep_%s_%d" % [GameState.current_role,GameState.current_day]
+	if GameState.has_event(key) or GameState.current_location==from_id: return
+	if to_id not in ["port","produce_stall","park"]: return
+	GameState.mark_event(key)
+	var words := "沿海路走来，风把一张小镇旧地图压在石阶上。背面有人写着：海边的光总会晚一点。"
+	GameState.add_artifact("collage_materials",{"id":key,"kind":"paper","title":"路上拾到的旧地图角","day":GameState.current_day,"location":to_id,"source":"步行 · "+location_name(from_id)+"至"+location_name(to_id),"text":words},false)
+	GameState.add_journal_entry({"id":key,"kind":"discovery","text":words})
+	MetaExperience.queue_important("v3_environment_detail",{"text":words,"location_id":to_id})
+	GameState.message_posted.emit("路上拾到一角旧地图，已收进素材本。")
+
+func arrival_for(location: String) -> Dictionary:
+	var segment := WorldGraph.segment_for(location)
+	var offset := float(segment.get("offset",0))
+	var width: float = (float(segment.width)-offset)/segment.locations.size()
+	var point: Dictionary = arrivals.get(location,{"local_x":300,"facing":1})
+	return {"route":segment.id,"x":offset+segment.locations.find(location)*width+float(point.local_x)*width/1600.0,"facing":float(point.get("facing",1))}

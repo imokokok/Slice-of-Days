@@ -32,11 +32,12 @@ var roster_minute := -1
 
 func _ready() -> void:
 	_load_active_space()
+	add_child(preload("res://scripts/meta/place_layer.gd").new())
 	if space.is_empty():
 		SceneRouter.leave_space()
 		return
 	objects = space.get("objects", [])
-	people = ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
+	people = DialogueSystem.people_at(GameState.current_location)
 	if SceneRouter.active_space_id in ["home_a", "home_b"]: people.clear()
 	_build_theme()
 	stage = preload("res://scripts/ui/walk_stage.gd").new()
@@ -48,6 +49,8 @@ func _ready() -> void:
 	stage.room_name = str(space.get("name", ""))
 	stage.room_kind = str(space.get("id", ""))
 	add_child(stage)
+	if SceneRouter.active_space_id == "home_a": add_child(preload("res://scripts/ui/collection_display.gd").new())
+	if SceneRouter.active_space_id in ["home_a", "home_b"]: add_child(load("res://scripts/photography/room_photo_display.gd").new())
 	_build_ui()
 	stage.hotspots.append({"x":90, "kind":"exit", "label":"回到街道"})
 	for index in objects.size():
@@ -60,6 +63,7 @@ func _ready() -> void:
 		stage.hotspots.append({"x":700,"kind":"echo","label":"看黑板上的字","text":str(echo.text)})
 	WorldSound.set_active(true)
 	WorldSound.set_location(GameState.current_location)
+	add_child(preload("res://scripts/residency/gameplay_shell.gd").new())
 
 
 func _load_active_space() -> void:
@@ -138,6 +142,7 @@ func _room_memory_text() -> String:
 
 
 func _hotspot_x(index: int) -> float:
+	if objects[index].has("x"): return float(objects[index].x)
 	return preload("res://scripts/ui/scene_atlas.gd").object_x(str(space.id),index)
 
 
@@ -154,6 +159,17 @@ func _open_selected() -> void:
 	if objects.is_empty() or absf(stage.player_x - _hotspot_x(selected_index)) > stage.REACH:
 		return
 	var item: Dictionary = objects[selected_index]
+	if str(item.get("kind", "")) in ["restaurant_counter", "collections", "grocery_counter"]:
+		EconomySystem.open_counter(self, {"restaurant_counter":"restaurant", "collections":"collections", "grocery_counter":"grocery"}[str(item.kind)])
+		return
+	if str(item.get("kind", "")) in ["memory", "newspaper", "zines"]:
+		if str(item.kind) == "memory":
+			notes_overlay = preload("res://scripts/meta/memory_entry.gd").new()
+		else:
+			notes_overlay = preload("res://scripts/meta/trace_panel.gd").new()
+			notes_overlay.mode = str(item.kind)
+		add_child(notes_overlay)
+		return
 	if str(item.get("kind", "")) == "journal":
 		SceneRouter.journal()
 		return
@@ -180,6 +196,9 @@ func _open_selected() -> void:
 		SaveManager.save_or_report("工作结算后保存失败")
 		return
 	var module_id := str(item.get("module_id", ""))
+	if module_id == "cooking":
+		EconomySystem.open_counter(self, "restaurant")
+		return
 	if str(item.get("kind","")) == "record_shop": module_id = "sound_sampling"
 	if str(item.get("kind","")) == "tarot": module_id = "tarot"
 	var invite := DialogueSystem.invitation_for_module(module_id)
@@ -221,6 +240,7 @@ func _open_record_shop() -> void:
 	add_child(pocket_panel)
 	pocket_panel.tree_exited.connect(func() -> void:
 		pocket_panel = null
+		if is_instance_valid(conversation): conversation.resume_from_shop()
 		queue_redraw())
 
 
@@ -232,6 +252,7 @@ func _open_shop(target_shop_id: String) -> void:
 	add_child(pocket_panel)
 	pocket_panel.tree_exited.connect(func() -> void:
 		pocket_panel = null
+		if is_instance_valid(conversation): conversation.resume_from_shop()
 		queue_redraw())
 
 
@@ -311,7 +332,7 @@ func _process(_delta: float) -> void:
 		speech_progress += _delta * 28.0
 		cue_label.visible_characters = int(speech_progress)
 	if not is_instance_valid(stage): return
-	stage.enabled = not is_instance_valid(conversation) and not is_instance_valid(pocket_panel) and not is_instance_valid(notes_overlay) and not SceneRouter.transitioning and not room_dialogue.visible
+	stage.enabled = not MetaExperience.modal_open() and not is_instance_valid(conversation) and not is_instance_valid(pocket_panel) and not is_instance_valid(notes_overlay) and not SceneRouter.transitioning and not room_dialogue.visible and not (has_node("GameplayShell") and get_node("GameplayShell").blocks_walking())
 	if stage.enabled and DisplayServer.window_is_focused():
 		GameState.advance_world_clock(_delta)
 	if roster_minute != GameState.current_minute:
@@ -321,6 +342,7 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if MetaExperience.modal_open() or not get_tree().get_nodes_in_group("world_tool").is_empty(): return
 	if is_instance_valid(conversation): return
 	if is_instance_valid(pocket_panel) or is_instance_valid(notes_overlay) or SceneRouter.transitioning: return
 	if not event is InputEventKey or not event.pressed or event.echo: return
@@ -336,6 +358,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		SceneRouter.journal()
 	elif event.is_action_pressed("open_map"):
 		SceneRouter.town_map()
+	elif event.is_action_pressed("ask_directly"):
+		var target: Dictionary = stage.nearest()
+		if str(target.get("kind", "")) == "person":
+			notes_overlay = preload("res://scripts/meta/ask_panel.gd").new()
+			notes_overlay.npc = str(target.id)
+			notes_overlay.chosen.connect(func(topic: String) -> void: _start_conversation(str(target.id), topic))
+			add_child(notes_overlay)
 	elif event.is_action_pressed("interact"):
 		var nearest: Dictionary = stage.nearest()
 		match str(nearest.get("kind", "")):
@@ -344,6 +373,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				cue_label.text = str(nearest.text)
 				detail_label.text = "Space / Enter · 收起视线"
 				room_dialogue.show()
+				MetaExperience.observe(GameState.current_location,str(nearest.text),{"kind":"place","event_id":"echo_"+GameState.current_location})
 			"exit": SceneRouter.leave_space()
 			"person": _start_conversation(str(nearest.id))
 			"object":
@@ -357,34 +387,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _show_book_notes() -> void:
 	if is_instance_valid(notes_overlay): return
-	notes_overlay = _panel(self, Vector2(230, 180), Vector2(1140, 600), Color("f0e5ce"), Color("738376"), 8)
-	_label(notes_overlay, "书店的便利贴墙", Vector2(32, 24), Vector2(1030, 45), 28, INK)
-	var input := LineEdit.new()
-	input.position = Vector2(32, 90)
-	input.size = Vector2(780, 48)
-	input.max_length = 80
-	input.placeholder_text = "写下你最喜欢的一本书……"
-	notes_overlay.add_child(input)
-	var note_text := _label(notes_overlay, "", Vector2(32, 174), Vector2(1060, 325), 21, INK)
-	note_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var refresh := func() -> void:
-		var notes: Array = GameState.shared_state.get("bookstore_notes", [])
-		note_text.text = "还没有留下书名。" if notes.is_empty() else "\n\n".join(notes.slice(maxi(0, notes.size() - 7)))
-	var submit := _button(notes_overlay, "贴上去", Vector2(842, 90), Vector2(260, 48), "primary")
-	submit.pressed.connect(func() -> void:
-		var title := input.text.strip_edges()
-		if title.is_empty(): return
-		var notes: Array = GameState.shared_state.get("bookstore_notes", [])
-		if not notes.has(title): notes.append(title)
-		GameState.shared_state["bookstore_notes"] = notes
-		SaveManager.save_or_report("室内状态保存失败")
-		input.clear()
-		refresh.call())
-	var reload := _button(notes_overlay, "刷新", Vector2(600, 528), Vector2(220, 45), "quiet")
-	reload.pressed.connect(refresh)
-	var close := _button(notes_overlay, "收起", Vector2(852, 528), Vector2(250, 45), "quiet")
-	close.pressed.connect(func() -> void: notes_overlay.queue_free())
-	refresh.call()
+	notes_overlay = preload("res://scripts/meta/trace_panel.gd").new()
+	add_child(notes_overlay)
 
 
 func _panel(parent: Node, at: Vector2, panel_size: Vector2, color: Color, border: Color, radius: int) -> Panel:
@@ -451,16 +455,23 @@ func _style_button(button: Button, kind: String) -> void:
 	button.add_theme_color_override("font_focus_color", text_color)
 
 func _start_conversation(resident_id: String, topic := "greeting") -> void:
+	if is_instance_valid(conversation): return
+	if not MetaExperience.pay_conversation(topic): return
 	conversation = preload("res://scripts/ui/conversation_panel.gd").new()
 	conversation.npc = resident_id
 	conversation.starting_topic = topic
+	if resident_id == "grocery":
+		conversation.shop_id = "grocery"
+		conversation.shop_name = "杂货店老板"
+		conversation.purchase_requested.connect(_open_shop.bind("grocery"))
 	for item in stage.hotspots:
 		if str(item.get("id","")) == resident_id and absf(float(item.x)-stage.player_x) > 1.0: stage.facing = signf(float(item.x)-stage.player_x)
 	stage.velocity = 0.0
 	add_child(conversation)
+	SaveManager.save_or_report("谈话计时后保存失败")
 func _refresh_people() -> void:
 	stage.queue_redraw()
-	people = ScheduleSystem.residents_at(GameState.current_location,GameState.current_day,GameState.current_minute)
+	people = DialogueSystem.people_at(GameState.current_location)
 	if SceneRouter.active_space_id in ["home_a","home_b"]: people.clear()
 	stage.hotspots = stage.hotspots.filter(func(item: Dictionary) -> bool: return str(item.get("kind","")) != "person")
 	for i in mini(people.size(),3):

@@ -1,0 +1,59 @@
+{
+  "exposures": 24,
+  "help_minutes": 25,
+  "merchant_id": "grocery",
+  "location_id": "cafe",
+  "processing": {
+    "standard": {
+      "next_day": true,
+      "ready_minute": 600
+    },
+    "rush": {
+      "minutes": 180
+    }
+  },
+  "types": {
+    "normal": {
+      "name": "普通彩色",
+      "tint": [
+        1.025,
+        1.005,
+        0.975
+      ],
+      "grain": 0.012,
+      "vignette": 0.1
+    },
+    "expired": {
+      "name": "旧库存",
+      "tint": [
+        1.06,
+        1.005,
+        0.93
+      ],
+      "grain": 0.026,
+      "vignette": 0.13,
+      "light_leak": true
+    },
+    "bw": {
+      "name": "黑白",
+      "tint": [
+        1,
+        1,
+        1
+      ],
+      "grain": 0.018,
+      "vignette": 0.12,
+      "monochrome": true
+    },
+    "night": {
+      "name": "夜景高速",
+      "tint": [
+        0.975,
+        1.015,
+        1.045
+      ],
+      "grain": 0.032,
+      "vignette": 0.08
+    }
+  }
+}

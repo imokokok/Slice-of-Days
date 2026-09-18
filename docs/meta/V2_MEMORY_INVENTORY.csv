@@ -1,0 +1,247 @@
+﻿房间,物件,动作,模型节点,距离上限（米）,页数,内容
+A1,日历边角,read,INT_A1_read_0,1.2,2,"今天：去学校。
+
+先把面包吃完。"
+A1,草稿纸,read,INT_A1_read_1,1.2,1,"想画一扇门。
+门外只画两道脚步。"
+A1,手机背面的便签,read,INT_A1_read_2,1.2,1,"钥匙。
+
+上次写了，还是忘带。"
+A1,闹钟,listen,INT_A1_prop_0,2.1,0,按一下，短短响两声。
+A1,校服,inspect,INT_A1_prop_1,2.1,0,袖口翻进去了一点。
+A1,窗帘,toggle,INT_A1_prop_2,2.1,0,让一小条光透进来。
+A1,门,leave,INT_A1_prop_3,2.1,0,门外已经安静了。
+A1,床边拖鞋,inspect,INT_A1_prop_4,2.1,0,两只朝着不同方向。
+A1,桌边小物,inspect,INT_A1_spare,2.1,0,放下时忘了摆正。现在这样也行。
+A2,成绩单背面,read,INT_A2_read_0,1.2,1,"第一。
+
+恭喜一次好像也够了。"
+A2,修音箱的纸,read,INT_A2_read_1,1.2,1,"螺丝放碟子里。
+先别把外壳扣回去。"
+A2,晚饭便签,read,INT_A2_read_2,1.2,1,"随便。
+[s]随便。[/s]
+
+得选一个。"
+A2,坏音箱,listen,INT_A2_prop_0,2.1,0,先是一声低响，随后停住。
+A2,螺丝刀,inspect,INT_A2_prop_1,2.1,0,手柄边上有一圈旧磨痕。
+A2,音箱线,inspect,INT_A2_prop_2,2.1,0,插头松了一点。
+A2,沙发上的包,inspect,INT_A2_prop_3,2.1,0,成绩单原来塞在侧袋里。
+A2,小抽屉,drawer,INT_A2_prop_4,2.1,0,里面还有一颗没拧回去的螺丝。
+A2,桌边小物,inspect,INT_A2_spare,2.1,0,放下时忘了摆正。现在这样也行。
+A3,冰箱上的纸,read,INT_A3_read_0,1.2,1,"水果在里面。
+杯子洗完倒扣。"
+A3,收据,read,INT_A3_read_1,1.2,1,"已经付过。
+
+再坐下去也不会退钱。"
+A3,桌边随手记,read,INT_A3_read_2,1.2,1,"杯子里的冰化了一半。
+吸管戳不到刚才那一块了。"
+A3,冰水,listen,INT_A3_prop_0,2.1,0,吸管碰到杯沿。
+A3,吸管,inspect,INT_A3_prop_1,2.1,0,已经弯过一次。
+A3,杯架,inspect,INT_A3_prop_2,2.1,0,杯子全都倒扣着。
+A3,水果盒,inspect,INT_A3_prop_3,2.1,0,盖子留了一道缝。
+A3,水龙头,toggle,INT_A3_prop_4,2.1,0,转小一点，水声也细了。
+A3,桌边小物,inspect,INT_A3_spare,2.1,0,放下时忘了摆正。现在这样也行。
+A4,二十七号,read,INT_A4_read_0,1.2,2,"27号了？
+
+海边。便利店。临时坐车。
+还有那盘不知道是什么的东西。"
+A4,车票背面,read,INT_A4_read_1,1.2,1,"醒了再决定。
+
+这回真的坐到最后一站看看。"
+A4,朋友的画,read,INT_A4_read_2,1.2,1,"盘子里画了一团东西。
+旁边写着：这是什么？
+另一支笔：不知道。"
+A4,沙滩小物,inspect,INT_A4_prop_0,2.1,0,一颗被水磨圆的石头。
+A4,便利店袋,listen,INT_A4_prop_1,2.1,0,提起来的时候，袋子轻轻响。
+A4,公交扶手,inspect,INT_A4_prop_2,2.1,0,手握过的地方很光。
+A4,饮料瓶,inspect,INT_A4_prop_3,2.1,0,还剩最后一点。
+A4,小抽屉,drawer,INT_A4_prop_4,2.1,0,那张临时买的车票在最底下。
+A4,桌边小物,inspect,INT_A4_spare,2.1,0,放下时忘了摆正。现在这样也行。
+A5,明天的日程,read,INT_A5_read_0,1.2,2,"09:00 WORK
+11:00 READ
+14:00 PROJECT
+17:00 GYM
+20:00 FILM"
+A5,电影清单,read,INT_A5_read_1,1.2,1,"先看完这一部。
+别又开新的。"
+A5,书里的纸条,read,INT_A5_read_2,1.2,1,"读到这里。
+下次从这一行开始。"
+A5,闹钟,listen,INT_A5_prop_0,2.1,0,08:30。按掉以后，很安静。
+A5,书,inspect,INT_A5_prop_1,2.1,0,书签还在前一天那页。
+A5,运动包,inspect,INT_A5_prop_2,2.1,0,鞋装在侧面的小袋里。
+A5,台灯,toggle,INT_A5_prop_3,2.1,0,灯光落在排满的日历上。
+A5,手机,inspect,INT_A5_prop_4,2.1,0,08:47。没有新消息。
+A5,桌边小物,inspect,INT_A5_spare,2.1,0,放下时忘了摆正。现在这样也行。
+A6,项目手记,read,INT_A6_read_0,1.2,2,"RIGHT.
+
+如果炸了明天再修。
+先做。"
+A6,测试记录,read,INT_A6_read_1,1.2,1,"左 / 右
+
+右边保留。
+再跑一遍。"
+A6,外卖盒上的字,read,INT_A6_read_2,1.2,1,"谁还没吃？
+
+凉了也先吃两口。"
+A6,键盘,listen,INT_A6_prop_0,2.1,0,敲了几下，又停下来等。
+A6,咖啡杯,inspect,INT_A6_prop_1,2.1,0,已经空了，杯底有一圈颜色。
+A6,数据线,inspect,INT_A6_prop_2,2.1,0,先绕过椅子腿。
+A6,屏幕,toggle,INT_A6_prop_3,2.1,0,右边那个版本亮起来。
+A6,椅子,inspect,INT_A6_prop_4,2.1,0,拉过来就坐下了。
+A6,桌边小物,inspect,INT_A6_spare,2.1,0,放下时忘了摆正。现在这样也行。
+A7,撕下的任务纸,read,INT_A7_read_0,1.2,2,"TEST
+BUILD
+FINAL
+DEADLINE"
+A7,群消息打印页,read,INT_A7_read_1,1.2,1,"辛苦了！！！
+
+最后一条停在昨晚。"
+A7,上传记录,read,INT_A7_read_2,1.2,1,"FINAL
+上传完成。
+
+文件名里已经有两个 final。"
+A7,板擦,toggle,INT_A7_prop_0,2.1,0,擦到最后，只剩一小片灰。
+A7,记号笔,inspect,INT_A7_prop_1,2.1,0,笔尖悬了一会儿。
+A7,电脑,listen,INT_A7_prop_2,2.1,0,风扇转了一阵，慢下来。
+A7,瓶盖,inspect,INT_A7_prop_3,2.1,0,庆祝时滚到了桌脚。
+A7,旧抽屉,drawer,INT_A7_prop_4,2.1,0,里面压着最后一张任务纸。
+A7,桌边小物,inspect,INT_A7_spare,2.1,0,放下时忘了摆正。现在这样也行。
+B1,菜单边角,read,INT_B1_read_0,1.2,1,"这个好吃。
+
+下次记得名字。"
+B1,随手记,read,INT_B1_read_1,1.2,1,"今天可以再点。
+
+但已经点完了。"
+B1,考试便签,read,INT_B1_read_2,1.2,1,"考试时间：回去再确认。
+先把这口吃完。"
+B1,杯子,listen,INT_B1_prop_0,2.1,0,杯底轻轻碰到桌子。
+B1,餐盘,inspect,INT_B1_prop_1,2.1,0,边沿有一道细花纹。
+B1,筷子,inspect,INT_B1_prop_2,2.1,0,还没摆齐就开始吃了。
+B1,桌灯,toggle,INT_B1_prop_3,2.1,0,灯把桌面照得暖一点。
+B1,纸巾盒,inspect,INT_B1_prop_4,2.1,0,最后一张露在外面。
+B1,桌边小物,inspect,INT_B1_spare,2.1,0,放下时忘了摆正。现在这样也行。
+B2,Plan B,read,INT_B2_read_0,1.2,2,"学费 → 就业 → 城市
+时间
+Plan B"
+B2,课程比较,read,INT_B2_read_1,1.2,1,"期限 / 费用 / 之后能做什么
+
+空着的地方再查。"
+B2,水果旁的纸,read,INT_B2_read_2,1.2,1,"别弄太晚。
+
+这几个字比表格大。"
+B2,水果碗,inspect,INT_B2_prop_0,2.1,0,水果被推到离她近一点的地方。
+B2,文件夹,drawer,INT_B2_prop_1,2.1,0,下面那张，是刚才看得最久的。
+B2,茶几,inspect,INT_B2_prop_2,2.1,0,资料铺开后，杯子只能放边上。
+B2,杯子,listen,INT_B2_prop_3,2.1,0,杯沿有一点轻响。
+B2,台灯,toggle,INT_B2_prop_4,2.1,0,纸页上的字亮起来。
+B2,桌边小物,inspect,INT_B2_spare,2.1,0,放下时忘了摆正。现在这样也行。
+B3,声音笔记,read,INT_B3_read_0,1.2,2,"cup — 太脆
+keys — 可以
+radiator — 低频很好"
+B3,音轨草稿,read,INT_B3_read_1,1.2,1,"杯子 / 钥匙 / 暖气片
+
+这一遍只听。"
+B3,桌角随手记,read,INT_B3_read_2,1.2,1,"好听。
+
+以后能做什么，以后再说。"
+B3,杯子,listen,INT_B3_prop_0,2.1,0,这一下太脆。
+B3,钥匙,listen,INT_B3_prop_1,2.1,0,两声短响，接到音轨里。
+B3,暖气片,listen,INT_B3_prop_2,2.1,0,低处有一点持续的振动。
+B3,录音设备,toggle,INT_B3_prop_3,2.1,0,红灯亮了。
+B3,MIDI键盘,listen,INT_B3_prop_4,2.1,0,一个音，再留一点空白。
+B3,耳机,inspect,INT_B3_prop_5,2.1,0,海绵边缘有点软了。
+B4,周三,read,INT_B4_read_0,1.2,2,"步行20分钟。
+公交后再走5分钟。
+远一点，时间更合适。"
+B4,舞蹈传单,read,INT_B4_read_1,1.2,1,"周三晚上。
+
+上面压着一袋菜。"
+B4,日历小字,read,INT_B4_read_2,1.2,1,"回来吃饭。
+
+课程那件事今天没问。"
+B4,菜袋,inspect,INT_B4_prop_0,2.1,0,压住传单，也压出一条折痕。
+B4,灶台,listen,INT_B4_prop_1,2.1,0,抽油烟机盖住了半句话。
+B4,家里的杯子,inspect,INT_B4_prop_2,2.1,0,杯柄有一点掉色。
+B4,台灯,toggle,INT_B4_prop_3,2.1,0,纸面亮了，袋子影子移了一点。
+B4,抽屉,drawer,INT_B4_prop_4,2.1,0,一叠折起来的旧购物袋。
+B4,桌边小物,inspect,INT_B4_spare,2.1,0,放下时忘了摆正。现在这样也行。
+B5,制作排期,read,INT_B5_read_0,1.2,2,"THU — location
+11:00 — equipment deadline
+backup ready
+move his part later"
+B5,设备清单,read,INT_B5_read_1,1.2,1,"十一点前。
+
+到不了就用备用。"
+B5,消息抄页,read,INT_B5_read_2,1.2,1,"别什么事情都往自己身上揽。
+
+屏幕还开着。"
+B5,电脑,toggle,INT_B5_prop_0,2.1,0,EXPORT COMPLETE。再看一遍。
+B5,键盘,listen,INT_B5_prop_1,2.1,0,几下短促的敲击。
+B5,咖啡杯,inspect,INT_B5_prop_2,2.1,0,杯子里已经没咖啡了。
+B5,备用设备,inspect,INT_B5_prop_3,2.1,0,标签贴得很牢。
+B5,线材盒,drawer,INT_B5_prop_4,2.1,0,备用线绑在最上面。
+B5,桌边小物,inspect,INT_B5_spare,2.1,0,放下时忘了摆正。现在这样也行。
+B6,招聘比较,read,INT_B6_read_0,1.2,1,"职位 / 薪资 / 福利 / 发展
+
+Solmere — 待看。"
+B6,网页打印页,read,INT_B6_read_1,1.2,1,"唱片店。剧院。小型现场。
+棋社。艺术空间。
+
+往回滑了一次。"
+B6,页边旋律,read,INT_B6_read_2,1.2,1,"两段短线，一个停顿。
+
+写在工作信息旁边。"
+B6,手机,inspect,INT_B6_prop_0,2.1,0,页面又停在唱片店那张图。
+B6,餐盘,inspect,INT_B6_prop_1,2.1,0,饭还没吃完。
+B6,杯子,listen,INT_B6_prop_2,2.1,0,放下时有一声轻响。
+B6,台灯,toggle,INT_B6_prop_3,2.1,0,页边的短旋律也照亮了。
+B6,文件夹,drawer,INT_B6_prop_4,2.1,0,招聘页放在上面。
+B6,桌边小物,inspect,INT_B6_spare,2.1,0,放下时忘了摆正。现在这样也行。
+B7,行李笔记,read,INT_B7_read_0,1.2,2,"交通 / 住宿 / 预算
+工作机会 / 七天
+12份认可 / 返程"
+B7,随身清单,read,INT_B7_read_1,1.2,1,"录音设备。
+耳机。
+充电线。
+
+这几样是拿去玩的。"
+B7,衣服上的纸,read,INT_B7_read_2,1.2,1,"留一点空位。
+
+要带回来的东西还不知道。"
+B7,录音设备,listen,INT_B7_prop_0,2.1,0,先试一下，能录。
+B7,行李箱,drawer,INT_B7_prop_1,2.1,0,还有一件折好的衣服。
+B7,耳机,inspect,INT_B7_prop_2,2.1,0,和线一起装进小袋。
+B7,衣服,inspect,INT_B7_prop_3,2.1,0,折痕比她叠的那几件齐。
+B7,床头灯,toggle,INT_B7_prop_4,2.1,0,合上本子以前，灯还亮着。
+B7,桌边小物,inspect,INT_B7_spare,2.1,0,放下时忘了摆正。现在这样也行。
+A0,透光台旁,read,INT_A0_read_0,1.2,1,"薄纸放上层。
+刻刀用完收好。
+
+这张蓝色留着。"
+A0,墙边草稿,read,INT_A0_read_1,1.2,1,"鞋的形状很奇怪。
+穿上更奇怪。
+
+还挺喜欢。"
+A0,便签,read,INT_A0_read_2,1.2,1,今天先把窗户开一下。
+A0,小龙灯,toggle,INT_A0_prop_0,2.1,0,暖粉色的光落在薄纸旁边。
+A0,奇怪的鞋,inspect,INT_A0_prop_1,2.1,0,左右两只的形状略有不同。
+A0,刻刀,inspect,INT_A0_prop_2,2.1,0,刀帽放在手边。
+A0,纸抽屉,drawer,INT_A0_prop_3,2.1,0,还有几张没用过的蓝色。
+A0,窗边,listen,INT_A0_prop_4,2.1,0,从窗缝里能听见一点海风。
+A0,桌边小物,inspect,INT_A0_spare,2.1,0,放下时忘了摆正。现在这样也行。
+B0,采样桌旁,read,INT_B0_read_0,1.2,1,"输入电平再低一点。
+线绕松一点。
+
+今晚只听，不改。"
+B0,声响清单,read,INT_B0_read_1,1.2,1,"窗缝 / 杯沿 / 远处的车
+
+还缺一个收尾。"
+B0,预算页,read,INT_B0_read_2,1.2,1,"住处。车费。吃饭。
+
+买唱片这一栏先空着。"
+B0,录音设备,listen,INT_B0_prop_0,2.1,0,房间里最小的声响也录进来了。
+B0,MIDI键盘,listen,INT_B0_prop_1,2.1,0,轻轻按一个音。
+B0,吉他,inspect,INT_B0_prop_2,2.1,0,弦上留着手指的痕迹。
+B0,桌灯,toggle,INT_B0_prop_3,2.1,0,电脑旁边暖了一点。
+B0,收纳抽屉,drawer,INT_B0_prop_4,2.1,0,线材各绕一圈，松松放着。
+B0,桌边小物,inspect,INT_B0_spare,2.1,0,放下时忘了摆正。现在这样也行。

@@ -18,60 +18,135 @@
           "三样材料都在手边。有人报桌号，有人看火，你可以决定这份菜怎样完成。"
         ],
         "tokens": [
-          {"id": "lemon", "label": "一袋柠檬", "detail": "明亮，也很容易盖过别的味道"},
-          {"id": "bread", "label": "昨天的面包", "detail": "需要被重新处理"},
-          {"id": "tomato", "label": "熟透的番茄", "detail": "今天不用就会坏"},
-          {"id": "herbs", "label": "窗台香草", "detail": "量不多，但足够改变方向"},
-          {"id": "cheese", "label": "剩下的奶酪", "detail": "成本已经算进昨天"}
+          {
+            "id": "lemon",
+            "label": "一袋柠檬",
+            "detail": "明亮，也很容易盖过别的味道"
+          },
+          {
+            "id": "bread",
+            "label": "昨天的面包",
+            "detail": "需要被重新处理"
+          },
+          {
+            "id": "tomato",
+            "label": "熟透的番茄",
+            "detail": "今天不用就会坏"
+          },
+          {
+            "id": "herbs",
+            "label": "窗台香草",
+            "detail": "量不多，但足够改变方向"
+          },
+          {
+            "id": "cheese",
+            "label": "剩下的奶酪",
+            "detail": "成本已经算进昨天"
+          },
+          {
+            "id": "sea_beans",
+            "label": "海盐豆罐头",
+            "detail": "咸鲜的奇怪食材，需实际购买。"
+          },
+          {
+            "id": "star_salt",
+            "label": "星形盐片",
+            "detail": "杂货店的奇怪食材，需实际购买。"
+          }
         ]
       },
       "choices": [
         {
           "id": "improvise",
           "label": "把零碎材料组合成新菜",
-          "detail": "花费90分钟，接受结果不完全可控。",
-          "cost": {"minutes": 90},
+          "detail": "按班次结算；先采购并带小票交货。",
+          "cost": {
+            "minutes": 90
+          },
           "result_text": "新菜被取名为《什么时候下班》。店主把菜谱的空白署名栏推过来：先出完最后一桌，再写名字。",
           "results": {
-            "money": 30,
             "artifacts": [
-              {"collection": "recipes", "shared": true, "data": {"id": "when_does_work_end", "title": "什么时候下班", "kind": "recipe"}}
+              {
+                "collection": "recipes",
+                "shared": true,
+                "data": {
+                  "id": "when_does_work_end",
+                  "title": "什么时候下班",
+                  "kind": "recipe"
+                }
+              }
             ],
             "journal_entries": [
-              {"id": "first_public_recipe", "kind": "work", "text": "一份临时做出的菜留进了公共菜谱。"}
+              {
+                "id": "first_public_recipe",
+                "kind": "work",
+                "text": "一份临时做出的菜留进了公共菜谱。"
+              }
             ]
           },
           "results_by_role": {
             "A": {
-              "encounters": ["restaurant_owner", "a_meng", "zhou_xiaoliu"],
+              "encounters": [
+                "restaurant_owner",
+                "a_meng",
+                "zhou_xiaoliu"
+              ],
               "relationship_flags": {
-                "restaurant_owner": ["在忙乱的饭店时段可靠补位"],
-                "a_meng": ["一起把积压的碗送回后场"],
-                "zhou_xiaoliu": ["记得她只剩十分钟，先出了她的那份"]
+                "restaurant_owner": [
+                  "在忙乱的饭店时段可靠补位"
+                ],
+                "a_meng": [
+                  "一起把积压的碗送回后场"
+                ],
+                "zhou_xiaoliu": [
+                  "记得她只剩十分钟，先出了她的那份"
+                ]
               },
-              "confirmations": {"restaurant_owner": "granted", "a_meng": "granted", "zhou_xiaoliu": "granted"}
+              "confirmations": {
+                "restaurant_owner": "granted",
+                "a_meng": "granted",
+                "zhou_xiaoliu": "granted"
+              }
             },
             "B": {
-              "encounters": ["restaurant_owner"],
-              "relationship_flags": {"restaurant_owner": ["认真核对过分成与时间"]}
+              "encounters": [
+                "restaurant_owner"
+              ],
+              "relationship_flags": {
+                "restaurant_owner": [
+                  "认真核对过分成与时间"
+                ]
+              }
             }
           }
         },
         {
           "id": "careful_menu",
           "label": "先核对成本再做一份稳定菜单",
-          "detail": "花费60分钟，收入更稳定。",
-          "cost": {"minutes": 60},
+          "detail": "按班次结算；先采购并带小票交货。",
+          "cost": {
+            "minutes": 90
+          },
           "result_text": "菜单很稳妥。店主没有立刻谈认可，只把收台用的布推过来：还有最后一张桌子。",
-          "results": {"money": 42},
+          "results": {},
           "results_by_role": {
             "A": {
-              "encounters": ["restaurant_owner"],
-              "relationship_flags": {"restaurant_owner": ["完成过一次稳定菜单"]}
+              "encounters": [
+                "restaurant_owner"
+              ],
+              "relationship_flags": {
+                "restaurant_owner": [
+                  "完成过一次稳定菜单"
+                ]
+              }
             },
             "B": {
-              "encounters": ["restaurant_owner"],
-              "confirmations": {"restaurant_owner": "granted"}
+              "encounters": [
+                "restaurant_owner"
+              ],
+              "confirmations": {
+                "restaurant_owner": "granted"
+              }
             }
           }
         }
@@ -94,11 +169,31 @@
           "三块句子已经排好。它们表达了他的意思，是否像他的声音还要经过一次删改。"
         ],
         "tokens": [
-          {"id": "still_here", "label": "我还在这里", "detail": "最直接的事实"},
-          {"id": "door_light", "label": "门下面一直有光", "detail": "没有解释是谁留下的"},
-          {"id": "not_sorry", "label": "不是为了道歉", "detail": "先划清信的边界"},
-          {"id": "remember_rain", "label": "我记得那天的雨", "detail": "把共同经历放回句子里"},
-          {"id": "no_reply", "label": "不用马上回复", "detail": "给收信人留出时间"}
+          {
+            "id": "still_here",
+            "label": "我还在这里",
+            "detail": "最直接的事实"
+          },
+          {
+            "id": "door_light",
+            "label": "门下面一直有光",
+            "detail": "没有解释是谁留下的"
+          },
+          {
+            "id": "not_sorry",
+            "label": "不是为了道歉",
+            "detail": "先划清信的边界"
+          },
+          {
+            "id": "remember_rain",
+            "label": "我记得那天的雨",
+            "detail": "把共同经历放回句子里"
+          },
+          {
+            "id": "no_reply",
+            "label": "不用马上回复",
+            "detail": "给收信人留出时间"
+          }
         ]
       },
       "choices": [
@@ -106,18 +201,42 @@
           "id": "listen_then_cut",
           "label": "先听完整，再裁切排列",
           "detail": "花费120分钟，保留委托人的语气。",
-          "cost": {"minutes": 120},
+          "cost": {
+            "minutes": 120
+          },
           "result_text": "初稿已经排好。委托人把三个句子读了一遍，请B在下一段完整时间里再删一次。",
           "results": {
             "money": 35,
-            "facts": ["代写选择：先听完整，再裁切排列。"],
-            "journal_entries": [{"id": "b_d5_letter_draft", "kind": "work", "text": "三个句子组成了初稿，还需要委托人亲自删改。"}]
+            "facts": [
+              "代写选择：先听完整，再裁切排列。"
+            ],
+            "journal_entries": [
+              {
+                "id": "b_d5_letter_draft",
+                "kind": "work",
+                "text": "三个句子组成了初稿，还需要委托人亲自删改。"
+              }
+            ]
           },
           "results_by_role": {
-            "A": {"confirmations": {"letter_client": "granted"}},
+            "A": {
+              "confirmations": {
+                "letter_client": "granted"
+              }
+            },
             "B": {
-              "encounters": ["letter_client", "sunniva"],
-              "relationship_flags": {"letter_client": ["先听完整再组成初稿"], "sunniva": ["一起保留了被删下的纸条"]}
+              "encounters": [
+                "letter_client",
+                "sunniva"
+              ],
+              "relationship_flags": {
+                "letter_client": [
+                  "先听完整再组成初稿"
+                ],
+                "sunniva": [
+                  "一起保留了被删下的纸条"
+                ]
+              }
             }
           }
         },
@@ -125,13 +244,23 @@
           "id": "efficient_draft",
           "label": "在限定时间内完成清楚的版本",
           "detail": "花费60分钟，结果更直接。",
-          "cost": {"minutes": 60},
+          "cost": {
+            "minutes": 60
+          },
           "result_text": "信按时写完，也比委托人自己会说的话更清楚。他请B先不要装进信封。",
           "results": {
             "money": 22,
-            "facts": ["代写选择：在限定时间内完成清楚版本。"],
-            "encounters": ["letter_client"],
-            "relationship_flags": {"letter_client": ["按时完成过一版过于清楚的代写"]}
+            "facts": [
+              "代写选择：在限定时间内完成清楚版本。"
+            ],
+            "encounters": [
+              "letter_client"
+            ],
+            "relationship_flags": {
+              "letter_client": [
+                "按时完成过一版过于清楚的代写"
+              ]
+            }
           }
         }
       ]
@@ -146,10 +275,26 @@
         "min_select": 2,
         "max_select": 4,
         "tokens": [
-          {"id": "home_safe", "label": "家是不用解释的地方", "detail": "有人把家理解成安全"},
-          {"id": "home_duty", "label": "家是必须回去的责任", "detail": "有人把家理解成义务"},
-          {"id": "meat_treat", "label": "肉代表难得的一顿好饭", "detail": "稀缺让词带上庆祝"},
-          {"id": "meat_burden", "label": "肉代表处理不完的负担", "detail": "经验让同一个词变重"}
+          {
+            "id": "home_safe",
+            "label": "家是不用解释的地方",
+            "detail": "有人把家理解成安全"
+          },
+          {
+            "id": "home_duty",
+            "label": "家是必须回去的责任",
+            "detail": "有人把家理解成义务"
+          },
+          {
+            "id": "meat_treat",
+            "label": "肉代表难得的一顿好饭",
+            "detail": "稀缺让词带上庆祝"
+          },
+          {
+            "id": "meat_burden",
+            "label": "肉代表处理不完的负担",
+            "detail": "经验让同一个词变重"
+          }
         ]
       },
       "choices": [
@@ -157,21 +302,44 @@
           "id": "hold_both_meanings",
           "label": "把两边的意思都保留下来",
           "detail": "花费45分钟，不替任何一边做总结。",
-          "cost": {"minutes": 45},
+          "cost": {
+            "minutes": 45
+          },
           "result_text": "争论没有被漂亮地解决，但两个人都愿意再听一遍。",
           "results": {
-            "encounters": ["jiu", "abyssia"],
-            "relationship_flags": {"jiu": ["被认真转译过"], "abyssia": ["被认真转译过"]},
-            "confirmations": {"jiu": "granted", "abyssia": "granted"}
+            "encounters": [
+              "jiu",
+              "abyssia"
+            ],
+            "relationship_flags": {
+              "jiu": [
+                "被认真转译过"
+              ],
+              "abyssia": [
+                "被认真转译过"
+              ]
+            },
+            "confirmations": {
+              "jiu": "granted",
+              "abyssia": "granted"
+            }
           }
         },
         {
           "id": "choose_clarity",
           "label": "先澄清最容易造成伤害的那句话",
           "detail": "花费30分钟，另一部分留到以后。",
-          "cost": {"minutes": 30},
+          "cost": {
+            "minutes": 30
+          },
           "result_text": "最尖锐的误会先被拆开了，剩下的话仍需要时间。",
-          "results": {"relationship_flags": {"jiu": ["帮助澄清过误会"]}}
+          "results": {
+            "relationship_flags": {
+              "jiu": [
+                "帮助澄清过误会"
+              ]
+            }
+          }
         }
       ]
     },
@@ -192,11 +360,31 @@
           "三段声音已经排好。现在决定它是可交付短曲，还是只属于这次漫游的私人采样。"
         ],
         "tokens": [
-          {"id": "rain_awning", "label": "雨落遮阳棚", "detail": "公共环境声，没有可辨认的人声"},
-          {"id": "bus_brake", "label": "公交刹车", "detail": "车辆声采集范围已经确认"},
-          {"id": "distant_flute", "label": "公园里的声音", "detail": "阿锰明确授权的竹笛演奏段"},
-          {"id": "cafe_cups", "label": "咖啡杯与一句人声", "detail": "节拍清楚，但谈话没有获得授权"},
-          {"id": "old_hinge", "label": "不属于这里的门轴", "detail": "原始录音没有对应波形，来源无法追溯"}
+          {
+            "id": "rain_awning",
+            "label": "雨落遮阳棚",
+            "detail": "公共环境声，没有可辨认的人声"
+          },
+          {
+            "id": "bus_brake",
+            "label": "公交刹车",
+            "detail": "车辆声采集范围已经确认"
+          },
+          {
+            "id": "distant_flute",
+            "label": "公园里的声音",
+            "detail": "阿锰明确授权的竹笛演奏段"
+          },
+          {
+            "id": "cafe_cups",
+            "label": "咖啡杯与一句人声",
+            "detail": "节拍清楚，但谈话没有获得授权"
+          },
+          {
+            "id": "old_hinge",
+            "label": "不属于这里的门轴",
+            "detail": "原始录音没有对应波形，来源无法追溯"
+          }
         ]
       },
       "choices": [
@@ -205,21 +393,44 @@
           "label": "按路线采样并完成短曲",
           "detail": "花费90分钟，只能使用已授权且来源可追溯的片段。",
           "constraint_note": "交付版本不能包含未授权人声或无来源门轴声。",
-          "forbidden_tokens": ["cafe_cups", "old_hinge"],
-          "cost": {"minutes": 90},
+          "forbidden_tokens": [
+            "cafe_cups",
+            "old_hinge"
+          ],
+          "cost": {
+            "minutes": 90
+          },
           "result_text": "已授权的短曲被唱片店收下。导出文件里却多出一下原始录音没有的旧门轴声。",
           "results": {
             "money": 40,
-            "facts": ["采样的雨声里混进了一下不属于这里的旧门轴声。"],
+            "facts": [
+              "采样的雨声里混进了一下不属于这里的旧门轴声。"
+            ],
             "artifacts": [
-              {"collection": "tracks", "shared": false, "data": {"id": "rain_and_brakes", "title": "雨声与刹车", "kind": "track"}}
+              {
+                "collection": "tracks",
+                "shared": false,
+                "data": {
+                  "id": "rain_and_brakes",
+                  "title": "雨声与刹车",
+                  "kind": "track"
+                }
+              }
             ]
           },
           "results_by_role": {
             "B": {
-              "encounters": ["a_meng"],
-              "relationship_flags": {"a_meng": ["按授权范围交付了公园演奏段"]},
-              "confirmations": {"a_meng": "granted"}
+              "encounters": [
+                "a_meng"
+              ],
+              "relationship_flags": {
+                "a_meng": [
+                  "按授权范围交付了公园演奏段"
+                ]
+              },
+              "confirmations": {
+                "a_meng": "granted"
+              }
             }
           }
         },
@@ -227,11 +438,21 @@
           "id": "wander_and_record",
           "label": "边走边录，不先决定结构",
           "detail": "花费60分钟，可以保留边界不明的片段，但只存为私人采样。",
-          "cost": {"minutes": 60},
+          "cost": {
+            "minutes": 60
+          },
           "result_text": "这段声音还不能交付，但里面有一小段很像旧列车。",
           "results": {
             "artifacts": [
-              {"collection": "samples", "shared": false, "data": {"id": "old_train_fragment", "title": "像旧列车的声音", "kind": "sample"}}
+              {
+                "collection": "samples",
+                "shared": false,
+                "data": {
+                  "id": "old_train_fragment",
+                  "title": "像旧列车的声音",
+                  "kind": "sample"
+                }
+              }
             ]
           }
         }
@@ -247,10 +468,26 @@
         "min_select": 2,
         "max_select": 2,
         "tokens": [
-          {"id": "open_file", "label": "打开的中路", "detail": "继续会让局面更快变清楚"},
-          {"id": "quiet_corner", "label": "安静的角落", "detail": "一枚棋子还没有被使用"},
-          {"id": "opponent_pause", "label": "对手的停顿", "detail": "她刚才没有立刻落子"},
-          {"id": "saved_position", "label": "可以保存的位置", "detail": "现在离开，下次仍能继续"}
+          {
+            "id": "open_file",
+            "label": "打开的中路",
+            "detail": "继续会让局面更快变清楚"
+          },
+          {
+            "id": "quiet_corner",
+            "label": "安静的角落",
+            "detail": "一枚棋子还没有被使用"
+          },
+          {
+            "id": "opponent_pause",
+            "label": "对手的停顿",
+            "detail": "她刚才没有立刻落子"
+          },
+          {
+            "id": "saved_position",
+            "label": "可以保存的位置",
+            "detail": "现在离开，下次仍能继续"
+          }
         ]
       },
       "choices": [
@@ -258,22 +495,42 @@
           "id": "finish_game",
           "label": "把完整时间留给这盘棋",
           "detail": "花费120分钟。",
-          "cost": {"minutes": 120},
+          "cost": {
+            "minutes": 120
+          },
           "result_text": "棋局结束时，对手说你下棋时比说话时放松。",
           "results": {
-            "encounters": ["jian_zhaoxiang"],
-            "relationship_flags": {"jian_zhaoxiang": ["一起下完一盘棋"]},
-            "confirmations": {"jian_zhaoxiang": "granted"}
+            "encounters": [
+              "jian_zhaoxiang"
+            ],
+            "relationship_flags": {
+              "jian_zhaoxiang": [
+                "一起下完一盘棋"
+              ]
+            },
+            "confirmations": {
+              "jian_zhaoxiang": "granted"
+            }
           }
         },
         {
           "id": "save_position",
           "label": "保存局面，下次继续",
           "detail": "花费30分钟。",
-          "cost": {"minutes": 30},
+          "cost": {
+            "minutes": 30
+          },
           "result_text": "棋子停在原处。这个没有做完的约定被记了下来。",
           "results": {
-            "appointments": [{"id": "resume_chess", "day": 5, "start": 1080, "location": "park", "label": "继续棋局"}]
+            "appointments": [
+              {
+                "id": "resume_chess",
+                "day": 5,
+                "start": 1080,
+                "location": "park",
+                "label": "继续棋局"
+              }
+            ]
           }
         }
       ]
@@ -288,10 +545,26 @@
         "min_select": 2,
         "max_select": 3,
         "tokens": [
-          {"id": "warm_wall", "label": "晒热的石墙", "detail": "余光停在上面"},
-          {"id": "dog_water", "label": "喝水的狗", "detail": "喝完以后自己走开"},
-          {"id": "lemon_bag", "label": "一袋柠檬", "detail": "有人提着它拐进窄巷"},
-          {"id": "far_window", "label": "很远的一扇窗", "detail": "像世界另一个地方"}
+          {
+            "id": "warm_wall",
+            "label": "晒热的石墙",
+            "detail": "余光停在上面"
+          },
+          {
+            "id": "dog_water",
+            "label": "喝水的狗",
+            "detail": "喝完以后自己走开"
+          },
+          {
+            "id": "lemon_bag",
+            "label": "一袋柠檬",
+            "detail": "有人提着它拐进窄巷"
+          },
+          {
+            "id": "far_window",
+            "label": "很远的一扇窗",
+            "detail": "像世界另一个地方"
+          }
         ]
       },
       "choices": [
@@ -299,20 +572,38 @@
           "id": "watch_sunset",
           "label": "坐到晚霞完全变暗",
           "detail": "花费60分钟。",
-          "cost": {"minutes": 60},
+          "cost": {
+            "minutes": 60
+          },
           "result_text": "墙上的余光比预想中停得更久。相册里多了一张不需要解释的照片。",
           "results": {
             "artifacts": [
-              {"collection": "photos", "shared": false, "data": {"id": "long_sunset", "title": "停得很久的晚霞", "kind": "photo"}}
+              {
+                "collection": "photos",
+                "shared": false,
+                "data": {
+                  "id": "long_sunset",
+                  "title": "停得很久的晚霞",
+                  "kind": "photo"
+                }
+              }
             ],
-            "journal_entries": [{"id": "long_sunset_note", "kind": "memory", "text": "今天的晚霞停得很久。"}]
+            "journal_entries": [
+              {
+                "id": "long_sunset_note",
+                "kind": "memory",
+                "text": "今天的晚霞停得很久。"
+              }
+            ]
           }
         },
         {
           "id": "short_pause",
           "label": "只坐一会儿",
           "detail": "花费20分钟。",
-          "cost": {"minutes": 20},
+          "cost": {
+            "minutes": 20
+          },
           "result_text": "没有发生特别的事，但这二十分钟确实属于你。",
           "results": {}
         }
@@ -329,10 +620,26 @@
         "min_select": 2,
         "max_select": 3,
         "tokens": [
-          {"id": "reflection", "label": "玻璃反光", "detail": "可能多出不属于这里的空间"},
-          {"id": "people", "label": "没有摆姿势的人", "detail": "大家仍在做自己的事"},
-          {"id": "sea_edge", "label": "海与墙的边缘", "detail": "最亮的地方容易失去细节"},
-          {"id": "empty_chair", "label": "一把空椅子", "detail": "有人刚刚离开"}
+          {
+            "id": "reflection",
+            "label": "玻璃反光",
+            "detail": "可能多出不属于这里的空间"
+          },
+          {
+            "id": "people",
+            "label": "没有摆姿势的人",
+            "detail": "大家仍在做自己的事"
+          },
+          {
+            "id": "sea_edge",
+            "label": "海与墙的边缘",
+            "detail": "最亮的地方容易失去细节"
+          },
+          {
+            "id": "empty_chair",
+            "label": "一把空椅子",
+            "detail": "有人刚刚离开"
+          }
         ]
       },
       "choices": [
@@ -340,12 +647,25 @@
           "id": "photograph_reflection",
           "label": "拍下玻璃里的反光",
           "detail": "花费30分钟。",
-          "cost": {"minutes": 30},
+          "cost": {
+            "minutes": 30
+          },
           "result_text": "照片里的栏杆有一瞬间像旧阳台，但重新打开时又恢复正常。",
           "results": {
-            "facts": ["照片里短暂出现了不属于Solmere的旧空间。"],
+            "facts": [
+              "照片里短暂出现了不属于Solmere的旧空间。"
+            ],
             "artifacts": [
-              {"collection": "photos", "shared": false, "data": {"id": "wrong_balcony", "title": "反光里的旧栏杆", "kind": "photo", "anomaly": true}}
+              {
+                "collection": "photos",
+                "shared": false,
+                "data": {
+                  "id": "wrong_balcony",
+                  "title": "反光里的旧栏杆",
+                  "kind": "photo",
+                  "anomaly": true
+                }
+              }
             ]
           }
         },
@@ -353,11 +673,21 @@
           "id": "photograph_people",
           "label": "拍下正在生活的人",
           "detail": "花费20分钟。",
-          "cost": {"minutes": 20},
+          "cost": {
+            "minutes": 20
+          },
           "result_text": "没有谁摆好姿势。照片留下的是大家各自忙着的事情。",
           "results": {
             "artifacts": [
-              {"collection": "photos", "shared": false, "data": {"id": "ordinary_town_life", "title": "没有摆好姿势的人", "kind": "photo"}}
+              {
+                "collection": "photos",
+                "shared": false,
+                "data": {
+                  "id": "ordinary_town_life",
+                  "title": "没有摆好姿势的人",
+                  "kind": "photo"
+                }
+              }
             ]
           }
         }
@@ -374,10 +704,26 @@
         "min_select": 2,
         "max_select": 2,
         "tokens": [
-          {"id": "photo_door", "label": "照片里的门向海边开", "detail": "门框右侧有强光"},
-          {"id": "map_door", "label": "地图里的门通向走廊", "detail": "走廊不应该看见海"},
-          {"id": "note_stairs", "label": "文字说楼梯向下", "detail": "记录者当时站在二层"},
-          {"id": "model_stairs", "label": "模型让楼梯向上", "detail": "只有这样屋顶才连接"}
+          {
+            "id": "photo_door",
+            "label": "照片里的门向海边开",
+            "detail": "门框右侧有强光"
+          },
+          {
+            "id": "map_door",
+            "label": "地图里的门通向走廊",
+            "detail": "走廊不应该看见海"
+          },
+          {
+            "id": "note_stairs",
+            "label": "文字说楼梯向下",
+            "detail": "记录者当时站在二层"
+          },
+          {
+            "id": "model_stairs",
+            "label": "模型让楼梯向上",
+            "detail": "只有这样屋顶才连接"
+          }
         ]
       },
       "choices": [
@@ -385,13 +731,27 @@
           "id": "preserve_contradiction",
           "label": "保留两个互相矛盾的连接",
           "detail": "花费60分钟。",
-          "cost": {"minutes": 60},
+          "cost": {
+            "minutes": 60
+          },
           "result_text": "模型没有变得更正确，却开始能同时容纳两份记录。",
           "results": {
             "artifacts": [
-              {"collection": "models", "shared": false, "data": {"id": "contradictory_room", "title": "互相矛盾的房间", "kind": "model"}}
+              {
+                "collection": "models",
+                "shared": false,
+                "data": {
+                  "id": "contradictory_room",
+                  "title": "互相矛盾的房间",
+                  "kind": "model"
+                }
+              }
             ],
-            "relationship_flags": {"stagehand": ["一起保留了矛盾的空间记录"]}
+            "relationship_flags": {
+              "stagehand": [
+                "一起保留了矛盾的空间记录"
+              ]
+            }
           }
         }
       ]
@@ -413,11 +773,31 @@
           "三份记录已经展开。现在决定建立索引，还是诚实地留下缺口。"
         ],
         "tokens": [
-          {"id": "undated_photo", "label": "没有日期的停车区域照片", "detail": "背面只写着‘风很大’"},
-          {"id": "tide_log", "label": "旧潮汐记录", "detail": "其中一天的时间比车站钟慢十一分钟"},
-          {"id": "station_ticket", "label": "停止使用的车票", "detail": "终点站名称被折痕遮住"},
-          {"id": "bus_manifest", "label": "末班车行车单", "detail": "记录了一次没有乘客的停靠"},
-          {"id": "voice_catalog", "label": "未署名的声音目录", "detail": "只注明‘门轴、远处列车、海风’"}
+          {
+            "id": "undated_photo",
+            "label": "没有日期的停车区域照片",
+            "detail": "背面只写着‘风很大’"
+          },
+          {
+            "id": "tide_log",
+            "label": "旧潮汐记录",
+            "detail": "其中一天的时间比车站钟慢十一分钟"
+          },
+          {
+            "id": "station_ticket",
+            "label": "停止使用的车票",
+            "detail": "终点站名称被折痕遮住"
+          },
+          {
+            "id": "bus_manifest",
+            "label": "末班车行车单",
+            "detail": "记录了一次没有乘客的停靠"
+          },
+          {
+            "id": "voice_catalog",
+            "label": "未署名的声音目录",
+            "detail": "只注明‘门轴、远处列车、海风’"
+          }
         ]
       },
       "choices": [
@@ -425,23 +805,53 @@
           "id": "build_cross_index",
           "label": "建立一条可追溯的交叉索引",
           "detail": "花费45分钟，保留全部来源编号。",
-          "cost": {"minutes": 45},
+          "cost": {
+            "minutes": 45
+          },
           "result_text": "三份记录被一条新索引连接起来。它没有证明故事，却让后来的人能够重新检查。",
           "results": {
-            "facts": ["公共档案里，公交站、停车区域照片与十一分钟误差之间存在一条可追溯索引。"],
-            "artifacts": [{"collection": "archives", "shared": true, "data": {"id": "station_port_cross_index", "title": "旧站与停车区域交叉索引", "kind": "archive_index"}}],
-            "journal_entries": [{"id": "public_archive_cross_index", "kind": "research", "text": "把三份不同来源的记录连成了一条仍可被复查的索引。"}]
+            "facts": [
+              "公共档案里，公交站、停车区域照片与十一分钟误差之间存在一条可追溯索引。"
+            ],
+            "artifacts": [
+              {
+                "collection": "archives",
+                "shared": true,
+                "data": {
+                  "id": "station_port_cross_index",
+                  "title": "旧站与停车区域交叉索引",
+                  "kind": "archive_index"
+                }
+              }
+            ],
+            "journal_entries": [
+              {
+                "id": "public_archive_cross_index",
+                "kind": "research",
+                "text": "把三份不同来源的记录连成了一条仍可被复查的索引。"
+              }
+            ]
           }
         },
         {
           "id": "preserve_archive_gap",
           "label": "标出无法确认的缺口",
           "detail": "花费30分钟，不用猜测补齐缺失日期。",
-          "cost": {"minutes": 30},
+          "cost": {
+            "minutes": 30
+          },
           "result_text": "索引卡上留下一个明确的空格。缺失没有被误写成答案。",
           "results": {
-            "facts": ["档案中的缺失日期被明确保留，没有用推测补齐。"],
-            "journal_entries": [{"id": "public_archive_gap", "kind": "research", "text": "在公共档案索引里保留了一处无法确认的日期。"}]
+            "facts": [
+              "档案中的缺失日期被明确保留，没有用推测补齐。"
+            ],
+            "journal_entries": [
+              {
+                "id": "public_archive_gap",
+                "kind": "research",
+                "text": "在公共档案索引里保留了一处无法确认的日期。"
+              }
+            ]
           }
         }
       ]

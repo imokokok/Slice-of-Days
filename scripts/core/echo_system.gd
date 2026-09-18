@@ -11,12 +11,52 @@ func begin_day() -> void:
 		GameState.add_journal_entry({"kind":"application","text":"明晚仍有一整天生活。今晚记得检查永居申请需要的居民确认。"})
 func record_module(module: String, outcome: Dictionary) -> void:
 	if module not in ["cooking","ghostwriting","sound_sampling"]: return
-	var rows: Array = GameState.shared_state.get("visible_echoes",[])
-	var title := str(outcome.get("label", "一件作品"))
-	rows.append({"day":GameState.current_day,"role":GameState.current_role,"location":"night_market" if module == "cooking" else "handcraft_shop" if module == "ghostwriting" else "record_store", "text":("黑板上留下了一道菜：" if module == "cooking" else "桌边留着：") + title})
-	GameState.shared_state["visible_echoes"] = rows
+	# Creation remains personal until a real delivery, serving, archive or display accepts it.
+	var rows: Array = GameState.artifacts.get("created_work_notes",[])
+	var index := maxi(0,int(GameState.module_states.get(module,{}).get("outcomes",[]).size())-1)
+	var id := "created_%s_%d" % [module,index]
+	if rows.any(func(row: Dictionary) -> bool: return str(row.get("id","")) == id): return
+	rows.append({"id":id,"day":GameState.current_day,"role":GameState.current_role,"title":str(outcome.get("label","一件作品")),"module":module})
+	GameState.artifacts["created_work_notes"] = rows
 func at_location(location: String) -> Array:
 	var result: Array = []
 	for row in GameState.shared_state.get("visible_echoes",[]):
+		if str(row.location) == location:
+			var visible: Dictionary = row.duplicate(true)
+			if GameState.current_day > int(row.get("day",GameState.current_day)) and not str(row.get("response","")).is_empty(): visible.text = str(row.response)+"\n「"+str(row.text)+"」"
+			result.append(visible)
+	for row in GameState.shared_state.get("ambient_traces",[]):
 		if str(row.location) == location: result.append(row)
 	return result
+
+func resume_ambient(now: float = -1.0) -> bool:
+	if not MetaExperience.enabled("living_town"): return false
+	if now < 0: now = Time.get_unix_time_from_system()
+	var checkpoint: Dictionary = GameState.shared_state.get("meta_checkpoint",{})
+	if checkpoint.is_empty(): return false
+	var previous := maxf(float(checkpoint.get("timestamp",now)),float(GameState.shared_state.get("ambient_applied_at",0)))
+	var elapsed := clampf(now-previous,0,float(MetaExperience.catalog.timing.offline_cap_seconds))
+	var steps := mini(3,int(elapsed/float(MetaExperience.catalog.timing.offline_step_seconds)))
+	if steps == 0: return false
+	var rows: Array = GameState.shared_state.get("ambient_traces",[]).duplicate(true)
+	var applied := 0
+	for event in MetaExperience.catalog.ambient_events:
+		if applied >= steps: break
+		if GameState.current_day < int(event.after_day): continue
+		if rows.any(func(row: Dictionary) -> bool: return str(row.get("id","")) == "ambient_"+str(event.id)): continue
+		rows.append({"id":"ambient_"+str(event.id),"location":event.location,"text":event.text,"day":GameState.current_day})
+		applied += 1
+	GameState.shared_state["ambient_traces"] = rows
+	GameState.shared_state["ambient_applied_at"] = now
+	return true
+
+func update_presence() -> void:
+	if not MetaExperience.enabled("living_town"): return
+	var rows: Array = GameState.shared_state.get("ambient_traces",[])
+	for event in MetaExperience.catalog.presence_events:
+		if GameState.current_day < int(event.day): continue
+		if GameState.current_day == int(event.day) and GameState.current_minute < int(event.minute): continue
+		var id := "presence_"+str(event.id)
+		if rows.any(func(row: Dictionary) -> bool: return str(row.get("id","")) == id): continue
+		rows.append({"id":id,"location":event.location,"text":event.text,"day":GameState.current_day,"witnessed":GameState.current_location == str(event.location)})
+	GameState.shared_state["ambient_traces"] = rows

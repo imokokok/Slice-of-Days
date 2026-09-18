@@ -1,0 +1,327 @@
+{
+  "version": 1,
+  "rooms": [
+    {
+      "id": "A1",
+      "role": "A",
+      "day": 1,
+      "title": "门外两下敲门声",
+      "beat": "闹钟响过一次。门外的脚步声离开了。",
+      "model": "res://art/memories/A1.glb",
+      "paper": "res://art/memories/A1.svg",
+      "audio": "res://art/memories/A1.wav",
+      "source": "Script A, scene 1",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "af7b78"
+    },
+    {
+      "id": "A2",
+      "role": "A",
+      "day": 2,
+      "title": "坏掉的音箱",
+      "beat": "成绩单留在音箱旁，螺丝收在一个小碟子里。",
+      "model": "res://art/memories/A2.glb",
+      "paper": "res://art/memories/A2.svg",
+      "audio": "res://art/memories/A2.wav",
+      "source": "Script A, scene 2",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "6d858a"
+    },
+    {
+      "id": "A3",
+      "role": "A",
+      "day": 3,
+      "title": "化了一半的冰",
+      "beat": "冰化了一半。水槽前的杯子倒扣着。",
+      "model": "res://art/memories/A3.glb",
+      "paper": "res://art/memories/A3.svg",
+      "audio": "res://art/memories/A3.wav",
+      "source": "Script A, scene 3",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "88a294"
+    },
+    {
+      "id": "A4",
+      "role": "A",
+      "day": 4,
+      "title": "没安排的夏天",
+      "beat": "公交座椅、便利店和海边台阶挤在同一段路上。",
+      "model": "res://art/memories/A4.glb",
+      "paper": "res://art/memories/A4.svg",
+      "audio": "res://art/memories/A4.wav",
+      "source": "Script A, scene 4",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "ac9677"
+    },
+    {
+      "id": "A5",
+      "role": "A",
+      "day": 5,
+      "title": "填满的日历",
+      "beat": "09:00 WORK。11:00 READ。手机停在08:47。",
+      "model": "res://art/memories/A5.glb",
+      "paper": "res://art/memories/A5.svg",
+      "audio": "res://art/memories/A5.wav",
+      "source": "Script A, scene 5",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "788c98"
+    },
+    {
+      "id": "A6",
+      "role": "A",
+      "day": 6,
+      "title": "凌晨03:14",
+      "beat": "03:14。屏幕上的两个版本都还开着。",
+      "model": "res://art/memories/A6.glb",
+      "paper": "res://art/memories/A6.svg",
+      "audio": "res://art/memories/A6.wav",
+      "source": "Script A, scene 6",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "51626f"
+    },
+    {
+      "id": "A7",
+      "role": "A",
+      "day": 7,
+      "title": "擦空的白板",
+      "beat": "白板擦干净了。板擦边上放着一支没有盖好的笔。",
+      "model": "res://art/memories/A7.glb",
+      "paper": "res://art/memories/A7.svg",
+      "audio": "res://art/memories/A7.wav",
+      "source": "Script A, scene 7",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "aeb3a2"
+    },
+    {
+      "id": "B1",
+      "role": "B",
+      "day": 1,
+      "title": "餐桌上的考试",
+      "beat": "桌上多点了菜。菜单还停在价格那一页。",
+      "model": "res://art/memories/B1.glb",
+      "paper": "res://art/memories/B1.svg",
+      "audio": "res://art/memories/B1.wav",
+      "source": "Script B, scene 1",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "af7b78"
+    },
+    {
+      "id": "B2",
+      "role": "B",
+      "day": 2,
+      "title": "排在最上面的资料",
+      "beat": "学费、就业、城市、时间、Plan B。资料排过一遍。",
+      "model": "res://art/memories/B2.glb",
+      "paper": "res://art/memories/B2.svg",
+      "audio": "res://art/memories/B2.wav",
+      "source": "Script B, scene 2",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "6d858a"
+    },
+    {
+      "id": "B3",
+      "role": "B",
+      "day": 3,
+      "title": "杯子、钥匙、暖气片",
+      "beat": "杯沿、钥匙、暖气片。刚才那一段又从头放了一遍。",
+      "model": "res://art/memories/B3.glb",
+      "paper": "res://art/memories/B3.svg",
+      "audio": "res://art/memories/B3.wav",
+      "source": "Script B, scene 3",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "88a294"
+    },
+    {
+      "id": "B4",
+      "role": "B",
+      "day": 4,
+      "title": "压在菜袋下的宣传页",
+      "beat": "课程宣传页压在菜袋下面，露出周三两个字。",
+      "model": "res://art/memories/B4.glb",
+      "paper": "res://art/memories/B4.svg",
+      "audio": "res://art/memories/B4.wav",
+      "source": "Script B, scene 4",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "ac9677"
+    },
+    {
+      "id": "B5",
+      "role": "B",
+      "day": 5,
+      "title": "再检查一次",
+      "beat": "EXPORT COMPLETE。关闭按钮旁停着鼠标。",
+      "model": "res://art/memories/B5.glb",
+      "paper": "res://art/memories/B5.svg",
+      "audio": "res://art/memories/B5.wav",
+      "source": "Script B, scene 5",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "788c98"
+    },
+    {
+      "id": "B6",
+      "role": "B",
+      "day": 6,
+      "title": "招聘页面里的唱片店",
+      "beat": "招聘信息下面，露出了唱片店的照片。",
+      "model": "res://art/memories/B6.glb",
+      "paper": "res://art/memories/B6.svg",
+      "audio": "res://art/memories/B6.wav",
+      "source": "Script B, scene 6",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "51626f"
+    },
+    {
+      "id": "B7",
+      "role": "B",
+      "day": 7,
+      "title": "行李里的录音机",
+      "beat": "清单上的格子勾过了。小录音机刚放进行李。",
+      "model": "res://art/memories/B7.glb",
+      "paper": "res://art/memories/B7.svg",
+      "audio": "res://art/memories/B7.wav",
+      "source": "Script B, scene 7",
+      "source_status": "adapted_environment_no_recorded_dialogue",
+      "spawn": [
+        0,
+        1.62,
+        2.7
+      ],
+      "paper_position": [
+        0,
+        1.25,
+        -2.55
+      ],
+      "accent": "aeb3a2"
+    }
+  ]
+}

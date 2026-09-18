@@ -82,6 +82,8 @@ func _ready() -> void:
 			save_path="user://letter_"+profile+".json"
 			preview_path="user://preview_"+profile+".png"
 	materials=JSON.parse_string(FileAccess.get_file_as_string("res://extensions/collage_letter/assets/materials.json"))
+	if has_node("/root/EconomySystem"):
+		materials.append_array(EconomySystem.collage_materials())
 	bottle=BottleClient.new()
 	add_child(bottle)
 	font = SystemFont.new()
@@ -107,9 +109,14 @@ func _ready() -> void:
 		textures.append(viewport.get_texture())
 		if i>=sources.size():
 			sources.append(Rect2(62,190,300,240))
+	_append_developed_photos()
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	load_game()
+	if has_node("/root/FilmSystem"):
+		var selected_photo := str(FilmSystem.state().collage_selection)
+		for i in materials.size():
+			if str(materials[i].get("photo_id",""))==selected_photo and not selected_photo.is_empty(): album_source=i
 	update_material_slots()
 	fold_visual = float(fold)
 	flap_visual = 1.0 if stage in ["WAX_SEAL","SEND","END"] else 0.0
@@ -626,6 +633,8 @@ func finish_cut(mouse: Vector2) -> void:
 	center /= poly.size()
 	var piece := Piece.new()
 	piece.source_id = source
+	piece.photo_id = str(materials[source].get("photo_id",""))
+	piece.collection_id = str(materials[source].get("collection_id",""))
 	piece.font = font
 	piece.texture = textures[source]
 	for point in roughen(poly):
@@ -938,6 +947,9 @@ func save_game(force: bool = false) -> void:
 	var all: Array = []
 	for piece in pieces_root.get_children():
 		all.append(piece.serialize())
+		if not str(piece.photo_id).is_empty() and has_node("/root/FilmSystem"):
+			var photo := FilmSystem.photo(str(piece.photo_id))
+			if not bool(photo.get("used_in_collage",false)): FilmSystem.mark_photo_use(str(piece.photo_id),"collage")
 	var points: Array = []
 	for p in seal_points:
 		points.append([p.x,p.y])
@@ -994,6 +1006,14 @@ func load_game(force: bool = false) -> void:
 	for record in data.get("pieces",[]):
 		var piece := Piece.new()
 		piece.source_id=int(record.get("source",0))
+		piece.photo_id=str(record.get("photo_id",""))
+		piece.collection_id=str(record.get("collection_id",""))
+		if not piece.collection_id.is_empty():
+			for source_index in materials.size():
+				if str(materials[source_index].get("collection_id",""))==piece.collection_id: piece.source_id=source_index; break
+		if not piece.photo_id.is_empty():
+			for source_index in materials.size():
+				if str(materials[source_index].get("photo_id",""))==piece.photo_id: piece.source_id=source_index; break
 		piece.font=font
 		if piece.source_id>=0 and piece.source_id<textures.size():
 			piece.texture=textures[piece.source_id]
@@ -1302,3 +1322,23 @@ func run_network_test() -> void:
 	audio.shutdown()
 	await get_tree().create_timer(0.15).timeout
 	get_tree().quit()
+
+
+func _append_developed_photos() -> void:
+	if not has_node("/root/FilmSystem"): return
+	var photos: Array=FilmSystem.developed_photos().duplicate()
+	photos.sort_custom(func(a: Dictionary,b: Dictionary)->bool:return str(a.get("id",""))<str(b.get("id","")))
+	for photo in photos:
+		var library:=PhotoLibrary.new()
+		library.root_path=str(photo.get("library_root","user://photos"))
+		var id:=str(photo.get("id",photo.get("photo_id","")))
+		var image:=library.load_photo(id)
+		if image==null: continue
+		var copy:=image.duplicate() as Image
+		copy.resize(280,187,Image.INTERPOLATE_LANCZOS)
+		var print_image:=Image.create(300,240,false,Image.FORMAT_RGB8)
+		print_image.fill(Color("f2ead8"))
+		print_image.blit_rect(copy,Rect2i(0,0,280,187),Vector2i(10,12))
+		materials.append({"id":"developed_"+id,"photo_id":id,"title":str(photo.get("title","自己拍的照片")),"category":"影像","kind":"photo","tags":["personal","developed"]})
+		textures.append(ImageTexture.create_from_image(print_image))
+		sources.append(Rect2(1070,196,300,240))

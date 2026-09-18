@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://1itroulli0gc"
+
+[deps]
+
+files=["res://docs/meta/V2_MEMORY_INVENTORY.物件.translation", "res://docs/meta/V2_MEMORY_INVENTORY.动作.translation", "res://docs/meta/V2_MEMORY_INVENTORY.模型节点.translation", "res://docs/meta/V2_MEMORY_INVENTORY.距离上限（米）.translation", "res://docs/meta/V2_MEMORY_INVENTORY.页数.translation", "res://docs/meta/V2_MEMORY_INVENTORY.内容.translation"]
+
+source_file="res://docs/meta/V2_MEMORY_INVENTORY.csv"
+dest_files=["res://docs/meta/V2_MEMORY_INVENTORY.物件.translation", "res://docs/meta/V2_MEMORY_INVENTORY.动作.translation", "res://docs/meta/V2_MEMORY_INVENTORY.模型节点.translation", "res://docs/meta/V2_MEMORY_INVENTORY.距离上限（米）.translation", "res://docs/meta/V2_MEMORY_INVENTORY.页数.translation", "res://docs/meta/V2_MEMORY_INVENTORY.内容.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

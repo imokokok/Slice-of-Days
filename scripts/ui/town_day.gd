@@ -41,6 +41,7 @@ var time_guidance_label: Label
 
 
 func _ready() -> void:
+	add_child(preload("res://scripts/meta/place_layer.gd").new())
 	_load_locations()
 	_load_interactive_spaces()
 	var segment := WorldGraph.segment_for(GameState.current_location)
@@ -104,6 +105,7 @@ func _ready() -> void:
 	_refresh()
 	WorldSound.set_active(true)
 	ChapterSystem.mark_opening_seen()
+	add_child(preload("res://scripts/residency/gameplay_shell.gd").new())
 
 
 func _load_locations() -> void:
@@ -198,9 +200,9 @@ func _time_guidance_text() -> String:
 		return base
 	var return_by := int(commitment.get("return_by", commitment.get("start", 0)))
 	var home_id := str(commitment.get("location", "dorm"))
-	var shortest := int(ceil(WorldGraph.walking_distance(GameState.current_location, home_id, street.player_x) / street.SPEED / 4.0)) + 1
+	var shortest := WorldGraph.walk_minutes(GameState.current_location,home_id) + 1
 	var leave_by := return_by - shortest
-	return "%s 回家工作 · 步行约%d分钟 · %s · %s" % [_minute_text(return_by), shortest, "住宅区内" if segment_id == "residential" else "经主街路口向上", "现在该动身了" if GameState.current_minute >= leave_by else _minute_text(leave_by) + "前动身"]
+	return "%s 回家工作 · 步行约%d分钟 · %s · %s" % [_minute_text(return_by), shortest, "住宅区内" if segment_id == "residential" else "Tab 选择回家路线", "现在该动身了" if GameState.current_minute >= leave_by else _minute_text(leave_by) + "前动身"]
 
 
 func _spaces_at(location_id: String) -> Array[Dictionary]:
@@ -514,18 +516,11 @@ func _guard_pocket_audio() -> bool:
 	return false
 
 func _process(delta: float) -> void:
-	street.enabled = not is_instance_valid(conversation) and not event_overlay.visible and not _pocket_blocks_walking() and not pocket_opening and not SceneRouter.transitioning
+	street.enabled = not is_instance_valid(conversation) and not event_overlay.visible and not _pocket_blocks_walking() and not pocket_opening and not SceneRouter.transitioning and not (has_node("GameplayShell") and get_node("GameplayShell").blocks_walking())
 	if street.enabled and DisplayServer.window_is_focused():
 		GameState.advance_world_clock(delta)
 	if not street.enabled: route_hint.text = ""; return
 	route_hint.text = ""
-	if segment_id == "main_street" and absf(street.player_x - WorldGraph.JUNCTION_X) < 240:
-		route_hint.text = "↑ W  住宅区     ·     ↓ S  文化街"
-	elif segment_id != "main_street" and street.player_x < 500:
-		route_hint.text = "← 回到社区中心" if segment_id == "lookout_route" else "← 回到主街"
-	elif segment_id == "main_street" and street.player_x > street.world_width - 600:
-		route_hint.text = "观景台路线 →"
-	_check_route_boundary(Input.get_axis("move_left", "move_right"))
 	_try_market_encounter()
 
 func _market_encounter_key() -> String:
@@ -533,6 +528,7 @@ func _market_encounter_key() -> String:
 
 func _try_market_encounter() -> void:
 	if not street.enabled or SceneRouter.transitioning or GameState.current_location != "produce_stall": return
+	if bool(DialogueSystem.argument_state().get("finished", false)): return
 	if bool(GameState.shared_state.get(_market_encounter_key(),false)): return
 	for item in street.hotspots:
 		if str(item.kind) == "argument" and absf(street.player_x-float(item.x)) < 115:
@@ -541,12 +537,13 @@ func _try_market_encounter() -> void:
 
 func _start_market_encounter() -> void:
 	if is_instance_valid(conversation) or _guard_pocket_audio(): return
-	if bool(GameState.shared_state.get(_market_encounter_key()+"_done",false)):
-		_show_line("阿禾", "我们正准备回去做饭呢。他做他的，我做我的，还是一起吃。")
+	if bool(DialogueSystem.argument_state().get("finished", false)):
+		_observe_market_afterward()
 		return
 	var snapshot := GameState.to_save_data().duplicate(true)
 	_remember_position()
 	GameState.shared_state[_market_encounter_key()] = true
+	DialogueSystem.mark_argument(false)
 	street.velocity = 0
 	if not SaveManager.save_or_report("记录街边相遇失败"):
 		GameState.load_save_data(snapshot)
@@ -562,11 +559,12 @@ func _start_market_encounter() -> void:
 	words.leave_requested.connect(func() -> void: conversation.queue_free())
 	words.finish_requested.connect(_finish_market_encounter.bind(words))
 	conversation.add_child(words)
-	street.enabled = false
+	street.enabled = false and get_tree().get_nodes_in_group("world_tool").is_empty() and not (has_node("GameplayShell") and get_node("GameplayShell").focus_opening)
 	street.queue_redraw()
 
 func _finish_market_encounter(words: Node2D) -> void:
 	if not words.finished: return
+	if bool(DialogueSystem.argument_state().get("finished", false)): return
 	var snapshot := GameState.to_save_data().duplicate(true)
 	var metadata: Dictionary = GameplayModuleSystem.modules.get("translation",{})
 	if not GameState.use_free_time(int(metadata.get("direct_time_minutes",30))):
@@ -574,12 +572,19 @@ func _finish_market_encounter(words: Node2D) -> void:
 		return
 	var outcome := {"choice_id":"extension_complete","label":"在菜摊边听懂彼此","source_event_id":"street:produce_stall:conversation","interaction":{"mode":"conversation","selected_labels":["阿禾的记忆","陈川的记忆"]}}
 	GameState.shared_state[_market_encounter_key()+"_done"] = true
+	DialogueSystem.mark_argument(true)
 	if not GameplayModuleSystem.begin_session("translation","street:produce_stall:conversation") or not GameplayModuleSystem.complete_external("translation",outcome,metadata.get("external_results",{})) or not SaveManager.save_or_report("保存街边对话失败"):
 		GameState.load_save_data(snapshot)
 		words.save_message = "这段对话暂时没能保存，按空格可以重试。"
 		return
 	conversation.queue_free()
 	_refresh()
+	_observe_market_afterward.call_deferred()
+
+func _observe_market_afterward() -> void:
+	if is_instance_valid(conversation):
+		await get_tree().process_frame
+	MetaExperience.observe("produce_stall", "刚才放菜篮的地方，留下了一小片青菜叶。", {"kind":"place","event_id":"market_argument_finished","flags":{"argument_finished":true},"npc_id":"ahe","speaker_id":"ahe"})
 
 func _world_x(index: int, local_x: float) -> float:
 	return route_offset + index * BLOCK_WIDTH + local_x * BLOCK_WIDTH / 1600.0
@@ -587,25 +592,9 @@ func _world_x(index: int, local_x: float) -> float:
 func _index_at(x: float) -> int:
 	return clampi(int((x - route_offset) / BLOCK_WIDTH), 0, street_order.size() - 1)
 
-func _check_route_boundary(axis: float) -> void:
-	if SceneRouter.transitioning: return
-	if segment_id == "main_street" and axis > 0 and street.player_x >= street.world_width - 82:
-		_change_route("park", 140, 1)
-	elif segment_id != "main_street" and axis < 0 and street.player_x <= 82:
-		_change_route("print_shop" if segment_id == "lookout_route" else "town_entrance", 7840 if segment_id == "lookout_route" else WorldGraph.JUNCTION_X, -1)
 
-func _change_route(destination: String, arrival_x: float, facing: float) -> void:
-	if SceneRouter.transitioning: return
-	var snapshot := GameState.to_save_data().duplicate(true)
-	_remember_position()
-	GameState.current_location = destination
-	GameState.shared_state["route_arrival"] = {"route":WorldGraph.segment_for(destination).id, "x":arrival_x, "facing":facing}
-	GameState.commit_active_role_state()
-	if not SaveManager.save_or_report("路口位置保存失败"):
-		GameState.load_save_data(snapshot)
-		_show_line("", "存档暂时没能写入，先在这里停一下。稍后可以继续走。")
-		return
-	SceneRouter.town_day()
+
+
 
 func _on_walk(x: float) -> void:
 	var index := _index_at(x)
@@ -641,10 +630,15 @@ func _rebuild_hotspots() -> void:
 		street.hotspots.append({"x":_world_x(current_index, 930), "kind":"wait_open", "label":"坐下等到 21:00"})
 		return
 	# Outdoor residents remain available even after the shop closes.
-	var people := ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
+	var people := DialogueSystem.people_at(GameState.current_location)
 	for index in mini(people.size(), 3):
 		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
-		street.hotspots.append({"x":_world_x(current_index, (850 if GameState.current_location == "cafe" else 450) + index * 150), "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
+		var local_x := float((850 if GameState.current_location == "cafe" else 450) + index * 150)
+		if GameState.current_location == "produce_stall":
+			if people[index] == "beetman": local_x = 875
+			elif people[index] == "ahe": local_x = 1120
+			elif people[index] == "chen_chuan": local_x = 1370
+		street.hotspots.append({"x":_world_x(current_index, local_x), "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
 	var hours: Array = locations.get(GameState.current_location,{}).get("hours",[])
 	var open_now := hours.is_empty() or hours.any(func(h: Array) -> bool: return GameState.current_minute >= int(h[0]) and GameState.current_minute < int(h[1]))
 	if not open_now:
@@ -663,11 +657,14 @@ func _rebuild_hotspots() -> void:
 	for item in outdoor_objects:
 		if str(item.get("location_id", "")) == GameState.current_location:
 			if str(item.get("kind","")) == "encounter":
-				street.hotspots.append({"x":_world_x(current_index,1210),"kind":"argument","id":"translation","label":str(item.name)})
+				if bool(DialogueSystem.argument_state().get("finished", false)):
+					street.hotspots.append({"x":_world_x(current_index,1235),"kind":"argument_observation","id":"market_argument_finished","label":"看看菜篮留下的印子"})
+				else: street.hotspots.append({"x":_world_x(current_index,1210),"kind":"argument","id":"translation","label":str(item.name)})
 			elif str(item.get("kind","")) == "dialogue":
 				if not DialogueSystem.invitation_for(str(item.npc_id)).is_empty(): street.hotspots.append({"x":center,"kind":"invitation","id":str(item.npc_id),"label":str(item.name)})
 			elif str(item.get("kind", "")) == "shop":
-				street.hotspots.append({"x":center + 145.0, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
+				# BEETMAN's person hotspot owns the counter conversation and shop branch.
+				if str(item.get("shop_id", "")) != "produce_stall": street.hotspots.append({"x":center + 145.0, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
 			else: street.hotspots.append({"x":center, "kind":"module", "id":str(item.module_id), "label":str(item.name) + " · " + GameplayModuleSystem.time_hint(str(item.module_id))})
 	var available := EventSystem.available_events()
 	for index in available.size():
@@ -681,8 +678,12 @@ func _interact() -> void:
 	_remember_position()
 	SaveManager.save_or_report("地点互动前保存失败")
 	match str(item.kind):
-		"shop_closed": _show_line("", "门内很安静，桌上留着半杯咖啡。晚一点或明天再来。")
-		"roads": _open_map()
+		"shop_closed":
+			_show_line("", "门内很安静，桌上留着半杯咖啡。晚一点或明天再来。")
+			MetaExperience.observe(GameState.current_location,"门内很安静，桌上留着半杯咖啡。",{"kind":"place","event_id":"shop_closed_"+GameState.current_location})
+		"echo":
+			_show_line("",str(item.get("text","")))
+			MetaExperience.observe(GameState.current_location,str(item.get("text","")),{"kind":"place","event_id":"echo_"+GameState.current_location})
 		"closed": _show_line("", "观景台将在晚上九点开放。可以在旁边的长椅坐一会。")
 		"wait_open": _sit_on_bench(item)
 		"home": SceneRouter.enter_space("home_a" if GameState.current_role == "A" else "home_b")
@@ -691,6 +692,7 @@ func _interact() -> void:
 		"shop": _open_shop(str(item.id))
 		"shopkeeper": _talk_shopkeeper(str(item.id))
 		"argument": _start_market_encounter()
+		"argument_observation": _observe_market_afterward()
 		"invitation": _talk_nearby(str(item.id),"minigame_hook")
 		"module":
 			if _guard_pocket_audio(): return
@@ -705,24 +707,25 @@ func _interact() -> void:
 
 func _talk_nearby(resident_id: String, topic := "greeting") -> void:
 	if is_instance_valid(conversation): return
+	if not MetaExperience.pay_conversation(topic): return
 	conversation = preload("res://scripts/ui/conversation_panel.gd").new()
 	conversation.npc = resident_id
 	conversation.starting_topic = topic
+	if resident_id == "beetman" and GameState.current_location == "produce_stall":
+		conversation.shop_id = "produce_stall"
+		conversation.purchase_requested.connect(_open_shop.bind("produce_stall"))
+	if resident_id == "grocery":
+		conversation.shop_id = "grocery"
+		conversation.shop_name = "杂货店老板"
+		conversation.purchase_requested.connect(_open_shop.bind("grocery"))
 	for item in street.hotspots:
 		if str(item.get("id","")) == resident_id and absf(float(item.x)-street.player_x) > 1.0: street.facing = signf(float(item.x)-street.player_x)
 	street.velocity = 0.0
 	add_child(conversation)
+	SaveManager.save_or_report("谈话计时后保存失败")
 
 func _talk_shopkeeper(shop_id: String) -> void:
-	if is_instance_valid(conversation): return
-	conversation = preload("res://scripts/ui/conversation_panel.gd").new()
-	conversation.shop_id = shop_id
-	conversation.purchase_requested.connect(_open_shop.bind(shop_id))
-	street.velocity = 0.0
-	for item in street.hotspots:
-		if item.kind == "shopkeeper" and absf(float(item.x) - street.player_x) > 1:
-			street.facing = signf(float(item.x) - street.player_x)
-	add_child(conversation)
+	_talk_nearby(shop_id)
 
 func _legacy_talk_nearby(resident_id: String) -> void:
 	if not GameState.has_event(_ambient_event_id(resident_id)):
@@ -744,7 +747,7 @@ func _clear_dialogue() -> void:
 		child.queue_free()
 	event_panel.position.x = 810 if street.player_x - street.camera_x < 800 else 50
 	event_overlay.visible = true
-	street.enabled = false
+	street.enabled = false and get_tree().get_nodes_in_group("world_tool").is_empty() and not (has_node("GameplayShell") and get_node("GameplayShell").focus_opening)
 
 func _show_line(speaker: String, text: String) -> void:
 	_clear_dialogue()
@@ -806,9 +809,12 @@ func _open_shop(shop_id: String) -> void:
 	if is_instance_valid(pocket_panel): return
 	var panel = preload("res://scripts/ui/shop_panel.gd").new()
 	panel.shop_id = shop_id
+	if is_instance_valid(conversation) and conversation.has_method("resume_from_shop"):
+		panel.tree_exited.connect(conversation.resume_from_shop)
 	_show_pocket_panel(panel)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not get_tree().get_nodes_in_group("world_tool").is_empty(): return
 	if is_instance_valid(conversation): return
 	if not event is InputEventKey or not event.pressed or event.echo: return
 	if SceneRouter.transitioning: return
@@ -828,13 +834,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			_focus_dialogue_choice(-1)
 		elif dialogue_choices.size() > 1 and (event.is_action_pressed("ui_down") or event.physical_keycode == KEY_S):
 			_focus_dialogue_choice(1)
-	elif segment_id == "main_street" and absf(street.player_x - WorldGraph.JUNCTION_X) < 240 and (event.physical_keycode == KEY_W or event.is_action_pressed("ui_up")):
-		_change_route("residence", 140, 1)
-	elif segment_id == "main_street" and absf(street.player_x - WorldGraph.JUNCTION_X) < 240 and (event.physical_keycode == KEY_S or event.is_action_pressed("ui_down")):
-		_change_route("handcraft_shop", 140, 1)
 	elif event.is_action_pressed("open_camera"): _open_pocket_camera()
 	elif event.is_action_pressed("open_recorder"): _open_pocket_recorder()
 	elif event.is_action_pressed("open_album"): _open_pocket_album()
+	elif event.is_action_pressed("ask_directly"):
+		var target: Dictionary = street.nearest()
+		if str(target.get("kind", "")) in ["person", "resident", "npc", "shopkeeper"]:
+			var ask := preload("res://scripts/meta/ask_panel.gd").new()
+			ask.npc = str(target.id)
+			ask.chosen.connect(func(topic: String) -> void: _talk_nearby(str(target.id), topic))
+			add_child(ask)
 	elif event.is_action_pressed("interact"): _interact()
 	elif event.is_action_pressed("open_journal"): _open_journal()
 	elif event.is_action_pressed("open_map"): _open_map()
@@ -848,6 +857,7 @@ func _focus_dialogue_choice(step: int) -> void:
 	WorldSound.play_ui("focus")
 
 func _pocket_blocks_walking() -> bool:
+	if MetaExperience.modal_open(): return true
 	if not is_instance_valid(pocket_panel): return false
 	return not (pocket_panel.has_method("set_compact") and bool(pocket_panel.get("compact")))
 
@@ -857,6 +867,9 @@ func _notification(what: int) -> void:
 		SaveManager.save_or_report("关闭窗口前保存失败")
 
 func _open_map() -> void:
+	if has_node("GameplayShell"):
+		get_node("GameplayShell").open_paper("map")
+		return
 	if _guard_pocket_audio(): return
 	_remember_position()
 	if not SaveManager.save_or_report("打开地图前保存失败"):

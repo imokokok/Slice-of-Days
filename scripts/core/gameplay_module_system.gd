@@ -220,6 +220,10 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 	if not bool(interaction_check.get("ok", false)):
 		return interaction_check
 	var cost: Dictionary = selected.get("cost", {})
+	if module_id == "cooking":
+		var stock_check := EconomySystem.cooking_check(stored_interaction.get("selected_tokens", []))
+		if not bool(stock_check.ok): return stock_check
+		cost = EconomySystem.cooking_cost(cost)
 	var payment := EventSystem.can_pay_cost_data(cost)
 	if not bool(payment.get("ok", false)):
 		return {"ok": false, "message": str(payment.get("reason", "当前资源不足。"))}
@@ -229,8 +233,16 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 		GameState.spend_money(amount, "完成%s" % str(prototypes.get(module_id, {}).get("title", module_id)))
 	if minutes > 0:
 		GameState.use_free_time(minutes)
-	EventSystem.apply_results("module_%s_%s" % [module_id, choice_id], selected.get("results", {}))
-	var role_results: Dictionary = selected.get("results_by_role", {}).get(GameState.current_role, {})
+	var results: Dictionary = selected.get("results", {}).duplicate(true)
+	var role_results: Dictionary = selected.get("results_by_role", {}).get(GameState.current_role, {}).duplicate(true)
+	var work_payment := 0
+	if module_id in ["ghostwriting", "sound_sampling"]:
+		work_payment = int(results.get("money",0))
+		results.erase("money")
+	if module_id == "cooking":
+		results.erase("money")
+		role_results.erase("money")
+	EventSystem.apply_results("module_%s_%s" % [module_id, choice_id], results)
 	EventSystem.apply_results("module_%s_%s" % [module_id, choice_id], role_results)
 	var outcome := {
 		"choice_id": choice_id,
@@ -239,6 +251,12 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 		"interaction": stored_interaction,
 	}
 	complete(module_id, outcome)
+	if module_id == "cooking": EconomySystem.finish_cooking(outcome, stored_interaction.get("selected_tokens", []))
+	if work_payment > 0:
+		var issuer := "handcraft_shop" if module_id == "ghostwriting" else "record_store"
+		GameState.earn_money(work_payment,"书信委托报酬" if module_id == "ghostwriting" else "采样整理报酬",{"work_minutes":minutes,"kind":"income","issuer":issuer,"source":"module_"+module_id})
+		var outcome_index := maxi(0,ensure_state(module_id).outcomes.size()-1)
+		ResidencySystem.accept_contribution("module_%s_%d" % [module_id,outcome_index],issuer,{"accepted":true,"source":"counter_delivery"})
 	EchoSystem.record_module(module_id, outcome)
 	GameState.shared_state.erase("pending_module")
 	GameState.commit_active_role_state()
@@ -266,7 +284,11 @@ func complete_external(module_id: String, outcome: Dictionary, results: Dictiona
 	var granted := results.duplicate(true)
 	# This extension contains one authored client commission. Reopening its
 	# finished letter is a keepsake, not a new payable delivery.
-	if module_id == "ghostwriting" and was_completed: granted.erase("money")
+	if module_id == "ghostwriting":
+		granted.erase("money")
+		if not was_completed and bool(outcome.get("contribution_accepted",false)):
+			var work: Dictionary = EconomySystem.config.work.letter
+			GameState.earn_money(int(work.pay),"书信委托报酬",{"work_minutes":int(work.minutes),"kind":"income","issuer":"handcraft_shop","source":"letter_delivery"})
 	EventSystem.apply_results("module_%s_external" % module_id, granted)
 	EchoSystem.record_module(module_id, outcome)
 	GameState.shared_state.erase("pending_module")

@@ -83,7 +83,7 @@ func _build_ui() -> void:
 	for index in tokens.size():
 		var token: Dictionary = tokens[index]
 		var token_id := str(token.get("id", ""))
-		var token_button := _button(side, _token_button_text(token), Vector2(22, 150 + index * 52), Vector2(546, 44), false)
+		var token_button := _button(side, _token_button_text(token), Vector2(22, 150 + index * (36 if module_id == "cooking" else 52)), Vector2(546, 32 if module_id == "cooking" else 44), false)
 		token_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		token_button.tooltip_text = str(token.get("detail", ""))
 		token_button.pressed.connect(_toggle_token.bind(token_id))
@@ -94,6 +94,7 @@ func _build_ui() -> void:
 	for choice in prototype.get("choices", []):
 		var choice_id := str(choice.get("id", ""))
 		var minutes := int(choice.get("cost", {}).get("minutes", 0))
+		if module_id == "cooking": minutes = int(EconomySystem.cooking_cost(choice.get("cost", {})).get("minutes", minutes))
 		var choice_button := _button(side, "%s · %d分钟" % [str(choice.get("label", choice_id)), minutes], Vector2(22, choice_y), Vector2(546, 42), true)
 		choice_button.tooltip_text = str(choice.get("detail", ""))
 		choice_button.pressed.connect(_complete_choice.bind(choice_id))
@@ -130,6 +131,9 @@ func _build_module_control(parent: Control) -> void:
 
 func _toggle_token(token_id: String) -> void:
 	if completed or playback_active:
+		return
+	if module_id == "cooking" and not EconomySystem.ingredient_available(token_id):
+		status_label.text = "这份材料还没带到厨房，先去采购。"
 		return
 	if selected_tokens.has(token_id):
 		selected_tokens.erase(token_id)
@@ -220,6 +224,8 @@ func _update_state() -> void:
 	for token_id in token_buttons:
 		_style_button(token_buttons[token_id], selected_tokens.has(str(token_id)))
 		token_buttons[token_id].disabled = completed or playback_active
+		if module_id == "cooking":
+			token_buttons[token_id].disabled = completed or not EconomySystem.ingredient_available(str(token_id))
 	_update_module_value()
 	primary_button.disabled = completed or playback_active or selected_tokens.size() < minimum
 	var record := _interaction_record()
@@ -256,10 +262,7 @@ func _complete_choice(choice_id: String) -> void:
 	status_label.text = str(result.get("message", ""))
 	if not bool(result.get("ok", false)):
 		return
-	if module_id == "cooking":
-		var carried := GameState.consume_inventory(selected_tokens)
-		if not carried.is_empty():
-			status_label.text += "\n这次用掉了随身带来的%d样食材，其余来自饭店当天的备料。" % carried.size()
+	if module_id == "cooking": status_label.text += "\n材料已实际用掉，出餐和工资记在今天的工作记录里。"
 	completed = true
 	if not SaveManager.save_or_report("玩法结果保存失败"):
 		GameState.load_save_data(rollback_snapshot)

@@ -1,0 +1,263 @@
+{
+  "version": 3,
+  "requirements": {
+    "income": 1,
+    "living_receipts": 3,
+    "receipt_categories": 2,
+    "exploration": 3,
+    "recognition": 12,
+    "recognition_circles": 4,
+    "contribution": 1,
+    "pages": 7,
+    "ledger": 7
+  },
+  "exploration_periods": [[0,720,"morning"],[720,1020,"afternoon"],[1020,1140,"dusk"],[1140,1440,"night"]],
+  "recognition_circles": {
+    "labels": {"food":"饮食与采买","arts":"音乐、书信与阅读","community":"社区与邻里","coast":"闲暇与海边"},
+    "residents": {"beetman":"food","shi_yongqi":"food","mossner":"arts","xanni":"arts","maya":"arts","chenyuan":"community","mingming":"community","zhou_xiaoliu":"community","xia_touming":"coast","yuxingqing":"coast","naonao":"coast","wu_wu":"community"},
+    "locations": {"night_market":"food","produce_stall":"food","cafe":"food","handcraft_shop":"arts","library":"arts","record_store":"arts","print_shop":"community","residence":"community","dorm":"community","bus_stop":"community","town_entrance":"community","tarot_stall":"coast","chess_stall":"coast","park":"coast","port":"coast"}
+  },
+  "due_day": 7,
+  "due_minute": 1080,
+  "pages": [
+    {
+      "day": 1,
+      "title": "ARRIVAL · 抵达",
+      "prompt": "今天先去三个地方，留下自己的第一印象。",
+      "fields": [
+        {
+          "id": "liked",
+          "label": "第一眼喜欢的地方"
+        },
+        {
+          "id": "disliked",
+          "label": "暂时不喜欢的地方"
+        },
+        {
+          "id": "surprise",
+          "label": "意外发现"
+        },
+        {
+          "id": "impression",
+          "label": "小镇的第一印象"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "EXPLORE · 探索",
+      "prompt": "三份实地记录：第一次发现；换个时段回来；想带别人来的地方。表达可以自由，地点与到访时间保留。",
+      "fields": [
+        {
+          "id": "discovered",
+          "label": "新发现的地方 · 地点／时间／路线／原因"
+        },
+        {
+          "id": "changed",
+          "label": "换个时段回访 · 初见／后来／变化"
+        },
+        {
+          "id": "other",
+          "label": "想带人去的地方 · 谁／为什么"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "SUSTAIN · 生活",
+      "prompt": "收入与支出来自实际账目。请到工作地点领取收入证明。",
+      "fields": [
+        {
+          "id": "source",
+          "label": "我的收入来源"
+        },
+        {
+          "id": "largest",
+          "label": "最大的一笔支出"
+        },
+        {
+          "id": "best",
+          "label": "最值得的一笔"
+        },
+        {
+          "id": "regret",
+          "label": "想重新考虑的一笔"
+        },
+        {
+          "id": "trouble",
+          "label": "生活中的困难"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "CONTRIBUTE · 贡献",
+      "prompt": "一件做过的小事，也可以留下记录。",
+      "fields": [
+        {
+          "id": "what",
+          "label": "我做了什么"
+        },
+        {
+          "id": "where",
+          "label": "在哪里"
+        },
+        {
+          "id": "why",
+          "label": "为什么做"
+        },
+        {
+          "id": "response",
+          "label": "回应 · 有／无／不清楚"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "SHOW YOURSELF · 介绍自己",
+      "prompt": "选三个问题回答，或自由写满这一页。",
+      "fields": [
+        {
+          "id": "q1",
+          "label": "最近反复听的声音"
+        },
+        {
+          "id": "q2",
+          "label": "舍不得丢掉的物品"
+        },
+        {
+          "id": "q3",
+          "label": "我会怎样度过空闲的一小时"
+        },
+        {
+          "id": "q4",
+          "label": "擅长的普通小事"
+        },
+        {
+          "id": "q5",
+          "label": "愿意教给别人的事"
+        },
+        {
+          "id": "q6",
+          "label": "正在改变的习惯"
+        },
+        {
+          "id": "q7",
+          "label": "想尝试的工作"
+        },
+        {
+          "id": "q8",
+          "label": "常常想起的人"
+        },
+        {
+          "id": "q9",
+          "label": "还没有答案的问题"
+        },
+        {
+          "id": "free",
+          "label": "自由页 · 也可放照片、录音或作品"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "PEOPLE & PLACES · 人与地方",
+      "prompt": "传闻可以保留疑问，也可以修改。",
+      "fields": [
+        {
+          "id": "place",
+          "label": "一个地方 · 最佳时间／能做什么／现在的评价"
+        },
+        {
+          "id": "person",
+          "label": "一个人 · 初见／现在／在哪里认识"
+        },
+        {
+          "id": "heard",
+          "label": "听来的一件事 · 来源／待核实／修订"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "WHY STAY? · 留下或离开",
+      "prompt": "这是自己的选择。没有、暂时不清楚，都可以写。",
+      "fields": [
+        {
+          "id": "like",
+          "label": "喜欢什么，为什么"
+        },
+        {
+          "id": "frequent",
+          "label": "最常去哪里"
+        },
+        {
+          "id": "change",
+          "label": "七天里改变了什么"
+        },
+        {
+          "id": "miss",
+          "label": "会想念谁，或暂时没有"
+        },
+        {
+          "id": "advice",
+          "label": "给下一位来客的话"
+        },
+        {
+          "id": "why_stay",
+          "label": "为什么留下，或为什么离开"
+        },
+        {
+          "id": "knowledge",
+          "label": "我了解这里／还不了解／第一天以为了解"
+        },
+        {
+          "id": "choice",
+          "label": "留下／离开／还没想好"
+        },
+        {
+          "id": "signature",
+          "label": "签名"
+        }
+      ]
+    }
+  ],
+  "starter": [
+    {
+      "id": "welcome",
+      "title": "WELCOME TO SOLMERE",
+      "subtitle": "欢迎来到 Solmere",
+      "text": "欢迎来到 Solmere。\n\n先放下行李，再沿着海边走一走。这七天，你可以工作、和人交谈，也可以给自己留一点空白。\n\n袋子里放着六份独立资料。七日作品集每天一页；RP-07 文件夹收存愿意交出的材料；地图可以指路。票据、照片和声音会先留在素材本里。\n\n社区中心柜台每天 09:00–18:00 开放。第七天 18:00 前，可以带着自己的记录回来。"
+    },
+    {
+      "id": "seven_days",
+      "title": "WHY SEVEN DAYS?",
+      "subtitle": "为什么是七天",
+      "text": "一周足够看见几次不同的潮水，也足够把一条路走熟。\n\n每天的纸张各有一个题目。今天的想法可以和昨天不同，后来也可以补写、修订。当天收支会留下真实账目，记得逐日核对。\n\n工作结束后，完成记录先进入素材本。正式证明要在营业时间向工作地点领取。居民签记也由相处中的回应慢慢留下。\n\n晚上回自己的房间，可以把材料铺在桌上整理。想保留给自己的文字，继续留在私人手记或散页里。"
+    },
+    {
+      "id": "requirements",
+      "title": "RESIDENCY REQUIREMENTS",
+      "subtitle": "申请要求 · 动态清单",
+      "text": "七张每日记录；收入证明一份；至少三张生活小票、覆盖两种用途；三种实地探索；十二位居民认可、来自至少四个生活圈；一份已在小镇留下的贡献；个人介绍；最后的选择。证明需向工作地点领取。"
+    },
+    {
+      "id": "portfolio",
+      "title": "A WEEK IN SOLMERE",
+      "subtitle": "七日作品集 · 恰好七页",
+      "text": "每天一页：TODAY、RECORD、KEEP 与两处居民签记。可以在自己的房间整理材料。"
+    },
+    {
+      "id": "folder",
+      "title": "RP-07 RESIDENCY DOSSIER",
+      "subtitle": "居住申请文件夹",
+      "text": "需要提交的材料夹在这里。未归档素材留在素材本。"
+    },
+    {
+      "id": "map",
+      "title": "GUIDE MAP",
+      "subtitle": "小镇基础地图",
+      "text": "Tab 展开地图，点击地点选择步行或打车。地图上的手写标记只属于当前角色。"
+    }
+  ]
+}

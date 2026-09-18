@@ -28,8 +28,8 @@ func _ready() -> void:
 	var module_ids := _unique_ids(modules.get("modules", []), "module")
 	_validate_schedules(resident_rows, location_ids)
 	_validate_core_residents(core_residents.get("profiles", []), resident_ids)
-	if resident_rows.size() != 100:
-		failures.append("the graybox roster should expand to exactly 100 residents, got %d" % resident_rows.size())
+	if resident_rows.size() != 102:
+		failures.append("the 100-resident roster plus two existing market shoppers should contain 102 entries, got %d" % resident_rows.size())
 	_validate_routes(routes.get("edges", []), location_ids)
 	_validate_events(events.get("events", []), location_ids, resident_ids, resident_rows, event_ids, module_ids)
 	_validate_chapter_reachability(events.get("events", []), calendar.get("day_roles", []))

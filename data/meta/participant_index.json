@@ -1,0 +1,1104 @@
+{
+  "target": 100,
+  "protagonists": [
+    "A",
+    "B"
+  ],
+  "existing_npc_ids": [
+    "mossner",
+    "xanni",
+    "chenyuan",
+    "maya",
+    "mingming",
+    "zhou_xiaoliu",
+    "beetman",
+    "xia_touming",
+    "yuxingqing",
+    "shi_yongqi",
+    "naonao",
+    "wu_wu"
+  ],
+  "verified_real_contributors": [],
+  "unassigned_real_trace_slots": 98,
+  "note": "现有NPC是游戏角色；真实参与者的身份、授权和投稿尚未提供。匿名示例不计入98人覆盖。",
+  "trace_templates": [
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    },
+    {
+      "participant_id": null,
+      "status": "awaiting_submission",
+      "forms": [
+        "note",
+        "receipt",
+        "photo_caption",
+        "reply",
+        "zine"
+      ]
+    }
+  ]
+}

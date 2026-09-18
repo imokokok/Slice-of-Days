@@ -1695,6 +1695,130 @@
           "energy": 35
         }
       ]
+    },
+    {
+      "id": "ahe",
+      "display_name": "阿禾",
+      "draft": false,
+      "source": "Existing hear_you/npc_dialogue.gd market shoppers",
+      "schedule": [
+        {
+          "id": "ahe_slot_0",
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "start": 540,
+          "end": 780,
+          "location": "produce_stall",
+          "activity": "买菜",
+          "mood": "relaxed",
+          "energy": 75
+        },
+        {
+          "id": "ahe_slot_1",
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "start": 780,
+          "end": 960,
+          "location": "library",
+          "activity": "翻旧书",
+          "mood": "relaxed",
+          "energy": 75
+        },
+        {
+          "id": "ahe_slot_2",
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "start": 960,
+          "end": 1200,
+          "location": "residence",
+          "activity": "沿街回家",
+          "mood": "relaxed",
+          "energy": 75
+        }
+      ]
+    },
+    {
+      "id": "chen_chuan",
+      "display_name": "陈川",
+      "draft": false,
+      "source": "Existing hear_you/npc_dialogue.gd market shoppers",
+      "schedule": [
+        {
+          "id": "chen_chuan_slot_0",
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "start": 540,
+          "end": 780,
+          "location": "produce_stall",
+          "activity": "买菜",
+          "mood": "relaxed",
+          "energy": 75
+        },
+        {
+          "id": "chen_chuan_slot_1",
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "start": 780,
+          "end": 960,
+          "location": "cafe",
+          "activity": "买面包",
+          "mood": "relaxed",
+          "energy": 75
+        },
+        {
+          "id": "chen_chuan_slot_2",
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "start": 960,
+          "end": 1200,
+          "location": "residence",
+          "activity": "沿街回家",
+          "mood": "relaxed",
+          "energy": 75
+        }
+      ]
     }
   ],
   "generated_roster": {

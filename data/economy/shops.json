@@ -5,11 +5,40 @@
       "name": "BEETMAN 的菜与罐头摊",
       "location_id": "produce_stall",
       "items": [
-        {"id": "tomato", "name": "熟透的番茄", "price": 8, "minutes": 5, "description": "今天就适合下锅，买回去可带进饭店厨房。"},
-        {"id": "lemon", "name": "一袋柠檬", "price": 12, "minutes": 5, "description": "气味很亮，做菜或拍静物都能用上。"},
-        {"id": "herbs", "name": "窗台香草", "price": 6, "minutes": 5, "description": "份量不多，足够改变一道菜的方向。"},
-        {"id": "sea_beans", "name": "海盐豆罐头", "price": 15, "minutes": 5, "description": "耐放的当地罐头，适合留给被工作切碎的晚上。"}
-      ]
+        {
+          "id": "tomato",
+          "name": "熟透的番茄",
+          "price": 8,
+          "minutes": 0,
+          "description": "今天就适合下锅，买回去可带进饭店厨房。",
+          "category": "food"
+        },
+        {
+          "id": "lemon",
+          "name": "一袋柠檬",
+          "price": 12,
+          "minutes": 0,
+          "description": "气味很亮，做菜或拍静物都能用上。",
+          "category": "food"
+        },
+        {
+          "id": "herbs",
+          "name": "窗台香草",
+          "price": 6,
+          "minutes": 0,
+          "description": "份量不多，足够改变一道菜的方向。",
+          "category": "food"
+        },
+        {
+          "id": "sea_beans",
+          "name": "海盐豆罐头",
+          "price": 15,
+          "minutes": 0,
+          "description": "耐放的当地罐头，适合留给被工作切碎的晚上。",
+          "category": "food"
+        }
+      ],
+      "owner_id": "beetman"
     },
     {
       "id": "grocery",
@@ -18,10 +47,170 @@
       "greeting": "今天想买点什么？面包和奶酪在这边。要肥皂、火柴的话，我给你拿。",
       "location_id": "cafe",
       "items": [
-        {"id": "bread", "name": "昨天的面包", "price": 5, "minutes": 5, "description": "便宜，但需要重新烘热或切碎处理。"},
-        {"id": "cheese", "name": "一小块奶酪", "price": 18, "minutes": 5, "description": "能让临时拼出来的菜单更稳定。"},
-        {"id": "soap", "name": "海盐肥皂", "price": 10, "minutes": 5, "description": "普通日用品，会留在随身物品清单。"},
-        {"id": "matches", "name": "一盒火柴", "price": 4, "minutes": 5, "description": "小镇杂货店最常见的消耗品。"}
+        {
+          "id": "bread",
+          "name": "昨天的面包",
+          "price": 5,
+          "minutes": 0,
+          "description": "便宜，但需要重新烘热或切碎处理。",
+          "category": "food"
+        },
+        {
+          "id": "cheese",
+          "name": "一小块奶酪",
+          "price": 18,
+          "minutes": 0,
+          "description": "能让临时拼出来的菜单更稳定。",
+          "category": "food"
+        },
+        {
+          "id": "soap",
+          "name": "海盐肥皂",
+          "price": 10,
+          "minutes": 0,
+          "description": "普通日用品，会留在随身物品清单。",
+          "category": "household"
+        },
+        {
+          "id": "matches",
+          "name": "一盒火柴",
+          "price": 4,
+          "minutes": 0,
+          "description": "小镇杂货店最常见的消耗品。",
+          "category": "household"
+        },
+        {
+          "id": "tomato",
+          "name": "熟透的番茄",
+          "price": 12,
+          "description": "餐厅采购清单上的番茄，收好小票。",
+          "minutes": 0,
+          "category": "food"
+        },
+        {
+          "id": "herbs",
+          "name": "窗台香草",
+          "price": 10,
+          "description": "小份香草，带回餐厅下锅。",
+          "minutes": 0,
+          "category": "food"
+        },
+        {
+          "id": "star_salt",
+          "name": "星形盐片",
+          "price": 22,
+          "description": "一瓶形状奇怪的盐片；可以替换海盐豆罐头。",
+          "minutes": 0,
+          "category": "food"
+        },
+        {
+          "id": "crooked_cup",
+          "name": "歪一点的蓝杯子",
+          "price": 84,
+          "minutes": 0,
+          "category": "collection",
+          "stock": 1,
+          "days": [
+            1,
+            4,
+            7
+          ],
+          "form": "cup",
+          "color": "819c9b",
+          "purpose": "private",
+          "display_slot": "shelf",
+          "description": "杯口歪了一点，握在手里很合适。留在房间就很好。"
+        },
+        {
+          "id": "hotel_307_tag",
+          "name": "旧旅馆307号钥匙牌",
+          "price": 48,
+          "minutes": 0,
+          "category": "collection",
+          "stock": 1,
+          "days": [
+            1,
+            3,
+            6
+          ],
+          "form": "tag",
+          "color": "b28b55",
+          "purpose": "npc",
+          "display_slot": "shelf",
+          "description": "字迹磨浅了。老板还记得那间房的窗户。"
+        },
+        {
+          "id": "misprint_postcard",
+          "name": "错印的海湾明信片",
+          "price": 18,
+          "minutes": 0,
+          "category": "collection",
+          "stock": 1,
+          "days": [
+            1,
+            4,
+            6
+          ],
+          "form": "card",
+          "color": "628790",
+          "purpose": "collage",
+          "display_slot": "shelf",
+          "description": "灯塔印到了另一边。可以带到书信桌拼贴，也可以收藏。"
+        },
+        {
+          "id": "pretty_can",
+          "name": "已经空了的彩绘罐头",
+          "price": 39,
+          "minutes": 0,
+          "category": "collection",
+          "stock": 1,
+          "days": [
+            2,
+            5,
+            7
+          ],
+          "form": "can",
+          "color": "b77154",
+          "purpose": "private",
+          "display_slot": "shelf",
+          "description": "只剩漂亮的纸标签，没有额外用途。"
+        },
+        {
+          "id": "ticket_bundle",
+          "name": "旧公交车票一小叠",
+          "price": 24,
+          "minutes": 0,
+          "category": "collection",
+          "stock": 1,
+          "days": [
+            2,
+            4,
+            7
+          ],
+          "form": "card",
+          "color": "bc9b65",
+          "purpose": "collage",
+          "display_slot": "shelf",
+          "description": "整齐夹着的旧票，可以做拼贴纸片。"
+        },
+        {
+          "id": "blue_stamp",
+          "name": "停用的蓝色邮戳",
+          "price": 66,
+          "minutes": 0,
+          "category": "collection",
+          "stock": 1,
+          "days": [
+            3,
+            5,
+            6
+          ],
+          "form": "stamp",
+          "color": "526e7e",
+          "purpose": "private",
+          "display_slot": "shelf",
+          "description": "旧日期永远停在那一天。"
+        }
       ]
     }
   ]

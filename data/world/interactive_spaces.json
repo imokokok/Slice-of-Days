@@ -17,7 +17,16 @@
           "detail": "靠近台面，组合今日真正能用上的材料。",
           "kind": "module",
           "module_id": "cooking",
-          "icon": "锅"
+          "icon": "锅",
+          "x": 690
+        },
+        {
+          "id": "procurement_counter",
+          "name": "出餐口 · 采购与报销",
+          "detail": "领取清单，带回食材和小票，再完成今天的料理班次。",
+          "kind": "restaurant_counter",
+          "x": 370,
+          "icon": "单"
         }
       ]
     },
@@ -138,6 +147,18 @@
           "name": "写下最喜欢的一本书",
           "kind": "book_notes",
           "detail": "便利贴会留在这面墙上。"
+        },
+        {
+          "id": "newspaper",
+          "name": "小镇报纸",
+          "kind": "newspaper",
+          "x": 1160
+        },
+        {
+          "id": "zines",
+          "name": "寄售的小刊",
+          "kind": "zines",
+          "x": 1400
         }
       ]
     },
@@ -148,8 +169,8 @@
       "objects": [
         {
           "id": "grocery_counter",
-          "name": "在柜台购买日用品和食材",
-          "kind": "shop",
+          "name": "杂货柜台 · 购物、摄影与聊天",
+          "kind": "grocery_counter",
           "shop_id": "grocery",
           "detail": "看清价格和余额，再决定带走什么。"
         },
@@ -170,6 +191,13 @@
       "name": "A的家",
       "objects": [
         {
+          "id": "memory_entry",
+          "name": "透光台",
+          "kind": "memory",
+          "x": 520,
+          "detail": "翻看留在房间里的七张纸。"
+        },
+        {
           "id": "desk",
           "name": "桌上的照片和票根",
           "kind": "journal",
@@ -180,6 +208,14 @@
           "name": "躺下睡觉",
           "kind": "sleep",
           "detail": "关灯，让今天结束。"
+        },
+        {
+          "id": "collection_shelf",
+          "name": "收藏架 · 摆放与命名",
+          "detail": "摆好从杂货店买回来的小东西，留一句自己的记忆。",
+          "kind": "collections",
+          "x": 760,
+          "icon": "物"
         }
       ],
       "sign": "HOME_A",
@@ -191,6 +227,13 @@
       "location_id": "dorm",
       "name": "B的家",
       "objects": [
+        {
+          "id": "memory_entry",
+          "name": "采样桌",
+          "kind": "memory",
+          "x": 520,
+          "detail": "翻看留在房间里的七张纸。"
+        },
         {
           "id": "desk",
           "name": "桌上的笔记本",

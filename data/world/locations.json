@@ -32,6 +32,12 @@
       "kind": "community",
       "street_index": 2,
       "subtitle": "社区中心",
+      "hours": [
+        [
+          540,
+          1080
+        ]
+      ],
       "position": [
         2250,
         718

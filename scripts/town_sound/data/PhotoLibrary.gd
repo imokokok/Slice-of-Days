@@ -27,12 +27,17 @@ func save_photo(image: Image, context: Dictionary) -> Dictionary:
 	var hash := HashingContext.new()
 	hash.start(HashingContext.HASH_SHA256)
 	hash.update((str(image.get_width()) + ":" + str(image.get_height()) + ":" + str(image.get_format())).to_utf8_buffer())
+	var state = Engine.get_main_loop().root.get_node("GameState")
+	var role := str(context.get("role", state.current_role))
+	if role.is_empty(): role = str(state.current_role)
+	hash.update(role.to_utf8_buffer())
+	if not str(context.get("capture_id","" )).is_empty(): hash.update(str(context.capture_id).to_utf8_buffer())
 	hash.update(image.get_data())
 	var id := "photo_" + hash.finish().hex_encode()
 	for item in list_photos():
 		if item.photo_id == id: return item
-	if list_photos().size() >= 128:
-		last_error = "本地相册已满（128 张）。照片仍保留在取景预览中。"
+	if list_photos().size() >= 2048:
+		last_error = "本地相册已满（2048 张）。底片仍保留在胶卷里。"
 		return {}
 	var path := root_path.path_join(id)
 	if DirAccess.make_dir_recursive_absolute(path) != OK:
@@ -42,7 +47,9 @@ func save_photo(image: Image, context: Dictionary) -> Dictionary:
 		last_error = "照片保存失败，请重试。"
 		return {}
 	var item := {"photo_id": id, "created_at": Time.get_datetime_string_from_system(true), "location": str(context.get("location", "")),
-		"title": str(context.get("title", "小镇的一刻")), "day": int(context.get("day", 1)), "role": str(context.get("role", "")), "game_minute": int(context.get("game_minute", 0)), "width": image.get_width(), "height": image.get_height()}
+		"title": str(context.get("title", "小镇的一刻")), "day": int(context.get("day", state.current_day)), "role": role, "game_minute": int(context.get("game_minute", state.current_minute)), "width": image.get_width(), "height": image.get_height()}
+	for key in ["capture_id","roll_id","film_type","protagonist","location_id","minute","capture_path","notes","used_in_collage","shown_to_npcs","submitted_to_dossier","library_root"]:
+		if context.has(key): item[key]=context[key]
 	for key in ["subject_id", "subject_name", "subject_category", "subject_note", "subject_word"]:
 		if not str(context.get(key, "")).is_empty():
 			item[key] = str(context.get(key, ""))
@@ -58,6 +65,18 @@ func save_photo(image: Image, context: Dictionary) -> Dictionary:
 		last_error = "照片信息写入失败。"
 		return {}
 	return item
+
+func update_metadata(id: String, values: Dictionary) -> bool:
+	for item in list_photos():
+		if str(item.photo_id)!=id: continue
+		item.merge(values,true)
+		var path:=root_path.path_join(id).path_join("photo.json")
+		var file:=FileAccess.open(path+".tmp",FileAccess.WRITE)
+		if file==null: return false
+		file.store_string(JSON.stringify(item,"\t"))
+		file.close()
+		return DirAccess.rename_absolute(path+".tmp",path)==OK
+	return false
 
 func load_photo(id: String) -> Image:
 	# Only identifiers returned by the committed album can be opened.

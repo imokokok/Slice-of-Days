@@ -12,6 +12,9 @@ func _initialize() -> void:
 
 func settle(seconds := 0.8) -> void:
 	await create_timer(seconds).timeout
+	for i in 50:
+		if not root.get_node("SceneRouter").transitioning: break
+		await create_timer(.1).timeout
 
 func run() -> void:
 	if not OS.get_cmdline_user_args().has("--isolated-save"):
@@ -26,7 +29,7 @@ func run() -> void:
 	chapters.start_new_game("B")
 	check(state.current_role == "A", "Authored opening must always start with A")
 	var sequence: Array = chapters.chapter_sequence()
-	check(sequence.size() == 7 and sequence[1].role == "B" and sequence[1].day == 2, "The authored journey must contain seven days and switch to B on Day 2")
+	check(sequence.size() == 14 and sequence[1].role == "B" and sequence[1].day == 1 and sequence[2].role == "B", "Each protagonist receives seven days; the authored Day 2 opening remains B")
 	check(not chapters.sleep_at_home(), "Sleeping outside one's home must be rejected")
 	var places: Array = JSON.parse_string(FileAccess.get_file_as_string("res://data/world/locations.json")).locations
 	var indoors: Array = JSON.parse_string(FileAccess.get_file_as_string("res://data/world/interactive_spaces.json")).spaces
@@ -50,7 +53,7 @@ func run() -> void:
 	await process_frame
 	await process_frame
 	current_scene._on_new_game_pressed()
-	await settle()
+	await settle(1.4)
 	check(current_scene.scene_file_path.ends_with("town_day.tscn"), "New game must enter the world directly")
 	var town = current_scene
 	check(town.street.player_x == 150.0 and state.current_location == "bus_stop", "A new journey must begin at the far-left bus stop")
@@ -63,17 +66,17 @@ func run() -> void:
 	town._on_walk(town.street.player_x)
 	town._refresh()
 	check(town.street_order.size() == 6 and town.street_order[-1] == "print_shop", "Main street ends at the community center and connects to the lookout route")
-	check(not town.street.hotspots.any(func(h: Dictionary) -> bool: return str(h.kind) == "roads"), "Walking must never require a map travel menu")
+	check(not town.street.hotspots.any(func(h: Dictionary) -> bool: return str(h.kind) == "roads"), "Street walking has no obsolete road sign")
 	town.street.hotspots.clear()
 	town.street.hotspots.append({"x":town.street.player_x + 200, "kind":"door"})
 	check(town.street.nearest().is_empty(), "Distant interactions must be inaccessible")
 	# Enter the home by proximity, then walk to the bed.
-	state.current_location = "residence"
-	router.town_day()
+	town.street.velocity = 0
+	router.travel_to("residence","walk")
 	await settle()
 	town = current_scene
 	var residence_index: int = town.street_order.find("residence")
-	town.street.player_x = residence_index * town.BLOCK_WIDTH + 300.0
+	town.street.player_x = town._world_x(residence_index, 300.0)
 	town._on_walk(town.street.player_x)
 	town._refresh()
 	var home_hotspots: Array = town.street.hotspots.filter(func(item): return str(item.get("kind", "")) == "home")
@@ -84,13 +87,20 @@ func run() -> void:
 	check(router.active_space_id == "home_a", "A must enter A's own home")
 	var home = current_scene
 	check(home.scene_file_path.ends_with("interactive_space.tscn"), "Door must enter a real interior")
-	home._select_object(1)
+	if not home.scene_file_path.ends_with("interactive_space.tscn"):
+		quit(1)
+		return
+	var bed_index := -1
+	for index in home.objects.size():
+		if str(home.objects[index].get("kind",""))=="sleep": bed_index=index
+	check(bed_index>=0,"Home has an actual bed")
+	home._select_object(bed_index)
 	home._open_selected()
 	check(not state.shared_state.get("sleep_pending", false), "Bed cannot be used from across the room")
-	home.stage.player_x = home._hotspot_x(1)
+	home.stage.player_x = home._hotspot_x(bed_index)
 	home._open_selected()
 	await settle(4.4)
-	check(state.current_role == "B" and state.current_day == 2, "Sleeping must automatically switch to B on Day 2")
+	check(state.current_role == "B" and state.current_day == 1, "Sleeping switches to B's first day")
 	check(state.current_location == "dorm", "B must wake at B's own home")
 	check(not state.shared_state.has("sleep_pending"), "Sleep transition must commit exactly once")
 	check(current_scene.scene_file_path.ends_with("town_day.tscn"), "Sleep must return to playable street without alignment")

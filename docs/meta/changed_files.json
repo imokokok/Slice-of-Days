@@ -1,0 +1,44 @@
+{
+  "modified": [
+    "project.godot",
+    "scripts\\core\\echo_system.gd",
+    "scripts\\core\\knowledge_system.gd",
+    "scripts\\core\\save_manager.gd",
+    "scripts\\core\\settings_system.gd",
+    "scripts\\ui\\conversation_panel.gd",
+    "scripts\\ui\\interactive_space.gd",
+    "scripts\\ui\\journal.gd",
+    "scripts\\ui\\main_menu.gd",
+    "scripts\\ui\\town_day.gd",
+    "data\\world\\interactive_spaces.json"
+  ],
+  "added": [
+    "scripts\\meta\\ask_panel.gd",
+    "scripts\\meta\\memory_entry.gd",
+    "scripts\\meta\\memory_view.gd",
+    "scripts\\meta\\meta_experience.gd",
+    "scripts\\meta\\place_layer.gd",
+    "scripts\\meta\\trace_panel.gd",
+    "data\\meta\\catalog.json",
+    "data\\meta\\memories.json",
+    "data\\meta\\participant_index.json"
+  ],
+  "models": [
+    "A0.glb",
+    "A1.glb",
+    "A2.glb",
+    "A3.glb",
+    "A4.glb",
+    "A5.glb",
+    "A6.glb",
+    "A7.glb",
+    "B0.glb",
+    "B1.glb",
+    "B2.glb",
+    "B3.glb",
+    "B4.glb",
+    "B5.glb",
+    "B6.glb",
+    "B7.glb"
+  ]
+}

@@ -1,0 +1,3383 @@
+{
+  "version": 3,
+  "toggles": {
+    "voices": true,
+    "marginalia": true,
+    "living_town": true,
+    "memories": true
+  },
+  "timing": {
+    "chat_minutes": 15,
+    "ask_minutes": 5,
+    "voice_global_seconds": 24,
+    "voice_faculty_seconds": 38,
+    "marginalia_seconds": 35,
+    "offline_cap_seconds": 21600,
+    "offline_step_seconds": 1800
+  },
+  "voices": [
+    {
+      "id": "empathy_0",
+      "faculty": "empathy",
+      "text": "他刚才看了一眼门口。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "她",
+        "他",
+        "没事"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "empathy_1",
+      "faculty": "empathy",
+      "text": "杯子给我留在了这边。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "她",
+        "他",
+        "没事"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "reason_0",
+      "faculty": "reason",
+      "text": "先问几点关门。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "几点",
+        "等",
+        "明天"
+      ],
+      "tone": "practical",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "reason_1",
+      "faculty": "reason",
+      "text": "这个时间是昨天写的。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "几点",
+        "等",
+        "明天"
+      ],
+      "tone": "practical",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "wonder_0",
+      "faculty": "wonder",
+      "text": "那扇小窗后面还有一间？",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "海",
+        "星",
+        "声音"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "wonder_1",
+      "faculty": "wonder",
+      "text": "叶子的影子正好落进杯里。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "海",
+        "星",
+        "声音"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "taste_0",
+      "faculty": "taste",
+      "text": "这两块蓝放在一起挺合适。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "杯",
+        "菜",
+        "好听"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "taste_1",
+      "faculty": "taste",
+      "text": "纸边留着会好看一点。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "杯",
+        "菜",
+        "好听"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "play_0",
+      "faculty": "play",
+      "text": "要不要绕到另一边看看。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "玩",
+        "试",
+        "棋"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "play_1",
+      "faculty": "play",
+      "text": "这声音可以拿来当鼓点。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "玩",
+        "试",
+        "棋"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "memory_0",
+      "faculty": "memory",
+      "text": "上次来，椅子还在门边。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "以前",
+        "昨天",
+        "记得"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "memory_1",
+      "faculty": "memory",
+      "text": "这句话听过。是谁说的来着？",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "以前",
+        "昨天",
+        "记得"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "instinct_0",
+      "faculty": "instinct",
+      "text": "想接着聊，又有点想去买面包。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "门",
+        "风",
+        "走"
+      ],
+      "tone": "contradiction",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "instinct_1",
+      "faculty": "instinct",
+      "text": "再站一会儿。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "门",
+        "风",
+        "走"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "ambition_0",
+      "faculty": "ambition",
+      "text": "这次可以把它做完。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "工作",
+        "做完",
+        "排练"
+      ],
+      "tone": "practical",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "ambition_1",
+      "faculty": "ambition",
+      "text": "想让她听听我做的那一段。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "工作",
+        "做完",
+        "排练"
+      ],
+      "tone": "practical",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_empathy_0_dialogue",
+      "faculty": "empathy",
+      "text": "她把歪掉的杯垫又摆正了。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "她",
+        "他",
+        "没事"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_empathy_0_place",
+      "faculty": "empathy",
+      "text": "她把歪掉的杯垫又摆正了。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "她",
+        "他",
+        "没事"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_empathy_1_dialogue",
+      "faculty": "empathy",
+      "text": "这次她笑的时候没看手机。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "她",
+        "他",
+        "没事"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_empathy_1_place",
+      "faculty": "empathy",
+      "text": "这次她笑的时候没看手机。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "她",
+        "他",
+        "没事"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_reason_0_dialogue",
+      "faculty": "reason",
+      "text": "离关门还有一会儿。够走过去。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "几点",
+        "等",
+        "明天"
+      ],
+      "tone": "practical",
+      "roles": [
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_reason_0_place",
+      "faculty": "reason",
+      "text": "离关门还有一会儿。够走过去。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "几点",
+        "等",
+        "明天"
+      ],
+      "tone": "practical",
+      "roles": [
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_reason_1_dialogue",
+      "faculty": "reason",
+      "text": "先找张能写字的纸。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "几点",
+        "等",
+        "明天"
+      ],
+      "tone": "practical",
+      "roles": [
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_reason_1_place",
+      "faculty": "reason",
+      "text": "先找张能写字的纸。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "几点",
+        "等",
+        "明天"
+      ],
+      "tone": "practical",
+      "roles": [
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_wonder_0_dialogue",
+      "faculty": "wonder",
+      "text": "窗玻璃里还有一小块海。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "海",
+        "星",
+        "声音"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_wonder_0_place",
+      "faculty": "wonder",
+      "text": "窗玻璃里还有一小块海。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "海",
+        "星",
+        "声音"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_wonder_1_dialogue",
+      "faculty": "wonder",
+      "text": "这声响像有人在很远的地方掰面包。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "海",
+        "星",
+        "声音"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_wonder_1_place",
+      "faculty": "wonder",
+      "text": "这声响像有人在很远的地方掰面包。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "海",
+        "星",
+        "声音"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_taste_0_dialogue",
+      "faculty": "taste",
+      "text": "这个蓝和杯沿倒挺配。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "杯",
+        "菜",
+        "好听"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_taste_0_place",
+      "faculty": "taste",
+      "text": "这个蓝和杯沿倒挺配。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "杯",
+        "菜",
+        "好听"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_taste_1_dialogue",
+      "faculty": "taste",
+      "text": "低音再小一点，别的声音就出来了。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "杯",
+        "菜",
+        "好听"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_taste_1_place",
+      "faculty": "taste",
+      "text": "低音再小一点，别的声音就出来了。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "杯",
+        "菜",
+        "好听"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_play_0_dialogue",
+      "faculty": "play",
+      "text": "要是把两把椅子换一下呢。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "玩",
+        "试",
+        "棋"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_play_0_place",
+      "faculty": "play",
+      "text": "要是把两把椅子换一下呢。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "玩",
+        "试",
+        "棋"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_play_1_dialogue",
+      "faculty": "play",
+      "text": "这张票很适合拿来折船。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "玩",
+        "试",
+        "棋"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_play_1_place",
+      "faculty": "play",
+      "text": "这张票很适合拿来折船。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "玩",
+        "试",
+        "棋"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_memory_0_dialogue",
+      "faculty": "memory",
+      "text": "昨天这张纸还露着一个角。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "以前",
+        "昨天",
+        "记得"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_memory_0_place",
+      "faculty": "memory",
+      "text": "昨天这张纸还露着一个角。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "以前",
+        "昨天",
+        "记得"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_memory_1_dialogue",
+      "faculty": "memory",
+      "text": "有些话，过了很久才知道该怎么回。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "以前",
+        "昨天",
+        "记得"
+      ],
+      "tone": "heavy",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_memory_1_place",
+      "faculty": "memory",
+      "text": "原来想起一个人，有时只需要一把空椅子。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "以前",
+        "昨天",
+        "记得"
+      ],
+      "tone": "heavy",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_instinct_0_dialogue",
+      "faculty": "instinct",
+      "text": "风从门缝里钻进来了。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "门",
+        "风",
+        "走"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_instinct_0_place",
+      "faculty": "instinct",
+      "text": "风从门缝里钻进来了。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "门",
+        "风",
+        "走"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_instinct_1_dialogue",
+      "faculty": "instinct",
+      "text": "想问。又觉得可以等他自己说。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "门",
+        "风",
+        "走"
+      ],
+      "tone": "contradiction",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_instinct_1_place",
+      "faculty": "instinct",
+      "text": "杯底还有点湿。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "门",
+        "风",
+        "走"
+      ],
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_ambition_0_dialogue",
+      "faculty": "ambition",
+      "text": "这件小事今天能做完。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "工作",
+        "做完",
+        "排练"
+      ],
+      "tone": "practical",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_ambition_0_place",
+      "faculty": "ambition",
+      "text": "这件小事今天能做完。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "工作",
+        "做完",
+        "排练"
+      ],
+      "tone": "practical",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_ambition_1_dialogue",
+      "faculty": "ambition",
+      "text": "先试一遍。站着想也想不出来。",
+      "context": "dialogue",
+      "weight": 1,
+      "keywords": [
+        "工作",
+        "做完",
+        "排练"
+      ],
+      "tone": "practical",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "v2_ambition_1_place",
+      "faculty": "ambition",
+      "text": "先试一遍。站着想也想不出来。",
+      "context": "place",
+      "weight": 1,
+      "keywords": [
+        "工作",
+        "做完",
+        "排练"
+      ],
+      "tone": "practical",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "duration": 3.4
+    },
+    {
+      "id": "patch_beetman_tin_labels",
+      "faculty": "play",
+      "text": "这些罐头排得比我的书架还整齐。",
+      "context": "dialogue",
+      "weight": 1,
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "once": true,
+      "duration": 3.4,
+      "trigger": {
+        "npc_id": "beetman",
+        "line_id": "beetman.greeting.0.0"
+      }
+    },
+    {
+      "id": "patch_argument_afterwind",
+      "faculty": "wonder",
+      "text": "声音停下了，纸袋还在被风吹得沙沙响。",
+      "context": "place",
+      "weight": 1,
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "once": true,
+      "duration": 3.8,
+      "trigger": {
+        "event_id": "market_argument_finished"
+      },
+      "requires_flags": [
+        "argument_finished"
+      ],
+      "important": true
+    },
+    {
+      "id": "patch_maya_window",
+      "faculty": "taste",
+      "text": "这本书的纸边，被翻得很柔软了。",
+      "context": "dialogue",
+      "weight": 1,
+      "tone": "daily",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "once": true,
+      "duration": 3.8,
+      "trigger": {
+        "npc_id": "maya",
+        "line_id": "maya.greeting.0.0"
+      }
+    },
+    {
+      "id": "v3_a_collection",
+      "faculty": "play",
+      "text": "好丑。……还挺想带回去。",
+      "context": "place",
+      "weight": 1,
+      "tone": "daily",
+      "roles": [
+        "A"
+      ],
+      "once": true,
+      "important": true,
+      "duration": 3.4,
+      "trigger": {
+        "event_id": "a_odd_collection"
+      }
+    },
+    {
+      "id": "v3_b_taxi",
+      "faculty": "reason",
+      "text": "这趟车钱，能省下不少时间。先看看几点关门。",
+      "context": "place",
+      "weight": 1,
+      "tone": "practical",
+      "roles": [
+        "B"
+      ],
+      "once": true,
+      "important": true,
+      "duration": 3.4,
+      "trigger": {
+        "event_id": "route_taxi_choice"
+      }
+    },
+    {
+      "id": "v3_b_receipt",
+      "faculty": "reason",
+      "text": "等等，小票。回去记在那一页里。",
+      "context": "place",
+      "weight": 1,
+      "tone": "practical",
+      "roles": [
+        "B"
+      ],
+      "once": true,
+      "important": true,
+      "duration": 3.4,
+      "trigger": {
+        "event_id": "b_purchase_receipt"
+      }
+    },
+    {
+      "id": "v3_vendor_after_a",
+      "faculty": "taste",
+      "text": "罐子上的旧标签，我也有点舍不得撕。",
+      "context": "place",
+      "weight": 1,
+      "tone": "daily",
+      "roles": [
+        "A"
+      ],
+      "once": true,
+      "important": true,
+      "duration": 3.4,
+      "trigger": {
+        "event_id": "beetman_aftermath"
+      }
+    },
+    {
+      "id": "v3_vendor_after_b",
+      "faculty": "play",
+      "text": "这么一排罐子，敲起来应该各有一个音。",
+      "context": "place",
+      "weight": 1,
+      "tone": "daily",
+      "roles": [
+        "B"
+      ],
+      "once": true,
+      "important": true,
+      "duration": 3.4,
+      "trigger": {
+        "event_id": "beetman_aftermath"
+      }
+    },
+    {
+      "id": "v3_environment_a",
+      "faculty": "wonder",
+      "text": "这块地方，值得慢一点看。",
+      "context": "place",
+      "weight": 1,
+      "tone": "daily",
+      "roles": [
+        "A"
+      ],
+      "once": true,
+      "important": true,
+      "duration": 3.4,
+      "trigger": {
+        "event_id": "v3_environment_detail"
+      }
+    },
+    {
+      "id": "v3_environment_b",
+      "faculty": "memory",
+      "text": "这里的风声和门口不一样。",
+      "context": "place",
+      "weight": 1,
+      "tone": "daily",
+      "roles": [
+        "B"
+      ],
+      "once": true,
+      "important": true,
+      "duration": 3.4,
+      "trigger": {
+        "event_id": "v3_environment_detail"
+      }
+    }
+  ],
+  "role_bias": {
+    "A": {
+      "taste": 1.25,
+      "wonder": 1.2
+    },
+    "B": {
+      "reason": 1.25,
+      "memory": 1.2
+    }
+  },
+  "notes": [
+    {
+      "id": "n00",
+      "text": "胶带在收银台，别用订书机钉书。",
+      "kind": "店务",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n01",
+      "text": "找一本封面是绿色的书。书名忘了。",
+      "kind": "留言",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n02",
+      "text": "上面那位：这里有一整排。",
+      "kind": "回复",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "n01",
+      "sample": true
+    },
+    {
+      "id": "n03",
+      "text": "这本借给我三天，第四天请来催。",
+      "kind": "借阅",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n04",
+      "text": "书签夹在第46页。读到哪一页另说。",
+      "kind": "读书",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n05",
+      "text": "椅子右后腿有点晃，垫过一次了。",
+      "kind": "店务",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n06",
+      "text": "今天只想看图。",
+      "kind": "读书",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n07",
+      "text": "旧杂志的广告也别剪，后面还有字。",
+      "kind": "留言",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n08",
+      "text": "雨天请把伞放门口，桶会漏，里面又套了一个桶。",
+      "kind": "店务",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n09",
+      "text": "找昨天遗落的灰色铅笔，咬过笔尾。",
+      "kind": "失物",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n10",
+      "text": "底下这张纸颜色真好看。",
+      "kind": "留言",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n11",
+      "text": "先把结局翻完了，现在从第一页看。",
+      "kind": "读书",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n12",
+      "text": "借走那本菜谱的人：第七页粘住了，小心。",
+      "kind": "借阅",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n13",
+      "text": "寄售小刊放第二格。封面可以自己复印。",
+      "kind": "小刊",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n14",
+      "text": "上回留下的书名写错一个字，划掉重写了。",
+      "kind": "更正",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n15",
+      "text": "明天下午关一会儿门，去拿修好的灯。",
+      "kind": "店务",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n16",
+      "text": "想交换一张车票，不用没用过的。",
+      "kind": "交换",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    },
+    {
+      "id": "n17",
+      "text": "这张便签写不下了，背面还有。",
+      "kind": "留言",
+      "author_id": "",
+      "byline": "匿名",
+      "date": "九月",
+      "reply_to": "",
+      "sample": true
+    }
+  ],
+  "newspaper": [
+    {
+      "kind": "更正",
+      "text": "昨日版把唱片店的试听时间印早了一小时。请以门上手写时间为准。"
+    },
+    {
+      "kind": "失物",
+      "text": "书店捡到灰色铅笔一支，笔尾有齿印。"
+    },
+    {
+      "kind": "致谢",
+      "text": "谢谢把门口凳子搬进来的人，昨夜下雨了。"
+    },
+    {
+      "kind": "分类广告",
+      "text": "交换旧杂志，只要完整的页。"
+    },
+    {
+      "kind": "匿名",
+      "text": "能不能把时钟往柜台这边转一点。"
+    }
+  ],
+  "zines": [
+    {
+      "title": "潮声试印 01",
+      "text": "订错的一页留在最后。\n\n杯沿敲三下，钥匙落一次。\n这页留给听过的人。",
+      "source_id": "xanni",
+      "sample": true
+    }
+  ],
+  "safe_zones": {
+    "default": [
+      [
+        1080,
+        155,
+        420,
+        90
+      ],
+      [
+        110,
+        410,
+        400,
+        95
+      ]
+    ],
+    "public_archive": [
+      [
+        1050,
+        155,
+        420,
+        100
+      ],
+      [
+        140,
+        390,
+        430,
+        90
+      ]
+    ]
+  },
+  "marginalia": {
+    "library": [
+      {
+        "id": "library_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "借走之前看一眼书脊。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "第三排有本书，夹着半张车票。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "我找的词在隔壁那本。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "今天终于把借的书还了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "纸条压到正文了，往旁边贴一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "页码跳了两页，原来粘在一起。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "这本结尾我没看懂。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "我也没懂。先吃饭了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "library_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "record_store": [
+      {
+        "id": "record_store_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "这个低音得站远一点听。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "靠窗那张封套晒褪色了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "唱针落下前那一下很好听。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "问歌名，店主哼了半天。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "我记住旋律，忘记名字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "袋子里别再塞伞。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "同一段我听了四遍。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "门口有个小台阶。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "record_store_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "handcraft_shop": [
+      {
+        "id": "handcraft_shop_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "邮票贴歪了，也到了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "收信地址最后一行别忘。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "这支笔只在这张纸上顺手。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "有人把信写在账单背面。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "胶水盖子去哪了？",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "在你手里。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "纸条底下还有一张。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "最后一句留到明天。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "handcraft_shop_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "residence": [
+      {
+        "id": "residence_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "residence_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "dorm": [
+      {
+        "id": "dorm_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "dorm_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "town_entrance": [
+      {
+        "id": "town_entrance_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "这边路口往左，不要跟着地图上的蓝点绕。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "下午的墙是热的。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "鞋带在这里断过一次。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "谁画的这只鸟？腿好多。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "走错路也能回来。就是有点晒。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "有人说下雨，我把伞带了一整天。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "那块砖会晃。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "今天路边的收音机没开。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "town_entrance_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "print_shop": [
+      {
+        "id": "print_shop_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "print_shop_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "night_market": [
+      {
+        "id": "night_market_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "这家的汤比我做得咸。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "上面那位每次还是喝完。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "靠门那张桌子有风。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "别把外带袋倒着拿。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "老板记得我不吃葱。我自己都忘了说。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "周三来过，门关着。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "午休，纸上写了午休。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "上次的勺子还在我包里。得还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "night_market_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "produce_stall": [
+      {
+        "id": "produce_stall_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "produce_stall_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "cafe": [
+      {
+        "id": "cafe_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "cafe_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "tarot_stall": [
+      {
+        "id": "tarot_stall_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "桌角那张牌收一下，风要吹走。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "我只记得她说先坐下。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "那张图让我想起家里的窗帘。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "桌布边上有一小块线头。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "昨天的问题今天不想问了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "还是带着问题回去了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "牌背很好看。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "谁把杯子放牌盒上了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "tarot_stall_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "chess_stall": [
+      {
+        "id": "chess_stall_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "chess_stall_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "bus_stop": [
+      {
+        "id": "bus_stop_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "这张时刻表下边还有一张。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "长椅左边有一点歪。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "车来了再站起来也来得及。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "我在这儿把耳机线解开了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "有辆车很像，但方向相反。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "杯盖按紧一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "最后一排的窗户会响。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "今天没赶上，就坐了一会儿。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "bus_stop_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "port": [
+      {
+        "id": "port_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "port_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ],
+    "park": [
+      {
+        "id": "park_v2_0",
+        "byline": "06/11 · 路过的人",
+        "text": "还没开门，别往里挤。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_1",
+        "byline": "06/12 · 铅笔字",
+        "text": "灯亮之前，海面更清楚。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_2",
+        "byline": "06/13 · 蓝墨水",
+        "text": "望远镜别对着太阳。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_3",
+        "byline": "06/14 · 没有署名",
+        "text": "我把三颗星认成了一架飞机。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_4",
+        "byline": "06/15 · 路过的人",
+        "text": "那确实是一架飞机。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_5",
+        "byline": "06/16 · 铅笔字",
+        "text": "带件外套，上面风大。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_6",
+        "byline": "06/17 · 蓝墨水",
+        "text": "上次等到开门，先把面包吃完了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_7",
+        "byline": "06/18 · 没有署名",
+        "text": "栏杆边的花换了位置。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_8",
+        "byline": "06/19 · 路过的人",
+        "text": "风把纸角卷起来了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_9",
+        "byline": "06/20 · 铅笔字",
+        "text": "有人在下面补了一个字。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_10",
+        "byline": "06/21 · 蓝墨水",
+        "text": "我昨天从另一头过来。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_11",
+        "byline": "06/22 · 没有署名",
+        "text": "这个记号是我画的，已经忘了什么意思。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_12",
+        "byline": "06/23 · 路过的人",
+        "text": "借来的笔用完要还。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_13",
+        "byline": "06/24 · 铅笔字",
+        "text": "谁把椅子挪到这边了。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_14",
+        "byline": "06/25 · 蓝墨水",
+        "text": "站在阴影里能凉快一点。",
+        "source_status": "authored_fictional_example"
+      },
+      {
+        "id": "park_v2_15",
+        "byline": "06/26 · 没有署名",
+        "text": "算了，明天再来。",
+        "source_status": "authored_fictional_example"
+      }
+    ]
+  },
+  "ambient_events": [
+    {
+      "id": "chair",
+      "location": "library",
+      "text": "门边那把晃脚的椅子已经垫好了。",
+      "after_day": 1
+    },
+    {
+      "id": "sleeve",
+      "location": "record_store",
+      "text": "试听架上换了一张手写封套，边角还没压平。",
+      "after_day": 1
+    },
+    {
+      "id": "paper",
+      "location": "handcraft_shop",
+      "text": "用剩的蓝纸被收进了一个小盒子。",
+      "after_day": 1
+    }
+  ],
+  "presence_events": [
+    {
+      "id": "repair",
+      "day": 1,
+      "minute": 620,
+      "location": "library",
+      "text": "凳脚下多了一块折过三次的硬纸。"
+    },
+    {
+      "id": "soundcheck",
+      "day": 1,
+      "minute": 660,
+      "location": "record_store",
+      "text": "有人做过试听，旋钮旁贴了一个铅笔画的小点。"
+    },
+    {
+      "id": "soup",
+      "day": 2,
+      "minute": 720,
+      "location": "night_market",
+      "text": "黑板上的汤名擦了一半，下面添着“留了一碗”。"
+    }
+  ],
+  "place_rules": {
+    "town_entrance": {
+      "type": "public",
+      "enabled": true
+    },
+    "residence": {
+      "type": "public",
+      "enabled": false
+    },
+    "print_shop": {
+      "type": "business",
+      "enabled": true
+    },
+    "night_market": {
+      "type": "business",
+      "enabled": true
+    },
+    "produce_stall": {
+      "type": "business",
+      "enabled": true
+    },
+    "cafe": {
+      "type": "business",
+      "enabled": true
+    },
+    "handcraft_shop": {
+      "type": "business",
+      "enabled": true
+    },
+    "library": {
+      "type": "business",
+      "enabled": true
+    },
+    "record_store": {
+      "type": "business",
+      "enabled": true
+    },
+    "tarot_stall": {
+      "type": "business",
+      "enabled": true
+    },
+    "dorm": {
+      "type": "public",
+      "enabled": false
+    },
+    "chess_stall": {
+      "type": "public",
+      "enabled": true
+    },
+    "bus_stop": {
+      "type": "public",
+      "enabled": true
+    },
+    "port": {
+      "type": "public",
+      "enabled": true
+    },
+    "park": {
+      "type": "business",
+      "enabled": true
+    }
+  },
+  "marginalia_safe_zones": {
+    "town_entrance": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "residence": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "print_shop": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "night_market": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "produce_stall": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "cafe": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "handcraft_shop": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "library": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "record_store": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "tarot_stall": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "dorm": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "chess_stall": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "bus_stop": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "port": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ],
+    "park": [
+      [
+        70,
+        155,
+        410,
+        95
+      ],
+      [
+        1110,
+        155,
+        410,
+        95
+      ],
+      [
+        95,
+        275,
+        410,
+        105
+      ],
+      [
+        1085,
+        275,
+        410,
+        105
+      ],
+      [
+        585,
+        285,
+        410,
+        105
+      ]
+    ]
+  },
+  "voice_rules": {
+    "dialogue_chance": 0.85,
+    "observation_chance": 0.5,
+    "tone_weights": {
+      "daily": 0.6,
+      "practical": 0.25,
+      "contradiction": 0.1,
+      "heavy": 0.05
+    },
+    "maximum_per_conversation": 2,
+    "duration_range_seconds": [
+      1.8,
+      4.0
+    ],
+    "test_triggers": [
+      "beetman.greeting.0.0",
+      "market_argument_finished",
+      "maya.greeting.0.0"
+    ]
+  }
+}

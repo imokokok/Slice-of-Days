@@ -18,8 +18,8 @@ func run() -> void:
 	var schedule = root.get_node("ScheduleSystem")
 	var dialogue = root.get_node("DialogueSystem")
 	chapters.start_new_game()
-	check(chapters.chapter_sequence().size() == 7, "Exactly seven days")
-	check(chapters.chapter_sequence()[1].role == "B" and chapters.chapter_sequence()[2].role == "B", "Days 2 and 3 must be B")
+	check(chapters.chapter_sequence().size() == 14, "Seven days for each protagonist")
+	check(chapters.chapter_sequence()[2].role == "B" and chapters.chapter_sequence()[4].role == "B", "Days 2 and 3 open with B")
 	check(state.money == 12000 and state.role_states.B.money == 1600, "A starts with substantially more money than B")
 	for location in travel.location_names:
 		check(travel._shortest_walk_minutes("town_entrance",location) >= 0, "Every approved location reachable: " + location)
@@ -77,7 +77,9 @@ func run() -> void:
 	await settle()
 	check(chapters.sleep_at_home(), "Day ends at own bed")
 	await create_timer(4.5).timeout
-	check(state.current_day == 2 and state.current_role == "B", "Day 1 A sleep must advance to Day 2 B")
+	check(state.current_day == 1 and state.current_role == "B", "Day 1 A sleep advances to B's first day")
+	chapters.advance_chapter()
+	check(state.current_day == 2 and state.current_role == "B", "B then begins the authored Day 2 opening")
 	check(not state.shared_state.get("offscreen_B",[]).is_empty(), "B has low-risk traces from the missing day")
 	state.current_minute = 540
 	state.current_location = "town_entrance"
@@ -94,7 +96,7 @@ func run() -> void:
 	current_scene._talk_nearby("zhou_xiaoliu")
 	await process_frame
 	current_scene._process(60.0)
-	check(not current_scene.street.enabled and state.current_minute == 540, "Reading dialogue pauses world time")
+	check(not current_scene.street.enabled and state.current_minute == 555, "Chat costs 15 minutes, then reading pauses world time")
 	check(is_instance_valid(current_scene.conversation.text_label), "Shared stage conversation actually renders")
 	check(current_scene.conversation.lines.size() >= 8 and current_scene.conversation.speakers.has("player"), "Conversation has a continuous exchange between the resident and player")
 	current_scene.conversation._close()
@@ -124,7 +126,7 @@ func run() -> void:
 	check(is_finite(current_scene.street.walk_limit), "Lookout gate closed before 21:00")
 	state.current_day = 6
 	state.current_role = "A"
-	state.shared_state.chapter_index = 5
+	state.shared_state.chapter_index = 11
 	state.shared_state.sleep_pending = true
 	check(not chapters.advance_chapter().get("ok",true), "Final day cannot silently select a role")
 	check(chapters.choose_final_role("B"), "Day 7 choice explicitly accepted")

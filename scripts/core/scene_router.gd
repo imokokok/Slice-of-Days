@@ -15,7 +15,7 @@ var room_positions: Dictionary = {}
 var transitioning := false
 
 
-func go_to(path: String) -> void:
+func go_to(path: String, fade_duration := .3) -> void:
 	if transitioning: return
 	if not ResourceLoader.exists(path):
 		push_error("Scene does not exist: %s" % path)
@@ -29,12 +29,12 @@ func go_to(path: String) -> void:
 	curtain.add_child(wash)
 	add_child(curtain)
 	var fade := create_tween()
-	fade.tween_property(wash, "color:a", 0.95, 0.3)
+	fade.tween_property(wash, "color:a", 0.95, fade_duration)
 	await fade.finished
 	get_tree().change_scene_to_file(path)
 	await get_tree().process_frame
 	var reveal := create_tween()
-	reveal.tween_property(wash, "color:a", 0.0, 0.3)
+	reveal.tween_property(wash, "color:a", 0.0, fade_duration)
 	await reveal.finished
 	curtain.queue_free()
 	transitioning = false
@@ -45,12 +45,12 @@ func main_menu() -> void:
 	go_to(MAIN_MENU)
 
 
-func town_day() -> void:
+func town_day(fade_duration := .3) -> void:
 	if bool(GameState.shared_state.get("sleep_pending", false)):
 		chapter_transition()
 		return
 	active_space_id = ""
-	go_to(TOWN_DAY)
+	go_to(TOWN_DAY,fade_duration)
 
 
 func enter_space(space_id: String) -> void:
@@ -117,13 +117,16 @@ func town_map(destination := "") -> void:
 	go_to("res://scenes/town_map.tscn")
 func travel_to(destination: String, method: String) -> Dictionary:
 	if transitioning: return {"ok":false,"message":"还在路上。"}
+	var previous_space := active_space_id
 	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	var result := TravelSystem.travel(destination,method)
 	if not bool(result.get("ok",false)): return result
 	active_space_id = ""
 	GameState.shared_state["map_arrival"] = destination
+	GameState.shared_state["route_arrival"] = TravelSystem.arrival_for(destination)
 	if not SaveManager.save_or_report("出行后保存失败"):
 		GameState.load_save_data(rollback_snapshot)
+		active_space_id = previous_space
 		return {"ok": false, "message": "存档写入失败，本次出行已撤销。"}
 	town_day()
 	return result

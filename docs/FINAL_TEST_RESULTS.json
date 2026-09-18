@@ -1,0 +1,153 @@
+[
+  {
+    "test": "test_linear_dialogue",
+    "returncode": 0,
+    "seconds": 3.7,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_native_modules",
+    "returncode": 0,
+    "seconds": 6.4,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_world_clock",
+    "returncode": 0,
+    "seconds": 1.5,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_network_vertical_slice",
+    "returncode": 0,
+    "seconds": 19.8,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_walking_journey",
+    "returncode": 0,
+    "seconds": 15.0,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_feedback_systems",
+    "returncode": 0,
+    "seconds": 4.0,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_v2_entry_debug",
+    "returncode": 0,
+    "seconds": 6.1,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_recorder_movement",
+    "returncode": 0,
+    "seconds": 21.3,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_final_calendar",
+    "returncode": 0,
+    "seconds": 1.5,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_v3_economy",
+    "returncode": 0,
+    "seconds": 6.5,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_v3_film",
+    "returncode": 0,
+    "seconds": 11.3,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_v3_residency",
+    "returncode": 0,
+    "seconds": 6.2,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_patch_travel",
+    "returncode": 0,
+    "seconds": 26.4,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_patch_residency",
+    "returncode": 0,
+    "seconds": 13.3,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_patch_npcs",
+    "returncode": 0,
+    "seconds": 5.7,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_final_runtime",
+    "returncode": 0,
+    "seconds": 11.2,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_patch_voices",
+    "returncode": 0,
+    "seconds": 59.1,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_final_tools",
+    "returncode": 0,
+    "seconds": 15.2,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "--godot",
+    "returncode": 1,
+    "seconds": 0.2,
+    "errors": [
+      "ERROR: Attempt to open script 'res://tests/integration/--godot.gd' resulted in error 'File not found'.",
+      "ERROR: Failed loading resource: res://tests/integration/--godot.gd.",
+      "ERROR: Can't load script: res://tests/integration/--godot.gd"
+    ],
+    "pass": false
+  },
+  {
+    "test": "test_meta_layer",
+    "returncode": 0,
+    "seconds": 26.7,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "test": "test_v3_guidance",
+    "returncode": 0,
+    "seconds": 3.0,
+    "errors": [],
+    "pass": true
+  }
+]

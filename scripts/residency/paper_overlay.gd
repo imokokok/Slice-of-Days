@@ -120,16 +120,25 @@ func scroll_area(parent: Node, at: Vector2, dimensions: Vector2) -> VBoxContaine
 	return box
 
 func build() -> void:
-	for child in get_children(): child.queue_free()
+	# Remove the prior page before adding the next one.  This keeps the new page
+	# tabs addressable during the same click instead of briefly competing with
+	# queued-for-deletion controls from the previous sheet.
+	for child in get_children():
+		remove_child(child)
+		child.queue_free()
 	audio_player = null
 	detail = null
 	var dim := ColorRect.new()
 	dim.color = Color("17262a",0.58)
 	dim.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(dim)
+	# Supplied dossier sheets are artwork, not a generic window.  Present them
+	# whole and centered so their paper edges and right-side tabs remain usable.
+	if mode == "dossier" and show_dossier_reference and tab in ["requirements", "days", "exploration", "recognition", "personal", "proof"]:
+		_dossier_reference_page()
+		return
 	body = panel(self,Vector2.ZERO,DOSSIER_SIZE,Color("d5c8a7"))
-	# Keep the paper centered at every supported window size/aspect ratio. Using
-	# anchors here also keeps the illustrated hit regions aligned after resize.
+	# Keep the editable dossier centered at every supported window size/aspect ratio.
 	body.set_anchors_preset(Control.PRESET_CENTER)
 	body.offset_left = -DOSSIER_SIZE.x * 0.5
 	body.offset_top = -DOSSIER_SIZE.y * 0.5
@@ -175,7 +184,7 @@ func _dossier() -> void:
 	if tab == "starter":
 		_starter_packet()
 		return
-	if show_dossier_reference and tab in ["days", "exploration", "recognition", "personal", "proof"]:
+	if show_dossier_reference and tab in ["requirements", "days", "exploration", "recognition", "personal", "proof"]:
 		_dossier_reference_page()
 		return
 	var x := 28.0
@@ -284,48 +293,73 @@ func _select_dossier_tab(target: String) -> void:
 			tab = "proof"
 			proof_filter = target
 		"final":
-			tab = "days"
-			day = 7
+			tab = "proof"
+			show_dossier_reference = true
 		_:
 			tab = target
-			if target == "proof": proof_filter = "all"
+			if target == "proof":
+				proof_filter = "all"
+			show_dossier_reference = target in ["requirements", "days", "exploration", "recognition", "personal", "proof"]
 	build()
 
 func _dossier_reference_page() -> void:
 	var images := {
+		"requirements": "res://art/ui/dossier-open-reference.png",
 		"days": "res://art/ui/dossier-seven-days.png",
 		"exploration": "res://art/ui/dossier-exploration.png",
 		"recognition": "res://art/ui/dossier-recognition.png",
 		"personal": "res://art/ui/dossier-personal.png",
 		"proof": "res://art/ui/dossier-final-statement.png"
 	}
+	var viewport := get_viewport_rect().size
+	if viewport.x <= 1 or viewport.y <= 1:
+		viewport = Vector2(1600,900)
+	var art_size := Vector2(viewport.x * 0.60, viewport.y * 0.76)
+	var art_position := Vector2((viewport.x - art_size.x) * 0.5, (viewport.y - art_size.y) * 0.5)
 	var preview := TextureRect.new()
+	preview.name = "DossierReferencePreview"
 	preview.texture = load(str(images.get(tab, "")))
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.position = art_position
+	preview.size = art_size
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	body.add_child(preview)
-	preview.position = Vector2(35, 80)
-	preview.size = Vector2(1270, 605)
+	add_child(preview)
 	var tabs := [
-		["requirements", Vector2(1110, 202)],
-		["days", Vector2(1110, 278)],
-		["exploration", Vector2(1110, 354)],
-		["recognition", Vector2(1110, 430)],
-		["personal", Vector2(1110, 506)],
-		["proof", Vector2(1110, 582)]
+		["requirements", 0.202],
+		["days", 0.328],
+		["exploration", 0.454],
+		["recognition", 0.580],
+		["personal", 0.705],
+		["proof", 0.831]
 	]
 	for row in tabs:
 		var hit := Button.new()
 		hit.name = "DossierTab_" + str(row[0])
-		hit.position = row[1]
-		hit.size = Vector2(132, 52)
+		hit.position = art_position + Vector2(art_size.x * 0.874, art_size.y * float(row[1]))
+		hit.size = Vector2(art_size.x * 0.104, art_size.y * 0.086)
 		hit.flat = true
 		hit.modulate = Color(1, 1, 1, 0.01)
 		hit.pressed.connect(_select_dossier_tab.bind(str(row[0])))
-		body.add_child(hit)
-	button(body, "打开可编辑档案", Vector2(870, 635), Vector2(250, 38), func() -> void: show_dossier_reference = false; build())
-	button(body, "返回档案首页", Vector2(1130, 635), Vector2(150, 38), func() -> void: tab = "packet"; show_dossier_reference = false; build())
+		add_child(hit)
+	var edit_link := Button.new()
+	edit_link.text = "打开可编辑档案"
+	edit_link.flat = true
+	edit_link.position = Vector2(art_position.x + art_size.x - 208, art_position.y + art_size.y + 8)
+	edit_link.size = Vector2(208, 34)
+	edit_link.add_theme_font_size_override("font_size", 18)
+	edit_link.add_theme_color_override("font_color", Color("fff4dc"))
+	edit_link.pressed.connect(func() -> void: show_dossier_reference = false; build())
+	add_child(edit_link)
+	var close_link := Button.new()
+	close_link.text = "收起  Esc"
+	close_link.flat = true
+	close_link.position = Vector2(art_position.x + art_size.x - 112, art_position.y - 40)
+	close_link.size = Vector2(112, 32)
+	close_link.add_theme_font_size_override("font_size", 18)
+	close_link.add_theme_color_override("font_color", Color("fff4dc"))
+	close_link.pressed.connect(close)
+	add_child(close_link)
 
 func _starter_packet() -> void:
 	var s := ResidencySystem.state()

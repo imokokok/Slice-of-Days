@@ -108,10 +108,13 @@ func nearest() -> Dictionary:
 func _draw() -> void:
 	var night := GameState.current_minute >= 1080
 	draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
-	# The supplied lighthouse panorama is the shared exterior world.  Every
-	# outdoor street now uses the same uninterrupted full-height plate; rooms
-	# continue to render their own interiors.
-	var illustrated := _draw_atlas() if indoor else _draw_global_coast()
+	# The lighthouse panorama is a rear layer.  Buildings and trees draw above
+	# it, while the road draws last beneath the people in the foreground.
+	var illustrated := _draw_atlas() if indoor else true
+	if not indoor:
+		_draw_global_coast()
+		_draw_street_middle()
+		_draw_foreground_road()
 	var ground := _ground_at(player_x)
 	if illustrated:
 		pass
@@ -265,6 +268,10 @@ func _draw_chess_stall(left: float, width: float) -> void:
 
 func _draw_street(night: bool) -> void:
 	_draw_sea(night)
+	_draw_street_middle()
+	_draw_foreground_road()
+
+func _draw_street_middle() -> void:
 	for i in places.size():
 		var place: Dictionary = places[i]
 		var x := float(place.x) - camera_x
@@ -279,6 +286,15 @@ func _draw_street(night: bool) -> void:
 		var x := float(i) * 290.0 - fmod(camera_x * 1.08, 290.0)
 		draw_line(Vector2(x, 718), Vector2(x - 15, 696), Color("455d55"), 2)
 		draw_line(Vector2(x, 718), Vector2(x + 11, 692), Color("455d55"), 2)
+
+func _draw_foreground_road() -> void:
+	# A dedicated foreground road hides the bottom of the middle layer and
+	# keeps the player's feet anchored to one continuous walk surface.
+	draw_rect(Rect2(0, 718, 1600, 182), Color("202120", 0.96))
+	draw_line(Vector2(0, 718), Vector2(1600, 718), Color("e3bd59", 0.85), 3)
+	for i in range(9):
+		var x := fmod(float(i) * 235.0 - camera_x * 0.12, 1880.0) - 120.0
+		draw_line(Vector2(x, 806), Vector2(x + 126, 806), Color("a38b5b", 0.18), 2)
 
 func _draw_sea(night: bool) -> void:
 	var sky := Color("3862d0") if not night else Color("243647")

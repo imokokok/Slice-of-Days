@@ -53,10 +53,23 @@ func _process(delta: float) -> void:
 	var previous_gait := gait_weight
 	var axis := 0.0
 	if enabled and DisplayServer.window_is_focused():
-		axis = Input.get_axis("move_left", "move_right")
+		axis = _walk_axis()
 	move_player(axis, delta, Input.is_action_pressed("move_fast"))
 	if not is_equal_approx(previous_player_x, player_x) or not is_equal_approx(previous_camera_x, camera_x) or not is_equal_approx(previous_facing, facing) or not is_equal_approx(previous_gait, gait_weight):
 		queue_redraw()
+
+func _walk_axis() -> float:
+	# SettingsSystem supplies the named actions.  The physical-key fallback keeps
+	# the first playable frame responsive even if an old user configuration was
+	# created before those actions existed.
+	var axis := Input.get_axis("move_left", "move_right")
+	if not is_zero_approx(axis):
+		return axis
+	if Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT):
+		return -1.0
+	if Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT):
+		return 1.0
+	return 0.0
 
 func move_player(axis: float, delta: float, hurry := false) -> void:
 	var target := axis * SPEED * (1.6 if hurry else 1.0) if enabled and not sitting else 0.0
@@ -95,7 +108,10 @@ func nearest() -> Dictionary:
 func _draw() -> void:
 	var night := GameState.current_minute >= 1080
 	draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
-	var illustrated := _draw_atlas()
+	# The supplied lighthouse panorama is the shared exterior world.  Every
+	# outdoor street now uses the same uninterrupted full-height plate; rooms
+	# continue to render their own interiors.
+	var illustrated := _draw_atlas() if indoor else _draw_global_coast()
 	var ground := _ground_at(player_x)
 	if illustrated:
 		pass
@@ -172,6 +188,15 @@ func _draw_atlas() -> bool:
 		var seam_x := float(places[i].x) - float(places[i].get("width",1600)) / 2.0 - camera_x
 		if seam_x < -90 or seam_x > 1690: continue
 		_draw_street_divider(seam_x)
+	return true
+
+func _draw_global_coast() -> bool:
+	# The panorama is exactly the width of the joined street at this scale
+	# (9600×1080 becomes 8000×900).  Moving the camera reveals it naturally and
+	# avoids stretching, repeated buildings, or a second background layer.
+	var art_width := 900.0 * COAST_ART.get_width() / COAST_ART.get_height()
+	var art_rect := Rect2(-camera_x, 0, art_width, 900)
+	draw_texture_rect(COAST_ART, art_rect, false, _scene_art_tint())
 	return true
 
 func _draw_street_divider(x: float) -> void:

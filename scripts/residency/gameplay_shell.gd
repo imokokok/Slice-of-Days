@@ -129,9 +129,10 @@ func _process(delta: float) -> void:
 		ResidencySystem.visit(last_location)
 	if not is_instance_valid(stage): return
 	_service_points()
-	if blocks_walking():
-		stage.enabled = false
-		if not MetaExperience.modal_open() and DisplayServer.window_is_focused(): GameState.advance_world_clock(delta)
+	if blocks_walking() and not MetaExperience.modal_open() and DisplayServer.window_is_focused():
+		# TownDay / InteractiveSpace own the movement gate.  Keeping this shell
+		# read-only prevents a closed panel from leaving the player frozen.
+		GameState.advance_world_clock(delta)
 	var context := _context()
 	var id := str(context.id)
 	var walking := absf(stage.velocity)>1.0

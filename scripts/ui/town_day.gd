@@ -559,7 +559,8 @@ func _start_market_encounter() -> void:
 	words.leave_requested.connect(func() -> void: conversation.queue_free())
 	words.finish_requested.connect(_finish_market_encounter.bind(words))
 	conversation.add_child(words)
-	street.enabled = false and get_tree().get_nodes_in_group("world_tool").is_empty() and not (has_node("GameplayShell") and get_node("GameplayShell").focus_opening)
+	# _process recomputes the movement gate every frame.  Do not write a second
+	# permanent value here while a dialogue is opening.
 	street.queue_redraw()
 
 func _finish_market_encounter(words: Node2D) -> void:
@@ -747,7 +748,8 @@ func _clear_dialogue() -> void:
 		child.queue_free()
 	event_panel.position.x = 810 if street.player_x - street.camera_x < 800 else 50
 	event_overlay.visible = true
-	street.enabled = false and get_tree().get_nodes_in_group("world_tool").is_empty() and not (has_node("GameplayShell") and get_node("GameplayShell").focus_opening)
+	# _process recomputes the movement gate every frame.  Do not write a second
+	# permanent value here while an event panel is opening.
 
 func _show_line(speaker: String, text: String) -> void:
 	_clear_dialogue()

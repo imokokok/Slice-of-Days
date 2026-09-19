@@ -1100,6 +1100,10 @@ func _map_select(location: String) -> void:
 	map_selected = location
 	var old := body.get_node_or_null("MapDetails")
 	if old != null: body.remove_child(old); old.queue_free()
+	# The current location needs no destination card: there is nowhere to travel to,
+	# and the card only repeats information already shown on the map.
+	if location == GameState.current_location:
+		return
 	var side := Control.new()
 	side.name = "MapDetails"
 	side.position = Vector2(950,147)
@@ -1123,9 +1127,6 @@ func _map_select(location: String) -> void:
 	knowledge.add_theme_color_override("font_color",INK)
 	known.add_child(knowledge)
 	edit(side,str(ResidencySystem.state().map_notes.get(location,"")),Vector2(0,253),Vector2(340,46),func(value: String) -> void: ResidencySystem.state().map_notes[location] = value,"在地图上写一句…")
-	if location == GameState.current_location:
-		label(side,"在地图上选一个想去的地方。",Vector2(0,330),Vector2(340,65),21)
-		return
 	for i in 2:
 		var method := "walk" if i == 0 else "taxi"
 		var route := TravelSystem.route(GameState.current_location,location,method,GameState.current_role,GameState.current_minute)

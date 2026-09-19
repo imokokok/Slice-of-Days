@@ -208,8 +208,8 @@ func _draw_atlas() -> bool:
 	return true
 
 func _draw_global_coast() -> bool:
-	# The panorama is exactly the width of the joined street at this scale
-	# (9600×1080 becomes 8000×900).  Moving the camera reveals it naturally and
+	# The supplied panorama is exactly the width of the joined street
+	# (8000×900). Moving the camera reveals it naturally and
 	# avoids stretching, repeated buildings, or a second background layer.
 	var art_width := 900.0 * COAST_ART.get_width() / COAST_ART.get_height()
 	var art_rect := Rect2(-camera_x, 0, art_width, 900)

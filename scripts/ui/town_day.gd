@@ -521,19 +521,9 @@ func _process(delta: float) -> void:
 		GameState.advance_world_clock(delta)
 	if not street.enabled: route_hint.text = ""; return
 	route_hint.text = ""
-	_try_market_encounter()
 
 func _market_encounter_key() -> String:
 	return "market_encounter_%s_%d" % [GameState.current_role,GameState.current_day]
-
-func _try_market_encounter() -> void:
-	if not street.enabled or SceneRouter.transitioning or GameState.current_location != "produce_stall": return
-	if bool(DialogueSystem.argument_state().get("finished", false)): return
-	if bool(GameState.shared_state.get(_market_encounter_key(),false)): return
-	for item in street.hotspots:
-		if str(item.kind) == "argument" and absf(street.player_x-float(item.x)) < 115:
-			_start_market_encounter()
-			return
 
 func _start_market_encounter() -> void:
 	if is_instance_valid(conversation) or _guard_pocket_audio(): return

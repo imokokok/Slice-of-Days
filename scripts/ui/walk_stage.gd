@@ -12,7 +12,7 @@ const COAST_ART = preload("res://art/user_scenes/lookout_approach.png")
 const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
 const BUS_ART = preload("res://art/user_scenes/bus_stop.png")
 const TAROT_ART = preload("res://art/user_scenes/tarot_shop.png")
-const PROTAGONIST_ART = preload("res://art/user_scenes/protagonist_lineart.png")
+const PROTAGONIST_ART = preload("res://art/user_scenes/protagonist_white.png")
 var original_resident: Sprite2D
 var player_x := 500.0
 var world_width := 1800.0

@@ -1,5 +1,6 @@
 extends Control
 const PAPER = preload("res://scripts/residency/paper_overlay.gd")
+const PROMPT_OUTLINE := Color("173c5d")
 var host: Control
 var stage: Control
 var clock_label: Label
@@ -53,6 +54,8 @@ func _ready() -> void:
 	clock_label.add_theme_font_override("font",hud_font)
 	clock_label.add_theme_font_size_override("font_size",25)
 	clock_label.add_theme_color_override("font_color",Color("fff6df"))
+	clock_label.add_theme_color_override("font_outline_color",PROMPT_OUTLINE)
+	clock_label.add_theme_constant_override("outline_size",3)
 	clock_label.add_theme_color_override("font_shadow_color",Color("254552",0.8))
 	clock_label.add_theme_constant_override("shadow_offset_x",1)
 	clock_label.add_theme_constant_override("shadow_offset_y",2)
@@ -67,6 +70,8 @@ func _ready() -> void:
 	next_button.add_theme_font_override("font",hud_font)
 	next_button.add_theme_font_size_override("font_size",18)
 	next_button.add_theme_color_override("font_color",Color("fff6df"))
+	next_button.add_theme_color_override("font_outline_color",PROMPT_OUTLINE)
+	next_button.add_theme_constant_override("outline_size",3)
 	next_button.add_theme_color_override("font_shadow_color",Color("254552"))
 	next_button.add_theme_constant_override("shadow_offset_y",2)
 	next_button.pressed.connect(func() -> void: open_paper("today"))
@@ -87,6 +92,8 @@ func _ready() -> void:
 	hint_label.add_theme_font_override("normal_font",hud_font)
 	hint_label.add_theme_font_size_override("normal_font_size",18)
 	hint_label.add_theme_color_override("default_color",Color("fff6df"))
+	hint_label.add_theme_color_override("default_outline_color",PROMPT_OUTLINE)
+	hint_label.add_theme_constant_override("outline_size",3)
 	hint_label.add_theme_color_override("font_shadow_color",Color("203945",0.9))
 	hint_label.add_theme_constant_override("shadow_offset_x",1)
 	hint_label.add_theme_constant_override("shadow_offset_y",2)

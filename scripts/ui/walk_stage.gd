@@ -234,8 +234,9 @@ func _ground_at(world_x: float) -> float:
 
 func _actor_ground_at(world_x: float) -> float:
 	# The black road begins at y=718.  People stand inside this foreground
-	# layer instead of floating above it with the middle scenery.
-	return 738.0 if not indoor else _ground_at(world_x)
+	# layer instead of floating at the curb with the middle scenery. Keep one
+	# shared foot line for the protagonist, authored NPCs and silhouettes.
+	return 820.0 if not indoor else _ground_at(world_x)
 
 func _draw_lookout_approach() -> void:
 	# One full-height original panorama. Horizontal camera movement reveals it;
@@ -260,7 +261,7 @@ func _sync_original_resident() -> void:
 	original_resident.hide()
 	for item in hotspots:
 		if str(item.get("id","")) != "zhou_xiaoliu": continue
-		var at := Vector2(float(item.x)-camera_x,_ground_at(float(item.x)))
+		var at := Vector2(float(item.x)-camera_x,_actor_ground_at(float(item.x)))
 		original_resident.stand_at(at,_actor_height(),player_x > float(item.x),_scene_art_tint())
 		original_resident.visible = at.x > -120 and at.x < 1720
 		break

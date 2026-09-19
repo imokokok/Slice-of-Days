@@ -5,7 +5,7 @@ const NPC_AREAS := [Rect2(190, 268, 290, 304), Rect2(800, 268, 290, 304)]
 const TALK_BOX := Rect2(100, 634, 1080, 220)
 const NPC_RESET := Rect2(1080, 40, 128, 42)
 const PAIRS := [[0, 5], [1, 4], [2, 3]]
-const NAMES := ["阿禾", "陈川"]
+const NAMES := ["CICI", "尘缘"]
 const CHAPTERS := ["肉摊前", "画面的来处", "没说出口的话"]
 const INTRO := [
 	[
@@ -197,7 +197,7 @@ func _draw_dialogue() -> void:
 	_box(TALK_BOX,WHITE,LINE,22)
 	if finished:
 		_text("菜买好了，对话继续。",Vector2(137,688),26,INK,title_font)
-		_wrapped_text("阿禾把青菜放进购物袋，陈川拎起自己的菜。他们继续往前逛，聊起回家要怎么做饭。",Vector2(137,736),22,INK,976,36)
+		_wrapped_text("CICI 把青菜放进购物袋，尘缘收好自己的食材。他们继续往前逛，聊起回家要怎么做饭。",Vector2(137,736),22,INK,976,36)
 		_text("点击这里，再聊一次  ↵",Vector2(886,824),15,MUTED)
 	elif waiting:
 		var index := drag_index if drag_index>=0 else hovering

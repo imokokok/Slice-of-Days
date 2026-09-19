@@ -571,7 +571,7 @@ func _finish_market_encounter(words: Node2D) -> void:
 	if not GameState.use_free_time(int(metadata.get("direct_time_minutes",30))):
 		words.save_message = "眼下该回去忙了。这段话先记在心里，空下来再接着聊。"
 		return
-	var outcome := {"choice_id":"extension_complete","label":"在菜摊边听懂彼此","source_event_id":"street:produce_stall:conversation","interaction":{"mode":"conversation","selected_labels":["阿禾的记忆","陈川的记忆"]}}
+	var outcome := {"choice_id":"extension_complete","label":"在菜摊边听懂彼此","source_event_id":"street:produce_stall:conversation","interaction":{"mode":"conversation","selected_labels":["CICI 的记忆","尘缘的记忆"]}}
 	GameState.shared_state[_market_encounter_key()+"_done"] = true
 	DialogueSystem.mark_argument(true)
 	if not GameplayModuleSystem.begin_session("translation","street:produce_stall:conversation") or not GameplayModuleSystem.complete_external("translation",outcome,metadata.get("external_results",{})) or not SaveManager.save_or_report("保存街边对话失败"):
@@ -585,7 +585,7 @@ func _finish_market_encounter(words: Node2D) -> void:
 func _observe_market_afterward() -> void:
 	if is_instance_valid(conversation):
 		await get_tree().process_frame
-	MetaExperience.observe("produce_stall", "刚才放菜篮的地方，留下了一小片青菜叶。", {"kind":"place","event_id":"market_argument_finished","flags":{"argument_finished":true},"npc_id":"ahe","speaker_id":"ahe"})
+	MetaExperience.observe("produce_stall", "刚才放菜篮的地方，留下了一小片青菜叶。", {"kind":"place","event_id":"market_argument_finished","flags":{"argument_finished":true},"npc_id":"wu_wu","speaker_id":"wu_wu"})
 
 func _world_x(index: int, local_x: float) -> float:
 	return route_offset + index * BLOCK_WIDTH + local_x * BLOCK_WIDTH / 1600.0

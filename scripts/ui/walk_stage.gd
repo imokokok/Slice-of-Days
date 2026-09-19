@@ -8,6 +8,7 @@ const DOOR_REACH := 55.0
 const ACTOR_BASE_HEIGHT := 121.0
 const OUTDOOR_ACTOR_HEIGHT := 184.0
 const INDOOR_ACTOR_HEIGHT := 320.0
+const CURB_Y := 718.0
 const Atlas = preload("res://scripts/ui/scene_atlas.gd")
 const COAST_ART = preload("res://art/user_scenes/lookout_approach.png")
 const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
@@ -132,6 +133,7 @@ func _draw() -> void:
 		_draw_global_coast()
 		_draw_street_middle()
 		_draw_foreground_road()
+		_draw_street_foreground()
 	var ground := _actor_ground_at(player_x)
 	if illustrated:
 		pass
@@ -292,6 +294,7 @@ func _draw_street(night: bool) -> void:
 	_draw_sea(night)
 	_draw_street_middle()
 	_draw_foreground_road()
+	_draw_street_foreground()
 
 func _draw_street_middle() -> void:
 	for i in places.size():
@@ -300,16 +303,16 @@ func _draw_street_middle() -> void:
 		if x < -700 or x > 2300: continue
 		var place_id := str(place.get("id", ""))
 		if place_id in ["residence", "dorm"]:
-			_draw_authored_building(PLAYER_HOME_ART, x, Vector2(610, 520))
+			_draw_authored_building(PLAYER_HOME_ART, x, Vector2(610, 520), 1166.0)
 			continue
 		if place_id == "produce_stall":
-			_draw_authored_building(PRODUCE_STALL_ART, x, Vector2(720, 470))
+			_draw_authored_building(PRODUCE_STALL_ART, x, Vector2(720, 470), 941.0)
 			continue
 		if place_id == "night_market":
-			_draw_authored_building(RESTAURANT_ART, x, Vector2(610, 540))
+			_draw_authored_building(RESTAURANT_ART, x, Vector2(610, 540), 1193.0)
 			continue
 		if place_id == "print_shop":
-			_draw_authored_building(CORRESPONDENCE_OFFICE_ART, x, Vector2(760, 490))
+			# This cutout includes foreground furniture and is drawn after the road.
 			continue
 		if str(place.get("kind", "")) == "tarot":
 			_draw_user_scene(TAROT_ART, Rect2(113, 141, 995, 484), x, 710.0)
@@ -325,14 +328,23 @@ func _draw_street_middle() -> void:
 		draw_line(Vector2(x, 718), Vector2(x - 15, 696), Color("455d55"), 2)
 		draw_line(Vector2(x, 718), Vector2(x + 11, 692), Color("455d55"), 2)
 
-func _draw_authored_building(texture: Texture2D, center_x: float, maximum_size: Vector2) -> void:
-	# The supplied building cutouts are a single middle layer. Keep their feet
-	# on the curb so the foreground road can cover the lower edge naturally.
+func _draw_authored_building(texture: Texture2D, center_x: float, maximum_size: Vector2, source_ground_y: float) -> void:
+	# Each cutout has a different amount of transparent padding below its feet.
+	# Align the authored contact point, not the texture canvas, with the curb.
 	var source_size := texture.get_size()
 	var scale_value := minf(maximum_size.x / source_size.x, maximum_size.y / source_size.y)
 	var size := source_size * scale_value
-	var rect := Rect2(Vector2(center_x - size.x * 0.5, 718.0 - size.y), size)
+	var rect := Rect2(Vector2(center_x - size.x * 0.5, CURB_Y - source_ground_y * scale_value), size)
 	draw_texture_rect(texture, rect, false, _scene_art_tint())
+
+func _draw_street_foreground() -> void:
+	# The post-office wall ends above its mailbox and chair in the source art.
+	# Ground the wall on the curb while letting those props extend onto the road.
+	for place in places:
+		if str(place.get("id", "")) != "print_shop": continue
+		var x := float(place.x) - camera_x
+		if x < -700 or x > 2300: continue
+		_draw_authored_building(CORRESPONDENCE_OFFICE_ART, x, Vector2(760, 490), 920.0)
 
 func _draw_foreground_road() -> void:
 	# A dedicated foreground road hides the bottom of the middle layer and

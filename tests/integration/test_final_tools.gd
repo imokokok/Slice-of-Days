@@ -30,7 +30,9 @@ func run() -> void:
 	var host=current_scene
 	var shell=host.get_node("GameplayShell")
 	check(shell.hints is Control and not shell.hints is Panel,"Context key hints float without a scenery-blocking panel")
-	check(shell.hint_label.text.contains("[bgcolor=#ffffff]"),"Context key badges use a white background")
+	check(shell.next_button.get_theme_font("font").has_char(0x6742),"HUD font contains the Chinese glyph used in 杂货店")
+	check(not shell.hint_label.text.contains("[bgcolor"),"Context key hints render without background blocks")
+	check(shell.hint_label.text.contains("[color=#fff6df]") and shell.hint_label.text.contains("[/color]"),"Context hints keep the key text and action copy")
 	shell._unhandled_input(key(KEY_TAB))
 	await create_timer(.15).timeout
 	check(is_instance_valid(shell.overlay) and shell.overlay.mode=="map","Tab opens paper map through real input handler")

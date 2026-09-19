@@ -25,6 +25,9 @@ func _ready() -> void:
 	mouse_filter = MOUSE_FILTER_IGNORE
 	host = get_parent()
 	stage = host.get("street") if host.get("street") != null else host.get("stage")
+	var hud_font := SystemFont.new()
+	hud_font.font_names = PackedStringArray(["Hiragino Sans GB", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei UI", "Microsoft YaHei", "sans-serif"])
+	hud_font.allow_system_fallback = true
 	# Old labels remain available to legacy refresh routines, but no longer cover the world.
 	for child in host.get_children():
 		if child == self or child == stage or not child is CanvasItem: continue
@@ -47,6 +50,7 @@ func _ready() -> void:
 	clock_label.position = Vector2(1240,27)
 	clock_label.size = Vector2(330,50)
 	clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	clock_label.add_theme_font_override("font",hud_font)
 	clock_label.add_theme_font_size_override("font_size",25)
 	clock_label.add_theme_color_override("font_color",Color("fff6df"))
 	clock_label.add_theme_color_override("font_shadow_color",Color("254552",0.8))
@@ -60,6 +64,7 @@ func _ready() -> void:
 	next_button.flat = true
 	next_button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	next_button.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	next_button.add_theme_font_override("font",hud_font)
 	next_button.add_theme_font_size_override("font_size",18)
 	next_button.add_theme_color_override("font_color",Color("fff6df"))
 	next_button.add_theme_color_override("font_shadow_color",Color("254552"))
@@ -79,6 +84,7 @@ func _ready() -> void:
 	hint_label.scroll_active = false
 	hint_label.position = Vector2(15,8)
 	hint_label.size = Vector2(380,87)
+	hint_label.add_theme_font_override("normal_font",hud_font)
 	hint_label.add_theme_font_size_override("normal_font_size",18)
 	hint_label.add_theme_color_override("default_color",Color("fff6df"))
 	hint_label.add_theme_color_override("font_shadow_color",Color("203945",0.9))
@@ -147,7 +153,7 @@ func _process(delta: float) -> void:
 		var lines: Array[String] = []
 		for line in LocalizationSystem.text(str(context.text)).split("\n"):
 			var parts := str(line).split("  ",true,1)
-			lines.append("[bgcolor=#ffffff][color=#354c56] "+str(parts[0])+" [/color][/bgcolor] "+(str(parts[1]) if parts.size()>1 else ""))
+			lines.append("[color=#fff6df]"+str(parts[0])+"[/color] "+(str(parts[1]) if parts.size()>1 else ""))
 		hint_label.text = "\n".join(lines)
 		hint_debug.context = id
 		hint_debug.actions = str(context.text).split("\n")

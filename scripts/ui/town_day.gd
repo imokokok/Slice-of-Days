@@ -647,8 +647,7 @@ func _rebuild_hotspots() -> void:
 			elif str(item.get("kind","")) == "dialogue":
 				if not DialogueSystem.invitation_for(str(item.npc_id)).is_empty(): street.hotspots.append({"x":center,"kind":"invitation","id":str(item.npc_id),"label":str(item.name)})
 			elif str(item.get("kind", "")) == "shop":
-				# BEETMAN's person hotspot owns the counter conversation and shop branch.
-				if str(item.get("shop_id", "")) != "produce_stall": street.hotspots.append({"x":center + 145.0, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
+				street.hotspots.append({"x":center + 145.0, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
 			else: street.hotspots.append({"x":center, "kind":"module", "id":str(item.module_id), "label":str(item.name) + " · " + GameplayModuleSystem.time_hint(str(item.module_id))})
 	var available := EventSystem.available_events()
 	for index in available.size():
@@ -861,4 +860,3 @@ func _open_map() -> void:
 		_refresh()
 		return
 	SceneRouter.town_map()
-

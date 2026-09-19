@@ -42,5 +42,14 @@ func run() -> void:
 		check(paper.tab == "exploration" and is_instance_valid(preview) and preview.texture.resource_path.ends_with("dossier-exploration.png"), "Clicking a paper tab switches to its supplied page")
 	paper.queue_free()
 	await process_frame
+	var dossier: Control = load("res://scripts/residency/paper_overlay.gd").new()
+	dossier.mode = "dossier"
+	dossier.tab = "packet"
+	root.add_child(dossier)
+	await process_frame
+	check(dossier.find_children("DossierAction_*","Button",true,false).is_empty(), "Dossier rows do not open the duplicate generic form")
+	check(dossier.find_children("DossierTab_*","Button",true,false).is_empty(), "Dossier side tabs do not open the duplicate generic form")
+	dossier.queue_free()
+	await process_frame
 	print("V4_DOSSIER_REFERENCE ", checks, " checks / ", failures, " failures")
 	quit(0 if failures == 0 else 1)

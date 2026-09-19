@@ -242,19 +242,10 @@ func _dossier_dashboard() -> void:
 		{"id":"final", "source":Rect2(770, 830, 570, 90), "tooltip":"最终居住说明", "status":"已完成" if bool(requirements.get("why_stay", false)) else ("可填写" if GameState.current_day >= 7 else "第 7 天开放")}
 	]
 	for action in actions:
-		_dashboard_hit("DossierAction_" + str(action.id), action.source, str(action.tooltip), _select_dossier_tab.bind(str(action.id)))
 		_dashboard_status(str(action.status) + "   ›", _source_point(Vector2(1120, float(action.source.position.y) + 10.0)), bool(requirements.get(_requirement_for_action(str(action.id)), false)))
-	var tabs := [
-		["requirements", Rect2(1345, 188, 165, 112), "申请要求"],
-		["days", Rect2(1345, 302, 165, 110), "七日作品集"],
-		["exploration", Rect2(1345, 414, 165, 110), "探索材料"],
-		["recognition", Rect2(1345, 526, 165, 110), "居民认可"],
-		["personal", Rect2(1345, 638, 165, 120), "个人页"],
-		["final", Rect2(1345, 764, 165, 120), "最终居住说明"]
-	]
-	for row in tabs:
-		_dashboard_hit("DossierTab_" + str(row[0]), row[1], str(row[2]), _select_dossier_tab.bind(str(row[0])))
-	_dashboard_hit("DossierTab_packet", Rect2(95, 90, 630, 850), "打开资料袋", func() -> void: tab = "starter"; build())
+	# The illustrated dossier is the complete player-facing RP-07 view. Its rows
+	# and side tabs are intentionally not links: the old generic form duplicated
+	# the same dossier content.
 	var photo_button := button(body,"更换照片" if not str(ResidencySystem.state().get("cover_photo_id","")).is_empty() else "贴一张照片",_source_point(Vector2(327,700)),Vector2(190,38),_open_dossier_photo_picker)
 	photo_button.name = "DossierCoverPhotoAction"
 	photo_button.add_theme_font_size_override("font_size",16)
@@ -348,19 +339,6 @@ func _source_rect(source: Rect2) -> Rect2:
 	var scale := DOSSIER_PREVIEW_SIZE.y / DOSSIER_REFERENCE_SIZE.y
 	return Rect2(DOSSIER_PREVIEW_POSITION + source.position * scale, source.size * scale)
 
-func _dashboard_hit(node_name: String, source: Rect2, tooltip: String, action: Callable) -> void:
-	var target := _source_rect(source)
-	var hit := Button.new()
-	hit.name = node_name
-	hit.position = target.position
-	hit.size = target.size
-	hit.flat = true
-	hit.modulate = Color(1, 1, 1, 0.01)
-	hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	hit.tooltip_text = LocalizationSystem.text(tooltip)
-	hit.pressed.connect(action)
-	body.add_child(hit)
-
 func _dashboard_status(text: String, at: Vector2, complete: bool) -> void:
 	var status := label(body, text, at, Vector2(120, 42), 15, Color("527b70") if complete else Color("665748"))
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -372,7 +350,6 @@ func _dashboard_status(text: String, at: Vector2, complete: bool) -> void:
 
 func _select_dossier_tab(target: String) -> void:
 	WorldSound.play_ui("paper")
-	show_dossier_reference = false
 	match target:
 		"income", "contribution":
 			tab = "proof"
@@ -428,15 +405,6 @@ func _dossier_reference_page() -> void:
 		hit.modulate = Color(1, 1, 1, 0.01)
 		hit.pressed.connect(_select_dossier_tab.bind(str(row[0])))
 		add_child(hit)
-	var edit_link := Button.new()
-	edit_link.text = "打开可编辑档案"
-	edit_link.flat = true
-	edit_link.position = Vector2(art_position.x + art_size.x - 208, art_position.y + art_size.y + 8)
-	edit_link.size = Vector2(208, 34)
-	edit_link.add_theme_font_size_override("font_size", 18)
-	edit_link.add_theme_color_override("font_color", Color("fff4dc"))
-	edit_link.pressed.connect(func() -> void: show_dossier_reference = false; build())
-	add_child(edit_link)
 	var close_link := Button.new()
 	close_link.text = "收起  Esc"
 	close_link.flat = true
@@ -985,11 +953,11 @@ func _counter() -> void:
 		wait.name = "WaitForCommunityCounter"
 	var collect := button(body,"展开已领取的资料袋" if ResidencySystem.state().packet else "领取七日资料袋",Vector2(65,260),Vector2(1110,65),func() -> void:
 		var message := ResidencySystem.collect_packet()
-		if ResidencySystem.state().packet: mode = "dossier"; tab = "starter"; build()
+		if ResidencySystem.state().packet: mode = "dossier"; tab = "packet"; build()
 		feedback.text = LocalizationSystem.text(message))
 	collect.name = "CollectStarterPacket"
 	collect.disabled = not ResidencySystem.office_open() and not ResidencySystem.state().packet
-	button(body,"查看待补材料",Vector2(65,365),Vector2(1110,65),func() -> void: mode = "dossier"; tab = "requirements"; build())
+	button(body,"查看居住档案",Vector2(65,365),Vector2(1110,65),func() -> void: mode = "dossier"; tab = "packet"; build())
 	button(body,"提交 · 请值班人逐页查看",Vector2(65,470),Vector2(1110,65),func() -> void:
 		if GameState.current_day != 7 or not ResidencySystem.office_open(): feedback.text = LocalizationSystem.text("请在 Day 7 · 09:00–18:00 交件。")
 		elif not ResidencySystem.audit().ready: feedback.text = LocalizationSystem.text("还有材料待补齐，可先查看要求页。")
@@ -1089,7 +1057,7 @@ func _guidance_action(action: Dictionary) -> void:
 			map_selected="residence" if GameState.current_role=="A" else "dorm"
 			mode="map"
 	elif kind in ["exploration","requirements","recognition","receipts","personal"]:
-		mode="dossier"; tab=kind
+		mode="dossier"; tab="packet"
 	else: mode=kind
 	build()
 

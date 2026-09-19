@@ -1126,28 +1126,33 @@ func _map_select(location: String) -> void:
 	if location == GameState.current_location:
 		label(side,"在地图上选一个想去的地方。",Vector2(0,330),Vector2(340,65),21)
 		return
-	for i in 2:
-		var method := "walk" if i == 0 else "taxi"
+	var travel_methods := [
+		{"id":"walk", "title":"步行", "name":"TravelWalk"},
+		{"id":"friend", "title":"找人借车", "name":"TravelFriend"},
+		{"id":"taxi", "title":"坐出租", "name":"TravelTaxi"},
+	]
+	for i in travel_methods.size():
+		var method := str(travel_methods[i].id)
 		var route := TravelSystem.route(GameState.current_location,location,method,GameState.current_role,GameState.current_minute)
-		var title := "步行" if i == 0 else "打车"
+		var title := str(travel_methods[i].title)
 		var available := bool(route.get("available",false))
 		var reason := str(route.get("reason",""))
 		if available:
 			title += "  %d 分钟 / %d 元" % [int(route.minutes),int(route.cost)]
 			if int(route.cost) > GameState.money: available = false; reason = "余额不足。"
 		else: title += " · 暂不可用"
-		var b := button(side,title,Vector2(0,307+i*87),Vector2(340,39),func() -> void: _travel_selected(method))
-		b.name = "TravelWalk" if i == 0 else "TravelTaxi"
+		var b := button(side,title,Vector2(0,302+i*62),Vector2(340,33),_travel_selected.bind(method))
+		b.name = str(travel_methods[i].name)
 		b.disabled = not available or travel_pending
 		b.tooltip_text = LocalizationSystem.text(reason)
 		var consequence := reason if not bool(route.get("available",false)) else GuidanceSystem.preview(int(route.minutes),location)
 		if not reason.is_empty() and bool(route.get("available",false)): consequence=reason+" "+consequence
-		var eta := label(side,consequence,Vector2(0,349+i*87),Vector2(345,43),16)
+		var eta := label(side,consequence,Vector2(0,336+i*62),Vector2(345,27),14)
 		eta.name="TravelETA_"+method
 		eta.tooltip_text=LocalizationSystem.text(consequence)
 		if method=="taxi" and bool(route.get("available",false)):
 			MetaExperience.queue_important("route_taxi_choice",{"protagonist_id":GameState.current_role,"location_id":GameState.current_location,"taxi_cost":int(route.cost),"to":location})
-	button(side,"取消",Vector2(0,488),Vector2(340,35),func() -> void: _map_select(GameState.current_location)).name = "TravelCancel"
+	button(side,"取消",Vector2(0,492),Vector2(340,31),func() -> void: _map_select(GameState.current_location)).name = "TravelCancel"
 
 func _travel_selected(method: String) -> void:
 	if travel_pending or SceneRouter.transitioning: return

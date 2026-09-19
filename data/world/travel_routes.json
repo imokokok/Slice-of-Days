@@ -82,7 +82,8 @@
     }
   ],
   "transport": {
-    "taxi_fares": {"short":30,"medium":50,"long":75},
+    "taxi_fares": {"short":40,"medium":65,"long":95},
+    "taxi_cross_street_minimum": 50,
     "shortcuts": [{"fact":"beetman_shopping","from":"produce_stall","to":"night_market","minutes":1}],
     "bus_stops": [
       "bus_stop",
@@ -102,15 +103,10 @@
     "taxi_wait": 5,
     "taxi_factor": 0.24,
     "taxi_minimum": 5,
-    "friend_minutes": 12,
-    "friend_npc": "zhou_xiaoliu",
-    "friend_start": 1140,
-    "friend_end": 1200,
-    "friend_encounters": 2,
-    "friend_destinations": [
-      "residence",
-      "dorm"
-    ]
+    "friend_fares": {"short":10,"medium":20,"long":35},
+    "friend_wait": 8,
+    "friend_factor": 0.45,
+    "friend_minimum": 8
   },
   "arrivals": {
     "town_entrance": {

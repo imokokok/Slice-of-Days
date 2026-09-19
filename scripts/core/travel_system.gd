@@ -89,20 +89,18 @@ func route(from_id: String, to_id: String, method: String, role: String, minute:
 			label = "公交"
 		"taxi":
 			wait = int(transport.taxi_wait)
-			cost = int(transport.get("taxi_fares",{}).get("short",30)) if walking <= 18 else int(transport.get("taxi_fares",{}).get("medium",50)) if walking <= 35 else int(transport.get("taxi_fares",{}).get("long",75))
+			cost = _distance_fare(walking, transport.get("taxi_fares", {}), 40, 65, 95)
+			if _crosses_street(from_id, to_id):
+				cost = maxi(cost, int(transport.get("taxi_cross_street_minimum", 50)))
 			duration = maxi(int(transport.taxi_minimum), int(ceil(walking * float(transport.taxi_factor)))) + wait
 			if duration >= walking: return {"available":false, "reason":"这段路很近，步行更快。"}
 			label = "出租车"
 		"friend":
-			var npc := str(transport.friend_npc)
-			var relationship: Dictionary = GameState.relationships.get(npc, {})
-			var activity := ScheduleSystem.activity_at(npc, GameState.current_day, minute)
-			var used: Array = GameState.shared_state.get("used_rides", [])
-			var token := "%d_%s" % [GameState.current_day, npc]
-			if not transport.get("friend_destinations",[]).has(to_id) or int(relationship.get("encounters", 0)) < int(transport.friend_encounters) or str(activity.get("location", "")) != from_id or minute < int(transport.friend_start) or minute + int(transport.friend_minutes) > int(transport.friend_end) or used.has(token):
-				return {"available":false, "reason":"现在没有相熟且有空的居民顺路。"}
-			duration = int(transport.friend_minutes)
-			label = "熟人顺路接送"
+			wait = int(transport.get("friend_wait", 8))
+			cost = _distance_fare(walking, transport.get("friend_fares", {}), 10, 20, 35)
+			duration = maxi(int(transport.get("friend_minimum", 8)), int(ceil(walking * float(transport.get("friend_factor", 0.45))))) + wait
+			if duration >= walking: return {"available":false, "reason":"这段路很近，步行更省事。"}
+			label = "找人借车"
 		_: return {"available":false, "reason":"没有这种交通方式。"}
 	if not GameState.can_fit_at(role, GameState.current_day, minute, duration):
 		return {"available":false, "reason":"当前空闲时段不足以完成这段路程。"}
@@ -140,10 +138,6 @@ func travel(to_id: String, method: String) -> Dictionary:
 		travel_in_progress = false
 		GameState.load_save_data(snapshot)
 		return {"ok":false,"message":"余额不足，本次出行已撤销。"}
-	if method == "friend":
-		var used: Array = GameState.shared_state.get("used_rides", [])
-		used.append("%d_%s" % [GameState.current_day, str(transport.friend_npc)])
-		GameState.shared_state["used_rides"] = used
 	if method == "bus":
 		GameState.add_journal_entry({"kind":"ticket", "text":"一张公交票 · " + location_name(to_id)})
 	GameState.current_location = to_id
@@ -156,6 +150,18 @@ func travel(to_id: String, method: String) -> Dictionary:
 		"message": "%s用了%d分钟，花费%d元。" % [str(option.get("label", "移动")), duration, cost],
 		"path_minutes": duration,
 	}
+
+
+func _distance_fare(walking: int, fares: Dictionary, short_fare: int, medium_fare: int, long_fare: int) -> int:
+	if walking <= 18:
+		return int(fares.get("short", short_fare))
+	if walking <= 35:
+		return int(fares.get("medium", medium_fare))
+	return int(fares.get("long", long_fare))
+
+
+func _crosses_street(from_id: String, to_id: String) -> bool:
+	return str(WorldGraph.segment_for(from_id).get("id", "")) != str(WorldGraph.segment_for(to_id).get("id", ""))
 
 
 func _shortest_walk_minutes(from_id: String, to_id: String) -> int:

@@ -75,6 +75,10 @@ func _test_schedule_and_route() -> void:
 	var result: Dictionary = TravelSystem.travel("park", "walk")
 	_check(bool(result.get("ok", false)), "The route graph should connect residence to park")
 	_check(GameState.current_location == "park", "Travel should update the active role location")
+	var cross_street_taxi := TravelSystem.route("residence", "cafe", "taxi", "A", 600)
+	var borrowed_car := TravelSystem.route("residence", "cafe", "friend", "A", 600)
+	_check(int(cross_street_taxi.get("cost", 0)) >= 50, "A taxi crossing streets should cost at least 50")
+	_check(int(borrowed_car.get("cost", 0)) < int(cross_street_taxi.get("cost", 0)), "Borrowing a car should stay cheaper than a taxi")
 
 
 func _test_fragmented_time_and_module_rollback() -> void:

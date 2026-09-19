@@ -4,6 +4,7 @@ signal moved(world_x: float)
 
 const SPEED := 300.0
 const REACH := 85.0
+const DOOR_REACH := 55.0
 const ACTOR_BASE_HEIGHT := 121.0
 const OUTDOOR_ACTOR_HEIGHT := 184.0
 const INDOOR_ACTOR_HEIGHT := 320.0
@@ -109,13 +110,14 @@ func nearest() -> Dictionary:
 
 func nearest_of(kinds: Array) -> Dictionary:
 	var result: Dictionary = {}
-	var distance := REACH
+	var distance := INF
 	for item in hotspots:
 		if not kinds.is_empty() and str(item.get("kind", "")) not in kinds: continue
 		var gap := absf(float(item.get("x", 0.0)) - player_x)
 		# A pair can be addressed from beside them, without standing between them.
 		if str(item.get("kind","")) == "argument": gap = maxf(0,gap-55)
-		if gap < distance:
+		var reach := float(item.get("reach", REACH))
+		if gap < reach and gap < distance:
 			distance = gap
 			result = item
 	return result

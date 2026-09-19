@@ -631,13 +631,13 @@ func _rebuild_hotspots() -> void:
 	if GameState.current_location in ["residence", "dorm"]:
 		var own_home := "residence" if GameState.current_role == "A" else "dorm"
 		if GameState.current_location == own_home:
-			street.hotspots.append({"x":center, "kind":"home", "label":"回家"})
+			street.hotspots.append({"x":center, "kind":"home", "reach":street.DOOR_REACH, "label":"回家"})
 	elif GameState.current_location == "cafe":
 		street.hotspots.append({"x":center, "kind":"shopkeeper", "id":"grocery", "label":"和杂货店老板说话"})
 	else:
 		var rooms := _spaces_at(GameState.current_location)
 		for i in rooms.size():
-			street.hotspots.append({"x":center + i * 120, "kind":"door", "id":str(rooms[i].id), "label":"进入" + str(rooms[i].name)})
+			street.hotspots.append({"x":center + i * 120, "kind":"door", "reach":street.DOOR_REACH, "id":str(rooms[i].id), "label":"进入" + str(rooms[i].name)})
 	for item in outdoor_objects:
 		if str(item.get("location_id", "")) == GameState.current_location:
 			if str(item.get("kind","")) == "encounter":

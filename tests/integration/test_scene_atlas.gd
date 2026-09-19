@@ -12,6 +12,19 @@ func run() -> void:
 	Atlas = load("res://scripts/ui/scene_atlas.gd")
 	root.get_node("ChapterSystem").start_new_game()
 	check(Atlas.catalog().street.size() == 15 and Atlas.catalog().rooms.size() == 9,"Keep the authored fifteen locations and nine rooms")
+	var pictured_entries := {
+		"night_market": 740,
+		"handcraft_shop": 800,
+		"cafe": 800,
+		"residence": 930,
+		"dorm": 930,
+		"tarot_stall": 865,
+		"record_store": 800,
+		"print_shop": 800,
+		"library": 800,
+	}
+	for location_id in pictured_entries:
+		check(int(Atlas.catalog().street[location_id].door_x) == pictured_entries[location_id], "Entry aligns with the pictured door: " + location_id)
 	for row in Atlas.catalog().pages: check(ResourceLoader.exists(str(row.image)),"Atlas image imported: " + str(row.page))
 	check(Atlas.phase(540) == 0 and Atlas.phase(1050) == 1 and Atlas.phase(1200) == 2,"Day, dusk and night use separate authored plates")
 	state.current_location = "town_entrance"
@@ -26,7 +39,12 @@ func run() -> void:
 	var door: Dictionary = {}
 	for item in current_scene.street.hotspots:
 		if item.kind == "door": door = item
-	check(not door.is_empty() and is_equal_approx(float(door.get("x",0)), current_scene._world_x(3,1120)),"Restaurant interaction aligns with its pictured door on the main street")
+	var door_x: float = current_scene._world_x(3,740)
+	check(not door.is_empty() and is_equal_approx(float(door.get("x",0)),door_x),"Restaurant interaction aligns with its pictured door on the main street")
+	current_scene.street.player_x = door_x + current_scene.street.DOOR_REACH + 1.0
+	check(current_scene.street.nearest_of(["door"]).is_empty(),"Restaurant entry prompt stays hidden beside the building")
+	current_scene.street.player_x = door_x + current_scene.street.DOOR_REACH - 1.0
+	check(not current_scene.street.nearest_of(["door"]).is_empty(),"Restaurant entry prompt appears at the door")
 	var street = current_scene.street
 	street.player_x = 1595.0
 	street.move_player(0, 0)

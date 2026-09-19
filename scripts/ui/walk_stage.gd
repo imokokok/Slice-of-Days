@@ -16,6 +16,7 @@ const PROTAGONIST_ART = preload("res://art/user_scenes/protagonist_white.png")
 const CHENYUAN_ART = preload("res://art/user_scenes/chenyuan.png")
 const CICI_ART = preload("res://art/user_scenes/cici.png")
 const NAONAO_ART = preload("res://art/user_scenes/naonao_white.png")
+const XIA_TOUMING_ART = preload("res://art/user_scenes/xia_touming_colored.png")
 var original_resident: Sprite2D
 var player_x := 500.0
 var world_width := 1800.0
@@ -528,6 +529,9 @@ func _draw_authored_npc(npc_id: String, at: Vector2, direction := -1.0) -> bool:
 			height = _actor_height() * 1.14
 		"wu_wu": art = CICI_ART
 		"naonao": art = NAONAO_ART
+		"xia_touming":
+			art = XIA_TOUMING_ART
+			height = _actor_height() * 1.10
 		_: return false
 	var width := height * float(art.get_width()) / float(art.get_height())
 	draw_colored_polygon(PackedVector2Array([at + Vector2(-width * 0.30, 2), at + Vector2(width * 0.30, 2), at + Vector2(width * 0.40, 6), at + Vector2(-width * 0.40, 6)]), Color("112630", 0.20))

@@ -30,7 +30,7 @@
       "location_id": "produce_stall",
       "kind": "shop",
       "shop_id": "produce_stall",
-      "name": "查看蔬菜和罐头",
+      "name": "挑选今天真正要买的菜",
       "icon": "菜"
     }
   ]

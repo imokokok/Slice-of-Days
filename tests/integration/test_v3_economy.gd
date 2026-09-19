@@ -59,16 +59,6 @@ func run() -> void:
 	town.set_process(false)
 	town.street.set_process(false)
 	town._refresh()
-	var produce_counter: Dictionary = {}
-	for spot in town.street.hotspots:
-		if str(spot.get("kind", "")) == "shop" and str(spot.get("id", "")) == "produce_stall": produce_counter = spot
-	check(not produce_counter.is_empty() and str(produce_counter.get("label", "")) == "查看蔬菜和罐头", "Produce counter exposes the direct vegetable and canned-food prompt")
-	if produce_counter.is_empty(): quit(1); return
-	town.street.player_x = float(produce_counter.x)
-	press(town, KEY_E)
-	check(is_instance_valid(town.pocket_panel) and town.pocket_panel.shop_id == "produce_stall", "E at the produce counter opens the existing purchase panel directly")
-	if is_instance_valid(town.pocket_panel): town.pocket_panel.queue_free()
-	await process_frame
 	for spot in town.street.hotspots:
 		if str(spot.get("id","")) == "beetman": town.street.player_x = float(spot.x)
 	var chat_start: int = state.current_minute

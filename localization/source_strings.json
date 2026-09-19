@@ -21379,5 +21379,65 @@
   ],
   "［调查者］是案发后第一位进入现场调查的人吗？": [
     "extensions/myriorama_tarot/assets/question-bank.json"
+  ],
+  "社区中心 · 旧钟校准": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "校时单": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "请把旧钟调到": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "先选择时针或分针，再在钟面上拖动。\n也可以用下方按钮逐格微调。": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "时针": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "分针": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "确认时间": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "这只钟已经校准过，20 元工钱也已经领过了。": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "还没对准。再看看校时单上的时间。": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "校准社区中心旧钟": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "把社区中心的旧钟校准到 %s，领到 %d 元工钱。": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "旧钟校准后保存失败": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "指针与校时单完全一致。工钱 +%d 元，已经放进钱包。": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "当前 %s": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "已经校准 · 已领 20 元": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "确认时间 · +%d 元": [
+    "scripts/ui/clock_repair.gd"
+  ],
+  "让停下来的时间重新走准。": [
+    "data/world/interactive_spaces.json"
+  ],
+  "公告板下摆着一只走慢了的旧钟，旁边压着校时单和二十元工钱。": [
+    "data/world/interactive_spaces.json"
+  ],
+  "需要校准的旧钟": [
+    "data/world/interactive_spaces.json"
+  ],
+  "按照校时单拨动时针和分针。调准后可领取 20 元工钱。": [
+    "data/world/interactive_spaces.json"
   ]
 }

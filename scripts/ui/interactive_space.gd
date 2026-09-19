@@ -195,6 +195,9 @@ func _open_selected() -> void:
 		detail_label.text = LocalizationSystem.text("余额 %d元 · Space 收起" % GameState.money)
 		SaveManager.save_or_report("工作结算后保存失败")
 		return
+	if str(item.get("kind", "")) == "clock_repair":
+		_open_clock_repair(item)
+		return
 	var module_id := str(item.get("module_id", ""))
 	if module_id == "cooking":
 		EconomySystem.open_counter(self, "restaurant")
@@ -229,6 +232,19 @@ func _open_selected() -> void:
 		_:
 			if not module_id.is_empty():
 				SceneRouter.gameplay_module(module_id, "space:%s:%s" % [str(space.get("id", "")), str(item.get("id", ""))])
+
+
+func _open_clock_repair(item: Dictionary) -> void:
+	if is_instance_valid(pocket_panel):
+		return
+	pocket_panel = preload("res://scripts/ui/clock_repair.gd").new()
+	pocket_panel.target_hour = int(item.get("target_hour", 10))
+	pocket_panel.target_minute = int(item.get("target_minute", 20))
+	pocket_panel.reward = int(item.get("reward", 20))
+	add_child(pocket_panel)
+	pocket_panel.tree_exited.connect(func() -> void:
+		pocket_panel = null
+		queue_redraw())
 
 
 func _open_record_shop() -> void:

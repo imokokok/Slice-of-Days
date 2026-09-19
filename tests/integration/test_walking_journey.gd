@@ -25,7 +25,6 @@ func run() -> void:
 	var chapters = root.get_node("ChapterSystem")
 	var router = root.get_node("SceneRouter")
 	var saves = root.get_node("SaveManager")
-	var gameplay = root.get_node("GameplayModuleSystem")
 	chapters.start_new_game("B")
 	check(state.current_role == "A", "Authored opening must always start with A")
 	var sequence: Array = chapters.chapter_sequence()
@@ -104,22 +103,29 @@ func run() -> void:
 	check(state.current_location == "dorm", "B must wake at B's own home")
 	check(not state.shared_state.has("sleep_pending"), "Sleep transition must commit exactly once")
 	check(current_scene.scene_file_path.ends_with("town_day.tscn"), "Sleep must return to playable street without alignment")
-	# Enter a room and test a real gameplay round-trip from an object.
+	# The community center clock opens in place, pays once when correctly set,
+	# and no longer routes through the former photography workbench.
 	router.enter_space("print_studio")
 	state.current_location = "print_shop"
 	state.current_minute = 1080
 	await settle()
 	var room = current_scene
+	check(room.objects.size() == 1 and str(room.objects[0].get("kind", "")) == "clock_repair", "Community center replaces its photography workbench with the clock interaction")
 	room._select_object(0)
 	room.stage.player_x = room._hotspot_x(0)
 	room._open_selected()
-	await settle()
-	check(not current_scene.scene_file_path.ends_with("interactive_space.tscn"), "Nearby object must launch its existing game")
-	gameplay.cancel_session()
-	router.return_from_gameplay()
-	await settle()
-	check(current_scene.scene_file_path.ends_with("interactive_space.tscn"), "Mini-game return must restore the same room")
-	check(router.active_space_id == "print_studio", "Return must preserve the room identity")
+	await process_frame
+	check(room.pocket_panel != null and room.pocket_panel.get_script().resource_path.ends_with("clock_repair.gd"), "Nearby clock must open the hand-setting interaction in place")
+	var before_clock_pay: int = state.money
+	room.pocket_panel.hour_value = room.pocket_panel.target_hour
+	room.pocket_panel.minute_value = room.pocket_panel.target_minute
+	room.pocket_panel._submit()
+	check(state.money == before_clock_pay + 20, "Correct clock time pays 20 yuan")
+	room.pocket_panel._submit()
+	check(state.money == before_clock_pay + 20, "Clock reward cannot be collected twice")
+	room.pocket_panel.queue_free()
+	await process_frame
+	check(current_scene.scene_file_path.ends_with("interactive_space.tscn") and router.active_space_id == "print_studio", "Closing the clock keeps the player in the community center")
 	# Book notes and all supported scene scripts must load.
 	router.enter_space("public_archive")
 	state.current_location = "library"

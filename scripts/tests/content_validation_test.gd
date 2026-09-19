@@ -355,11 +355,18 @@ func _validate_interactive_spaces(rows: Array, location_ids: Array[String], modu
 			else:
 				object_ids.append(object_id)
 			var kind := str(item.get("kind", "module"))
-			if not ["module", "tarot", "record_shop", "observe", "journal", "sleep", "book_notes", "shop", "work"].has(kind):
+			if not ["module", "tarot", "record_shop", "observe", "journal", "sleep", "book_notes", "shop", "work", "clock_repair"].has(kind):
 				failures.append("interactive object %s/%s uses unsupported kind %s" % [space_id, object_id, kind])
 			var module_id := str(item.get("module_id", ""))
 			if kind == "module" and not module_ids.has(module_id):
 				failures.append("interactive object %s/%s references missing module %s" % [space_id, object_id, module_id])
+			if kind == "clock_repair":
+				if int(item.get("target_hour", 0)) < 1 or int(item.get("target_hour", 0)) > 12:
+					failures.append("interactive clock %s/%s needs a 1–12 target hour" % [space_id, object_id])
+				if int(item.get("target_minute", -1)) < 0 or int(item.get("target_minute", -1)) >= 60 or int(item.get("target_minute", -1)) % 5 != 0:
+					failures.append("interactive clock %s/%s needs a five-minute target" % [space_id, object_id])
+				if int(item.get("reward", 0)) != 20:
+					failures.append("interactive clock %s/%s should pay the authored 20 yuan reward" % [space_id, object_id])
 
 
 func _validate_shops(rows: Array, location_ids: Array[String]) -> void:

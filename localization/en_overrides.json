@@ -163,5 +163,13 @@
   "指针与校时单完全一致。工钱 +%d 元，已经放进钱包。": "The hands match the slip exactly. ¥%d has been added to your wallet.",
   "当前 %s": "Current · %s",
   "已经校准 · 已领 20 元": "Calibrated · ¥20 Collected",
-  "确认时间 · +%d 元": "Confirm Time · +¥%d"
+  "确认时间 · +%d 元": "Confirm Time · +¥%d",
+  "找人借车": "Borrow a Car",
+  "坐出租": "Taxi",
+  "从 %s 出发": "From %s",
+  "%s · %d分钟 · %d元": "%s · %d min · ¥%d",
+  "%s · %d 分钟 / %d 元": "%s · %d min / ¥%d",
+  "%s · 暂不可用": "%s · Unavailable",
+  "路程越远，时间和费用越高 · 跨街出租车最低 50 元": "Time and cost increase with distance · Cross-street taxis cost at least ¥50",
+  "选择一种方式出发；时间和费用按实际路程计算。": "Choose how to travel; time and cost depend on distance."
 }

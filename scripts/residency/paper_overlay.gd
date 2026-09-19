@@ -1077,11 +1077,12 @@ func _knowledge() -> void:
 
 func _map() -> void:
 	label(body,"拖动地图 · 滚轮缩放 · 选择目的地",Vector2(35,86),Vector2(1240,38),21)
-	var viewport := panel(body,Vector2(28,137),Vector2(900,540),Color("e4ead9"))
+	var viewport := panel(body,Vector2(28,137),Vector2(1284,540),Color("e4ead9"))
+	viewport.name = "MapViewport"
 	viewport.clip_contents = true
 	map_board = load("res://scripts/residency/map_paper.gd").new()
-	map_board.position = Vector2(20,20)
-	map_board.scale = Vector2.ONE*0.8
+	map_board.position = Vector2(12,-142)
+	map_board.scale = Vector2.ONE*1.2
 	map_board.selected.connect(_map_select)
 	viewport.add_child(map_board)
 	_map_select(GameState.current_location if map_selected.is_empty() else map_selected)
@@ -1090,54 +1091,50 @@ func _map_select(location: String) -> void:
 	map_selected = location
 	var old := body.get_node_or_null("MapDetails")
 	if old != null: body.remove_child(old); old.queue_free()
-	var side := Control.new()
-	side.name = "MapDetails"
-	side.position = Vector2(950,147)
-	side.size = Vector2(350,525)
-	body.add_child(side)
-	label(side,TravelSystem.location_name(location),Vector2.ZERO,Vector2(350,62),27)
-	label(side,WorldGraph.directions(GameState.current_location,location),Vector2(0,57),Vector2(345,45),18)
-	var hours: Array = ResidencySystem.locations.get(location,{}).get("hours",[])
-	var hours_text := "开放时段："
-	for h in hours: hours_text += "%02d:%02d–%02d:%02d " % [int(h[0])/60,int(h[0])%60,int(h[1])/60,int(h[1])%60]
-	if hours.is_empty(): hours_text = "沿途公共区域" if not bool(ResidencySystem.locations.get(location,{}).get("interior",false)) else "按门口告示进入"
-	if location == "print_shop": hours_text = "柜台 09:00–18:00"
-	if location == "park": hours_text = "私人观景台 · 21:00 后受邀进入"
-	label(side,hours_text,Vector2(0,102),Vector2(345,45),18)
-	var known := scroll_area(side,Vector2(0,152),Vector2(345,98))
-	var knowledge := Label.new()
-	knowledge.text=LocalizationSystem.text(GuidanceSystem.known_at(location))
-	knowledge.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	knowledge.custom_minimum_size.x=325
-	knowledge.add_theme_font_size_override("font_size",18)
-	knowledge.add_theme_color_override("font_color",INK)
-	known.add_child(knowledge)
-	edit(side,str(ResidencySystem.state().map_notes.get(location,"")),Vector2(0,253),Vector2(340,46),func(value: String) -> void: ResidencySystem.state().map_notes[location] = value,"在地图上写一句…")
 	if location == GameState.current_location:
-		label(side,"在地图上选一个想去的地方。",Vector2(0,330),Vector2(340,65),21)
 		return
-	for i in 2:
-		var method := "walk" if i == 0 else "taxi"
+	var side := panel(body,_map_card_position(location),Vector2(368,284),Color("f7efd9"))
+	side.name = "MapDetails"
+	label(side,TravelSystem.location_name(location),Vector2(18,12),Vector2(285,38),25)
+	label(side,"从 %s 出发" % TravelSystem.location_name(GameState.current_location),Vector2(18,46),Vector2(325,28),15,Color("6c756d"))
+	var travel_methods := [
+		{"id":"walk", "title":"步行", "name":"TravelWalk"},
+		{"id":"friend", "title":"找人借车", "name":"TravelFriend"},
+		{"id":"taxi", "title":"坐出租", "name":"TravelTaxi"},
+	]
+	for i in travel_methods.size():
+		var method := str(travel_methods[i].id)
 		var route := TravelSystem.route(GameState.current_location,location,method,GameState.current_role,GameState.current_minute)
-		var title := "步行" if i == 0 else "打车"
+		var title := LocalizationSystem.text(str(travel_methods[i].title))
 		var available := bool(route.get("available",false))
 		var reason := str(route.get("reason",""))
 		if available:
-			title += "  %d 分钟 / %d 元" % [int(route.minutes),int(route.cost)]
+			title = LocalizationSystem.text_with_values("%s · %d 分钟 / %d 元", [title,int(route.minutes),int(route.cost)])
 			if int(route.cost) > GameState.money: available = false; reason = "余额不足。"
-		else: title += " · 暂不可用"
-		var b := button(side,title,Vector2(0,307+i*87),Vector2(340,39),func() -> void: _travel_selected(method))
-		b.name = "TravelWalk" if i == 0 else "TravelTaxi"
+		else:
+			title = LocalizationSystem.text_with_values("%s · 暂不可用", [title])
+		var b := button(side,title,Vector2(17,78+i*55),Vector2(334,44),_travel_selected.bind(method))
+		b.name = str(travel_methods[i].name)
 		b.disabled = not available or travel_pending
 		b.tooltip_text = LocalizationSystem.text(reason)
-		var consequence := reason if not bool(route.get("available",false)) else GuidanceSystem.preview(int(route.minutes),location)
-		if not reason.is_empty() and bool(route.get("available",false)): consequence=reason+" "+consequence
-		var eta := label(side,consequence,Vector2(0,349+i*87),Vector2(345,43),16)
-		eta.name="TravelETA_"+method
-		eta.tooltip_text=LocalizationSystem.text(consequence)
 		if method=="taxi" and bool(route.get("available",false)):
 			MetaExperience.queue_important("route_taxi_choice",{"protagonist_id":GameState.current_role,"location_id":GameState.current_location,"taxi_cost":int(route.cost),"to":location})
-	button(side,"取消",Vector2(0,488),Vector2(340,35),func() -> void: _map_select(GameState.current_location)).name = "TravelCancel"
+	label(side,"路程越远，时间和费用越高 · 跨街出租车最低 50 元",Vector2(18,247),Vector2(320,25),13,Color("6c756d"))
+	var cancel := button(side,"×",Vector2(320,10),Vector2(32,32),func() -> void: _map_select(GameState.current_location))
+	cancel.name = "TravelCancel"
+	cancel.tooltip_text = LocalizationSystem.text("关闭")
+
+func _map_card_position(location: String) -> Vector2:
+	var marker := Vector2(525,350)
+	var map_points = map_board.get("points")
+	if map_points is Dictionary:
+		marker = Vector2(map_points.get(location, marker))
+	var on_map := Vector2(28,137) + map_board.position + marker * map_board.scale.x
+	var card_size := Vector2(368,284)
+	var x := on_map.x + 28
+	if x + card_size.x > 1300:
+		x = on_map.x - card_size.x - 28
+	return Vector2(clampf(x,40,1300-card_size.x),clampf(on_map.y-42,150,680-card_size.y))
 
 func _travel_selected(method: String) -> void:
 	if travel_pending or SceneRouter.transitioning: return

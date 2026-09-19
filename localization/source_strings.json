@@ -21439,5 +21439,33 @@
   ],
   "按照校时单拨动时针和分针。调准后可领取 20 元工钱。": [
     "data/world/interactive_spaces.json"
+  ],
+  "找人借车": [
+    "scripts/core/travel_system.gd",
+    "scripts/residency/paper_overlay.gd",
+    "scripts/ui/town_map.gd"
+  ],
+  "坐出租": [
+    "scripts/residency/paper_overlay.gd",
+    "scripts/ui/town_map.gd"
+  ],
+  "从 %s 出发": [
+    "scripts/residency/paper_overlay.gd"
+  ],
+  "%s · %d分钟 · %d元": [
+    "scripts/ui/town_map.gd"
+  ],
+  "%s · %d 分钟 / %d 元": [
+    "scripts/residency/paper_overlay.gd"
+  ],
+  "%s · 暂不可用": [
+    "scripts/residency/paper_overlay.gd",
+    "scripts/ui/town_map.gd"
+  ],
+  "路程越远，时间和费用越高 · 跨街出租车最低 50 元": [
+    "scripts/residency/paper_overlay.gd"
+  ],
+  "选择一种方式出发；时间和费用按实际路程计算。": [
+    "scripts/ui/town_map.gd"
   ]
 }

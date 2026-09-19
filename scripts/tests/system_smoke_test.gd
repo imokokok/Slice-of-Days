@@ -11,6 +11,7 @@ func _ready() -> void:
 	EventSystem.load_event_data("res://data/story/events.json")
 	_test_calendar_and_role_isolation()
 	_test_schedule_and_route()
+	_test_market_argument_gate()
 	_test_fragmented_time_and_module_rollback()
 	_test_core_resident_profiles()
 	_test_event_and_relationship()
@@ -75,6 +76,17 @@ func _test_schedule_and_route() -> void:
 	var result: Dictionary = TravelSystem.travel("park", "walk")
 	_check(bool(result.get("ok", false)), "The route graph should connect residence to park")
 	_check(GameState.current_location == "park", "Travel should update the active role location")
+
+
+func _test_market_argument_gate() -> void:
+	ChapterSystem.start_new_game("A")
+	_check(DialogueSystem.argument_pending(), "The opening market argument should be mandatory before completion")
+	# Older saves recorded this marker when the overlay opened, even if the
+	# player escaped before hearing the conversation through to the end.
+	GameState.shared_state["market_encounter_A_1"] = true
+	_check(DialogueSystem.argument_pending(), "An interrupted legacy encounter must remain mandatory")
+	DialogueSystem.mark_argument(true)
+	_check(not DialogueSystem.argument_pending(), "The market argument should stop forcing itself only after completion")
 
 
 func _test_fragmented_time_and_module_rollback() -> void:

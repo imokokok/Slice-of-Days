@@ -1,6 +1,5 @@
 extends "res://extensions/hear_you/npc_dialogue.gd"
 ## Conversation stays on the live street. Only words and shared memories overlay it.
-signal leave_requested
 signal finish_requested
 const WORDS := Rect2(170,745,1260,143)
 var street: Control
@@ -46,7 +45,7 @@ func _draw() -> void:
 		words = LocalizationSystem.text(str(current_line[1])).substr(0,int(typed))
 	_text(speaker,WORDS.position+Vector2(26,29),18,Color("d6b58d"))
 	_wrapped_text(words,WORDS.position+Vector2(26,64),22,Color("f4ead7"),1190,30)
-	_text("拖动记忆到对方身上 · Esc 暂时离开" if waiting else "点击 / 空格继续 · Esc 暂时离开",WORDS.position+Vector2(26,124),14,Color("a8bbb7"))
+	_text("拖动记忆到对方身上" if waiting else "点击 / 空格继续",WORDS.position+Vector2(26,124),14,Color("a8bbb7"))
 	if drag_index >= 0: _draw_token(drag_index,drag_position)
 	if return_index >= 0: _draw_token(return_index,return_position)
 
@@ -79,7 +78,8 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
+			# This is the opening's mandatory encounter. Escape may put a memory
+			# token back, but cannot dismiss the conversation before it is heard.
 			if drag_index >= 0: _cancel_drag()
-			else: leave_requested.emit()
 		elif event.keycode in [KEY_SPACE,KEY_ENTER]: _advance_street()
 		get_viewport().set_input_as_handled()

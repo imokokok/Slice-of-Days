@@ -34,6 +34,12 @@ func argument_state() -> Dictionary:
 		GameState.shared_state[key] = state
 	return state
 
+func argument_pending() -> bool:
+	# The old per-day encounter marker was written as soon as the overlay opened.
+	# It therefore cannot decide whether the mandatory introduction was actually
+	# completed: saves made after leaving it early must enter it again.
+	return not bool(argument_state().get("finished", false))
+
 func mark_argument(finished: bool) -> void:
 	var state := argument_state()
 	state.seen = true

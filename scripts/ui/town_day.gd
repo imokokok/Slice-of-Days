@@ -528,8 +528,7 @@ func _market_encounter_key() -> String:
 
 func _try_market_encounter() -> void:
 	if not street.enabled or SceneRouter.transitioning or GameState.current_location != "produce_stall": return
-	if bool(DialogueSystem.argument_state().get("finished", false)): return
-	if bool(GameState.shared_state.get(_market_encounter_key(),false)): return
+	if not DialogueSystem.argument_pending(): return
 	for item in street.hotspots:
 		if str(item.kind) == "argument" and absf(street.player_x-float(item.x)) < 115:
 			_start_market_encounter()
@@ -537,7 +536,7 @@ func _try_market_encounter() -> void:
 
 func _start_market_encounter() -> void:
 	if is_instance_valid(conversation) or _guard_pocket_audio(): return
-	if bool(DialogueSystem.argument_state().get("finished", false)):
+	if not DialogueSystem.argument_pending():
 		_observe_market_afterward()
 		return
 	var snapshot := GameState.to_save_data().duplicate(true)
@@ -556,7 +555,6 @@ func _start_market_encounter() -> void:
 	var words = preload("res://scripts/ui/street_argument.gd").new()
 	words.street = street
 	words.world_x = _world_x(current_index,1210)
-	words.leave_requested.connect(func() -> void: conversation.queue_free())
 	words.finish_requested.connect(_finish_market_encounter.bind(words))
 	conversation.add_child(words)
 	# _process recomputes the movement gate every frame.  Do not write a second

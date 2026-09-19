@@ -489,7 +489,9 @@ func _draw_protagonist(at: Vector2, gait_phase: float, gait_strength: float, dir
 	var width := height * float(PROTAGONIST_ART.get_width()) / float(PROTAGONIST_ART.get_height())
 	var bob := (1.0 - absf(cos(gait_phase))) * 2.0 * clampf(gait_strength, 0.0, 1.0)
 	draw_colored_polygon(PackedVector2Array([at + Vector2(-width * 0.32, 2), at + Vector2(width * 0.32, 2), at + Vector2(width * 0.42, 6), at + Vector2(-width * 0.42, 6)]), Color("112630", 0.20))
-	draw_set_transform(at, 0.0, Vector2(1.0 if direction >= 0.0 else -1.0, 1.0))
+	# The reference pose faces left in its source image, so mirror it for
+	# rightward travel and keep the visible direction aligned with input.
+	draw_set_transform(at, 0.0, Vector2(-1.0 if direction >= 0.0 else 1.0, 1.0))
 	draw_texture_rect(PROTAGONIST_ART, Rect2(-width * 0.5, -height - bob, width, height), false)
 	draw_set_transform(Vector2.ZERO)
 

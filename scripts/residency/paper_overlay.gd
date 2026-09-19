@@ -843,7 +843,7 @@ func _drop(parent: Node, destination: String, at: Vector2, dimensions: Vector2, 
 	return zone
 
 func _organize() -> void:
-	if not ResidencySystem.can_organize(): label(body,"18:00 后，回自己的房间整理。F 可先查看档案。",Vector2(70,240),Vector2(1150,150),28); return
+	if not ResidencySystem.can_organize(): label(body,"18:00 后，回自己的房间整理。Q 可先查看档案。",Vector2(70,240),Vector2(1150,150),28); return
 	if not ResidencySystem.state().packet: label(body,"先到社区中心领取资料袋。素材会一直留在素材本里。",Vector2(70,240),Vector2(1150,150),28); return
 	ResidencySystem._sync_sources()
 	var table := panel(body,Vector2(28,80),Vector2(1284,600),Color("a67e5a"))
@@ -888,10 +888,10 @@ func _home() -> void:
 		label(body,"调整会立即生效，并在下次启动时保留。",Vector2(95,565),Vector2(900,40),20,Color("6f7770"))
 		return
 	if mode == "controls":
-		label(body,"A / D    沿街行走\nW    与人交谈     E    门、路口与物件     1    问点事\nSpace    继续对话     C    相机 / 拍照\nR    录音与停止     Space    留标记\nG    相册     Tab    地图     B    素材本\nF    居住档案     H    随身物品     J    私人手记\nEsc    返回上一层，再暂停",Vector2(100,135),Vector2(1140,420),28)
+		label(body,"A / D    沿街行走\nW    与人交谈     E    门、路口与物件     1    问点事\nSpace    继续对话     C    相机 / 拍照\nR    录音与停止     Space    留标记\nG    相册     Tab    地图     B    素材本\nQ    居住档案     H    随身物品     J    私人手记\nEsc    返回上一层，再暂停",Vector2(100,135),Vector2(1140,420),28)
 		label(body,"地图、档案和整理时，游戏时间暂停。拍照与录音时，小镇继续生活。",Vector2(100,580),Vector2(1150,70),22)
 		return
-	var items: Array = [["相机  C","camera"],["录音机  R","recorder"],["相册  G","gallery"],["随身地图  Tab","map"],["素材本  B","fieldbook"],["居住档案  F","dossier"],["私人手记  J","notebook"],["操作","controls"],["设置","settings"]]
+	var items: Array = [["相机  C","camera"],["录音机  R","recorder"],["相册  G","gallery"],["随身地图  Tab","map"],["素材本  B","fieldbook"],["居住档案  Q","dossier"],["私人手记  J","notebook"],["操作","controls"],["设置","settings"]]
 	if mode == "pause": items = [["继续走走","close"],["设置","settings"],["操作","controls"],["保存并回到封面","exit"]]
 	label(body,"%s 的随身物品     ·     余额 %d 元" % [GameState.current_role,GameState.money],Vector2(85,85),Vector2(1100,42),23)
 	button(body,"今日  T",Vector2(800,580),Vector2(345,45),func() -> void: mode="today"; build())

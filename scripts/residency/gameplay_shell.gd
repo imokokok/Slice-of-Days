@@ -34,7 +34,7 @@ func _ready() -> void:
 	folder.position = Vector2(25,25)
 	folder.size = Vector2(109,61)
 	folder.text = "RP-07"
-	folder.tooltip_text = LocalizationSystem.text("F · 居住档案")
+	folder.tooltip_text = LocalizationSystem.text("Q · 居住档案")
 	folder.add_theme_font_size_override("font_size",22)
 	folder.add_theme_color_override("font_color",Color("495955"))
 	var paper := StyleBoxFlat.new()
@@ -153,26 +153,14 @@ func _process(delta: float) -> void:
 		hint_debug.actions = str(context.text).split("\n")
 	hint_age += delta
 	hints.visible = not _blocked() and not is_instance_valid(tool)
-	hints.modulate.a = minf(hint_age/0.2,1.0) if hint_age < 2.7 else clampf(1.0-(hint_age-2.7)/0.35,0,1)
-	hint_debug.fade = "in" if hint_age < .2 else "hold" if hint_age < 2.7 else "out" if hint_age < 3.05 else "hidden"
+	hints.modulate.a = 1.0
+	hint_debug.fade = "persistent"
 
 func _context() -> Dictionary:
-	var commitment := GameState.next_commitment()
-	if not commitment.is_empty() and not bool(commitment.get("auto_advance",false)):
-		var due := int(commitment.get("return_by",commitment.get("start",0)))
-		var travel := WorldGraph.walk_minutes(GameState.current_location,str(commitment.get("location","dorm")))+5
-		if due-GameState.current_minute <= travel and due+10 >= GameState.current_minute and GameState.current_location != str(commitment.get("location","dorm")):
-			return {"id":"work_"+str(commitment.get("id","")),"text":"Tab  %02d:%02d 前回家工作\nH  随身物品" % [due/60,due%60]}
-	var special := _special()
-	if not special.is_empty(): return {"id":special,"text":"E  "+str({"counter":"资料领取 / 提交","organize":"整理桌上的材料","proofs":"领取工作证明","residence":"居住确认"}.get(special,special))+"\nF  居住档案"}
-	var talk_near: Dictionary = stage.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
-	if not talk_near.is_empty():
-		return {"id":str(talk_near),"text":"W  聊一会 · %d 分钟 · %s结束\n1  问点事 · %d 分钟" % [int(MetaExperience.catalog.timing.chat_minutes),GuidanceSystem.time_text(GameState.current_minute+int(MetaExperience.catalog.timing.chat_minutes)),int(MetaExperience.catalog.timing.ask_minutes)]}
-	var near: Dictionary = stage.nearest()
-	if not near.is_empty():
-		var text := "E  "+str(near.get("label","互动"))
-		return {"id":str(near),"text":text}
-	return {"id":"walk_"+last_location,"text":"A / D  走走\nTab  去社区中心" if not ResidencySystem.state().packet else "A / D  走走\nTab  地图    T  今日"}
+	return {
+		"id": "fixed_controls",
+		"text": "W  进入对话\nE  进入\nTab  地图\nQ  档案",
+	}
 
 func _special() -> String:
 	if not stage.indoor: return ""
@@ -206,8 +194,9 @@ func _handle_shortcut(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo or _blocked() or is_instance_valid(tool) or focus_opening: return
 	if get_viewport().gui_get_focus_owner() is TextEdit or get_viewport().gui_get_focus_owner() is LineEdit: return
 	var key: int = event.physical_keycode
-	var modes := {KEY_TAB:"map",KEY_T:"today",KEY_G:"gallery",KEY_B:"fieldbook",KEY_F:"dossier",KEY_H:"home",KEY_J:"notebook",KEY_ESCAPE:"pause"}
-	if modes.has(key): open_paper(str(modes[key]))
+	var modes := {KEY_TAB:"map",KEY_T:"today",KEY_G:"gallery",KEY_B:"fieldbook",KEY_H:"home",KEY_J:"notebook",KEY_ESCAPE:"pause"}
+	if event.is_action_pressed("open_dossier"): open_paper("dossier")
+	elif modes.has(key): open_paper(str(modes[key]))
 	elif key == KEY_C: open_tool("camera")
 	elif key == KEY_R: open_tool("recorder")
 	elif event.is_action_pressed("talk"):

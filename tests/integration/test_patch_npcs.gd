@@ -53,7 +53,7 @@ func run() -> void:
 	town._refresh()
 	check(walk_to(town, "beetman"), "The scheduled real vendor has a person hotspot")
 	check(not town.street.hotspots.any(func(p: Dictionary) -> bool: return str(p.get("kind", "")) == "shop" and str(p.get("id", "")) == "produce_stall"), "The produce counter cannot bypass conversation")
-	check(str(town.get_node("GameplayShell")._context().text).begins_with("W  聊一会"), "Nearby person hint advertises W for conversation")
+	check(str(town.get_node("GameplayShell")._context().text) == "W  进入对话\nE  进入\nTab  地图\nQ  档案", "The key hint remains fixed near a person")
 	var before_minute: int = state.current_minute
 	var before_money: int = state.money
 	press(town, KEY_E)

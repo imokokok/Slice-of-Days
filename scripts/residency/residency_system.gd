@@ -276,11 +276,11 @@ func collect_packet() -> String:
 	if GameState.current_location != "print_shop" or SceneRouter.active_space_id != "print_studio": return "请到社区中心柜台领取。"
 	if not office_open(): return "柜台开放时间 09:00–18:00。"
 	var s := state()
-	if s.packet: return "资料袋已经领过，F 可随时查看。"
+	if s.packet: return "资料袋已经领过，Q 可随时查看。"
 	s.packet = true
 	for paper in content.starter: _add("starter_"+str(paper.id),"official",str(paper.title),{"text":paper.text,"source":"community_counter"})
 	persist()
-	return "六份资料已收好。F 看档案，B 看素材，晚上回房间整理。"
+	return "六份资料已收好。Q 看档案，B 看素材，晚上回房间整理。"
 
 func proof_status(source_id: String) -> Dictionary:
 	var s := state()

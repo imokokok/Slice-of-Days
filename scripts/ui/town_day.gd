@@ -594,6 +594,15 @@ func _index_at(x: float) -> int:
 	return clampi(int((x - route_offset) / BLOCK_WIDTH), 0, street_order.size() - 1)
 
 
+func _building_entrance_x(index: int) -> float:
+	# Exterior facades are drawn around places[index].x, and _draw_facade puts
+	# their visible door on that center line. The atlas' door_x describes its
+	# source illustration, so using it here can put the prompt beside a building.
+	if is_instance_valid(street) and index >= 0 and index < street.places.size():
+		return float(street.places[index].get("x", _world_x(index, 800)))
+	return _world_x(index, 800)
+
+
 
 
 
@@ -617,6 +626,7 @@ func _rebuild_hotspots() -> void:
 	street.hotspots.clear()
 	street.queue_redraw()
 	var center := _world_x(current_index, float(Atlas.street(GameState.current_location).get("door_x",800)))
+	var building_entrance := _building_entrance_x(current_index)
 	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
 		street.hotspots.append({"x":_world_x(current_index, 1060), "kind":"closed", "label":"观景台 · 21:00 开放"})
 		return
@@ -633,13 +643,13 @@ func _rebuild_hotspots() -> void:
 	if GameState.current_location in ["residence", "dorm"]:
 		var own_home := "residence" if GameState.current_role == "A" else "dorm"
 		if GameState.current_location == own_home:
-			street.hotspots.append({"x":center, "kind":"home", "label":"回家"})
+			street.hotspots.append({"x":building_entrance, "kind":"home", "label":"回家"})
 	elif GameState.current_location == "cafe":
 		street.hotspots.append({"x":center, "kind":"shopkeeper", "id":"grocery", "label":"和杂货店老板说话"})
 	else:
 		var rooms := _spaces_at(GameState.current_location)
 		for i in rooms.size():
-			street.hotspots.append({"x":center + i * 120, "kind":"door", "id":str(rooms[i].id), "label":"进入" + str(rooms[i].name)})
+			street.hotspots.append({"x":building_entrance, "kind":"door", "id":str(rooms[i].id), "label":"进入" + str(rooms[i].name)})
 	for item in outdoor_objects:
 		if str(item.get("location_id", "")) == GameState.current_location:
 			if str(item.get("kind","")) == "encounter":
@@ -863,4 +873,3 @@ func _open_map() -> void:
 		_refresh()
 		return
 	SceneRouter.town_map()
-

@@ -88,32 +88,9 @@ func run() -> void:
 	shell._unhandled_input(key(KEY_F))
 	await create_timer(.1).timeout
 	check(is_instance_valid(shell.overlay) and shell.overlay.tab == "packet","Uncollected dossier still opens its application-progress home")
-	var preview_actions := [
-		["days","days"],
-		["income","proof"],
-		["exploration","exploration"],
-		["recognition","recognition"],
-		["contribution","proof"],
-		["personal","personal"],
-		["final","days"]
-	]
 	var preview = shell.overlay
-	for action in preview_actions:
-		preview = shell.overlay
-		preview.tab = "packet"; preview.build()
-		await process_frame
-		check(await click_named(preview,"DossierAction_"+str(action[0])),"Uncollected checklist opens "+str(action[0])+" instead of the shared packet gate")
-		check(preview.tab == str(action[1]),"Uncollected checklist renders the corresponding "+str(action[0])+" section")
-		check(not preview.show_dossier_reference,"Checklist opens the editable "+str(action[0])+" page instead of a static reference image")
-		check(not preview.body.find_children("*","Label",true,false).any(func(candidate: Label) -> bool: return candidate.text.contains("先到社区中心领取 RP-07 资料袋")),"Corresponding section is not replaced by the packet gate")
-	preview = shell.overlay
-	preview.tab = "packet"; preview.build()
-	await process_frame
-	await click_named(preview,"DossierAction_days")
-	var preview_inputs: Array = preview.body.find_children("*","TextEdit",true,false)
-	check(not preview_inputs.is_empty() and (preview_inputs[0] as TextEdit).editable,"Uncollected portfolio opens as an editable draft")
-	preview.tab = "packet"; preview.build()
-	await process_frame
+	check(preview.find_children("DossierAction_*","Button",true,false).is_empty(),"Dossier checklist no longer opens the generic editor")
+	check(preview.find_children("DossierTab_*","Button",true,false).is_empty(),"Illustrated side tabs stay part of the single dossier view")
 	var preview_art := preview.find_child("DossierPreview",true,false) as TextureRect
 	check(is_instance_valid(preview_art) and preview_art.size == Vector2(1080,720),"Dossier home is enlarged by twenty percent and keeps one stable size")
 	check(is_instance_valid(preview.find_child("DossierCoverPhotoAction",true,false)),"Dossier home exposes the cover-photo picker")
@@ -145,38 +122,19 @@ func run() -> void:
 		push_error("Packet collection failed at %s, location=%s, room=%s: %s" % [gs.clock_text(),gs.current_location,router.active_space_id,shell.overlay.feedback.text])
 		quit(1); return
 	check(rs.state().materials.values().filter(func(item: Dictionary) -> bool: return item.kind == "official").size() == 6,"Packet contains exactly six independent official documents")
-	check(shell.overlay.mode == "dossier" and shell.overlay.tab == "starter","First collection lays out the six-paper folio")
-	check(shell.overlay.find_children("Starter_*","Button",true,false).size() == 6,"First collection exposes all six starter papers as real controls")
-	await shot("starter_packet")
+	check(shell.overlay.mode == "dossier" and shell.overlay.tab == "packet","First collection returns to the single illustrated dossier")
+	check(shell.overlay.find_children("Starter_*","Button",true,false).is_empty(),"First collection does not reveal the removed editor page")
+	await shot("dossier")
 	await close_paper(shell)
 	shell._unhandled_input(key(KEY_F))
 	await create_timer(.1).timeout
-	check(is_instance_valid(shell.overlay) and shell.overlay.tab == "packet" and not shell.overlay.show_dossier_reference,"F opens the centered interactive dossier home through production input")
+	check(is_instance_valid(shell.overlay) and shell.overlay.tab == "packet" and not shell.overlay.show_dossier_reference,"F opens the centered dossier artwork through production input")
 	var viewport_center := root.get_visible_rect().size * 0.5
 	check(shell.overlay.body.get_global_rect().get_center().distance_to(viewport_center) < 1.0,"The RP-07 dossier stays centered in the current viewport")
 	check(shell.overlay.body.get_theme_stylebox("panel") is StyleBoxEmpty,"Dossier home removes the generic outer paper frame")
 	check(not shell.overlay.body.find_children("*","Button",true,false).any(func(candidate: Button) -> bool: return candidate.visible and candidate.text.contains("Esc")),"Dossier home shows only the book without the generic title/close bar")
-	var dashboard_actions := [
-		["days","days","all",1],
-		["income","proof","income",1],
-		["exploration","exploration","all",1],
-		["recognition","recognition","all",1],
-		["contribution","proof","contribution",1],
-		["personal","personal","all",1],
-		["final","days","all",7]
-	]
-	for action in dashboard_actions:
-		var folio = shell.overlay
-		folio.tab = "packet"; folio.proof_filter = "all"; folio.build()
-		await process_frame
-		check(await click_named(folio,"DossierAction_"+str(action[0])),"Dossier checklist opens the real "+str(action[0])+" function")
-		check(folio.tab == str(action[1]),"Dossier action reaches its corresponding section: "+str(action[0]))
-		if str(action[1]) == "proof": check(folio.proof_filter == str(action[2]),"Proof action applies its corresponding filter: "+str(action[0]))
-		if str(action[0]) == "final": check(folio.day == int(action[3]),"Final statement opens the editable Day 7 page")
-	shell.overlay.tab = "packet"; shell.overlay.build()
-	await process_frame
-	check(await click_named(shell.overlay,"DossierTab_packet"),"Dossier home reopens the received starter packet")
-	check(shell.overlay.tab == "starter","The received starter papers remain reachable after closing the dossier")
+	check(shell.overlay.find_children("DossierAction_*","Button",true,false).is_empty(),"Dossier rows have no links to the removed editor")
+	check(shell.overlay.find_children("DossierTab_*","Button",true,false).is_empty(),"Dossier tabs have no links to the removed editor")
 	for id in ["welcome","seven_days","requirements","portfolio","folder","map"]:
 		var folio = shell.overlay
 		folio.mode = "dossier"; folio.tab = "starter"; folio.show_dossier_reference = false; folio.build()
@@ -218,10 +176,11 @@ func run() -> void:
 	shell = current_scene.get_node("GameplayShell")
 	shell._unhandled_input(key(KEY_F))
 	await create_timer(.1).timeout
-	check(await click_named(shell.overlay,"DossierTab_days"),"Illustrated dossier opens the interactive filing tabs")
-	check(await click_named(shell.overlay,"DossierTab_loose"),"Loose-papers tab opens")
+	check(shell.overlay.tab == "packet","Illustrated dossier remains the only player-facing RP-07 page")
+	shell.overlay.tab = "loose"; shell.overlay.build()
+	await process_frame
 	var receipt_buttons: Array = shell.overlay.body.find_children("*","Button",true,false)
-	check(receipt_buttons.any(func(b: Button) -> bool: return b.text.contains("交通") or b.text.contains("打车") or b.text.contains("出租")),"Unfiled receipt is visible in the actual dossier")
+	check(receipt_buttons.any(func(b: Button) -> bool: return b.text.contains("交通") or b.text.contains("打车") or b.text.contains("出租")),"Unfiled receipt data remains available behind the simplified dossier view")
 	await close_paper(shell)
 	check(save.save_game(),"Journey and portfolio save to disk")
 	var count: int = rs.state().materials.size()

@@ -242,10 +242,19 @@ func _dossier_dashboard() -> void:
 		{"id":"final", "source":Rect2(770, 830, 570, 90), "tooltip":"最终居住说明", "status":"已完成" if bool(requirements.get("why_stay", false)) else ("可填写" if GameState.current_day >= 7 else "第 7 天开放")}
 	]
 	for action in actions:
+		_dashboard_hit("DossierAction_" + str(action.id), action.source, str(action.tooltip), _select_dossier_tab.bind(str(action.id)))
 		_dashboard_status(str(action.status) + "   ›", _source_point(Vector2(1120, float(action.source.position.y) + 10.0)), bool(requirements.get(_requirement_for_action(str(action.id)), false)))
-	# The dossier cover is intentionally the complete RP-07 view. The artwork's
-	# rows and side tabs are no longer navigation targets: opening one used to
-	# reveal the generic editor page underneath this supplied dossier design.
+	var tabs := [
+		["requirements", Rect2(1345, 188, 165, 112), "申请要求"],
+		["days", Rect2(1345, 302, 165, 110), "七日作品集"],
+		["exploration", Rect2(1345, 414, 165, 110), "探索材料"],
+		["recognition", Rect2(1345, 526, 165, 110), "居民认可"],
+		["personal", Rect2(1345, 638, 165, 120), "个人页"],
+		["final", Rect2(1345, 764, 165, 120), "最终居住说明"]
+	]
+	for row in tabs:
+		_dashboard_hit("DossierTab_" + str(row[0]), row[1], str(row[2]), _select_dossier_tab.bind(str(row[0])))
+	_dashboard_hit("DossierTab_packet", Rect2(95, 90, 630, 850), "打开资料袋", func() -> void: tab = "starter"; build())
 	var photo_button := button(body,"更换照片" if not str(ResidencySystem.state().get("cover_photo_id","")).is_empty() else "贴一张照片",_source_point(Vector2(327,700)),Vector2(190,38),_open_dossier_photo_picker)
 	photo_button.name = "DossierCoverPhotoAction"
 	photo_button.add_theme_font_size_override("font_size",16)
@@ -338,6 +347,19 @@ func _source_point(point: Vector2) -> Vector2:
 func _source_rect(source: Rect2) -> Rect2:
 	var scale := DOSSIER_PREVIEW_SIZE.y / DOSSIER_REFERENCE_SIZE.y
 	return Rect2(DOSSIER_PREVIEW_POSITION + source.position * scale, source.size * scale)
+
+func _dashboard_hit(node_name: String, source: Rect2, tooltip: String, action: Callable) -> void:
+	var target := _source_rect(source)
+	var hit := Button.new()
+	hit.name = node_name
+	hit.position = target.position
+	hit.size = target.size
+	hit.flat = true
+	hit.modulate = Color(1, 1, 1, 0.01)
+	hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	hit.tooltip_text = LocalizationSystem.text(tooltip)
+	hit.pressed.connect(action)
+	body.add_child(hit)
 
 func _dashboard_status(text: String, at: Vector2, complete: bool) -> void:
 	var status := label(body, text, at, Vector2(120, 42), 15, Color("527b70") if complete else Color("665748"))
@@ -843,7 +865,7 @@ func _drop(parent: Node, destination: String, at: Vector2, dimensions: Vector2, 
 	return zone
 
 func _organize() -> void:
-	if not ResidencySystem.can_organize(): label(body,"18:00 后，回自己的房间整理。Q 可先查看档案。",Vector2(70,240),Vector2(1150,150),28); return
+	if not ResidencySystem.can_organize(): label(body,"18:00 后，回自己的房间整理。F 可先查看档案。",Vector2(70,240),Vector2(1150,150),28); return
 	if not ResidencySystem.state().packet: label(body,"先到社区中心领取资料袋。素材会一直留在素材本里。",Vector2(70,240),Vector2(1150,150),28); return
 	ResidencySystem._sync_sources()
 	var table := panel(body,Vector2(28,80),Vector2(1284,600),Color("a67e5a"))
@@ -888,10 +910,10 @@ func _home() -> void:
 		label(body,"调整会立即生效，并在下次启动时保留。",Vector2(95,565),Vector2(900,40),20,Color("6f7770"))
 		return
 	if mode == "controls":
-		label(body,"A / D    沿街行走\nW    与人交谈     E    门、路口与物件     1    问点事\nSpace    继续对话     C    相机 / 拍照\nR    录音与停止     Space    留标记\nG    相册     Tab    地图     B    素材本\nQ    居住档案     H    随身物品     J    私人手记\nEsc    返回上一层，再暂停",Vector2(100,135),Vector2(1140,420),28)
+		label(body,"A / D    沿街行走\nW    与人交谈     E    门、路口与物件     1    问点事\nSpace    继续对话     C    相机 / 拍照\nR    录音与停止     Space    留标记\nG    相册     Tab    地图     B    素材本\nF    居住档案     H    随身物品     J    私人手记\nEsc    返回上一层，再暂停",Vector2(100,135),Vector2(1140,420),28)
 		label(body,"地图、档案和整理时，游戏时间暂停。拍照与录音时，小镇继续生活。",Vector2(100,580),Vector2(1150,70),22)
 		return
-	var items: Array = [["相机  C","camera"],["录音机  R","recorder"],["相册  G","gallery"],["随身地图  Tab","map"],["素材本  B","fieldbook"],["居住档案  Q","dossier"],["私人手记  J","notebook"],["操作","controls"],["设置","settings"]]
+	var items: Array = [["相机  C","camera"],["录音机  R","recorder"],["相册  G","gallery"],["随身地图  Tab","map"],["素材本  B","fieldbook"],["居住档案  F","dossier"],["私人手记  J","notebook"],["操作","controls"],["设置","settings"]]
 	if mode == "pause": items = [["继续走走","close"],["设置","settings"],["操作","controls"],["保存并回到封面","exit"]]
 	label(body,"%s 的随身物品     ·     余额 %d 元" % [GameState.current_role,GameState.money],Vector2(85,85),Vector2(1100,42),23)
 	button(body,"今日  T",Vector2(800,580),Vector2(345,45),func() -> void: mode="today"; build())
@@ -963,11 +985,11 @@ func _counter() -> void:
 		wait.name = "WaitForCommunityCounter"
 	var collect := button(body,"展开已领取的资料袋" if ResidencySystem.state().packet else "领取七日资料袋",Vector2(65,260),Vector2(1110,65),func() -> void:
 		var message := ResidencySystem.collect_packet()
-		if ResidencySystem.state().packet: mode = "dossier"; tab = "packet"; build()
+		if ResidencySystem.state().packet: mode = "dossier"; tab = "starter"; build()
 		feedback.text = LocalizationSystem.text(message))
 	collect.name = "CollectStarterPacket"
 	collect.disabled = not ResidencySystem.office_open() and not ResidencySystem.state().packet
-	button(body,"查看居住档案",Vector2(65,365),Vector2(1110,65),func() -> void: mode = "dossier"; tab = "packet"; build())
+	button(body,"查看待补材料",Vector2(65,365),Vector2(1110,65),func() -> void: mode = "dossier"; tab = "requirements"; build())
 	button(body,"提交 · 请值班人逐页查看",Vector2(65,470),Vector2(1110,65),func() -> void:
 		if GameState.current_day != 7 or not ResidencySystem.office_open(): feedback.text = LocalizationSystem.text("请在 Day 7 · 09:00–18:00 交件。")
 		elif not ResidencySystem.audit().ready: feedback.text = LocalizationSystem.text("还有材料待补齐，可先查看要求页。")
@@ -1067,7 +1089,7 @@ func _guidance_action(action: Dictionary) -> void:
 			map_selected="residence" if GameState.current_role=="A" else "dorm"
 			mode="map"
 	elif kind in ["exploration","requirements","recognition","receipts","personal"]:
-		mode="dossier"; tab="packet"
+		mode="dossier"; tab=kind
 	else: mode=kind
 	build()
 
@@ -1100,10 +1122,6 @@ func _map_select(location: String) -> void:
 	map_selected = location
 	var old := body.get_node_or_null("MapDetails")
 	if old != null: body.remove_child(old); old.queue_free()
-	# The current location needs no destination card: there is nowhere to travel to,
-	# and the card only repeats information already shown on the map.
-	if location == GameState.current_location:
-		return
 	var side := Control.new()
 	side.name = "MapDetails"
 	side.position = Vector2(950,147)
@@ -1127,33 +1145,31 @@ func _map_select(location: String) -> void:
 	knowledge.add_theme_color_override("font_color",INK)
 	known.add_child(knowledge)
 	edit(side,str(ResidencySystem.state().map_notes.get(location,"")),Vector2(0,253),Vector2(340,46),func(value: String) -> void: ResidencySystem.state().map_notes[location] = value,"在地图上写一句…")
-	var travel_methods := [
-		{"id":"walk", "title":"步行", "name":"TravelWalk"},
-		{"id":"friend", "title":"找人借车", "name":"TravelFriend"},
-		{"id":"taxi", "title":"坐出租", "name":"TravelTaxi"},
-	]
-	for i in travel_methods.size():
-		var method := str(travel_methods[i].id)
+	if location == GameState.current_location:
+		label(side,"在地图上选一个想去的地方。",Vector2(0,330),Vector2(340,65),21)
+		return
+	for i in 2:
+		var method := "walk" if i == 0 else "taxi"
 		var route := TravelSystem.route(GameState.current_location,location,method,GameState.current_role,GameState.current_minute)
-		var title := str(travel_methods[i].title)
+		var title := "步行" if i == 0 else "打车"
 		var available := bool(route.get("available",false))
 		var reason := str(route.get("reason",""))
 		if available:
 			title += "  %d 分钟 / %d 元" % [int(route.minutes),int(route.cost)]
 			if int(route.cost) > GameState.money: available = false; reason = "余额不足。"
 		else: title += " · 暂不可用"
-		var b := button(side,title,Vector2(0,302+i*62),Vector2(340,33),_travel_selected.bind(method))
-		b.name = str(travel_methods[i].name)
+		var b := button(side,title,Vector2(0,307+i*87),Vector2(340,39),func() -> void: _travel_selected(method))
+		b.name = "TravelWalk" if i == 0 else "TravelTaxi"
 		b.disabled = not available or travel_pending
 		b.tooltip_text = LocalizationSystem.text(reason)
 		var consequence := reason if not bool(route.get("available",false)) else GuidanceSystem.preview(int(route.minutes),location)
 		if not reason.is_empty() and bool(route.get("available",false)): consequence=reason+" "+consequence
-		var eta := label(side,consequence,Vector2(0,336+i*62),Vector2(345,27),14)
+		var eta := label(side,consequence,Vector2(0,349+i*87),Vector2(345,43),16)
 		eta.name="TravelETA_"+method
 		eta.tooltip_text=LocalizationSystem.text(consequence)
 		if method=="taxi" and bool(route.get("available",false)):
 			MetaExperience.queue_important("route_taxi_choice",{"protagonist_id":GameState.current_role,"location_id":GameState.current_location,"taxi_cost":int(route.cost),"to":location})
-	button(side,"取消",Vector2(0,492),Vector2(340,31),func() -> void: _map_select(GameState.current_location)).name = "TravelCancel"
+	button(side,"取消",Vector2(0,488),Vector2(340,35),func() -> void: _map_select(GameState.current_location)).name = "TravelCancel"
 
 func _travel_selected(method: String) -> void:
 	if travel_pending or SceneRouter.transitioning: return

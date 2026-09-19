@@ -119,7 +119,7 @@ func _show_comment(row: Dictionary, stage: Control) -> void:
 	label.size=chosen.size
 	label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	label.add_theme_font_size_override("font_size",19)
-	label.add_theme_color_override("font_color",Color("ffffff"))
+	label.add_theme_color_override("font_color",Color("eee3cc"))
 	label.add_theme_color_override("font_shadow_color",Color("21383c"))
 	label.add_theme_constant_override("shadow_offset_y",2)
 	label.mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -128,7 +128,7 @@ func _show_comment(row: Dictionary, stage: Control) -> void:
 	labels.append(label)
 	var tween:=create_tween().bind_node(label)
 	label.set_meta("animation",tween)
-	tween.tween_property(label,"modulate:a",1.0,.35)
+	tween.tween_property(label,"modulate:a",.88,.35)
 	tween.tween_interval(4.2)
 	tween.tween_property(label,"modulate:a",0,.45)
 	tween.tween_callback(func()->void:

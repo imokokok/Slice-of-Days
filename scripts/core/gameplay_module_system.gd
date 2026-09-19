@@ -170,18 +170,6 @@ func choice_interaction_check(module_id: String, choice_id: String, interaction_
 			break
 	if selected.is_empty():
 		return {"ok": false, "message": "找不到这个玩法选择。"}
-	if module_id == "clock_setting":
-		for outcome_value in GameState.module_states.get(module_id, {}).get("outcomes", []):
-			var outcome: Dictionary = outcome_value
-			if int(outcome.get("day", 0)) == GameState.current_day:
-				return {"ok": false, "message": "今天已经校准过这座旧钟，20元校时费不能重复领取。"}
-		var mechanic: Dictionary = interaction_record.get("mechanic", {})
-		var target_minute := GameState.current_minute % 1440
-		var target_hour := floori(float(target_minute) / 60.0) % 12
-		if target_hour == 0:
-			target_hour = 12
-		if int(mechanic.get("clock_target_minute", -1)) != target_minute or int(mechanic.get("clock_hour", 0)) != target_hour or int(mechanic.get("clock_minute", -1)) != target_minute % 60:
-			return {"ok": false, "message": "时针或分针还没有对准当前时间。"}
 	var selected_tokens: Array = interaction_record.get("selected_tokens", [])
 	var interaction: Dictionary = prototype.get("interaction", {})
 	var minimum := int(interaction.get("min_select", 0))

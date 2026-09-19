@@ -694,38 +694,6 @@
       ]
     },
     {
-      "module_id": "clock_setting",
-      "title": "旧钟校时",
-      "description": "把停住的时针和分针拨回当前时间。",
-      "background_path": "res://art/locations/print_shop/print_shop_morning_v01.png",
-      "interaction": {
-        "prompt": "参照右上角的当前时间，分别调整时针与分针。两根指针都正确后确认校时。",
-        "mode": "clock",
-        "min_select": 0,
-        "max_select": 0,
-        "tokens": []
-      },
-      "choices": [
-        {
-          "id": "set_clock_correctly",
-          "label": "完成校时",
-          "detail": "每个角色每天可领取一次20元校时费。",
-          "cost": {},
-          "result_text": "秒针重新走了起来。柜台把20元校时费交到你手里。",
-          "results": {
-            "money": 20,
-            "journal_entries": [
-              {
-                "id": "community_clock_setting",
-                "kind": "work",
-                "text": "把社区中心的旧钟校回了正确时间，收到20元校时费。"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
       "module_id": "optical_illusion",
       "title": "局部记录与空间错觉",
       "description": "照片、手绘、文字和模型都漏掉了一部分。选择矛盾记录并改变观察角度，让断开的连接在投影中成立。",

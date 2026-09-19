@@ -26,12 +26,7 @@ func run() -> void:
 	var door: Dictionary = {}
 	for item in current_scene.street.hotspots:
 		if item.kind == "door": door = item
-	var visible_door_x: float = current_scene._building_entrance_x(3)
-	check(not door.is_empty() and is_equal_approx(float(door.get("x",0)), visible_door_x),"Restaurant interaction aligns with the visible facade door")
-	current_scene.street.player_x = visible_door_x
-	check(not current_scene.street.nearest_of(["door"]).is_empty(),"The entrance prompt appears at the restaurant door")
-	current_scene.street.player_x = visible_door_x + 290.0
-	check(current_scene.street.nearest_of(["door"]).is_empty(),"The entrance prompt stays hidden at the building edge")
+	check(not door.is_empty() and is_equal_approx(float(door.get("x",0)), current_scene._world_x(3,1120)),"Restaurant interaction aligns with its pictured door on the main street")
 	var street = current_scene.street
 	street.player_x = 1595.0
 	street.move_player(0, 0)

@@ -55,8 +55,7 @@ func _ready() -> void:
 	stage.hotspots.append({"x":90, "kind":"exit", "label":"回到街道"})
 	for index in objects.size():
 		var object_kind := str(objects[index].get("kind", ""))
-		var default_prop := "bed" if object_kind == "sleep" else ("computer" if object_kind == "work" else "table")
-		stage.hotspots.append({"x":_hotspot_x(index), "kind":"object", "index":index, "prop":str(objects[index].get("prop", default_prop)), "label":_object_hint(index)})
+		stage.hotspots.append({"x":_hotspot_x(index), "kind":"object", "index":index, "prop":"bed" if object_kind == "sleep" else ("computer" if object_kind == "work" else "table"), "label":_object_hint(index)})
 	for index in mini(people.size(), 3):
 		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
 		stage.hotspots.append({"x":920 + index * 180, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", "居民"))})

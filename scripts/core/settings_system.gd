@@ -40,7 +40,7 @@ const DEFAULT_INPUT_ACTIONS := {
 	"open_recorder": [KEY_R],
 	"open_album": [KEY_G],
 	"open_fieldbook": [KEY_B],
-	"open_dossier": [KEY_Q, KEY_F],
+	"open_dossier": [KEY_F],
 	"open_home": [KEY_H],
 	"toggle_typewriter": [KEY_T],
 	"restart_module": [KEY_R],

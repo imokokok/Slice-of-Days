@@ -93,33 +93,9 @@ func _select(id: String) -> void:
 	if id == GameState.current_location:
 		_text("你就在这里。", 22)
 	else:
-		_text("%s。" % WorldGraph.directions(GameState.current_location, id), 20)
-		_add_travel_option("walk", "步行")
-		_add_travel_option("friend", "找人借车")
-		_add_travel_option("taxi", "坐出租")
-	_text("主街拱门路口：↑ / W 进入住宅区，↓ / S 进入文化街。支路向左走回主街。",16)
-	notice = _text("选择一种方式出发；时间和费用按实际路程计算。",16)
-
-func _add_travel_option(method: String, title: String) -> void:
-	var option := TravelSystem.route(GameState.current_location, selected, method, GameState.current_role, GameState.current_minute)
-	var available := bool(option.get("available", false))
-	var reason := str(option.get("reason", ""))
-	var caption := title
-	if available:
-		caption += "  ·  %d分钟  ·  %d元" % [int(option.get("minutes", 0)), int(option.get("cost", 0))]
-		if int(option.get("cost", 0)) > GameState.money:
-			available = false
-			reason = "余额不足。"
-	else:
-		caption += "  ·  暂不可用"
-	var choice := Button.new()
-	choice.text = LocalizationSystem.text(caption)
-	choice.custom_minimum_size = Vector2(470, 46)
-	choice.add_theme_font_size_override("font_size", 19)
-	choice.disabled = not available
-	choice.tooltip_text = LocalizationSystem.text(reason)
-	choice.pressed.connect(_depart.bind(method))
-	info.add_child(choice)
+		_text("%s。\n步行约%d分钟" % [WorldGraph.directions(GameState.current_location, id), WorldGraph.walk_minutes(GameState.current_location, id)], 22)
+	_text("主街拱门路口：↑ / W 进入住宅区，↓ / S 进入文化街。支路向左走回主街。",18)
+	notice = _text("合上地图，用 A / D 或方向键继续走。",17)
 func _depart(method: String) -> void:
 	var result := SceneRouter.travel_to(selected,method)
 	if not bool(result.get("ok",false)): notice.text = LocalizationSystem.text(str(result.get("message","现在无法出发。")))

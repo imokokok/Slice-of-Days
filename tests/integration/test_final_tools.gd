@@ -30,8 +30,7 @@ func run() -> void:
 	var host=current_scene
 	var shell=host.get_node("GameplayShell")
 	check(shell.hints is Control and not shell.hints is Panel,"Context key hints float without a scenery-blocking panel")
-	check(not shell.hint_label.text.contains("[bgcolor="),"Context key hints render without background badges")
-	check(shell.hint_label.text.contains("[b]W[/b]  进入对话"),"Context key and action text remain visible")
+	check(shell.hint_label.text.contains("[bgcolor=#ffffff]"),"Context key badges use a white background")
 	shell._unhandled_input(key(KEY_TAB))
 	await create_timer(.15).timeout
 	check(is_instance_valid(shell.overlay) and shell.overlay.mode=="map","Tab opens paper map through real input handler")

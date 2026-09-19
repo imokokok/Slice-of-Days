@@ -521,9 +521,19 @@ func _process(delta: float) -> void:
 		GameState.advance_world_clock(delta)
 	if not street.enabled: route_hint.text = ""; return
 	route_hint.text = ""
+	_try_market_encounter()
 
 func _market_encounter_key() -> String:
 	return "market_encounter_%s_%d" % [GameState.current_role,GameState.current_day]
+
+func _try_market_encounter() -> void:
+	if not street.enabled or SceneRouter.transitioning or GameState.current_location != "produce_stall": return
+	if bool(DialogueSystem.argument_state().get("finished", false)): return
+	if bool(GameState.shared_state.get(_market_encounter_key(),false)): return
+	for item in street.hotspots:
+		if str(item.kind) == "argument" and absf(street.player_x-float(item.x)) < 115:
+			_start_market_encounter()
+			return
 
 func _start_market_encounter() -> void:
 	if is_instance_valid(conversation) or _guard_pocket_audio(): return
@@ -584,15 +594,6 @@ func _index_at(x: float) -> int:
 	return clampi(int((x - route_offset) / BLOCK_WIDTH), 0, street_order.size() - 1)
 
 
-func _building_entrance_x(index: int) -> float:
-	# Exterior facades are drawn around places[index].x, and _draw_facade puts
-	# their visible door on that center line. The atlas' door_x describes its
-	# source illustration, so using it here can put the prompt beside a building.
-	if is_instance_valid(street) and index >= 0 and index < street.places.size():
-		return float(street.places[index].get("x", _world_x(index, 800)))
-	return _world_x(index, 800)
-
-
 
 
 
@@ -616,7 +617,6 @@ func _rebuild_hotspots() -> void:
 	street.hotspots.clear()
 	street.queue_redraw()
 	var center := _world_x(current_index, float(Atlas.street(GameState.current_location).get("door_x",800)))
-	var building_entrance := _building_entrance_x(current_index)
 	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
 		street.hotspots.append({"x":_world_x(current_index, 1060), "kind":"closed", "label":"观景台 · 21:00 开放"})
 		return
@@ -633,13 +633,13 @@ func _rebuild_hotspots() -> void:
 	if GameState.current_location in ["residence", "dorm"]:
 		var own_home := "residence" if GameState.current_role == "A" else "dorm"
 		if GameState.current_location == own_home:
-			street.hotspots.append({"x":building_entrance, "kind":"home", "label":"回家"})
+			street.hotspots.append({"x":center, "kind":"home", "label":"回家"})
 	elif GameState.current_location == "cafe":
 		street.hotspots.append({"x":center, "kind":"shopkeeper", "id":"grocery", "label":"和杂货店老板说话"})
 	else:
 		var rooms := _spaces_at(GameState.current_location)
 		for i in rooms.size():
-			street.hotspots.append({"x":building_entrance, "kind":"door", "id":str(rooms[i].id), "label":"进入" + str(rooms[i].name)})
+			street.hotspots.append({"x":center + i * 120, "kind":"door", "id":str(rooms[i].id), "label":"进入" + str(rooms[i].name)})
 	for item in outdoor_objects:
 		if str(item.get("location_id", "")) == GameState.current_location:
 			if str(item.get("kind","")) == "encounter":
@@ -649,11 +649,8 @@ func _rebuild_hotspots() -> void:
 			elif str(item.get("kind","")) == "dialogue":
 				if not DialogueSystem.invitation_for(str(item.npc_id)).is_empty(): street.hotspots.append({"x":center,"kind":"invitation","id":str(item.npc_id),"label":str(item.name)})
 			elif str(item.get("kind", "")) == "shop":
-				# The counter remains usable independently of the vendor conversation.
-				# Otherwise the produce stall has no physical interaction whenever
-				# BEETMAN is absent, and buying food is needlessly hidden behind W.
-				var shop_x := _world_x(current_index, float(item.get("x", float(Atlas.street(GameState.current_location).get("door_x", 800)) + 145.0)))
-				street.hotspots.append({"x":shop_x, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
+				# BEETMAN's person hotspot owns the counter conversation and shop branch.
+				if str(item.get("shop_id", "")) != "produce_stall": street.hotspots.append({"x":center + 145.0, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
 			else: street.hotspots.append({"x":center, "kind":"module", "id":str(item.module_id), "label":str(item.name) + " · " + GameplayModuleSystem.time_hint(str(item.module_id))})
 	var available := EventSystem.available_events()
 	for index in available.size():
@@ -866,3 +863,4 @@ func _open_map() -> void:
 		_refresh()
 		return
 	SceneRouter.town_map()
+

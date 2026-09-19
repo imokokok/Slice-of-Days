@@ -16,7 +16,8 @@ func present_line(context: Dictionary) -> void:
 var content: Dictionary = {}
 var invitations: Array = []
 var linear_stories: Dictionary = {}
-const ARGUMENT_PEOPLE := ["ahe", "chen_chuan"]
+var relationship_notes: Array = []
+const ARGUMENT_PEOPLE := ["wu_wu", "chenyuan"]
 const ARGUMENT_LINGER_MINUTES := 90
 
 func argument_state() -> Dictionary:
@@ -76,6 +77,9 @@ func _ready() -> void:
 		content = conversation_data
 	else:
 		push_error("Invalid conversation data")
+	var relationship_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs/relationships.json"))
+	if relationship_data is Dictionary:
+		relationship_notes = relationship_data.get("relationships", [])
 func reply(npc: String, topic: String) -> Array[String]:
 	var row: Dictionary = content.get(npc,{})
 	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
@@ -110,7 +114,7 @@ func reply(npc: String, topic: String) -> Array[String]:
 			var offer := invitation_for(npc)
 			if offer.is_empty(): lines = ["眼下没有什么要麻烦你的。你可以先在附近转转。"]
 			else: lines.assign(offer.lines)
-		"relationship_followup": lines = ["我记得我们聊过。", "不用每次都带一个结果来，路过打声招呼也好。"]
+		"relationship_followup": lines = _relationship_lines(npc)
 		"recognition_related":
 			var result := RelationshipSystem.request_confirmation_action(npc)
 			lines = [str(result.get("message","我想再考虑一下。"))]
@@ -132,6 +136,17 @@ func reply(npc: String, topic: String) -> Array[String]:
 	GameState.shared_state["dialogue_history_"+GameState.current_role] = history.slice(maxi(0,history.size()-80))
 	SaveManager.save_or_report("对话后保存失败")
 	return lines
+
+func _relationship_lines(npc: String) -> Array[String]:
+	for note in relationship_notes:
+		var people: Array = note.get("people", [])
+		if people.has(npc):
+			var others: Array[String] = []
+			for person in people:
+				if str(person) != npc:
+					others.append(str(ScheduleSystem.residents.get(str(person), {}).get("display_name", person)))
+			return ["我和%s是%s。" % ["、".join(others), str(note.get("kind", "熟人"))], str(note.get("summary", "我们偶尔会聊起共同经历的事。"))]
+	return ["我记得我们聊过。", "不用每次都带一个结果来，路过打声招呼也好。"]
 
 func linear_conversation(npc: String) -> Array:
 	var counts: Dictionary = GameState.shared_state.get("linear_talk_counts_"+GameState.current_role,{})

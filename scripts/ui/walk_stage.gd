@@ -13,6 +13,9 @@ const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
 const BUS_ART = preload("res://art/user_scenes/bus_stop.png")
 const TAROT_ART = preload("res://art/user_scenes/tarot_shop.png")
 const PROTAGONIST_ART = preload("res://art/user_scenes/protagonist_white.png")
+const CHENYUAN_ART = preload("res://art/user_scenes/chenyuan.png")
+const CICI_ART = preload("res://art/user_scenes/cici.png")
+const NAONAO_ART = preload("res://art/user_scenes/naonao_white.png")
 var original_resident: Sprite2D
 var player_x := 500.0
 var world_width := 1800.0
@@ -122,7 +125,7 @@ func _draw() -> void:
 		_draw_global_coast()
 		_draw_street_middle()
 		_draw_foreground_road()
-	var ground := _ground_at(player_x)
+	var ground := _actor_ground_at(player_x)
 	if illustrated:
 		pass
 	elif indoor:
@@ -143,10 +146,13 @@ func _draw() -> void:
 			if str(item.get("id", "")) == "zhou_xiaoliu": continue
 			var shades := [Color("324b62"),Color("567363"),Color("76554c"),Color("ada16b")]
 			var shade: Color = shades[absi(str(item.get("id", "")).hash()) % shades.size()]
-			_draw_person(Vector2(x, _ground_at(float(item.x))), shade, 0.0, 0.0, -1.0)
+			if _draw_authored_npc(str(item.get("id", "")), Vector2(x, _actor_ground_at(float(item.x))), -1.0):
+				continue
+			_draw_person(Vector2(x, _actor_ground_at(float(item.x))), shade, 0.0, 0.0, -1.0)
 		elif kind == "argument":
-			_draw_person(Vector2(x-46,ground),Color("718573"),0,0,1)
-			_draw_person(Vector2(x+46,ground),Color("a07757"),0,0,-1)
+			# 尘缘坚持吃肉，CICI 则坚持素食；两位都用用户提供的形象。
+			_draw_authored_npc("chenyuan", Vector2(x-56,ground), 1.0)
+			_draw_authored_npc("wu_wu", Vector2(x+56,ground), -1.0)
 		elif kind == "echo" and not illustrated:
 			draw_rect(Rect2(x-55,572,110,118),Color("4c4937"))
 			draw_rect(Rect2(x-49,580,98,102),Color("203f43"))
@@ -220,6 +226,11 @@ func _draw_street_divider(x: float) -> void:
 
 func _ground_at(world_x: float) -> float:
 	return 713.0
+
+func _actor_ground_at(world_x: float) -> float:
+	# The black road begins at y=718.  People stand inside this foreground
+	# layer instead of floating above it with the middle scenery.
+	return 738.0 if not indoor else _ground_at(world_x)
 
 func _draw_lookout_approach() -> void:
 	# One full-height original panorama. Horizontal camera movement reveals it;
@@ -507,6 +518,23 @@ func _draw_protagonist(at: Vector2, gait_phase: float, gait_strength: float, dir
 	draw_set_transform(at, 0.0, Vector2(-1.0 if direction >= 0.0 else 1.0, 1.0))
 	draw_texture_rect(PROTAGONIST_ART, Rect2(-width * 0.5, -height - bob, width, height), false)
 	draw_set_transform(Vector2.ZERO)
+
+func _draw_authored_npc(npc_id: String, at: Vector2, direction := -1.0) -> bool:
+	var art: Texture2D
+	var height := _actor_height() * 1.03
+	match npc_id:
+		"chenyuan":
+			art = CHENYUAN_ART
+			height = _actor_height() * 1.14
+		"wu_wu": art = CICI_ART
+		"naonao": art = NAONAO_ART
+		_: return false
+	var width := height * float(art.get_width()) / float(art.get_height())
+	draw_colored_polygon(PackedVector2Array([at + Vector2(-width * 0.30, 2), at + Vector2(width * 0.30, 2), at + Vector2(width * 0.40, 6), at + Vector2(-width * 0.40, 6)]), Color("112630", 0.20))
+	draw_set_transform(at, 0.0, Vector2(1.0 if direction >= 0.0 else -1.0, 1.0))
+	draw_texture_rect(art, Rect2(-width * 0.5, -height, width, height), false)
+	draw_set_transform(Vector2.ZERO)
+	return true
 
 func _draw_person(at: Vector2, coat: Color, gait_phase: float, gait_strength: float, direction: float, seated := false, role := "") -> void:
 	var actor_scale := _actor_height() / ACTOR_BASE_HEIGHT

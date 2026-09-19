@@ -1,0 +1,15 @@
+{
+  "relationships": [
+    {"people":["xia_touming","chenyuan"],"kind":"世交","summary":"两人的爷爷早年相识交好；夏透明喜欢用塔罗牌打趣尘缘，两人常为单张牌的释义争辩。","topics":["塔罗牌释义","旧日传闻"]},
+    {"people":["wu_wu","naonao"],"kind":"好朋友","summary":"CICI 遛狗经过闹闹的棋局时，狗狗的一声提醒让闹闹避开败着；两人因此熟识。","topics":["下棋","遛狗","聪明的小狗"]},
+    {"people":["mingming","shi_yongqi"],"kind":"梦想的倾听者","summary":"冥冥在石泳琪筹备饭店受挫时耐心陪伴，听见她藏在疲惫里的热忱。","topics":["开店梦想","饭店菜单"]},
+    {"people":["yuxingqing","zhou_xiaoliu"],"kind":"好友","summary":"宇星晴去山野取材时被蚊虫困住，周晓六用熟悉山林的生存小技巧帮他脱困。","topics":["山野取材","山间光影","野外技巧"]},
+    {"people":["mossner","maya"],"kind":"共同坚守的同行者","summary":"两人通过邮政公益包裹把旧书寄往乡村学校，共同做了许多公益项目。","topics":["纸质书","书信","公益捐书"]},
+    {"people":["xanni","maya"],"kind":"生意往来","summary":"Maya 在唱片店买唱片并在书店播放；两人都喜欢月牙、花瓣等特殊造型唱片。","topics":["异形唱片","书店播放列表"]},
+    {"people":["beetman","shi_yongqi"],"kind":"知己","summary":"石泳琪是 BEETMAN 的重要客人；两人共同度过开店最艰难的阶段，也热爱奇异食材。","topics":["奇异食材","隐藏菜单"]},
+    {"people":["mingming","zhou_xiaoliu"],"kind":"初识的朋友","summary":"两人在社区中心认识，周一到周四夜里常聊附近发生的事和昨天的睡眠。","topics":["社区近况","睡眠"]},
+    {"people":["naonao","yuxingqing","xia_touming"],"kind":"表兄妹","summary":"宇星晴最大、闹闹最小；三人喜欢在观景台共处，享受平和轻松的氛围。","topics":["观星","吹风","旧电影录像"]},
+    {"people":["chenyuan","wu_wu"],"kind":"朋友","summary":"两人在公交站附近的一次事件中共同帮忙，后来偶尔约着遛狗。","topics":["公交站日常","宠物","遛狗"]},
+    {"people":["mossner","beetman"],"kind":"未相认的笔友","summary":"两人通过书信往来却不知道彼此真实身份；Mossner 常接不住 BEETMAN 的冷笑话。","topics":["书信","冷笑话","罐头标签"]}
+  ]
+}

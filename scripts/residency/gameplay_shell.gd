@@ -157,6 +157,15 @@ func _process(delta: float) -> void:
 	hint_debug.fade = "persistent"
 
 func _context() -> Dictionary:
+	var nearby: Dictionary = stage.nearest() if is_instance_valid(stage) else {}
+	if not nearby.is_empty():
+		var kind := str(nearby.get("kind", ""))
+		var key := "W" if kind in ["person", "npc", "resident", "shopkeeper", "invitation"] else "E"
+		var action := str(nearby.get("label", "进入"))
+		return {
+			"id": "hotspot:%s:%s:%s" % [kind, str(nearby.get("id", "")), action],
+			"text": "%s  %s\nTab  地图\nQ  档案" % [key, action],
+		}
 	return {
 		"id": "fixed_controls",
 		"text": "W  进入对话\nE  进入\nTab  地图\nQ  档案",

@@ -659,8 +659,11 @@ func _rebuild_hotspots() -> void:
 			elif str(item.get("kind","")) == "dialogue":
 				if not DialogueSystem.invitation_for(str(item.npc_id)).is_empty(): street.hotspots.append({"x":center,"kind":"invitation","id":str(item.npc_id),"label":str(item.name)})
 			elif str(item.get("kind", "")) == "shop":
-				# BEETMAN's person hotspot owns the counter conversation and shop branch.
-				if str(item.get("shop_id", "")) != "produce_stall": street.hotspots.append({"x":center + 145.0, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
+				# The counter remains usable independently of the vendor conversation.
+				# Otherwise the produce stall has no physical interaction whenever
+				# BEETMAN is absent, and buying food is needlessly hidden behind W.
+				var shop_x := _world_x(current_index, float(item.get("x", float(Atlas.street(GameState.current_location).get("door_x", 800)) + 145.0)))
+				street.hotspots.append({"x":shop_x, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
 			else: street.hotspots.append({"x":center, "kind":"module", "id":str(item.module_id), "label":str(item.name) + " · " + GameplayModuleSystem.time_hint(str(item.module_id))})
 	var available := EventSystem.available_events()
 	for index in available.size():

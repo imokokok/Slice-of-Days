@@ -12,6 +12,7 @@ const COAST_ART = preload("res://art/user_scenes/lookout_approach.png")
 const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
 const BUS_ART = preload("res://art/user_scenes/bus_stop.png")
 const TAROT_ART = preload("res://art/user_scenes/tarot_shop.png")
+const PROTAGONIST_ART = preload("res://art/user_scenes/protagonist_lineart.png")
 var original_resident: Sprite2D
 var player_x := 500.0
 var world_width := 1800.0
@@ -152,7 +153,7 @@ func _draw() -> void:
 			draw_string(ThemeDB.fallback_font,Vector2(x-35,615),LocalizationSystem.text("今日的菜"),HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("f1e6c6"))
 		elif indoor and kind == "object" and not illustrated:
 			_draw_furniture(x, str(item.get("prop", "table")))
-	_draw_person(Vector2(player_x - camera_x, ground), Color("48535c") if GameState.current_role == "A" else Color("5e9999"), phase, gait_weight, facing, false, GameState.current_role)
+	_draw_protagonist(Vector2(player_x - camera_x, ground), phase, gait_weight, facing)
 	if is_finite(walk_limit) and not illustrated:
 		var gate_x := walk_limit - camera_x + 18
 		draw_line(Vector2(gate_x, 640), Vector2(gate_x, 718), Color("40544e"), 7)
@@ -479,6 +480,18 @@ func _actor_height() -> float:
 	# beside the authored chairs and tables, while streets keep their wide-shot
 	# proportions.
 	return INDOOR_ACTOR_HEIGHT if indoor else OUTDOOR_ACTOR_HEIGHT
+
+func _draw_protagonist(at: Vector2, gait_phase: float, gait_strength: float, direction: float) -> void:
+	# The protagonist uses the supplied character design instead of the generic
+	# street silhouette.  A small gait bob keeps the authored line art alive
+	# while preserving its full-body proportions.
+	var height := _actor_height() * 1.08
+	var width := height * float(PROTAGONIST_ART.get_width()) / float(PROTAGONIST_ART.get_height())
+	var bob := (1.0 - absf(cos(gait_phase))) * 2.0 * clampf(gait_strength, 0.0, 1.0)
+	draw_colored_polygon(PackedVector2Array([at + Vector2(-width * 0.32, 2), at + Vector2(width * 0.32, 2), at + Vector2(width * 0.42, 6), at + Vector2(-width * 0.42, 6)]), Color("112630", 0.20))
+	draw_set_transform(at, 0.0, Vector2(1.0 if direction >= 0.0 else -1.0, 1.0))
+	draw_texture_rect(PROTAGONIST_ART, Rect2(-width * 0.5, -height - bob, width, height), false)
+	draw_set_transform(Vector2.ZERO)
 
 func _draw_person(at: Vector2, coat: Color, gait_phase: float, gait_strength: float, direction: float, seated := false, role := "") -> void:
 	var actor_scale := _actor_height() / ACTOR_BASE_HEIGHT

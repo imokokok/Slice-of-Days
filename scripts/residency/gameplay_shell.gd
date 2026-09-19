@@ -1,5 +1,7 @@
 extends Control
 const PAPER = preload("res://scripts/residency/paper_overlay.gd")
+const KEY_PROMPT_OUTLINE_COLOR := Color("173b63")
+const KEY_PROMPT_OUTLINE_SIZE := 4
 var host: Control
 var stage: Control
 var clock_label: Label
@@ -62,6 +64,7 @@ func _ready() -> void:
 	next_button.alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	next_button.add_theme_font_size_override("font_size",18)
 	next_button.add_theme_color_override("font_color",Color("fff6df"))
+	_apply_key_prompt_outline(next_button)
 	next_button.add_theme_color_override("font_shadow_color",Color("254552"))
 	next_button.add_theme_constant_override("shadow_offset_y",2)
 	next_button.pressed.connect(func() -> void: open_paper("today"))
@@ -81,6 +84,7 @@ func _ready() -> void:
 	hint_label.size = Vector2(380,87)
 	hint_label.add_theme_font_size_override("normal_font_size",18)
 	hint_label.add_theme_color_override("default_color",Color("fff6df"))
+	_apply_key_prompt_outline(hint_label)
 	hint_label.add_theme_color_override("font_shadow_color",Color("203945",0.9))
 	hint_label.add_theme_constant_override("shadow_offset_x",1)
 	hint_label.add_theme_constant_override("shadow_offset_y",2)
@@ -89,6 +93,10 @@ func _ready() -> void:
 	hints.add_child(hint_label)
 	ResidencySystem.changed.connect(_papers_changed)
 	last_material_count = ResidencySystem.state().materials.size()
+
+func _apply_key_prompt_outline(control: Control) -> void:
+	control.add_theme_color_override("font_outline_color",KEY_PROMPT_OUTLINE_COLOR)
+	control.add_theme_constant_override("outline_size",KEY_PROMPT_OUTLINE_SIZE)
 
 func _papers_changed() -> void:
 	var count := int(ResidencySystem.state().materials.size())

@@ -12,6 +12,10 @@ const COAST_ART = preload("res://art/user_scenes/lookout_approach.png")
 const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
 const BUS_ART = preload("res://art/user_scenes/bus_stop.png")
 const TAROT_ART = preload("res://art/user_scenes/tarot_shop.png")
+const PLAYER_HOME_ART = preload("res://art/user_scenes/player_home.png")
+const PRODUCE_STALL_ART = preload("res://art/user_scenes/produce_stall.png")
+const RESTAURANT_ART = preload("res://art/user_scenes/restaurant.png")
+const CORRESPONDENCE_OFFICE_ART = preload("res://art/user_scenes/correspondence_office.png")
 const PROTAGONIST_ART = preload("res://art/user_scenes/protagonist_white.png")
 const CHENYUAN_ART = preload("res://art/user_scenes/chenyuan.png")
 const CICI_ART = preload("res://art/user_scenes/cici.png")
@@ -291,6 +295,19 @@ func _draw_street_middle() -> void:
 		var place: Dictionary = places[i]
 		var x := float(place.x) - camera_x
 		if x < -700 or x > 2300: continue
+		var place_id := str(place.get("id", ""))
+		if place_id in ["residence", "dorm"]:
+			_draw_authored_building(PLAYER_HOME_ART, x, Vector2(610, 520))
+			continue
+		if place_id == "produce_stall":
+			_draw_authored_building(PRODUCE_STALL_ART, x, Vector2(720, 470))
+			continue
+		if place_id == "night_market":
+			_draw_authored_building(RESTAURANT_ART, x, Vector2(610, 540))
+			continue
+		if place_id == "print_shop":
+			_draw_authored_building(CORRESPONDENCE_OFFICE_ART, x, Vector2(760, 490))
+			continue
 		if str(place.get("kind", "")) == "tarot":
 			_draw_user_scene(TAROT_ART, Rect2(113, 141, 995, 484), x, 710.0)
 			continue
@@ -304,6 +321,15 @@ func _draw_street_middle() -> void:
 		var x := float(i) * 290.0 - fmod(camera_x * 1.08, 290.0)
 		draw_line(Vector2(x, 718), Vector2(x - 15, 696), Color("455d55"), 2)
 		draw_line(Vector2(x, 718), Vector2(x + 11, 692), Color("455d55"), 2)
+
+func _draw_authored_building(texture: Texture2D, center_x: float, maximum_size: Vector2) -> void:
+	# The supplied building cutouts are a single middle layer. Keep their feet
+	# on the curb so the foreground road can cover the lower edge naturally.
+	var source_size := texture.get_size()
+	var scale_value := minf(maximum_size.x / source_size.x, maximum_size.y / source_size.y)
+	var size := source_size * scale_value
+	var rect := Rect2(Vector2(center_x - size.x * 0.5, 718.0 - size.y), size)
+	draw_texture_rect(texture, rect, false, _scene_art_tint())
 
 func _draw_foreground_road() -> void:
 	# A dedicated foreground road hides the bottom of the middle layer and

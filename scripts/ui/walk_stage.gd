@@ -459,6 +459,19 @@ func _draw_room_details() -> void:
 		for i in range(5): draw_rect(Rect2(622 + i * 61, 448 + i % 2 * 29, 47, 67), Color("8c9a7e"))
 
 func _draw_furniture(x: float, prop: String) -> void:
+	if prop == "clock":
+		var center := Vector2(x, 438)
+		draw_circle(center, 68, Color("493d34"))
+		draw_circle(center, 59, Color("efe2c3"))
+		for hour in 12:
+			var angle := float(hour) / 12.0 * TAU - PI / 2.0
+			var outer := center + Vector2(cos(angle), sin(angle)) * 51
+			var inner := center + Vector2(cos(angle), sin(angle)) * 42
+			draw_line(inner, outer, Color("7a6658"), 3)
+		draw_line(center, center + Vector2(0, -31), Color("344d52"), 5)
+		draw_line(center, center + Vector2(34, 0), Color("a85643"), 3)
+		draw_circle(center, 5, Color("a85643"))
+		return
 	if prop == "bed":
 		draw_rect(Rect2(x - 94, 662, 188, 31), Color("c0b298"))
 		draw_rect(Rect2(x - 84, 650, 42, 13), Color("e6d9b9"))

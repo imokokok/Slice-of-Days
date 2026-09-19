@@ -265,12 +265,13 @@ func _validate_module_interaction(module_id: String, interaction: Dictionary) ->
 		return
 	if str(interaction.get("prompt", "")).is_empty():
 		failures.append("prototype %s interaction needs a prompt" % module_id)
-	if not ["ordered", "toggle"].has(str(interaction.get("mode", ""))):
+	var mode := str(interaction.get("mode", ""))
+	if not ["ordered", "toggle", "clock"].has(mode):
 		failures.append("prototype %s interaction uses an unsupported mode" % module_id)
 	var minimum := int(interaction.get("min_select", 0))
 	var maximum := int(interaction.get("max_select", 0))
 	var tokens: Array = interaction.get("tokens", [])
-	if minimum <= 0 or maximum < minimum or maximum > tokens.size():
+	if (mode == "clock" and (minimum != 0 or maximum != 0 or not tokens.is_empty())) or (mode != "clock" and (minimum <= 0 or maximum < minimum or maximum > tokens.size())):
 		failures.append("prototype %s interaction has invalid selection limits" % module_id)
 	var token_ids: Array[String] = []
 	for token in tokens:

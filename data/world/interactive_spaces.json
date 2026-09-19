@@ -101,25 +101,18 @@
       "location_id": "print_shop",
       "sign": "PHOTO",
       "name": "社区中心",
-      "tagline": "把没有说完的部分留在画面里。",
+      "tagline": "让停下来的时间重新走准。",
       "facade_color": "#b17b55",
       "background_path": "res://art/locations/print_shop/print_shop_morning_v01.png",
-      "interior_note": "相纸、裁切线与窗外的光组成一个临时暗房。",
+      "interior_note": "墙上的旧钟停在错误的时刻，柜台留下了一张校时委托。",
       "objects": [
         {
-          "id": "photo_table",
-          "name": "摄影工作台",
-          "detail": "选择焦点与留白，把证据显影进个人相册。",
-          "kind": "module",
-          "module_id": "photography",
-          "icon": "影"
-        },
-        {
           "id": "station_clock",
-          "name": "退回的旧钟",
-          "detail": "改变观察角度，让不可能的空间关系成立。",
+          "name": "需要校准的旧钟",
+          "detail": "把时针和分针拨到当前时间，校准完成可领取20元。",
           "kind": "module",
-          "module_id": "optical_illusion",
+          "module_id": "clock_setting",
+          "prop": "clock",
           "icon": "钟"
         }
       ]

@@ -1,6 +1,6 @@
 extends Control
 
-const SUPPORTED := ["cooking", "sound_sampling", "photography", "optical_illusion", "archives"]
+const SUPPORTED := ["cooking", "sound_sampling", "photography", "clock_setting", "optical_illusion", "archives"]
 const PAPER := Color("fff5df")
 const INK := Color("352d29")
 const MUTED := Color("74675f")
@@ -24,6 +24,9 @@ var primary_button: Button
 var return_button: Button
 var value_slider: HSlider
 var value_label: Label
+var clock_hour_slider: HSlider
+var clock_minute_slider: HSlider
+var clock_target_minute := 0
 var stage_ready := false
 var completed := false
 var playback_active := false
@@ -37,12 +40,14 @@ func _ready() -> void:
 		return
 	prototype = GameplayModuleSystem.prototype_for(module_id)
 	interaction = prototype.get("interaction", {})
+	if module_id == "clock_setting":
+		clock_target_minute = GameState.current_minute % 1440
 	var background_path := str(prototype.get("background_path", ""))
 	if not background_path.is_empty() and ResourceLoader.exists(background_path):
 		var loaded = load(background_path)
 		if loaded is Texture2D:
 			background_texture = loaded
-	var atlas_pages := {"cooking":16,"sound_sampling":85,"photography":91,"optical_illusion":91,"archives":97}
+	var atlas_pages := {"cooking":16,"sound_sampling":85,"photography":91,"clock_setting":91,"optical_illusion":91,"archives":97}
 	if atlas_pages.has(module_id):
 		var first := int(atlas_pages[module_id])
 		background_texture = preload("res://scripts/ui/scene_atlas.gd").plate({"pages":[first,first+1,first+2]})
@@ -90,26 +95,52 @@ func _build_ui() -> void:
 		token_buttons[token_id] = token_button
 
 	_build_module_control(side)
-	var choice_y := 522
-	for choice in prototype.get("choices", []):
-		var choice_id := str(choice.get("id", ""))
-		var minutes := int(choice.get("cost", {}).get("minutes", 0))
-		if module_id == "cooking": minutes = int(EconomySystem.cooking_cost(choice.get("cost", {})).get("minutes", minutes))
-		var choice_button := _button(side, "%s · %d分钟" % [str(choice.get("label", choice_id)), minutes], Vector2(22, choice_y), Vector2(546, 42), true)
-		choice_button.tooltip_text = LocalizationSystem.text(choice.get("detail", ""))
-		choice_button.pressed.connect(_complete_choice.bind(choice_id))
-		choice_buttons[choice_id] = choice_button
-		choice_y += 50
+	if module_id != "clock_setting":
+		var choice_y := 522
+		for choice in prototype.get("choices", []):
+			var choice_id := str(choice.get("id", ""))
+			var minutes := int(choice.get("cost", {}).get("minutes", 0))
+			if module_id == "cooking": minutes = int(EconomySystem.cooking_cost(choice.get("cost", {})).get("minutes", minutes))
+			var choice_button := _button(side, "%s · %d分钟" % [str(choice.get("label", choice_id)), minutes], Vector2(22, choice_y), Vector2(546, 42), true)
+			choice_button.tooltip_text = LocalizationSystem.text(choice.get("detail", ""))
+			choice_button.pressed.connect(_complete_choice.bind(choice_id))
+			choice_buttons[choice_id] = choice_button
+			choice_y += 50
 
 	var footer := _panel(self, Vector2(112, 754), Vector2(1376, 122), Color(PAPER, 0.97), TERRACOTTA)
 	status_label = _label(footer, _initial_status(), Vector2(24, 18), Vector2(1040, 82), 16, INK)
 	status_label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 	return_button = _button(footer, "返回原空间", Vector2(1092, 34), Vector2(250, 54), false)
 	return_button.pressed.connect(_return_or_cancel)
-	_label(self, "数字键选择素材 · R 执行操作 · Esc 暂时离开", Vector2(520, 879), Vector2(560, 20), 12, Color(PAPER, 0.9), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(self, "拖动滑条调整指针 · R 确认时间 · Esc 暂时离开" if module_id == "clock_setting" else "数字键选择素材 · R 执行操作 · Esc 暂时离开", Vector2(480, 879), Vector2(640, 20), 12, Color(PAPER, 0.9), HORIZONTAL_ALIGNMENT_CENTER)
 
 
 func _build_module_control(parent: Control) -> void:
+	if module_id == "clock_setting":
+		_label(parent, "时针", Vector2(22, 166), Vector2(90, 28), 14, MUTED)
+		clock_hour_slider = HSlider.new()
+		clock_hour_slider.position = Vector2(22, 195)
+		clock_hour_slider.size = Vector2(524, 34)
+		clock_hour_slider.min_value = 1
+		clock_hour_slider.max_value = 12
+		clock_hour_slider.step = 1
+		clock_hour_slider.value = ((_clock_target_hour() - 1 + 4) % 12) + 1
+		clock_hour_slider.value_changed.connect(_on_value_changed)
+		parent.add_child(clock_hour_slider)
+		_label(parent, "分针", Vector2(22, 258), Vector2(90, 28), 14, MUTED)
+		clock_minute_slider = HSlider.new()
+		clock_minute_slider.position = Vector2(22, 287)
+		clock_minute_slider.size = Vector2(524, 34)
+		clock_minute_slider.min_value = 0
+		clock_minute_slider.max_value = 59
+		clock_minute_slider.step = 1
+		clock_minute_slider.value = (_clock_target_minute_part() + 17) % 60
+		clock_minute_slider.value_changed.connect(_on_value_changed)
+		parent.add_child(clock_minute_slider)
+		value_label = _label(parent, "", Vector2(22, 352), Vector2(524, 38), 18, SEA, HORIZONTAL_ALIGNMENT_CENTER)
+		primary_button = _button(parent, _primary_text(), Vector2(174, 416), Vector2(240, 52), true)
+		primary_button.pressed.connect(_perform_primary_action)
+		return
 	value_label = _label(parent, "", Vector2(22, 414), Vector2(320, 28), 14, MUTED)
 	primary_button = _button(parent, _primary_text(), Vector2(366, 416), Vector2(202, 48), true)
 	primary_button.pressed.connect(_perform_primary_action)
@@ -182,6 +213,18 @@ func _perform_primary_action() -> void:
 			stage_ready = true
 			WorldSound.play_detail(true)
 			status_label.text = LocalizationSystem.text("快门落下。取景框内与框外的东西都还在，只是进入了不同记录。")
+		"clock_setting":
+			if _clock_paid_today():
+				status_label.text = LocalizationSystem.text("今天的旧钟已经校准过，20元校时费也已领取。明天可以再来。")
+				return
+			if not _clock_matches_target():
+				status_label.text = LocalizationSystem.text("时间还不对。对照右上角，把时针和分针都拨到当前时间。")
+				return
+			stage_ready = true
+			WorldSound.play_detail(true)
+			_update_state()
+			_complete_choice("set_clock_correctly")
+			return
 		"optical_illusion":
 			if selected_tokens.size() != 2:
 				status_label.text = LocalizationSystem.text("必须同时保留两份记录，才能寻找它们共同成立的角度。")
@@ -220,7 +263,10 @@ func _update_state() -> void:
 	for token_id in selected_tokens:
 		labels.append(_token_label(token_id))
 	var joiner := " → " if str(interaction.get("mode", "toggle")) == "ordered" else "、"
-	selection_label.text = LocalizationSystem.text("当前：%s" % joiner.join(labels) if not labels.is_empty() else "尚未选择 · 至少 %d 项" % minimum)
+	if module_id == "clock_setting":
+		selection_label.text = LocalizationSystem.text("目标时间：%s · 表盘拨到 %d:%02d · 校准费 20 元" % [_clock_target_text(), _clock_target_hour(), _clock_target_minute_part()])
+	else:
+		selection_label.text = LocalizationSystem.text("当前：%s" % joiner.join(labels) if not labels.is_empty() else "尚未选择 · 至少 %d 项" % minimum)
 	for token_id in token_buttons:
 		_style_button(token_buttons[token_id], selected_tokens.has(str(token_id)))
 		token_buttons[token_id].disabled = completed or playback_active
@@ -248,6 +294,8 @@ func _update_module_value() -> void:
 			value_label.text = LocalizationSystem.text("试听进度 %d%%" % roundi(playback_cursor * 100))
 		"photography":
 			value_label.text = LocalizationSystem.text("曝光 %+d · %s" % [roundi((value_slider.value - 0.5) * 200), "细节可辨" if value_slider.value >= 0.28 and value_slider.value <= 0.76 else "细节丢失"])
+		"clock_setting":
+			value_label.text = LocalizationSystem.text("当前指针  %02d:%02d" % [roundi(clock_hour_slider.value), roundi(clock_minute_slider.value)])
 		"optical_illusion":
 			value_label.text = LocalizationSystem.text("观察角度 %d° · %s" % [roundi(value_slider.value * 90), "连接成立" if stage_ready else "目标投影尚未标注"])
 		"archives":
@@ -263,6 +311,7 @@ func _complete_choice(choice_id: String) -> void:
 	if not bool(result.get("ok", false)):
 		return
 	if module_id == "cooking": status_label.text += LocalizationSystem.text("\n材料已实际用掉，出餐和工资记在今天的工作记录里。")
+	if module_id == "clock_setting": WorldSound.play_ui("coin")
 	completed = true
 	if not SaveManager.save_or_report("玩法结果保存失败"):
 		GameState.load_save_data(rollback_snapshot)
@@ -284,6 +333,9 @@ func _interaction_record() -> Dictionary:
 			"view_angle": value_slider.value if module_id == "optical_illusion" else null,
 			"auditioned": stage_ready if module_id == "sound_sampling" else null,
 			"archive_reviewed": stage_ready if module_id == "archives" else null,
+			"clock_hour": roundi(clock_hour_slider.value) if module_id == "clock_setting" else null,
+			"clock_minute": roundi(clock_minute_slider.value) if module_id == "clock_setting" else null,
+			"clock_target_minute": clock_target_minute if module_id == "clock_setting" else null,
 		},
 	}
 
@@ -328,6 +380,7 @@ func _draw() -> void:
 		"cooking": _draw_cooking()
 		"sound_sampling": _draw_sound()
 		"photography": _draw_photography()
+		"clock_setting": _draw_clock()
 		"optical_illusion": _draw_perspective()
 		"archives": _draw_archives()
 
@@ -393,6 +446,30 @@ func _draw_photography() -> void:
 	draw_line(frame.get_center() - Vector2(0, 22), frame.get_center() + Vector2(0, 22), TERRACOTTA, 2)
 
 
+func _draw_clock() -> void:
+	var center := Vector2(502, 420)
+	var radius := 230.0
+	draw_circle(center, radius + 18, Color("473b34"))
+	draw_circle(center, radius, Color(PAPER, 0.96))
+	draw_circle(center, radius - 10, Color(SEA, 0.16))
+	for minute_mark in 60:
+		var angle := float(minute_mark) / 60.0 * TAU - PI / 2.0
+		var long_mark := minute_mark % 5 == 0
+		var outer := center + Vector2(cos(angle), sin(angle)) * (radius - 14)
+		var inner := center + Vector2(cos(angle), sin(angle)) * (radius - (42 if long_mark else 27))
+		draw_line(inner, outer, TERRACOTTA if long_mark else Color(MUTED, 0.72), 6 if long_mark else 2)
+	var hour_value := float(roundi(clock_hour_slider.value)) if clock_hour_slider != null else 12.0
+	var minute_value := float(roundi(clock_minute_slider.value)) if clock_minute_slider != null else 0.0
+	var minute_angle := minute_value / 60.0 * TAU - PI / 2.0
+	var hour_angle := (fmod(hour_value, 12.0) + minute_value / 60.0) / 12.0 * TAU - PI / 2.0
+	draw_line(center, center + Vector2(cos(hour_angle), sin(hour_angle)) * 126, INK, 15, true)
+	draw_line(center, center + Vector2(cos(minute_angle), sin(minute_angle)) * 184, SEA, 9, true)
+	draw_circle(center, 18, TERRACOTTA)
+	draw_circle(center, 7, PAPER)
+	if _clock_matches_target():
+		draw_arc(center, radius + 7, 0, TAU, 96, GOLD, 8, true)
+
+
 func _draw_perspective() -> void:
 	var angle := value_slider.value if value_slider != null else 0.0
 	var shift := lerpf(-150, 150, angle)
@@ -440,6 +517,33 @@ func _perspective_target() -> float:
 	return 0.54
 
 
+func _clock_target_hour() -> int:
+	var hour := floori(float(clock_target_minute) / 60.0) % 12
+	return 12 if hour == 0 else hour
+
+
+func _clock_target_minute_part() -> int:
+	return clock_target_minute % 60
+
+
+func _clock_target_text() -> String:
+	return "%02d:%02d" % [floori(float(clock_target_minute) / 60.0), _clock_target_minute_part()]
+
+
+func _clock_matches_target() -> bool:
+	if clock_hour_slider == null or clock_minute_slider == null:
+		return false
+	return roundi(clock_hour_slider.value) == _clock_target_hour() and roundi(clock_minute_slider.value) == _clock_target_minute_part()
+
+
+func _clock_paid_today() -> bool:
+	for outcome_value in GameState.module_states.get("clock_setting", {}).get("outcomes", []):
+		var outcome: Dictionary = outcome_value
+		if int(outcome.get("day", 0)) == GameState.current_day:
+			return true
+	return false
+
+
 func _token_label(token_id: String) -> String:
 	for token in interaction.get("tokens", []):
 		if str(token.get("id", "")) == token_id:
@@ -463,6 +567,7 @@ func _eyebrow() -> String:
 		"cooking": "RESTAURANT / PREP & HEAT",
 		"sound_sampling": "RECORDS / SOURCE & TIMELINE",
 		"photography": "PHOTO / FRAME & EXPOSURE",
+		"clock_setting": "COMMUNITY CENTER / CLOCK",
 		"optical_illusion": "STATION / PERSPECTIVE",
 		"archives": "LIBRARY / CROSS INDEX",
 	}.get(module_id, "SOLMERE / WORKBENCH")
@@ -473,6 +578,7 @@ func _primary_text() -> String:
 		"cooking": "确认火候",
 		"sound_sampling": "试听短轨",
 		"photography": "按下快门",
+		"clock_setting": "确认校时",
 		"optical_illusion": "锁定视角",
 		"archives": "核对三份来源",
 	}.get(module_id, "完成操作")
@@ -483,6 +589,7 @@ func _initial_status() -> String:
 		"cooking": "先挑三样材料，再调整火候。菜名不是第一步，先让今天的剩料能够一起工作。",
 		"sound_sampling": "绿色标记可用于交付；三角标记含未授权人声或来源不明，只能进入私人版本。",
 		"photography": "选择画面中的两到三处关系，再调整曝光。取景框之外仍然属于这个地方。",
+		"clock_setting": "今天的旧钟已经校准过，20元校时费也已领取。明天可以再来。" if _clock_paid_today() else "旧钟停错了。对照当前时间拨动两根指针，校准成功会立即收到20元。",
 		"optical_illusion": "选择两份矛盾记录，拖动观察角度。正确答案不是删掉其中一份。",
 		"archives": "展开三份来源不同的记录。可靠连接可以进入公共索引，证据不足也可以明确保留空格。",
 	}.get(module_id, "完成这段操作。")

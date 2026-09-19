@@ -276,6 +276,36 @@ func _test_gameplay_module_state() -> void:
 		bool(GameplayModuleSystem.state_for("tarot").get("completed", false)),
 		"Gameplay completion should be stored in the active role state"
 	)
+	var money_before_clock := GameState.money
+	_check(GameplayModuleSystem.unlock("clock_setting"), "The community-center clock should unlock from its hotspot")
+	_check(GameplayModuleSystem.begin_session("clock_setting", "smoke_clock"), "The clock-setting session should begin")
+	var target_minute := GameState.current_minute % 1440
+	var target_hour := floori(float(target_minute) / 60.0) % 12
+	if target_hour == 0: target_hour = 12
+	var clock_result := GameplayModuleSystem.complete_choice("set_clock_correctly", {
+		"mode": "clock",
+		"selected_tokens": [],
+		"mechanic": {
+			"clock_hour": target_hour,
+			"clock_minute": target_minute % 60,
+			"clock_target_minute": target_minute,
+		},
+	})
+	_check(bool(clock_result.get("ok", false)), "Correct clock hands should complete the community-center clock interaction")
+	_check(GameState.money == money_before_clock + 20, "Correctly setting the clock should award exactly 20 yuan")
+	_check(GameplayModuleSystem.begin_session("clock_setting", "smoke_clock_repeat"), "The clock can be inspected again on the same day")
+	var repeated_clock_result := GameplayModuleSystem.complete_choice("set_clock_correctly", {
+		"mode": "clock",
+		"selected_tokens": [],
+		"mechanic": {
+			"clock_hour": target_hour,
+			"clock_minute": target_minute % 60,
+			"clock_target_minute": target_minute,
+		},
+	})
+	_check(not bool(repeated_clock_result.get("ok", false)), "The 20-yuan clock reward should not be farmable twice on the same day")
+	_check(GameState.money == money_before_clock + 20, "A repeated same-day clock attempt should not add money")
+	GameplayModuleSystem.cancel_session()
 	_check(GameplayModuleSystem.unlock("cooking"), "Cooking should unlock for its workbench test")
 	_check(GameplayModuleSystem.begin_session("cooking", "smoke"), "Cooking session should begin")
 	var cooking_result := GameplayModuleSystem.complete_choice(

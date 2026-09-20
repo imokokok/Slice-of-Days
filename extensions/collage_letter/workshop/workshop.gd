@@ -172,11 +172,20 @@ func _ready() -> void:
 		viewport.size = Vector2i(300,240)
 		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 		add_child(viewport)
-		var art := PaperArt.new()
-		art.kind = i
-		art.sheet_data = materials[i]
-		art.font = font
-		viewport.add_child(art)
+		if materials[i].has("decoration_asset"):
+			viewport.transparent_bg = true
+			var flower := Sprite2D.new()
+			flower.texture = load(ASSETS + materials[i].decoration_asset)
+			flower.position = Vector2(150,120)
+			var fit := minf(150.0/flower.texture.get_width(),200.0/flower.texture.get_height())
+			flower.scale = Vector2.ONE * fit
+			viewport.add_child(flower)
+		else:
+			var art := PaperArt.new()
+			art.kind = i
+			art.sheet_data = materials[i]
+			art.font = font
+			viewport.add_child(art)
 		material_viewports.append(viewport)
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
@@ -369,7 +378,8 @@ func _update_browser() -> void:
 	var ids := _material_ids()
 	if ids.is_empty(): return
 	browser_index = posmod(browser_index,ids.size())
-	preview_image = ImageTexture.create_from_image(material_images[ids[browser_index]])
+	var material: Dictionary = materials[ids[browser_index]]
+	preview_image = load(ASSETS+material.decoration_asset) if material.has("decoration_asset") else ImageTexture.create_from_image(material_images[ids[browser_index]])
 	audio.play("PAPER_MOVE",0.45)
 
 func browse(direction: int) -> void:
@@ -382,14 +392,21 @@ func browse(direction: int) -> void:
 
 func _draw_browser() -> void:
 	if preview_image:
-		draw_texture_rect(preview_image,Rect2(455,210,690,505),false)
 		var ids := _material_ids()
+		var rect := Rect2(455,210,690,505)
+		if materials[ids[browser_index]].has("decoration_asset"):
+			var fit := minf(rect.size.x/preview_image.get_width(),rect.size.y/preview_image.get_height())
+			var size := preview_image.get_size()*fit
+			rect = Rect2(rect.get_center()-size*0.5,size)
+		draw_texture_rect(preview_image,rect,false)
 		_caption("%s   %d / %d" % [materials[ids[browser_index]].title,browser_index+1,ids.size()],Vector2(585,195),20,CREAM)
 
 func take_material() -> void:
 	checkpoint()
 	var id: int = _material_ids()[browser_index]
-	var paper = create_paper(material_images[id],Vector2(660,590),materials[id].title)
+	var decoration: bool = materials[id].has("decoration_asset")
+	var at: Vector2 = main_paper.position + Vector2(100,50) if decoration else Vector2(660,590)
+	var paper = create_paper(material_images[id],at,materials[id].title,"decoration" if decoration else "paper")
 	paper.source_id = id
 	paper.scale = Vector2.ONE * 1.0
 	return_desk()

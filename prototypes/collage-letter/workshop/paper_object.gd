@@ -16,7 +16,7 @@ func set_image(value: Image) -> void:
 	image.convert(Image.FORMAT_RGBA8)
 	paper_mask = image
 	texture = ImageTexture.create_from_image(image)
-	is_cuttable = paper_kind != "tape"
+	is_cuttable = paper_kind not in ["tape","decoration"]
 	queue_redraw()
 
 func local_pixel(point: Vector2) -> Vector2:

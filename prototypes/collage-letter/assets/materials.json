@@ -620,5 +620,33 @@
       "蜡烛吹灭前   许个愿吧"
     ],
     "layout": 0
+  },
+  {
+    "id": 50,
+    "title": "压干薰衣草",
+    "category": "装饰",
+    "paper_type": "干花",
+    "decoration_asset": "flowers/lavender.png"
+  },
+  {
+    "id": 51,
+    "title": "洋甘菊小花枝",
+    "category": "装饰",
+    "paper_type": "干花",
+    "decoration_asset": "flowers/daisy.png"
+  },
+  {
+    "id": 52,
+    "title": "秋色蕨叶",
+    "category": "装饰",
+    "paper_type": "干花",
+    "decoration_asset": "flowers/fern.png"
+  },
+  {
+    "id": 53,
+    "title": "旧粉玫瑰",
+    "category": "装饰",
+    "paper_type": "干花",
+    "decoration_asset": "flowers/rose.png"
   }
 ]

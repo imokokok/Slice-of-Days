@@ -31,7 +31,7 @@ func _ready() -> void:
 	voice_layer = CanvasLayer.new()
 	voice_layer.layer = 18
 	add_child(voice_layer)
-	voice_label = Label.new()
+	voice_label = preload("res://scripts/meta/flowing_thought.gd").new()
 	voice_label.position = Vector2(190,545)
 	voice_label.size = Vector2(900,60)
 	voice_label.mouse_filter = Control.MOUSE_FILTER_IGNORE

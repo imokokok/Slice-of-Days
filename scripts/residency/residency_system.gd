@@ -559,6 +559,25 @@ func submit() -> Dictionary:
 	persist()
 	return {"ok":true,"message":outcome}
 
+func submit_free_application() -> Dictionary:
+	var s := state()
+	if not s.submitted.is_empty(): return {"ok":false,"message":"申请已经提交。"}
+	if GameState.current_day < 7: return {"ok":false,"message":"先把这七天好好过完，第七天再提交。"}
+	var pages: Dictionary = s.get("free_pages",{})
+	if pages.get("personal",[]).is_empty(): return {"ok":false,"message":"个人信息页还没有留下你的表达。"}
+	if pages.get("life",[]).is_empty(): return {"ok":false,"message":"生活记录页还没有留下生活材料。"}
+	if GameState.confirmed_residents.size()<12: return {"ok":false,"message":"还有居民等着认识你。"}
+	for d in range(1,8):
+		if pages.get("day_%d" % d,[]).is_empty(): return {"ok":false,"message":"Day %02d 的作品页还是空白。" % d}
+	var answers: Dictionary = s.get("final_answers",{})
+	for key in ["0","1","2","3","4","signature"]:
+		if str(answers.get(key,"")).strip_edges().is_empty(): return {"ok":false,"message":"请补完最终文件，并留下签名。"}
+	var application_pages := pages.duplicate(true)
+	application_pages.erase("notebook")
+	s.submitted={"day":GameState.current_day,"minute":GameState.current_minute,"role":GameState.current_role,"outcome":"你的申请已收到。谢谢你把这七天留给 Solmere。","snapshot":{"free_pages":application_pages,"final_answers":answers.duplicate(true)}}
+	persist()
+	return {"ok":true,"message":s.submitted.outcome}
+
 func add_note(text: String, revision_of := "", mark := "") -> String:
 	if text.strip_edges().is_empty(): return ""
 	var id := "note_"+Crypto.new().generate_random_bytes(8).hex_encode()

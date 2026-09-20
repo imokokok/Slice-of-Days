@@ -59,6 +59,7 @@ window/stretch/mode="canvas_items"
 
 [gui]
 
+theme/custom="res://art/ui/solmere_ui.tres"
 theme/default_font_multichannel_signed_distance_field=true
 
 [rendering]

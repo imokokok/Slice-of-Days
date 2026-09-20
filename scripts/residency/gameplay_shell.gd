@@ -1,5 +1,5 @@
 extends Control
-const PAPER = preload("res://scripts/residency/paper_overlay.gd")
+const PAPER = preload("res://scripts/residency/living_objects.gd")
 const PROMPT_OUTLINE := Color("173c5d")
 var host: Control
 var stage: Control
@@ -19,6 +19,8 @@ var flash_tween: Tween
 var was_walking := false
 var next_button: Button
 var guidance_tick := 0.0
+var last_time_period := ""
+var time_notice_age := 8.0
 
 func _ready() -> void:
 	name = "GameplayShell"
@@ -117,7 +119,7 @@ func _papers_changed() -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var count := mini(4,last_material_count/4)
+	var count := 0
 	for i in count: draw_line(Vector2(35+i*2,21-i*3),Vector2(117+i*2,21-i*3),Color("fbefcd"),3)
 
 func _blocked() -> bool:
@@ -133,12 +135,21 @@ func finish_recording_for_exit() -> bool:
 	return true
 
 func _process(delta: float) -> void:
-	clock_label.text = "DAY %02d   %s" % [GameState.current_day,GameState.clock_text()]
+	folder.hide()
+	var minute := GameState.current_minute
+	var period := "Morning" if minute < 720 else "Afternoon" if minute < 960 else "Late Afternoon" if minute < 1140 else "Evening"
+	var period_key := str(GameState.current_day)+period
+	if last_time_period != period_key:
+		last_time_period=period_key; time_notice_age=0
+		clock_label.text="DAY %02d — %s" % [GameState.current_day,period]
+	time_notice_age+=delta
+	clock_label.visible=time_notice_age<4 and not is_instance_valid(overlay) and not is_instance_valid(tool) and not MetaExperience.modal_open()
+	clock_label.modulate.a=clampf(4-time_notice_age,0,1)
 	guidance_tick -= delta
 	if guidance_tick <= 0:
 		guidance_tick = 1.0
 		next_button.text = LocalizationSystem.text("NEXT  "+str(GuidanceSystem.next_step().text)+"\nT · 今日")
-	next_button.visible = not _blocked() and not is_instance_valid(tool)
+	next_button.visible = false
 	if last_location != GameState.current_location:
 		last_location = GameState.current_location
 		ResidencySystem.visit(last_location)

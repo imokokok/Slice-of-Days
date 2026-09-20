@@ -728,10 +728,10 @@ func _photo(parent: Node, id: String, at: Vector2, dimensions: Vector2) -> void:
 	var image := _load_photo_image(id)
 	if image == null: label(parent,"照片文件暂时无法读取",at,dimensions,18); return
 	var rect := TextureRect.new()
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	rect.texture = ImageTexture.create_from_image(image)
 	rect.position = at
 	rect.size = dimensions
-	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	rect.mouse_filter = MOUSE_FILTER_IGNORE
 	parent.add_child(rect)

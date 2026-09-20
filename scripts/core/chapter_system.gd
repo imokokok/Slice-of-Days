@@ -143,6 +143,10 @@ func residency_audit(role: String) -> Dictionary:
 	var refused := 0
 	var pending := 0
 	var withdrawn := 0
+	var dossier := ResidencySystem.audit(role)
+	var submitted: Dictionary = dossier.get("submitted",{})
+	# Free-paper applications are validated when submitted; legacy forms retain their audit.
+	var free_application: bool = submitted.get("snapshot",{}).has("free_pages")
 	for resident_id in relationships:
 		var relationship: Dictionary = relationships[resident_id]
 		match str(relationship.get("confirmation", "unknown")):
@@ -156,8 +160,8 @@ func residency_audit(role: String) -> Dictionary:
 		"role": role,
 		"confirmed": confirmations.size(),
 		"required": 12,
-		"passed": bool(ResidencySystem.audit(role).get("ready", false)) and not ResidencySystem.audit(role).get("submitted", {}).is_empty(),
-		"dossier": ResidencySystem.audit(role),
+		"passed": (free_application or bool(dossier.get("ready",false))) and not submitted.is_empty(),
+		"dossier": dossier,
 		"refused": refused,
 		"pending": pending,
 		"withdrawn": withdrawn,

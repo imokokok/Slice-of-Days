@@ -113,7 +113,7 @@ func _show_comment(row: Dictionary, stage: Control) -> void:
 		if area.intersects(Rect2(stage.player_x-stage.camera_x-55,410,110,305)):clear=false
 		if clear:chosen=area;break
 	if not chosen.has_area():return
-	var label:=Label.new()
+	var label:=preload("res://scripts/meta/flowing_thought.gd").new()
 	label.text=LocalizationSystem.text(str(row.get("byline","")))+"\n"+LocalizationSystem.text(str(row.text)) if row.has("byline") else LocalizationSystem.text(str(row.text))
 	label.position=chosen.position
 	label.size=chosen.size

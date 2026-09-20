@@ -34,17 +34,17 @@ func run() -> void:
 	for dimensions in [Vector2(1600, 900), Vector2(1280, 720), Vector2(1920, 1080)]:
 		host.size = dimensions
 		host._fit_experience()
-		var bounds := Rect2(host.letter_container.position, Vector2(1440, 900) * host.letter_container.scale)
+		var bounds := Rect2(host.letter_container.position, Vector2(1600, 900) * host.letter_container.scale)
 		check(Rect2(Vector2.ZERO, dimensions).encloses(bounds), "Letter must fit inside host at %s" % dimensions)
 		check(bounds.position.y >= host.host_panel.size.y, "Host buttons must not cover the letter")
-		check(host.letter_viewport.size == Vector2i(1440, 900), "Capture coordinates must remain stable")
+		check(host.letter_viewport.size == Vector2i(1600, 900), "Capture coordinates must remain stable")
 	host.size = Vector2(1600, 900)
 	host._fit_experience()
 	letter.stage = "WORKBENCH"
 	letter.build_ui()
 	await process_frame
 	# Send a root-viewport click through the container, not directly to the button.
-	var click_at: Vector2 = host.letter_container.position + Vector2(540, 811) * host.letter_container.scale
+	var click_at: Vector2 = host.letter_container.position + Vector2(80, 200) * host.letter_container.scale
 	for down in [true, false]:
 		var event := InputEventMouseButton.new()
 		event.position = click_at
@@ -53,26 +53,23 @@ func run() -> void:
 		event.pressed = down
 		root.push_input(event, true)
 		await process_frame
-	check(letter.tool == "rect", "Root mouse coordinates must activate the visible knife button")
-	var paper = load("res://extensions/collage_letter/scripts/collage_piece.gd").new()
-	paper.position = Vector2(600, 300)
-	letter.pieces_root.add_child(paper)
-	await letter.complete_letter()
-	check(letter.letter_preview != null and letter.letter_preview.get_size() == Vector2(530, 582), "Letter capture must use its native crop size")
-	letter.stage = "WORKBENCH"
-	letter.pieces_root.show()
-	paper.queue_free()
-	letter.set_tool("move")
+	check(letter.mode == letter.Mode.MATERIAL_BROWSER, "Root mouse coordinates must open the visible materials button")
+	letter.take_material()
+	letter.active.position = letter.main_paper.position
+	await letter.begin_folding()
+	check(letter.letter_preview != null and letter.letter_preview.get_size() == Vector2(440, 390), "Capture must contain only the native letter canvas")
+	letter.return_desk()
 	await RenderingServer.frame_post_draw
 	var screenshot := OS.get_environment("COLLAGE_TEST_SCREENSHOT")
-	if not screenshot.is_empty():
-		root.get_texture().get_image().save_png(screenshot)
-	# Exercise pellet dropping through the real scaled host viewport too.
-	letter.stage = "WAX_SEAL"
+	if not screenshot.is_empty(): root.get_texture().get_image().save_png(screenshot)
+	letter.mode = letter.Mode.WAX_SEALING
 	letter.wax_step = 1
+	letter.candle_lit = true
+	letter.papers.hide()
+	letter.tools_root.hide()
 	letter.build_ui()
 	await process_frame
-	for sample in [[Vector2(310, 570), true], [Vector2(328, 371), false]]:
+	for sample in [[Vector2(600, 322), true], [Vector2(390, 330), false]]:
 		var at: Vector2 = host.letter_container.position + sample[0] * host.letter_container.scale
 		var event := InputEventMouseButton.new()
 		event.position = at
@@ -81,10 +78,7 @@ func run() -> void:
 		event.pressed = sample[1]
 		root.push_input(event, true)
 		await process_frame
-	check(letter.wax_step == 2, "Wax pellets must drop into the spoon through the scaled game window")
-	if not screenshot.is_empty():
-		await RenderingServer.frame_post_draw
-		root.get_texture().get_image().save_png(screenshot.get_basename() + "-wax.png")
+	check(letter.wax_step == 2 and letter.spoon_filled, "Spoon must collect wax through the scaled host viewport")
 	letter.audio.shutdown()
 	host.queue_free()
 	gameplay.cancel_session()

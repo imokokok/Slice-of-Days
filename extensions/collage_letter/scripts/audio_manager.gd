@@ -1,6 +1,6 @@
 extends Node
 
-const EVENTS = ["KNIFE_SLICE","PAPER_MOVE","PAPER_CUT","PAPER_PRESS","TAPE_PULL","TAPE_TEAR","TAPE_STICK","PHOTO_PICKUP","PHOTO_DROP","PAPER_FOLD","ENVELOPE_INSERT","ENVELOPE_CLOSE","MATCH_STRIKE","FIRE_LOOP","WAX_POUR","STAMP_PRESS","STAMP_RELEASE","MAIL_DROP","DIALOGUE_ADVANCE"]
+const EVENTS = ["KNIFE_SLICE","PAPER_MOVE","PAPER_CUT","PAPER_PRESS","TAPE_PULL","TAPE_TEAR","TAPE_STICK","PHOTO_PICKUP","PHOTO_DROP","PAPER_FOLD","ENVELOPE_INSERT","ENVELOPE_CLOSE","MATCH_STRIKE","FIRE_LOOP","WAX_POUR","STAMP_PRESS","STAMP_RELEASE","MAIL_DROP","DIALOGUE_ADVANCE","SCISSOR_CUT","PEN_WRITE","TYPE_KEY","TYPE_SPACE","TYPE_BACKSPACE","TYPE_RETURN","TYPE_ROLLER","WAX_PELLETS"]
 var bank: Dictionary = {}
 var muted := false
 var rng := RandomNumberGenerator.new()
@@ -45,6 +45,18 @@ func synthesize(event: String, variant: int) -> AudioStreamWAV:
 			value = sin(t*(140+variant*15)*TAU)*0.4+filtered*0.2
 		elif event == "WAX_POUR":
 			value = filtered*0.2+sin(t*330*TAU)*0.08*pow(absf(sin(t*24)),12)
+		elif event in ["TYPE_KEY","TYPE_SPACE","TYPE_BACKSPACE"]:
+			value = sin(t*(230+variant*19)*TAU)*exp(-t*70)*0.5+filtered*exp(-t*25)*0.4
+		elif event == "TYPE_RETURN":
+			value = sin(t*1740*TAU)*exp(-t*18)*0.20+filtered*0.26
+		elif event == "SCISSOR_CUT":
+			value = filtered*0.7+sin(t*460*TAU)*exp(-t*90)*0.2
+		elif event == "PEN_WRITE":
+			value = filtered*0.2+rng.randf_range(-1,1)*0.015
+		elif event == "WAX_PELLETS":
+			value = sin(t*760*TAU)*pow(maxf(0,sin(t*95)),15)*0.32
+		elif event == "TYPE_ROLLER":
+			value = filtered*(0.15+0.6*pow(absf(sin(t*110)),4))
 		elif event == "AMBIENCE":
 			envelope = 0.6+0.3*sin(t*TAU/4)
 			value = filtered*0.45

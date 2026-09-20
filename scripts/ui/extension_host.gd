@@ -4,7 +4,7 @@ const CREAM := Color("fff6e5")
 const INK := Color("31658b")
 const TERRACOTTA := Color("31658b")
 const SEA := Color("31658b")
-const LETTER_DESIGN_SIZE := Vector2i(1440, 900)
+const LETTER_DESIGN_SIZE := Vector2i(1600, 900)
 const LETTER_HOST_BAR_HEIGHT := 72.0
 
 var module_id := ""

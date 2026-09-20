@@ -11,7 +11,13 @@ func _ready() -> void:
 	get_tree().node_added.connect(_added)
 
 func _added(node: Node) -> void:
-	if node is Control: _style.call_deferred(node)
+	if node is Control and not _context(node,["workshop.gd"]):
+		# Controls may be removed before the deferred style pass runs.
+		_style_id.call_deferred(node.get_instance_id())
+
+func _style_id(instance_id: int) -> void:
+	var node=instance_from_id(instance_id)
+	if node is Control: _style(node)
 
 func _context(node: Node, names: Array) -> bool:
 	var at := node
@@ -50,7 +56,7 @@ func button_style(button: Button, in_scene := false) -> void:
 
 func _style(node: Control) -> void:
 	if not is_instance_valid(node) or not node.is_inside_tree() or node.is_queued_for_deletion(): return
-	if _context(node,["main_menu.gd","living_objects.gd","runtime_debug.gd","flowing_thought.gd"]): return
+	if _context(node,["main_menu.gd","living_objects.gd","runtime_debug.gd","flowing_thought.gd","workshop.gd"]): return
 	if speech(node): return
 	if node is Button:
 		button_style(node,speech(node))

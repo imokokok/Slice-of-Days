@@ -2,27 +2,32 @@
   {
     "id": 0,
     "title": "海岸日报",
-    "category": "日常"
+    "category": "日常",
+    "paper_type": "报纸"
   },
   {
     "id": 1,
     "title": "旧街广告",
-    "category": "日常"
+    "category": "日常",
+    "paper_type": "海报广告"
   },
   {
     "id": 2,
     "title": "杂货小票",
-    "category": "日常"
+    "category": "日常",
+    "paper_type": "票据"
   },
   {
     "id": 3,
     "title": "私人旧车票",
-    "category": "私人"
+    "category": "私人",
+    "paper_type": "票据"
   },
   {
     "id": 4,
     "title": "旧公交站 · 傍晚",
-    "category": "影像"
+    "category": "影像",
+    "paper_type": "照片"
   },
   {
     "id": 5,
@@ -35,7 +40,8 @@
       "缺一件   小心   柔软",
       "星期六     09:15"
     ],
-    "layout": 1
+    "layout": 1,
+    "paper_type": "票据"
   },
   {
     "id": 6,
@@ -48,7 +54,8 @@
       "煮沸   搅拌   熄火",
       "酸   苦   甜   微辣"
     ],
-    "layout": 2
+    "layout": 2,
+    "paper_type": "书页手记"
   },
   {
     "id": 7,
@@ -61,7 +68,8 @@
       "读到   忘记   记下",
       "第七页   铅笔   折角"
     ],
-    "layout": 3
+    "layout": 3,
+    "paper_type": "票据"
   },
   {
     "id": 8,
@@ -74,7 +82,8 @@
       "耐心   试一次   好了",
       "钟表   收音机   灯泡"
     ],
-    "layout": 0
+    "layout": 0,
+    "paper_type": "票据"
   },
   {
     "id": 9,
@@ -87,7 +96,8 @@
       "无主   姓名   地址",
       "蓝色   棉线   细条纹"
     ],
-    "layout": 1
+    "layout": 1,
+    "paper_type": "书页手记"
   },
   {
     "id": 10,
@@ -100,7 +110,8 @@
       "土壤   露水   花粉",
       "春分   白昼   阴影"
     ],
-    "layout": 2
+    "layout": 2,
+    "paper_type": "票据"
   },
   {
     "id": 11,
@@ -113,7 +124,8 @@
       "漂浮   下沉   搁浅",
       "06:23   1.7米   北岸"
     ],
-    "layout": 3
+    "layout": 3,
+    "paper_type": "书页手记"
   },
   {
     "id": 12,
@@ -126,7 +138,8 @@
       "雾   雪   晴   微风",
       "脚印   回声   裂缝"
     ],
-    "layout": 0
+    "layout": 0,
+    "paper_type": "书页手记"
   },
   {
     "id": 13,
@@ -139,7 +152,8 @@
       "摄氏八度   西北风",
       "凌晨   正午   入夜"
     ],
-    "layout": 1
+    "layout": 1,
+    "paper_type": "书页手记"
   },
   {
     "id": 14,
@@ -152,7 +166,8 @@
       "细小   透明   安静",
       "斑点   纹路   缺口"
     ],
-    "layout": 2
+    "layout": 2,
+    "paper_type": "书页手记"
   },
   {
     "id": 15,
@@ -165,7 +180,8 @@
       "对岸   此处   彼处",
       "05:50   明早   末班"
     ],
-    "layout": 3
+    "layout": 3,
+    "paper_type": "书页手记"
   },
   {
     "id": 16,
@@ -178,7 +194,8 @@
       "沿着   穿过   经过",
       "十二公里   县界"
     ],
-    "layout": 0
+    "layout": 0,
+    "paper_type": "书页手记"
   },
   {
     "id": 17,
@@ -191,7 +208,8 @@
       "行李   门牌   台阶",
       "一夜   两周   多年"
     ],
-    "layout": 1
+    "layout": 1,
+    "paper_type": "票据"
   },
   {
     "id": 18,
@@ -204,7 +222,8 @@
       "迟到   等待   遇见",
       "黑白   无声   重映"
     ],
-    "layout": 2
+    "layout": 2,
+    "paper_type": "书页手记"
   },
   {
     "id": 19,
@@ -217,7 +236,8 @@
       "转交   寄往   附上",
       "邮戳   距离   远方"
     ],
-    "layout": 3
+    "layout": 3,
+    "paper_type": "票据"
   },
   {
     "id": 20,
@@ -230,7 +250,8 @@
       "也许   偏偏   差一点",
       "今天   昨天   当时"
     ],
-    "layout": 0
+    "layout": 0,
+    "paper_type": "旧信"
   },
   {
     "id": 21,
@@ -243,7 +264,8 @@
       "快乐   疲惫   平静",
       "认真   突然   悄悄"
     ],
-    "layout": 1
+    "layout": 1,
+    "paper_type": "旧信"
   },
   {
     "id": 22,
@@ -256,7 +278,8 @@
       "轻一些   慢一点",
       "勇气   失误   练习"
     ],
-    "layout": 2
+    "layout": 2,
+    "paper_type": "书页手记"
   },
   {
     "id": 23,
@@ -269,7 +292,8 @@
       "温暖   清冷   浓烈",
       "一滴   一片   一束"
     ],
-    "layout": 3
+    "layout": 3,
+    "paper_type": "票据"
   },
   {
     "id": 24,
@@ -282,7 +306,8 @@
       "沙沙   滴答   嗡鸣",
       "近了   轻了   停了"
     ],
-    "layout": 0
+    "layout": 0,
+    "paper_type": "书页手记"
   },
   {
     "id": 25,
@@ -295,7 +320,8 @@
       "因为   所以   但是",
       "如果   就   即使"
     ],
-    "layout": 1
+    "layout": 1,
+    "paper_type": "书页手记"
   },
   {
     "id": 26,
@@ -308,7 +334,8 @@
       "只   也   都   又",
       "不是   而是   或者"
     ],
-    "layout": 2
+    "layout": 2,
+    "paper_type": "书页手记"
   },
   {
     "id": 27,
@@ -321,7 +348,8 @@
       "里面   外面   之间",
       "之前   之后   直到"
     ],
-    "layout": 3
+    "layout": 3,
+    "paper_type": "书页手记"
   },
   {
     "id": 28,
@@ -334,7 +362,8 @@
       "至少   大约   恰好",
       "很   最   太   有点"
     ],
-    "layout": 0
+    "layout": 0,
+    "paper_type": "票据"
   },
   {
     "id": 29,
@@ -347,24 +376,249 @@
       "TOGETHER   AGAIN",
       "NOT YET   SOMEDAY"
     ],
-    "layout": 1
+    "layout": 1,
+    "paper_type": "票据"
   },
   {
     "id": 30,
     "title": "灯塔 · 黎明",
     "category": "影像",
-    "scene": "lighthouse"
+    "scene": "lighthouse",
+    "paper_type": "照片"
   },
   {
     "id": 31,
     "title": "窗台 · 雨天",
     "category": "影像",
-    "scene": "window"
+    "scene": "window",
+    "paper_type": "照片"
   },
   {
     "id": 32,
     "title": "山路 · 黄昏",
     "category": "影像",
-    "scene": "mountain"
+    "scene": "mountain",
+    "paper_type": "照片"
+  },
+  {
+    "id": 33,
+    "title": "海风音乐节",
+    "category": "日常",
+    "paper_type": "海报广告",
+    "kicker": "LIVE / JUL 18",
+    "rows": [
+      "暮色   吉他   小舞台",
+      "入场免费   七点半",
+      "把最后一支歌   留给你"
+    ],
+    "layout": 1
+  },
+  {
+    "id": 34,
+    "title": "柠檬市场",
+    "category": "日常",
+    "paper_type": "海报广告",
+    "kicker": "SATURDAY MARKET",
+    "rows": [
+      "鲜柠檬   陶碗   白雏菊",
+      "摊位 08   老广场",
+      "来挑一束   带回家"
+    ],
+    "layout": 0
+  },
+  {
+    "id": 35,
+    "title": "海边寻猫启事",
+    "category": "日常",
+    "paper_type": "报纸",
+    "kicker": "LOST CAT / 寻猫",
+    "rows": [
+      "黑猫   左耳缺角",
+      "爱睡在蓝色长椅上",
+      "见到它   请叫米罗"
+    ],
+    "layout": 2
+  },
+  {
+    "id": 36,
+    "title": "泳池开放日",
+    "category": "日常",
+    "paper_type": "海报广告",
+    "kicker": "SUMMER SWIM",
+    "rows": [
+      "深水区   一米五",
+      "带上毛巾   慢慢下水",
+      "开放至日落"
+    ],
+    "layout": 1
+  },
+  {
+    "id": 37,
+    "title": "修钟铺旧广告",
+    "category": "日常",
+    "paper_type": "海报广告",
+    "kicker": "TICK TOCK / 修钟",
+    "rows": [
+      "停走   慢半拍   忘记上弦",
+      "修理时间   不修理回忆",
+      "巷口第三扇门"
+    ],
+    "layout": 0
+  },
+  {
+    "id": 38,
+    "title": "码头报第六版",
+    "category": "日常",
+    "paper_type": "报纸",
+    "kicker": "HARBOR NEWS",
+    "rows": [
+      "小船今日回港",
+      "东风三级   渔获平常",
+      "天晴后   晾晒船帆"
+    ],
+    "layout": 2
+  },
+  {
+    "id": 39,
+    "title": "邻里小报",
+    "category": "日常",
+    "paper_type": "报纸",
+    "kicker": "NEIGHBORHOOD",
+    "rows": [
+      "楼下的树   开花了",
+      "请给新住户   留一把钥匙",
+      "星期天   一起吃饭"
+    ],
+    "layout": 0
+  },
+  {
+    "id": 40,
+    "title": "灯塔明信片",
+    "category": "日常",
+    "paper_type": "明信片",
+    "kicker": "FROM SOLMERE",
+    "rows": [
+      "这里的海   比信纸更蓝",
+      "邮戳：7月14日",
+      "希望抵达时   你正好在家"
+    ],
+    "layout": 2
+  },
+  {
+    "id": 41,
+    "title": "山城明信片",
+    "category": "日常",
+    "paper_type": "明信片",
+    "kicker": "A VIEW FROM THE HILL",
+    "rows": [
+      "台阶很长   行李很轻",
+      "我们走走停停",
+      "背面留给   下次相见"
+    ],
+    "layout": 0
+  },
+  {
+    "id": 42,
+    "title": "给姐姐的旧信",
+    "category": "日常",
+    "paper_type": "旧信",
+    "kicker": "DEAR SISTER",
+    "rows": [
+      "窗帘洗好了",
+      "猫又睡在你的椅子上",
+      "钥匙仍在   花盆下面"
+    ],
+    "layout": 2
+  },
+  {
+    "id": 43,
+    "title": "祖父的食谱",
+    "category": "日常",
+    "paper_type": "书页手记",
+    "kicker": "LEMON CAKE",
+    "rows": [
+      "面粉 180g   鸡蛋 2个",
+      "把柠檬皮   磨得细一些",
+      "烤箱 170度   等四十分钟"
+    ],
+    "layout": 0
+  },
+  {
+    "id": 44,
+    "title": "船舶维修手册",
+    "category": "日常",
+    "paper_type": "书页手记",
+    "kicker": "MAINTENANCE / 07",
+    "rows": [
+      "检查绳结   木板   船锚",
+      "盐分   会留在缝隙里",
+      "每次出航前   看看天气"
+    ],
+    "layout": 2
+  },
+  {
+    "id": 45,
+    "title": "公交换乘券",
+    "category": "日常",
+    "paper_type": "票据",
+    "kicker": "TRANSFER / ROUTE 17",
+    "rows": [
+      "旧港口 → 山顶",
+      "有效时间   16:28—17:28",
+      "沿虚线撕下   请保留"
+    ],
+    "layout": 1
+  },
+  {
+    "id": 46,
+    "title": "电影院双人票",
+    "category": "日常",
+    "paper_type": "票据",
+    "kicker": "CINEMA / TWO SEATS",
+    "rows": [
+      "第六排   03 / 04",
+      "周五 20:10   海风厅",
+      "散场后   去海边走走"
+    ],
+    "layout": 0
+  },
+  {
+    "id": 47,
+    "title": "旧唱片内页",
+    "category": "日常",
+    "paper_type": "书页手记",
+    "kicker": "SIDE B / 33 RPM",
+    "rows": [
+      "海浪间奏   三分十二秒",
+      "曲终   请翻面",
+      "给所有   没说出口的话"
+    ],
+    "layout": 1
+  },
+  {
+    "id": 48,
+    "title": "咖啡馆菜单",
+    "category": "日常",
+    "paper_type": "书页手记",
+    "kicker": "CAFE DU PORT",
+    "rows": [
+      "冰咖啡 4   柠檬水 3",
+      "靠窗座位   不必预约",
+      "今日甜点   桃子挞"
+    ],
+    "layout": 2
+  },
+  {
+    "id": 49,
+    "title": "迟到的生日卡",
+    "category": "日常",
+    "paper_type": "旧信",
+    "kicker": "A LITTLE LATE",
+    "rows": [
+      "虽然晚了三天",
+      "还是想说   生日快乐",
+      "蜡烛吹灭前   许个愿吧"
+    ],
+    "layout": 0
   }
 ]

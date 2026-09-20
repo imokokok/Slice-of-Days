@@ -1,34 +1,9 @@
-# 拼贴书信 v2 · 独立源码项目
+# Solmere · 窗边拼贴工作坊 v3
 
+按 2026-09-20 桌面参考图与新规格制作。直接点击桌上的素材、剪刀、刻板、笔、胶带和打字机。剪切、镂空、自由绘画、打字纸、折信与封蜡均可操作；保留漂流瓶服务。
 
-此目录仅包含源码与必要素材，不含引擎、Python 运行时、玩家数据或发布 ZIP。已验证环境为 Godot 4.5.1、Python 3.13.7；与仓库根目录的 Solmere 主项目独立运行。
+Windows 完整包双击 Start-Game.cmd；首次运行会自动导入图片。源码版本需安装 Godot 4.5.1+ 与 Python 3.10+，运行 python server/launch.py，可通过 GODOT_BIN 指定引擎路径。
 
-## 从源码运行
+详细玩法见 [工作坊说明](workshop/README.md)，部署见 [服务端说明](server/README.md)，图片来源和生成提示词见 [素材记录](workshop/assets/ARTWORK.md)。
 
-先安装 Godot 4.5.1+ 与 Python 3.10+。将 Godot 加入 PATH（命令名 godot 或 godot4），或设置 GODOT_BIN 为引擎可执行文件的绝对路径。
-
-从本目录运行：
-
-```sh
-python server/launch.py
-```
-
-这个命令会启动所需的本机邮局和游戏。也可以用 Godot 编辑器导入本目录的 project.godot，运行 server/app.py 后按 F5 开始游戏。Windows 的 .cmd 脚本使用 Python 的 py -3 启动器；其他系统使用上述命令。中文显示需要 Microsoft YaHei、Noto Sans CJK SC 或 PingFang SC 等系统字体。
-
-```sh
-python server/test_service.py
-python server/launch.py --demo
-```
-
-已移除胶棒，工具改为刻刀；素材扩展为 33 份，新增可部署的漂流瓶联机系统。
-
-- 双击 **Start-Game.cmd** 启动最新版和本机邮局。
-- 双击 **Start-Two-Players.cmd** 用两个独立身份演示互发、互回。
-- 双击 **Open-Editor.cmd** 查看完整 Godot 项目。
-- 游戏右上角进入 **海边 · 漂流瓶邮局**。
-
-发出一封新的漂流瓶后，需要回复一封其他寄信人的信，才能再次自由发信。规则与历史信件由服务端保存。
-
-阅读 [完整操作说明](GUIDE.md) 和 [服务器部署说明](server/README.md)。当前为已验证的本机联机版，可部署到局域网或自己的服务器，尚未开通全网公共服务。
-
-原版草稿可恢复。请先关闭旧版窗口，再打开新版。
+使用独立 v3 草稿，不覆盖旧版草稿。默认本机服务；公网需自行部署。

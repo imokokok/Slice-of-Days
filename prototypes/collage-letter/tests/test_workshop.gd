@@ -58,7 +58,7 @@ func run() -> void:
 	w.take_knife()
 	check(w.mode==w.Mode.CUTTING_MAT,"Knife must wait until paper is physically placed on mat")
 	w.dragged=w.active
-	w.active.position=Vector2(800,440)
+	w.active.position=Vector2(190,687)
 	w._release()
 	w.take_knife()
 	await create_timer(0.35).timeout

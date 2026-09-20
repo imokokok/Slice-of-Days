@@ -35,6 +35,11 @@ var ui: CanvasLayer
 var papers: Node2D
 var tools_root: Node2D
 var tape_roll: Node2D
+var mat_tool: Node2D
+var scissors_tool: Node2D
+var knife_tool: Node2D
+var dragged_tool: Node2D
+var tool_drag_start := Vector2.ZERO
 var main_paper: Node2D
 var active: Node2D
 var focused: Node2D
@@ -96,6 +101,8 @@ var fold_drag := false
 var letter_preview: ImageTexture
 var envelope_inserted := false
 var envelope_flap := 0.0
+var flap_drag_y := 0.0
+var flap_drag_start := 0.0
 var insert_amount := 0.0
 var packing_drag := ""
 var packed_letter_at := Vector2(580,420)
@@ -191,6 +198,9 @@ func _make_tool(id: String, caption: String, rect: Rect2) -> void:
 	object.texture = sprites.get(id)
 	tools_root.add_child(object)
 	if id == "tape": tape_roll = object
+	if id == "mat": mat_tool = object
+	if id == "scissors": scissors_tool = object
+	if id == "knife": knife_tool = object
 
 func _blank_paper(dimensions: Vector2i) -> Image:
 	var image := Image.create(dimensions.x, dimensions.y, false, Image.FORMAT_RGBA8)
@@ -206,13 +216,14 @@ func _process(delta: float) -> void:
 	if not ready_done: return
 	# The roll is either on the desk or at the loose strip's end, never both.
 	tape_roll.visible = not (tape_pulling or tape_pending)
+	knife_tool.visible = mode != Mode.KNIFE_CUTTING
 	elapsed += delta
 	save_clock += delta
 	sound_clock += delta
 	key_age += delta
 	if mode == Mode.TYPEWRITER: _advance_typewriter(delta)
 	carriage = lerpf(carriage, 0, minf(delta * 8, 1))
-	var target := 0.0 if mode in [Mode.DESK,Mode.DRAWING,Mode.TAPE,Mode.SENT] else 1.0
+	var target := 0.0 if mode in [Mode.DESK,Mode.DRAWING,Mode.TAPE,Mode.SENT,Mode.CUTTING_MAT,Mode.KNIFE_CUTTING] else 1.0
 	focus_amount = lerpf(focus_amount,target,minf(delta*9,1))
 	if mode == Mode.WAX_SEALING:
 		_process_wax(delta)
@@ -238,8 +249,6 @@ func _draw() -> void:
 	if focus_amount > 0.01:
 		draw_rect(Rect2(Vector2.ZERO,SIZE),Color(0.13,0.14,0.12,focus_amount*0.38))
 	if mode == Mode.MATERIAL_BROWSER: _draw_browser()
-	if mode in [Mode.CUTTING_MAT,Mode.KNIFE_CUTTING]:
-		_sprite("mat",Rect2(385,190,830,530))
 	if mode == Mode.TYPEWRITER: _draw_typewriter()
 	if mode == Mode.FOLDING: _draw_folding()
 	if mode == Mode.ENVELOPE: _draw_envelope()
@@ -449,6 +458,7 @@ func return_desk() -> void:
 	knife_path.clear()
 	ink_target = null
 	dragged = null
+	dragged_tool = null
 	papers.show()
 	tools_root.show()
 	say("桌边的物件都可以试试。Ctrl+Z / Ctrl+Y 撤销或重做。")
@@ -471,10 +481,10 @@ func use_tool(id: String) -> void:
 			else:
 				tool="choose_scissors";say("先点一张桌上的纸，剪刀会跟着过去。")
 		"mat":
-			mode=Mode.CUTTING_MAT;tools_root.hide();main_paper.hide();mat_paper_id=""
-			say("把桌上的纸拖到中间刻板，再拿起刻刀。")
+			mode=Mode.CUTTING_MAT
+			say("刻板留在左下原位。把纸拖到绿色刻板上，再拿起刻刀。")
 		"knife":
-			say("刻刀需要刻板。先点左下角绿色刻板。")
+			take_knife()
 		"pen":
 			mode=Mode.DRAWING;tool="pen";say("按住写画 · 右键切换笔尖粗细 · Esc 放回笔")
 		"tape":
@@ -483,12 +493,13 @@ func use_tool(id: String) -> void:
 		"wax-tray": say("先完成拼贴、折信和装封，再来点蜡烛。")
 
 func take_knife() -> void:
-	if mode != Mode.CUTTING_MAT: return
-	if not is_instance_valid(active) or active == main_paper or active.object_id!=mat_paper_id or not Rect2(385,190,830,530).has_point(active.position):
+	if mode not in [Mode.DESK,Mode.CUTTING_MAT]: return
+	if not is_instance_valid(active) or active == main_paper or not active.is_cuttable or not mat_tool.contains_point(active.position):
 		say("先把一张可裁切的纸拖到绿色刻板上。")
 		return
 	checkpoint()
-	_focus_paper(active)
+	focused=active
+	focused_original={"position":active.position,"rotation":active.rotation,"scale":active.scale}
 	mode=Mode.KNIFE_CUTTING
 	tool="knife"
 	say("按住自由划线；闭合一圈挖出局部，边到边划线分成两张。")
@@ -497,7 +508,7 @@ func _input(event: InputEvent) -> void:
 	# Keep a started gesture captured even when the pointer crosses a UI button.
 	# Otherwise a GUI-consumed release would leave paper/tools stuck to the mouse.
 	if not ready_done or dock_open or busy: return
-	var captured: bool=dragged!=null or ink_target!=null or tape_pulling or cutting or cut_handle>=0 or fold_drag or not packing_drag.is_empty() or not wax_drag.is_empty()
+	var captured: bool=dragged!=null or dragged_tool!=null or ink_target!=null or tape_pulling or cutting or cut_handle>=0 or fold_drag or not packing_drag.is_empty() or not wax_drag.is_empty()
 	if not captured or not event is InputEventMouse: return
 	previous_pointer=pointer
 	pointer=get_global_transform_with_canvas().affine_inverse()*event.position
@@ -543,6 +554,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			else: _release()
 
 func _motion(_event: InputEventMouseMotion) -> void:
+	if dragged_tool:
+		dragged_tool.position += pointer-previous_pointer
 	if dragged:
 		dragged.position = (pointer-grab_offset).clamp(Vector2(70,170),Vector2(1510,810))
 	if ink_target:
@@ -559,7 +572,7 @@ func _motion(_event: InputEventMouseMotion) -> void:
 		fold_amount = clampf((600-pointer.y)/230.0,0,1) if fold == 0 else clampf((pointer.y-300)/225.0,0,1)
 	if mode == Mode.ENVELOPE:
 		if packing_drag == "letter": packed_letter_at=pointer
-		if packing_drag == "flap": envelope_flap=clampf((pointer.y-330)/210.0,0,1)
+		if packing_drag == "flap": envelope_flap=clampf(flap_drag_start+(pointer.y-flap_drag_y)/330.0,0,1)
 	if mode == Mode.WAX_SEALING and wax_drag == "match" and not match_lit:
 		if Rect2(325,595,165,75).has_point(pointer):
 			match_heat += pointer.distance_to(previous_pointer)
@@ -577,13 +590,16 @@ func _motion(_event: InputEventMouseMotion) -> void:
 func _press() -> void:
 	match mode:
 		Mode.DESK,Mode.CUTTING_MAT:
+			if scissors_tool.is_visible_in_tree() and scissors_tool.contains_point(pointer):
+				dragged_tool=scissors_tool;tool_drag_start=pointer;return
+			# A sheet on the mat may cover the knife artwork; the explicit button
+			# remains available, while uncovered tools are still directly usable.
 			var paper=paper_at(pointer)
 			if paper and paper!=main_paper:
 				select_paper(paper)
 				if tool=="choose_scissors": use_tool("scissors");return
 				checkpoint();dragged=paper;grab_offset=pointer-paper.position;paper.z_index=papers.get_child_count()+1
 				audio.play("PAPER_MOVE",0.5);return
-			if mode==Mode.CUTTING_MAT: return
 			var objects=tools_root.get_children();objects.reverse()
 			for object in objects:
 				if object.contains_point(pointer): use_tool(object.action);return
@@ -603,12 +619,20 @@ func _press() -> void:
 		Mode.FOLDING: fold_drag=true
 		Mode.ENVELOPE:
 			if not envelope_inserted and pointer.distance_to(packed_letter_at)<160: packing_drag="letter"
-			elif envelope_inserted: packing_drag="flap"
+			elif envelope_inserted and insert_amount>=1:
+				packing_drag="flap";flap_drag_y=pointer.y;flap_drag_start=envelope_flap
 		Mode.WAX_SEALING: _wax_press()
 
 func _release() -> void:
+	if dragged_tool:
+		var moved := tool_drag_start.distance_to(pointer)>6
+		dragged_tool=null
+		var target_paper=paper_at(pointer)
+		if moved and target_paper and target_paper.is_cuttable: select_paper(target_paper);use_tool("scissors")
+		elif not moved: use_tool("scissors")
+		return
 	if dragged:
-		if mode==Mode.CUTTING_MAT and Rect2(385,190,830,530).has_point(dragged.position):
+		if mat_tool.contains_point(dragged.position):
 			mat_paper_id=dragged.object_id
 			say("纸已经铺在刻板上。现在可以拿起刻刀。")
 		audio.play("PAPER_PRESS",0.4);dragged=null
@@ -617,7 +641,9 @@ func _release() -> void:
 		tape_pulling=false;tape_pending=tape_start.distance_to(tape_end)>20
 		say("胶带仍连着卷。点左下剪刀，剪断这段胶带。")
 	if mode==Mode.SCISSOR_CUTTING: cutting=false;cut_handle=-1
-	if mode==Mode.KNIFE_CUTTING and cutting: cutting=false;_finish_knife()
+	if mode==Mode.KNIFE_CUTTING and cutting:
+		if knife_path.is_empty() or knife_path[-1].distance_to(pointer)>0.5: knife_path.append(pointer)
+		cutting=false;_finish_knife()
 	if mode==Mode.FOLDING and fold_drag:
 		fold_drag=false
 		if fold_amount>0.65:
@@ -661,13 +687,24 @@ func _scissor_motion() -> void:
 				_split_focused(PackedVector2Array([a-tangent,b+tangent,b+tangent+normal,a-tangent+normal]),"scissors")
 
 func _finish_knife() -> void:
-	if not focused or knife_path.size()<3: return
+	if not focused or knife_path.size()<2: knife_path.clear();return
 	var local_path := PackedVector2Array()
 	for point in knife_path: local_path.append(focused.local_pixel(point))
-	if knife_path[0].distance_to(knife_path[-1])>28:
+	if local_path.size()<3 or knife_path[0].distance_to(knife_path[-1])>28:
 		# An open stroke must enter and leave the paper. Close it around the
 		# clockwise edge, keeping the actual curved stroke as the cut boundary.
 		var dimensions: Vector2=focused.image.get_size()
+		# Mouse strokes normally begin/end beyond the paper. Clip that actual
+		# crossing instead of rejecting it for being over 20 pixels outside.
+		for endpoint in [0,local_path.size()-1]:
+			var near := _border_point(local_path[endpoint],dimensions)
+			if local_path[endpoint].distance_to(near)<=20: local_path[endpoint]=near
+		var boundary := PackedVector2Array([Vector2.ZERO,Vector2(dimensions.x,0),dimensions,Vector2(0,dimensions.y)])
+		var paths := Geometry2D.intersect_polyline_with_polygon(local_path,boundary)
+		if paths.size()!=1 or paths[0].size()<2:
+			knife_path.clear();say("让这一刀穿过纸面，或在纸上闭合一圈。")
+			return
+		local_path=paths[0]
 		var first := _border_point(local_path[0],dimensions)
 		var last := _border_point(local_path[-1],dimensions)
 		if local_path[0].distance_to(first)>20 or local_path[-1].distance_to(last)>20:
@@ -936,26 +973,48 @@ func _draw_folding() -> void:
 	_caption("01 / 下缘向上" if fold==0 else "02 / 上缘向下",Vector2(670,762),21,CREAM)
 
 func _draw_envelope() -> void:
+	var body := Rect2(760,435,525,295)
+	if envelope_flap <= 0.5: _draw_envelope_flap(body,envelope_flap)
 	if envelope_inserted and insert_amount<1:
 		draw_style_box(_paper_style(),Rect2(Vector2(840,265).lerp(Vector2(840,445),insert_amount),Vector2(350,136*(1-insert_amount))))
-	_sprite("envelope",Rect2(745,290,565,390))
+	_draw_envelope_body(body)
+	if envelope_flap > 0.5: _draw_envelope_flap(body,envelope_flap)
 	if not envelope_inserted:
 		var at:=packed_letter_at
 		if packing_drag=="letter" and at.distance_to(Vector2(995,450))<135: at=at.lerp(Vector2(995,450),0.22)
 		draw_style_box(_paper_style(),Rect2(at-Vector2(175,68),Vector2(350,136)))
 		draw_line(at+Vector2(-165,-15),at+Vector2(165,-15),Color(0.36,0.29,0.22,0.16),1)
-	else:
-		var flap:=PackedVector2Array([Vector2(760,435),Vector2(1285,435),Vector2(1020,290+envelope_flap*325)])
-		draw_colored_polygon(flap,Color("e9dbc0"))
-		draw_polyline(PackedVector2Array([flap[0],flap[2],flap[1]]),Color("bda88b"),2,true)
+
+func _envelope_regions() -> Array[Rect2]:
+	var texture: AtlasTexture = sprites.envelope
+	var region := Rect2(280,20,976,960)
+	# The source artwork's horizontal fold is at y=432. Keep its painted
+	# edge, grain and alpha; split only the rendering, never paint over it.
+	var hinge := 432.0
+	return [Rect2(region.position,Vector2(region.size.x,hinge-region.position.y)),
+		Rect2(region.position.x,hinge,region.size.x,region.end.y-hinge)]
+
+func _draw_envelope_body(body: Rect2) -> void:
+	var texture: AtlasTexture = sprites.envelope
+	draw_texture_rect_region(texture.atlas,body,_envelope_regions()[1])
+
+func _draw_envelope_flap(body: Rect2, closure: float) -> void:
+	var texture: AtlasTexture = sprites.envelope
+	var source := _envelope_regions()[0]
+	var height := source.size.y * body.size.x / source.size.x
+	var tilt := cos(clampf(closure,0,1) * PI)
+	if absf(tilt) < 0.002: return
+	draw_set_transform(body.position,0,Vector2(1,tilt))
+	draw_texture_rect_region(texture.atlas,Rect2(0,-height,body.size.x,height),source)
+	draw_set_transform(Vector2.ZERO)
 
 func _draw_wax() -> void:
 	# The extracted tray stays together on the desk; focus provides independently
 	# moving tools with the same wood, brass and wax palette.
-	draw_style_box(_paper_style(),Rect2(760,335,480,300))
-	draw_colored_polygon(PackedVector2Array([Vector2(760,335),Vector2(1000,475),Vector2(1240,335)]),Color("e7d6b9"))
-	draw_line(Vector2(760,335),Vector2(1000,475),Color("b19a78"),2,true)
-	draw_line(Vector2(1240,335),Vector2(1000,475),Color("b19a78"),2,true)
+	# Put the painted flap tip at the wax interaction point (1000,477).
+	var envelope_body := Rect2(760,275,480,270)
+	_draw_envelope_body(envelope_body)
+	_draw_envelope_flap(envelope_body,1.0)
 	_sprite("matchbox",Rect2(300,595,190,100))
 	# Candle and animated, layered translucent flame.
 	_sprite("candle",Rect2(440,370,142,210))

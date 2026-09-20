@@ -6,7 +6,7 @@ var action := ""
 var lift := 0.0
 
 func _process(delta: float) -> void:
-	var target := -5.0 if hovered else 0.0
+	var target := -5.0 if hovered and object_id != "mat" else 0.0
 	if absf(lift - target) > 0.05:
 		lift = lerpf(lift, target, minf(delta * 15.0, 1.0))
 		queue_redraw()

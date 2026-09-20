@@ -87,9 +87,7 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _speech_rect() -> Rect2:
-	var side := 0 if current_line.is_empty() else int(current_line[0])
-	var head := _head(side)
-	return Rect2(Vector2(clampf(head.x-265,20,1050),clampf(head.y-155,240,670)),Vector2(530,160))
+	return Rect2(Vector2(535,712),Vector2(530,160))
 
 func _text(value: String, baseline: Vector2, font_size: int, color: Color, font: Font = null) -> void:
 	var used: Font = PaperLanguage.handwriting if font==null else font

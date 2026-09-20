@@ -98,13 +98,8 @@ func _has_paper_parent(node: Node) -> bool:
 		at=at.get_parent()
 	return false
 
-func near_actor(stage: Node, extent: Vector2, world_x: float = -1.0) -> Vector2:
-	if not is_instance_valid(stage): return Vector2(590,260)
-	var x: float = stage.player_x if world_x<0 else world_x
-	var screen_x: float = x-stage.camera_x
-	var ground: float = stage._actor_ground_at(x)
-	var head: float = ground-stage._actor_height()
-	return Vector2(clampf(screen_x+35,24,1576-extent.x),clampf(head-95,70,850-extent.y))
+func near_actor(_stage: Node, extent: Vector2, _world_x: float = -1.0) -> Vector2:
+	return Vector2((1600-extent.x)*.5,900-extent.y-28)
 
 func selected_button(button: Button, selected: bool) -> void:
 	button.set_meta("paper_selected",selected)

@@ -66,6 +66,7 @@ func run() -> void:
 	scene.add_child(talk); await settle()
 	talk._show_vendor_choices(); await settle()
 	check(talk.speech_card.get_theme_stylebox("panel").bg_color.a>.8,"Dialogue is restored dark bubble")
+	check(is_equal_approx(talk.speech_card.position.y+talk.speech_card.size.y,872),"Dialogue and choices align above bottom edge")
 	await capture("speech")
 	talk.queue_free(); await settle()
 	scene._show_line("尘缘","海风把刚才的话带远了一点。我们沿着路再走走吧。")

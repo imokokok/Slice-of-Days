@@ -270,14 +270,6 @@ func _input(event: InputEvent) -> void:
 	else: return
 	get_viewport().set_input_as_handled()
 
-func _position_card(speaker: String) -> void:
-	var scene := get_parent()
-	var world: Control = scene.get("street") if scene.get("street") != null else scene.get("stage")
-	if world == null: return
-	var actor_x := float(world.player_x)
-	if speaker != "player":
-		for point in world.hotspots:
-			if str(point.get("id","")) == npc or (not shop_id.is_empty() and str(point.get("kind","")) == "shopkeeper"): actor_x = float(point.x); break
-	var x := actor_x-float(world.camera_x)
-	var head := float(world.call("_actor_ground_at",actor_x))-float(world.call("_actor_height"))
-	speech_card.position = Vector2(clampf(x-215,24,1146),clampf(head-speech_card.size.y-18,140,495))
+func _position_card(_speaker: String) -> void:
+	# Keep the complete dialogue and its choices above the lower screen edge.
+	speech_card.position=Vector2((1600-speech_card.size.x)*.5,900-speech_card.size.y-28)

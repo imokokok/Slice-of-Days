@@ -16,7 +16,7 @@ Solmere 主项目继续通过「代写与拼贴书信」进入。`../Main.tscn` 
 - 刻刀：先点击绿色刻板，把纸实际拖放到刻板，再拿刻刀。闭合路径挖出局部并留下透明孔洞；从纸边到另一纸边分开纸张。
 - 胶带：按住拉出，松开仍与卷相连，再点击左下剪刀剪断。裁下的胶带可移动、旋转和覆盖纸片。
 - 笔：点击后按住在纸上写画，右键切换两种笔宽，Esc 放回；墨迹随纸张移动和裁切。
-- 打字机：直接敲键盘，支持空格、退格、回车；SAVE 抽出可再次裁切的打字纸。打字草稿自动保存。
+- 打字机：直接敲键盘，支持空格、退格、回车和 Ctrl+V；每个字依次落墨，配合同步按键和音效。中英文按实际字宽换行，预览与抽纸共用排版；SAVE 会等队列打完再抽出可裁切的打字纸。打字草稿（含待打印内容）自动保存。
 - 完成：下缘向上折、上缘向下折；拖入信封、下拉信封盖；火柴在盒侧划动后点灯芯；勺子舀蜡、放到火上约六秒；移至封口倒蜡；印章压一秒后抬起；冷却后才出现 SEND。
 - Esc 返回桌面；专注操作时其他工具不响应。进入邮局后桌面停止响应输入。
 
@@ -34,6 +34,7 @@ Letters 进入原有漂流瓶邮局。历史信可回复，发新信后必须回
 
 ```sh
 godot --path . --script res://tests/integration/test_letter_workshop.gd -- --workshop-test --fresh
+godot --path . --script res://tests/integration/test_typewriter.gd -- --workshop-test --fresh
 godot --path . --script res://tests/integration/test_collage_viewport.gd -- --workshop-test --fresh
 ```
 

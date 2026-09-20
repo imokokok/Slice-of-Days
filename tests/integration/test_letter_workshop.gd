@@ -85,9 +85,11 @@ func run() -> void:
 	var key:=InputEventKey.new()
 	key.keycode=KEY_H;key.unicode=72;key.pressed=true
 	w._unhandled_input(key)
+	w._advance_typewriter(0.1)
 	check(w.typed_text=="H","Physical keyboard should type")
 	check(w.papers.get_child_count()==count_before_tape+1,"Typing must not alter desk objects")
 	w.typed_text="Good words find a way.\nSee you by the sea."
+	w.type_ink.queue_redraw()
 	await capture("workshop-typewriter")
 	await w.save_typed_paper()
 	check(w.active.paper_kind=="typed" and w.active.is_cuttable,"Typewriter output must become cuttable paper")

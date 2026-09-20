@@ -6,6 +6,7 @@ const Audio = preload("../scripts/audio_manager.gd")
 const PaperArt = preload("../scripts/paper_art.gd")
 const BottleClient = preload("../scripts/bottle_client.gd")
 const BottleDock = preload("../scripts/bottle_dock.gd")
+const TypeLayout = preload("typewriter_layout.gd")
 const SIZE := Vector2(1600,900)
 const INK := Color("443f32")
 const CREAM := Color("f6ebd5")
@@ -84,6 +85,10 @@ var eject_amount := 0.0
 var typed_preview: Texture2D
 var typepaper: Node2D
 var type_viewport: SubViewport
+var type_ink: Node2D
+var type_queue: Array[String] = []
+var type_delay := 0.0
+var type_save_requested := false
 var fold := 0
 var fold_amount := 0.0
 var fold_drag := false
@@ -201,6 +206,7 @@ func _process(delta: float) -> void:
 	save_clock += delta
 	sound_clock += delta
 	key_age += delta
+	if mode == Mode.TYPEWRITER: _advance_typewriter(delta)
 	carriage = lerpf(carriage, 0, minf(delta * 8, 1))
 	var target := 0.0 if mode in [Mode.DESK,Mode.DRAWING,Mode.TAPE,Mode.SENT] else 1.0
 	focus_amount = lerpf(focus_amount,target,minf(delta*9,1))
@@ -316,7 +322,8 @@ func build_ui() -> void:
 		if mode == Mode.CUTTING_MAT:
 			_button("拿起刻刀",Rect2(688,760,220,40),take_knife)
 		if mode == Mode.TYPEWRITER:
-			_button("SAVE · 抽出纸张",Rect2(1160,715,212,46),save_typed_paper)
+			var save_button := _button("正在逐字打完…" if type_save_requested else "SAVE · 抽出纸张",Rect2(1160,715,212,46),save_typed_paper)
+			save_button.disabled = type_save_requested
 			_label("直接敲键盘 · Enter 换行 · Backspace 退格",Rect2(555,155,660,32),16)
 		if mode == Mode.WAX_SEALING and wax_step == 6:
 			_button("SEND · 寄出",Rect2(1120,750,210,52),send_letter)
@@ -431,6 +438,7 @@ func return_desk() -> void:
 		wax_drag = ""
 	_return_focus()
 	mode = Mode.DESK
+	type_save_requested = false
 	DisplayServer.window_set_ime_active(false)
 	tool = "move"
 	cutting = false
@@ -445,6 +453,8 @@ func use_tool(id: String) -> void:
 	match id:
 		"typewriter":
 			mode=Mode.TYPEWRITER; papers.hide();tools_root.hide()
+			_ensure_type_page()
+			type_ink.queue_redraw()
 			DisplayServer.window_set_ime_active(true)
 			DisplayServer.window_set_ime_position(Vector2i(680,300))
 			say("按下一个字母，听见一小声回应。")
@@ -736,47 +746,94 @@ func finish_tape() -> void:
 
 func _type_key(event: InputEventKey) -> void:
 	if event.keycode==KEY_ESCAPE: return_desk();return
+	if event.echo or type_save_requested: return
+	if event.ctrl_pressed and event.keycode==KEY_V:
+		_queue_type_text(DisplayServer.clipboard_get())
+		return
 	if event.ctrl_pressed or event.alt_pressed or event.meta_pressed: return
-	type_key=OS.get_keycode_string(event.keycode)
-	key_age=0
 	match event.keycode:
-		KEY_BACKSPACE:
-			typed_text=typed_text.left(maxi(0,typed_text.length()-1));audio.play("TYPE_BACKSPACE",0.6)
-		KEY_ENTER,KEY_KP_ENTER:
-			if _type_fits(typed_text+"\n"): typed_text+="\n"
-			carriage=25;audio.play("TYPE_RETURN",0.8)
-		KEY_SPACE:
-			if _type_fits(typed_text+" "): typed_text+=" "
-			audio.play("TYPE_SPACE",0.45)
+		KEY_BACKSPACE: _queue_type_text("\b")
+		KEY_ENTER,KEY_KP_ENTER: _queue_type_text("\n")
+		KEY_SPACE: _queue_type_text(" ")
 		_:
-			if event.unicode>=32 and _type_fits(typed_text+String.chr(event.unicode)):
-				typed_text+=String.chr(event.unicode)
-				audio.play("TYPE_KEY",0.55)
+			if event.unicode>=32: _queue_type_text(String.chr(event.unicode))
+
+func _apply_type_operation(text: String, operation: String) -> String:
+	return text.left(maxi(0,text.length()-1)) if operation=="\b" else text+operation
+
+func _pending_type_text() -> String:
+	var text:=typed_text
+	for operation in type_queue: text=_apply_type_operation(text,operation)
+	return text
+
+func _queue_type_text(text: String) -> void:
+	var projected:=_pending_type_text()
+	for letter in text.replace("\r\n","\n").replace("\r","\n").replace("\t","    "):
+		if letter.unicode_at(0)<32 and letter not in ["\n","\b"]: continue
+		var next:=_apply_type_operation(projected,letter)
+		if _type_fits(next) and type_queue.size()<512:
+			type_queue.append(letter)
+			projected=next
+		elif letter!="\b":
+			say("这张纸写满了。抽出纸张，再写下一张。")
+			break
+
+func _advance_typewriter(delta: float) -> void:
+	if busy: return
+	type_delay=maxf(0,type_delay-delta)
+	if type_delay>0: return
+	if type_queue.is_empty():
+		if type_save_requested:
+			type_save_requested=false
+			save_typed_paper()
+		return
+	# At most one strike per rendered frame, even after a slow frame or IME batch.
+	var operation: String=type_queue.pop_front()
+	typed_text=_apply_type_operation(typed_text,operation)
+	type_key=operation.to_upper()
+	key_age=0
+	type_delay=0.085
+	var sound:="TYPE_KEY"
+	match operation:
+		"\n": type_key="Enter";carriage=25;type_delay=0.30;sound="TYPE_RETURN"
+		"\b": type_key="Backspace";sound="TYPE_BACKSPACE"
+		" ": type_key="Space";sound="TYPE_SPACE"
+	audio.play(sound,0.55)
+	_ensure_type_page()
+	type_ink.queue_redraw()
 	queue_redraw()
 
 func _type_fits(text: String) -> bool:
-	var lines:=0
-	for line in text.split("\n"): lines+=maxi(1,ceili(line.length()/30.0))
-	return lines<=7 and text.length()<=210
+	return TypeLayout.arrange(text,mono).fits
 
-func _ink_text(target: Node2D, text: String, origin: Vector2, font_size: int, line_width: int) -> void:
-	var col:=0
-	var row:=0
-	for i in text.length():
-		var letter:=text[i]
-		if letter=="\n": col=0;row+=1;continue
-		if col>=line_width: col=0;row+=1
-		var at:=origin+Vector2(col*font_size*0.61+sin(i*19.2)*0.5,row*font_size*1.5+sin(i*32.5)*0.45)
-		var opacity:=0.72+0.22*absf(sin(i*12.17+0.9))
-		target.draw_string(mono,at,letter,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color(INK,opacity))
-		col+=1
+func _draw_type_ink() -> void:
+	for glyph in TypeLayout.arrange(typed_text,mono).glyphs:
+		var index: int=glyph.index
+		var at: Vector2=glyph.position+Vector2(sin(index*19.2)*0.35,sin(index*32.5)*0.35)
+		var opacity:=0.84+0.15*absf(sin(index*12.17+0.9))
+		type_ink.draw_string(mono,at,glyph.text,HORIZONTAL_ALIGNMENT_LEFT,-1,TypeLayout.FONT_SIZE,Color(INK,opacity))
+
+func _ensure_type_page() -> void:
+	if is_instance_valid(type_viewport): return
+	type_viewport=SubViewport.new()
+	type_viewport.size=TypeLayout.PAGE_SIZE
+	type_viewport.transparent_bg=true
+	type_viewport.render_target_update_mode=SubViewport.UPDATE_ALWAYS
+	add_child(type_viewport)
+	type_ink=Node2D.new()
+	type_viewport.add_child(type_ink)
+	type_ink.draw.connect(_draw_type_ink)
+	type_ink.queue_redraw()
 
 func _draw_typewriter() -> void:
 	var zoom:=lerpf(0.90,1.0,focus_amount)
 	var box:=Rect2(Vector2(365,198)+Vector2(carriage,0),Vector2(870,600)*zoom)
 	_sprite("typewriter",box)
 	draw_set_transform(box.position,0,Vector2.ONE*zoom)
-	_ink_text(self,typed_text,Vector2(320,95),17,30)
+	if is_instance_valid(type_viewport):
+		# Ink follows the perspective of the actual paper and cannot reach the keys.
+		var paper_quad:=PackedVector2Array([Vector2(313,48),Vector2(755,80),Vector2(723,207),Vector2(281,177)])
+		draw_polygon(paper_quad,PackedColorArray([Color.WHITE]),PackedVector2Array([Vector2.ZERO,Vector2(1,0),Vector2.ONE,Vector2(0,1)]),type_viewport.get_texture())
 	var rows := ["QWERTYUIOP","ASDFGHJKL","ZXCVBNM"]
 	for row in rows.size():
 		for i in rows[row].length():
@@ -795,31 +852,30 @@ func _draw_typewriter() -> void:
 		draw_line(Vector2(520,385),Vector2(1145,418),Color("746953"),3,true)
 
 func save_typed_paper() -> void:
-	if typed_text.strip_edges().is_empty(): say("先敲下一句话，再抽出纸张。") ;return
+	if busy or mode!=Mode.TYPEWRITER: return
+	if _pending_type_text().strip_edges().is_empty(): say("先敲下一句话，再抽出纸张。") ;return
+	if not type_queue.is_empty():
+		type_save_requested=true
+		build_ui()
+		return
 	busy=true
 	checkpoint()
 	audio.play("TYPE_ROLLER",0.6)
-	var viewport:=SubViewport.new()
-	viewport.size=Vector2i(460,300)
-	viewport.transparent_bg=true
-	viewport.render_target_update_mode=SubViewport.UPDATE_ALWAYS
-	add_child(viewport)
-	var page:=Node2D.new()
-	viewport.add_child(page)
-	var blank:=ImageTexture.create_from_image(_blank_paper(viewport.size))
-	page.draw.connect(func(): page.draw_texture(blank,Vector2.ZERO);_ink_text(page,typed_text,Vector2(25,43),18,30))
-	page.queue_redraw()
+	_ensure_type_page()
+	type_ink.queue_redraw()
 	await RenderingServer.frame_post_draw
-	var image:=viewport.get_texture().get_image()
+	var image:=_blank_paper(TypeLayout.PAGE_SIZE)
+	var ink_image:=type_viewport.get_texture().get_image()
+	image.blend_rect(ink_image,Rect2i(Vector2i.ZERO,TypeLayout.PAGE_SIZE),Vector2i.ZERO)
 	typed_preview=ImageTexture.create_from_image(image)
 	eject_amount=0
 	var tween:=create_tween()
 	tween.tween_property(self,"eject_amount",1.0,0.65)
 	await tween.finished
-	viewport.queue_free()
 	audio.play("PAPER_MOVE",0.6)
 	var paper=create_paper(image,Vector2(800,580),"打字纸","typed")
 	typed_text=""
+	type_ink.queue_redraw()
 	select_paper(paper)
 	eject_amount=0
 	busy=false
@@ -1063,7 +1119,7 @@ func snapshot() -> Dictionary:
 			var s: Vector2=focused_original.scale
 			record.position=[p.x,p.y];record.scale=[s.x,s.y];record.rotation=focused_original.rotation
 		records.append(record)
-	return {"version":3,"papers":records,"stage":stage,"letter_mode":letter_mode,"parent":reply_parent,"server":compose_server,"type_draft":typed_text,
+	return {"version":3,"papers":records,"stage":stage,"letter_mode":letter_mode,"parent":reply_parent,"server":compose_server,"type_draft":_pending_type_text(),
 		"title":letter_title,"request_id":bottle_request_id,"published_id":bottle_published_id,
 		"fold":fold,"inserted":envelope_inserted,"flap":envelope_flap,"wax_step":wax_step,"wax_heat":wax_heat,"wax_pour":wax_pour,
 		"wax_cool":wax_cool,"candle":candle_lit,"spoon":spoon_filled,"spoon_on_fire":spoon_on_fire,"imprint":stamp_imprint,
@@ -1080,6 +1136,8 @@ func restore_snapshot(data: Dictionary) -> void:
 		else: paper.free()
 	stage=data.get("stage","WORKBENCH")
 	typed_text=data.get("type_draft","")
+	type_queue.clear();type_delay=0;type_save_requested=false
+	if is_instance_valid(type_ink): type_ink.queue_redraw()
 	letter_mode=data.get("letter_mode","npc");reply_parent=data.get("parent",{});compose_server=data.get("server","")
 	letter_title=data.get("title","窗边的一封信");bottle_request_id=data.get("request_id","");bottle_published_id=int(data.get("published_id",0))
 	fold=int(data.get("fold",0));envelope_inserted=data.get("inserted",false);envelope_flap=float(data.get("flap",0))

@@ -40,7 +40,8 @@ func _draw() -> void:
 			draw_line(point-normal,point+normal,Color(0.94,0.88,0.7,0.55),2,true)
 		if w.sprites.has("tape"):
 			draw_set_transform(w.tape_end,w.tape_angle,Vector2.ONE)
-			draw_texture_rect(w.sprites.tape,Rect2(-32,-30,64,60),false)
+			var roll_size: Vector2 = w.tape_roll.bounds.size
+			draw_texture_rect(w.sprites.tape,Rect2(-roll_size * 0.5,roll_size),false)
 			draw_set_transform(Vector2.ZERO)
 	if not w.hovered_title.is_empty() and w.mode==w.Mode.DESK:
 		var at: Vector2=w.pointer+Vector2(18,-20)

@@ -34,6 +34,7 @@ var mono: SystemFont
 var ui: CanvasLayer
 var papers: Node2D
 var tools_root: Node2D
+var tape_roll: Node2D
 var main_paper: Node2D
 var active: Node2D
 var focused: Node2D
@@ -189,6 +190,7 @@ func _make_tool(id: String, caption: String, rect: Rect2) -> void:
 	object.bounds = rect
 	object.texture = sprites.get(id)
 	tools_root.add_child(object)
+	if id == "tape": tape_roll = object
 
 func _blank_paper(dimensions: Vector2i) -> Image:
 	var image := Image.create(dimensions.x, dimensions.y, false, Image.FORMAT_RGBA8)
@@ -202,6 +204,8 @@ func _blank_paper(dimensions: Vector2i) -> Image:
 
 func _process(delta: float) -> void:
 	if not ready_done: return
+	# The roll is either on the desk or at the loose strip's end, never both.
+	tape_roll.visible = not (tape_pulling or tape_pending)
 	elapsed += delta
 	save_clock += delta
 	sound_clock += delta

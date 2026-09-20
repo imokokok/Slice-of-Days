@@ -189,17 +189,32 @@ func _selection_toolbar() -> void:
 
 func _material_tray() -> void:
 	if is_instance_valid(detail): detail.queue_free()
-	detail=panel(body,Vector2(840,170),Vector2(445,460),Color("faf7ee"))
-	button(detail,"收起素材",Vector2(20,10),Vector2(400,35),func() -> void: detail.queue_free())
-	var rows := scroll_area(detail,Vector2(15,55),Vector2(415,385))
+	detail=panel(body,Vector2(825,150),Vector2(470,485),Color("faf7ee"))
+	button(detail,"收起素材 ×",Vector2(275,8),Vector2(180,35),func() -> void: detail.queue_free())
+	label(detail,"拖一张到纸上",Vector2(18,13),Vector2(245,32),19,BLUE)
+	var scroll := ScrollContainer.new()
+	scroll.position=Vector2(8,52); scroll.size=Vector2(454,418)
+	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; detail.add_child(scroll)
+	var spread := Control.new(); spread.name="LooseMaterials"; scroll.add_child(spread)
+	var index := 0
+	var bottom := 0.0
 	for id in ResidencySystem.state().materials:
 		var item: Dictionary = ResidencySystem.state().materials[id]
 		if item.get("kind","")=="official": continue
-		var piece := PIECE.new(); piece.material_id=str(id); piece.custom_minimum_size=Vector2(395,55); rows.add_child(piece)
-		button(piece,str(item.get("title","素材")),Vector2.ZERO,Vector2(390,50),func() -> void:
+		var piece := preload("res://scripts/residency/material_cutout.gd").new()
+		piece.material_id=str(id); piece.item=item
+		var kind := str(item.get("kind","note"))
+		piece.size=Vector2([170,184,160,176][index%4],155 if kind=="photo" else 172 if kind=="receipt" else 112+(index%3)*12)
+		piece.position=Vector2(24+(index%2)*207+sin(index*2.0)*8,18+floori(index/2.0)*178+(index%2)*14)
+		piece.pivot_offset=piece.size*.5; piece.rotation=[-.065,.045,-.035,.075][index%4]
+		spread.add_child(piece)
+		piece.activated.connect(func() -> void:
 			canvas._drop_data(Vector2(420,210),{"residency_material":id}); detail.queue_free())
-		var source: Button = piece.get_child(0)
-		source.set_drag_forwarding(piece._get_drag_data,Callable(),Callable())
+		bottom=maxf(bottom,piece.position.y+piece.size.y+22)
+		index+=1
+	spread.custom_minimum_size=Vector2(430,maxf(410,bottom))
+	if index==0: label(spread,"生活留下的纸片，
+会慢慢聚在这里。",Vector2(45,90),Vector2(350,100),22,BLUE)
 
 func _write_piece() -> void:
 	if is_instance_valid(detail): detail.queue_free()

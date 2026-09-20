@@ -50,7 +50,18 @@ func run() -> void:
 	check(paper.canvas.pieces.size()==1,"Removal persists")
 	var residency = root.get_node("ResidencySystem")
 	var note_id: String = residency.add_note("测试素材")
+	if OS.get_cmdline_user_args().has("--screenshots"):
+		for i in 6:
+			residency.state().materials["tray_example_"+str(i)]={"kind":["note","receipt","sound","recognition"][i%4],"title":["海边捡来的字句","海盐豆罐头 · 15 元","午后的海浪","CICI 留下的签名","一封折起来的信","和居民一起散步"][i]}
 	paper._material_tray()
+	var spread: Node = paper.detail.find_child("LooseMaterials",true,false)
+	check(spread!=null and spread.get_child_count()>0,"Material tray contains loose cutouts")
+	if spread!=null:
+		check(not spread.get_child(0) is Button and spread.get_child(0).rotation!=0,"Materials are scattered paper instead of button rows")
+	if OS.get_cmdline_user_args().has("--screenshots"):
+		await process_frame
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("user://ui_material_collage.png")
 	paper.canvas._drop_data(Vector2(400,150),{"residency_material":note_id})
 	check(paper.canvas.pieces.size()==2,"Collected material can enter composition")
 	for mode in ["notebook","gallery","sound_library","pause","settings"]:

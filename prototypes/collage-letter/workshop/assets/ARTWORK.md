@@ -57,4 +57,3 @@ Extract only the tall wooden handled brass wax seal stamp from the right of this
 ### matchbox.png
 
 Create a single complete matchbox and one wooden match lying just below it, as a warm hand-painted game sprite matching this reference. Cream paper matchbox, tiny red floral print, clearly visible rough brown striking strip along front side. No text. Genuine transparent alpha background, isolated large centered sprite, no other objects, no table, no halo or shadow.
-

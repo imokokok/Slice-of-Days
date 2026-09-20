@@ -36,8 +36,8 @@ func argument_state() -> Dictionary:
 
 func argument_pending() -> bool:
 	# The old per-day encounter marker was written as soon as the overlay opened.
-	# It therefore cannot decide whether the mandatory introduction was actually
-	# completed: saves made after leaving it early must enter it again.
+	# It therefore cannot decide whether the optional conversation was actually
+	# completed: leaving early keeps it available for another voluntary interaction.
 	return not bool(argument_state().get("finished", false))
 
 func mark_argument(finished: bool) -> void:

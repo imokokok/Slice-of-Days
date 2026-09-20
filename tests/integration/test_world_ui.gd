@@ -65,12 +65,12 @@ func run() -> void:
 	talk.npc="beetman"; talk.shop_id="produce_stall"; talk.shop_name="BEETMAN"
 	scene.add_child(talk); await settle()
 	talk._show_vendor_choices(); await settle()
-	check(talk.speech_card.get_theme_stylebox("panel").bg_color.a==0,"Dialogue is frameless")
+	check(talk.speech_card.get_theme_stylebox("panel").bg_color.a>.8,"Dialogue is restored dark bubble")
 	await capture("speech")
 	talk.queue_free(); await settle()
 	scene._show_line("尘缘","海风把刚才的话带远了一点。我们沿着路再走走吧。")
 	await settle()
-	check(scene.event_panel.get_theme_stylebox("panel").bg_color.a==0,"Event dialogue is frameless too")
+	check(scene.event_panel.get_theme_stylebox("panel").bg_color.a>.8,"Event dialogue is restored dark bubble too")
 	await capture("event")
 	scene.event_overlay.hide()
 	root.get_node("GameplayModuleSystem").begin_session("cooking")
@@ -88,7 +88,7 @@ func run() -> void:
 	room.cue_label.text="窗边的光慢慢移过地板。今天先记下这一刻。"
 	room.room_dialogue.show()
 	await settle()
-	check(room.room_dialogue.get_theme_stylebox("panel").bg_color.a==0,"Room dialogue shares frameless speech")
+	check(room.room_dialogue.get_theme_stylebox("panel").bg_color.a>.8,"Room dialogue shares restored dark bubble speech")
 	check(room.room_dialogue.position.y<room.stage._actor_ground_at(room.stage.player_x),"Room words stay near actor")
 	await create_timer(1.1).timeout
 	await capture("room")
@@ -98,4 +98,3 @@ func run() -> void:
 	room.get_node("GameplayShell").overlay.close(); await settle()
 	print("WORLD UI failures=",failures)
 	quit(failures)
-

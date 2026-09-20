@@ -51,6 +51,7 @@ func button_style(button: Button, in_scene := false) -> void:
 func _style(node: Control) -> void:
 	if not is_instance_valid(node) or not node.is_inside_tree() or node.is_queued_for_deletion(): return
 	if _context(node,["main_menu.gd","living_objects.gd","runtime_debug.gd","flowing_thought.gd"]): return
+	if speech(node): return
 	if node is Button:
 		button_style(node,speech(node))
 		if node.has_meta("paper_selected") and bool(node.get_meta("paper_selected")): selected_button(node,true)

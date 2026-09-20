@@ -1,6 +1,7 @@
 extends "res://extensions/hear_you/npc_dialogue.gd"
 ## Conversation stays on the live street. Only words and shared memories overlay it.
 signal finish_requested
+signal cancel_requested
 
 var street: Control
 var world_x := 0.0
@@ -36,6 +37,7 @@ func _draw() -> void:
 		_text(str(MEMORIES[index].title),rect.position+Vector2(76,54),18,INK)
 		_text("对方听见了" if decoded[index] else "拖给对方看看",rect.position+Vector2(76,82),14,MUTED)
 	var words_rect := _speech_rect()
+	_box(words_rect,Color("39463e",.92),Color.TRANSPARENT,5,0)
 	var speaker := ""
 	var words := ""
 	if not save_message.is_empty(): words = save_message
@@ -44,9 +46,9 @@ func _draw() -> void:
 	elif not current_line.is_empty():
 		speaker = NAMES[int(current_line[0])]
 		words = LocalizationSystem.text(str(current_line[1])).substr(0,int(typed))
-	_text(speaker,words_rect.position+Vector2(26,29),18,Color("d6b58d"))
-	_wrapped_text(words,words_rect.position+Vector2(26,64),22,Color("f4ead7"),480,30)
-	_text("拖动记忆到对方身上" if waiting else "点击 / 空格继续",words_rect.position+Vector2(26,124),14,Color("a8bbb7"))
+	_text(speaker,words_rect.position+Vector2(26,29),18,Color("f0e2c5"))
+	_wrapped_text(words,words_rect.position+Vector2(26,64),22,Color("f0e2c5"),480,30)
+	_text("拖动记忆到对方身上" if waiting else "点击 / 空格继续 · Esc 离开",words_rect.position+Vector2(26,124),14,Color("a8bbb7"))
 	if drag_index >= 0: _draw_token(drag_index,drag_position)
 	if return_index >= 0: _draw_token(return_index,return_position)
 
@@ -79,9 +81,8 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
-			# This is the opening's mandatory encounter. Escape may put a memory
-			# token back, but cannot dismiss the conversation before it is heard.
 			if drag_index >= 0: _cancel_drag()
+			cancel_requested.emit()
 		elif event.keycode in [KEY_SPACE,KEY_ENTER]: _advance_street()
 		get_viewport().set_input_as_handled()
 

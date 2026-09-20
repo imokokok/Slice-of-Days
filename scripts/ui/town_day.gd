@@ -521,18 +521,9 @@ func _process(delta: float) -> void:
 		GameState.advance_world_clock(delta)
 	if not street.enabled: route_hint.text = ""; return
 	route_hint.text = ""
-	_try_market_encounter()
 
 func _market_encounter_key() -> String:
 	return "market_encounter_%s_%d" % [GameState.current_role,GameState.current_day]
-
-func _try_market_encounter() -> void:
-	if not street.enabled or SceneRouter.transitioning or GameState.current_location != "produce_stall": return
-	if not DialogueSystem.argument_pending(): return
-	for item in street.hotspots:
-		if str(item.kind) == "argument" and absf(street.player_x-float(item.x)) < 115:
-			_start_market_encounter()
-			return
 
 func _start_market_encounter() -> void:
 	if is_instance_valid(conversation) or _guard_pocket_audio(): return
@@ -556,6 +547,8 @@ func _start_market_encounter() -> void:
 	words.street = street
 	words.world_x = _world_x(current_index,1210)
 	words.finish_requested.connect(_finish_market_encounter.bind(words))
+	words.cancel_requested.connect(func() -> void:
+		if is_instance_valid(conversation): conversation.queue_free())
 	conversation.add_child(words)
 	# _process recomputes the movement gate every frame.  Do not write a second
 	# permanent value here while a dialogue is opening.
@@ -803,6 +796,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _pocket_blocks_walking() or pocket_opening: return
 	if event_overlay.visible:
 		if event.is_action_pressed("ui_cancel"):
+			if speech_tween: speech_tween.kill()
 			event_overlay.hide()
 		elif (event.is_action_pressed("dialogue_advance") or event.is_action_pressed("ui_accept")) and dialogue_choices.size() == 1:
 			if is_instance_valid(spoken_line) and spoken_line.visible_characters >= 0 and spoken_line.visible_characters < spoken_line.text.length():

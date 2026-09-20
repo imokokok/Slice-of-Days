@@ -35,11 +35,11 @@ func _ready() -> void:
 	speech_card = panel
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("fffaf0",0.12)
+	style.bg_color = Color("39463e",0.92)
 	style.set_corner_radius_all(5)
 	panel.add_theme_stylebox_override("panel",style)
 	add_child(panel)
-	speaker_label = _label(panel,Vector2(18,12),Vector2(394,26),17,Color("eed577"))
+	speaker_label = _label(panel,Vector2(18,12),Vector2(394,26),17,Color("d6b58d"))
 	text_label = _label(panel,Vector2(18,47),Vector2(394,93),22,Color("f0e2c5"))
 	hint_label = _label(panel,Vector2(18,149),Vector2(394,25),13,Color("a8bbb7"))
 	hint_label.text = LocalizationSystem.text("Space 继续 · Esc 离开")
@@ -63,8 +63,6 @@ func _label(parent: Control, at: Vector2, dimensions: Vector2, font_size: int, c
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.add_theme_font_size_override("font_size",font_size)
 	label.add_theme_color_override("font_color",color)
-	label.add_theme_color_override("font_outline_color",Color("254966",.8))
-	label.add_theme_constant_override("outline_size",2)
 	parent.add_child(label)
 	return label
 

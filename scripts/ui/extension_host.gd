@@ -1,9 +1,9 @@
 extends Control
 
 const CREAM := Color("fff6e5")
-const INK := Color("332b28")
-const TERRACOTTA := Color("b85f45")
-const SEA := Color("557a80")
+const INK := Color("31658b")
+const TERRACOTTA := Color("31658b")
+const SEA := Color("31658b")
 const LETTER_DESIGN_SIZE := Vector2i(1440, 900)
 const LETTER_HOST_BAR_HEIGHT := 72.0
 
@@ -130,6 +130,9 @@ func _build_host_bar() -> void:
 		panel.position = Vector2(1210, 92)
 		if module_id == "tarot": panel.position.y = 0
 		panel.size = Vector2(360, 60)
+		panel.add_to_group("scene_speech")
+		leave.text = "收起"
+		complete_button.text = "带着回忆回去"
 		title.hide()
 		status_label.hide()
 		leave.position = Vector2(8, 8)

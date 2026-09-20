@@ -349,7 +349,7 @@ func _build_event_modal() -> void:
 	event_overlay.color = Color(0, 0, 0, 0.12)
 	event_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(event_overlay)
-	event_panel = _panel(event_overlay, Vector2(810, 260), Vector2(740, 360), Color("16232b", 0.98), Color("647676"))
+	event_panel = _panel(event_overlay, Vector2(810, 260), Vector2(540, 360), Color("16232b", 0.98), Color("647676"))
 	event_overlay.visible = false
 
 
@@ -729,21 +729,23 @@ func _clear_dialogue() -> void:
 	for child in event_panel.get_children():
 		event_panel.remove_child(child)
 		child.queue_free()
-	event_panel.position.x = 810 if street.player_x - street.camera_x < 800 else 50
+	event_panel.add_to_group("scene_speech")
+	event_panel.position = PaperLanguage.near_actor(street,event_panel.size)
+	PaperLanguage._style(event_panel)
 	event_overlay.visible = true
 	# _process recomputes the movement gate every frame.  Do not write a second
 	# permanent value here while an event panel is opening.
 
 func _show_line(speaker: String, text: String) -> void:
 	_clear_dialogue()
-	_label(event_panel, speaker, Vector2(32, 18), Vector2(675, 28), 19, Color("d6b58d"))
-	var line := _label(event_panel, text, Vector2(32, 61), Vector2(675, 180), 23, Color("ede3ce"))
+	_label(event_panel, speaker, Vector2(32, 18), Vector2(475, 28), 19, Color("d6b58d"))
+	var line := _label(event_panel, text, Vector2(32, 61), Vector2(475, 180), 23, Color("ede3ce"))
 	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	spoken_line = line
 	line.visible_characters = 0
 	speech_tween = create_tween()
 	speech_tween.tween_property(line, "visible_characters", line.text.length(), maxf(0.3, line.text.length() / 28.0))
-	var next := _button(event_panel, "继续  Space", Vector2(430, 288), Vector2(265, 43), "dialogue")
+	var next := _button(event_panel, "继续  Space", Vector2(230, 288), Vector2(265, 43), "dialogue")
 	next.pressed.connect(func() -> void: event_overlay.hide())
 	dialogue_choices.append(next)
 
@@ -755,18 +757,18 @@ func _show_dialogue_beat() -> void:
 			_resolve_event(staged_event_id)
 			return
 		_clear_dialogue()
-		_label(event_panel, "你说……    W / S 或 ↑ / ↓ 选择 · Enter 回应", Vector2(32, 16), Vector2(675, 35), 18, Color("ede3ce"))
+		_label(event_panel, "你说……    W / S 或 ↑ / ↓ 选择 · Enter 回应", Vector2(32, 16), Vector2(475, 35), 18, Color("ede3ce"))
 		var scroll := ScrollContainer.new()
 		scroll.position = Vector2(30, 62)
-		scroll.size = Vector2(680, 265)
+		scroll.size = Vector2(480, 265)
 		event_panel.add_child(scroll)
 		var box := VBoxContainer.new()
 		box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		scroll.add_child(box)
 		for i in choices.size():
 			var choice: Dictionary = choices[i]
-			var button := _button(box, "你：%s" % str(choice.get("label", "")), Vector2.ZERO, Vector2(650, 56), "dialogue")
-			button.custom_minimum_size = Vector2(650, 56)
+			var button := _button(box, "你：%s" % str(choice.get("label", "")), Vector2.ZERO, Vector2(450, 56), "dialogue")
+			button.custom_minimum_size = Vector2(450, 56)
 			button.pressed.connect(_resolve_event.bind(staged_event_id, str(choice.id)))
 			dialogue_choices.append(button)
 		if not dialogue_choices.is_empty(): dialogue_choices[0].grab_focus()
@@ -782,12 +784,7 @@ func _show_dialogue_beat() -> void:
 
 func _open_journal() -> void:
 	if _guard_pocket_audio(): return
-	_remember_position()
-	if not SaveManager.save_or_report("打开日志前保存失败"):
-		status_message = "存档写入失败，暂时无法离开当前画面。"
-		_refresh()
-		return
-	SceneRouter.journal()
+	if has_node("GameplayShell"): get_node("GameplayShell").open_paper("notebook")
 
 
 func _open_shop(shop_id: String) -> void:

@@ -1,12 +1,12 @@
 extends Control
 
 const REWARD_KEY := "community_clock_repair_paid"
-const INK := Color("342b28")
-const MUTED := Color("77685f")
-const PAPER := Color("fff4dc")
-const TERRACOTTA := Color("b85f45")
-const SEA := Color("557a80")
-const GOLD := Color("c59a55")
+const INK := Color("31658b")
+const MUTED := Color("698594")
+const PAPER := Color("faf7ee")
+const TERRACOTTA := Color("31658b")
+const SEA := Color("31658b")
+const GOLD := Color("eed577")
 const FACE_CENTER := Vector2(800, 425)
 const FACE_RADIUS := 205.0
 

@@ -9,7 +9,7 @@ func _ready() -> void:
 	selected = str(GameState.shared_state.get("map_destination", ""))
 	GameState.shared_state.erase("map_destination")
 	var title := Label.new()
-	title.text = LocalizationSystem.text("SOLMERE   /   小镇地图      %s · 第%d天 · %s · %d元" % [GameState.current_role, GameState.current_day, GameState.clock_text(), GameState.money])
+	title.text = LocalizationSystem.text("SOLMERE   /   我的手绘旅行地图")
 	title.position = Vector2(42, 28)
 	title.add_theme_font_size_override("font_size", 24)
 	add_child(title)
@@ -48,9 +48,9 @@ func _ready() -> void:
 	add_child(back)
 	_select(selected)
 func _draw() -> void:
-	draw_rect(Rect2(0,0,1600,900), Color("eddfbe"))
+	draw_rect(Rect2(0,0,1600,900), Color("faf7ee"))
 	draw_colored_polygon(PackedVector2Array([Vector2(825,80),Vector2(1030,80),Vector2(1030,290),Vector2(945,255),Vector2(850,220)]), Color("a0ccd0"))
-	var colors := [Color("a78058"),Color("b46f6a"),Color("508c9a"),Color("4c9c88")]
+	var colors := [Color("31658b"),Color("eed577"),Color("6d9fb9"),Color("8caa87")]
 	var routes: Array = WorldGraph.config.segments
 	for r in routes.size():
 		var ids: Array = routes[r].locations
@@ -60,7 +60,7 @@ func _draw() -> void:
 		for i in range(1, path.size()): draw_line(path[i-1],path[i],Color("8b9b86"),4,true)
 	for caption in [["住宅区 · A 的家 / B 的家 / 停车区",Vector2(300,100)],["主街 · 从左侧公交站出发",Vector2(40,315)],["文化街支路 · 巷尾可以转身返回",Vector2(100,570)],["海边观景台",Vector2(835,135)]]:
 		draw_string(ThemeDB.fallback_font,caption[1],LocalizationSystem.text(caption[0]),HORIZONTAL_ALIGNMENT_LEFT,-1,20,Color("294f56"))
-	draw_rect(Rect2(1038,90,540,745),Color("faf2de"))
+	draw_rect(Rect2(1038,90,540,745),Color("f4f0e5"))
 func _map_point(index: int) -> Vector2:
 	return _point(WorldGraph.street_locations[index])
 func _point(id: String) -> Vector2:

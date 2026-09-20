@@ -1,13 +1,13 @@
 extends Control
 
 const BACKGROUND := preload("res://art/reference/workbench-direction-warm-v2.png")
-const PAPER := Color("fff8eb")
+const PAPER := Color("faf7ee")
 const PANEL := Color("fff8eb", 0.96)
-const INK := Color("4a342b")
-const MUTED := Color("806b5c")
-const TERRACOTTA := Color("c85f43")
+const INK := Color("31658b")
+const MUTED := Color("698594")
+const TERRACOTTA := Color("31658b")
 const TEAL := Color("4f7d83")
-const SAGE := Color("7d8f59")
+const SAGE := Color("8caa87")
 const LINE := Color("b88963")
 
 var module_id := ""

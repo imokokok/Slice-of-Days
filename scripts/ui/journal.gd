@@ -1,11 +1,11 @@
 extends Control
 
 const LOCATIONS_PATH := "res://data/world/locations.json"
-const PAPER := Color("fff8eb")
+const PAPER := Color("faf7ee")
 const PAPER_SOFT := Color("f1dfc7")
-const INK := Color("4a342b")
-const MUTED := Color("806b5c")
-const TERRACOTTA := Color("c85f43")
+const INK := Color("31658b")
+const MUTED := Color("698594")
+const TERRACOTTA := Color("31658b")
 const TEAL := Color("4f7d83")
 const LINE := Color("b88963")
 

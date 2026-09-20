@@ -6,7 +6,9 @@ func _ready() -> void:
 	add_to_group("meta_modal")
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var panel := PanelContainer.new()
-	panel.position = Vector2(1040,220)
+	var scene := get_tree().current_scene
+	var stage: Node = scene.get("street") if scene.get("street")!=null else scene.get("stage")
+	panel.position = PaperLanguage.near_actor(stage,Vector2(420,330))
 	panel.size = Vector2(420,330)
 	add_child(panel)
 	var box := VBoxContainer.new()

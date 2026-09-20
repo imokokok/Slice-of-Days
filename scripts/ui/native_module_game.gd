@@ -1,13 +1,13 @@
 extends Control
 
 const SUPPORTED := ["cooking", "sound_sampling", "photography", "optical_illusion", "archives"]
-const PAPER := Color("fff5df")
-const INK := Color("352d29")
-const MUTED := Color("74675f")
-const TERRACOTTA := Color("bd6248")
-const SEA := Color("537982")
-const SAGE := Color("788567")
-const GOLD := Color("d5a952")
+const PAPER := Color("faf7ee")
+const INK := Color("31658b")
+const MUTED := Color("698594")
+const TERRACOTTA := Color("31658b")
+const SEA := Color("31658b")
+const SAGE := Color("8caa87")
+const GOLD := Color("eed577")
 const BOARD := Rect2(42, 122, 920, 610)
 
 var module_id := ""
@@ -70,7 +70,6 @@ func _build_ui() -> void:
 	var header := _panel(self, Vector2(24, 20), Vector2(1552, 82), Color(PAPER, 0.96), TERRACOTTA)
 	_label(header, _eyebrow(), Vector2(22, 10), Vector2(520, 24), 13, SEA)
 	_label(header, str(prototype.get("title", module_id)), Vector2(22, 32), Vector2(760, 38), 27, INK)
-	_label(header, "第%d天 · %s · %s视角" % [GameState.current_day, GameState.clock_text(), GameState.current_role], Vector2(900, 27), Vector2(390, 28), 15, MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
 	var leave := _button(header, "暂时离开", Vector2(1320, 18), Vector2(205, 48), false)
 	leave.pressed.connect(_return_or_cancel)
 
@@ -490,10 +489,10 @@ func _initial_status() -> String:
 
 func _board_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(INK, 0.68)
-	style.border_color = Color(PAPER, 0.55)
+	style.bg_color = Color("e6eff0")
+	style.border_color = Color(INK, 0.35)
 	style.set_border_width_all(2)
-	style.set_corner_radius_all(14)
+	style.set_corner_radius_all(3)
 	return style
 
 
@@ -537,23 +536,4 @@ func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2
 
 
 func _style_button(button: Button, selected_or_primary: bool) -> void:
-	var fill := TERRACOTTA if selected_or_primary else Color(PAPER, 0.82)
-	var border := TERRACOTTA if selected_or_primary else Color(SEA, 0.55)
-	var font_color := PAPER if selected_or_primary else INK
-	for state in ["normal", "hover", "pressed", "focus"]:
-		var style := StyleBoxFlat.new()
-		style.bg_color = fill.lightened(0.08) if state == "hover" else (fill.darkened(0.08) if state == "pressed" else fill)
-		style.border_color = border
-		style.set_border_width_all(2)
-		style.set_corner_radius_all(8)
-		style.content_margin_left = 14
-		button.add_theme_stylebox_override(state, style)
-	var disabled := StyleBoxFlat.new()
-	disabled.bg_color = Color("d3c9b8")
-	disabled.border_color = Color("aa9c89")
-	disabled.set_border_width_all(2)
-	disabled.set_corner_radius_all(8)
-	button.add_theme_stylebox_override("disabled", disabled)
-	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
-		button.add_theme_color_override(state, font_color)
-	button.add_theme_color_override("font_disabled_color", Color(MUTED, 0.75))
+	PaperLanguage.selected_button(button,selected_or_primary)

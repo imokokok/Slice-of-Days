@@ -230,7 +230,7 @@ func _handle_shortcut(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo or _blocked() or is_instance_valid(tool) or focus_opening: return
 	if get_viewport().gui_get_focus_owner() is TextEdit or get_viewport().gui_get_focus_owner() is LineEdit: return
 	var key: int = event.physical_keycode
-	var modes := {KEY_TAB:"map",KEY_T:"today",KEY_G:"gallery",KEY_B:"fieldbook",KEY_F:"dossier",KEY_H:"home",KEY_J:"notebook",KEY_ESCAPE:"pause"}
+	var modes := {KEY_TAB:"map",KEY_T:"today",KEY_G:"gallery",KEY_B:"bag",KEY_I:"bag",KEY_F:"dossier",KEY_H:"home",KEY_J:"notebook",KEY_ESCAPE:"pause"}
 	if modes.has(key): open_paper(str(modes[key]))
 	elif key == KEY_C: open_tool("camera")
 	elif key == KEY_R: open_tool("recorder")

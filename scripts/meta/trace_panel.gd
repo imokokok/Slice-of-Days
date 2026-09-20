@@ -7,7 +7,7 @@ func _ready() -> void:
 	add_to_group("meta_modal")
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var bg := ColorRect.new()
-	bg.color = Color("263a3b",0.96)
+	bg.color = Color("faf7ee",0.98)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	var title := Label.new()
@@ -64,7 +64,7 @@ func _refresh() -> void:
 			card.size = Vector2(455,205)
 			card.rotation = [-0.018,0.012,-0.006][i%3]
 			var style := StyleBoxFlat.new()
-			style.bg_color = Color(["ded2b3","bac7ba","c2cdd3"][i%3])
+			style.bg_color = Color(["eed577","dbe6d5","c7dfeb"][i%3])
 			style.shadow_size = 7
 			style.shadow_color = Color(0,0,0,0.22)
 			card.add_theme_stylebox_override("panel",style)

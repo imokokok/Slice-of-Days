@@ -1,18 +1,19 @@
 extends "res://extensions/hear_you/npc_dialogue.gd"
 ## Conversation stays on the live street. Only words and shared memories overlay it.
 signal finish_requested
-const WORDS := Rect2(170,745,1260,143)
+
 var street: Control
 var world_x := 0.0
 var save_message := ""
 
 func _head(side: int) -> Vector2:
-	return Vector2(world_x + (-46 if side == 0 else 46) - street.camera_x,515)
+	var x := world_x + (-46 if side == 0 else 46)
+	return Vector2(x-street.camera_x,street._actor_ground_at(x)-street._actor_height())
 
 func _thought_rect(index: int) -> Rect2:
 	var side := int(MEMORIES[index].side)
 	var head := _head(side)
-	return Rect2(clampf(head.x+(-246 if side == 0 else 30),20,1342),362,238,112)
+	return Rect2(clampf(head.x+(-246 if side == 0 else 30),20,1342),maxf(80,head.y-220),238,112)
 
 func _recipient_at(point: Vector2) -> int:
 	for side in range(2):
@@ -34,7 +35,7 @@ func _draw() -> void:
 		_text(NAMES[side]+"想到的",rect.position+Vector2(14,24),15,MUTED)
 		_text(str(MEMORIES[index].title),rect.position+Vector2(76,54),18,INK)
 		_text("对方听见了" if decoded[index] else "拖给对方看看",rect.position+Vector2(76,82),14,MUTED)
-	_box(WORDS,Color("152d36",0.96),Color("62756e"),5)
+	var words_rect := _speech_rect()
 	var speaker := ""
 	var words := ""
 	if not save_message.is_empty(): words = save_message
@@ -43,9 +44,9 @@ func _draw() -> void:
 	elif not current_line.is_empty():
 		speaker = NAMES[int(current_line[0])]
 		words = LocalizationSystem.text(str(current_line[1])).substr(0,int(typed))
-	_text(speaker,WORDS.position+Vector2(26,29),18,Color("d6b58d"))
-	_wrapped_text(words,WORDS.position+Vector2(26,64),22,Color("f4ead7"),1190,30)
-	_text("拖动记忆到对方身上" if waiting else "点击 / 空格继续",WORDS.position+Vector2(26,124),14,Color("a8bbb7"))
+	_text(speaker,words_rect.position+Vector2(26,29),18,Color("d6b58d"))
+	_wrapped_text(words,words_rect.position+Vector2(26,64),22,Color("f4ead7"),480,30)
+	_text("拖动记忆到对方身上" if waiting else "点击 / 空格继续",words_rect.position+Vector2(26,124),14,Color("a8bbb7"))
 	if drag_index >= 0: _draw_token(drag_index,drag_position)
 	if return_index >= 0: _draw_token(return_index,return_position)
 
@@ -66,7 +67,7 @@ func _input(event: InputEvent) -> void:
 				drag_index = index
 				drag_position = point
 				return_index = -1
-			elif WORDS.has_point(point): _advance_street()
+			elif _speech_rect().has_point(point): _advance_street()
 		elif drag_index >= 0:
 			var index := drag_index
 			drag_index = -1
@@ -83,3 +84,15 @@ func _input(event: InputEvent) -> void:
 			if drag_index >= 0: _cancel_drag()
 		elif event.keycode in [KEY_SPACE,KEY_ENTER]: _advance_street()
 		get_viewport().set_input_as_handled()
+
+func _speech_rect() -> Rect2:
+	var side := 0 if current_line.is_empty() else int(current_line[0])
+	var head := _head(side)
+	return Rect2(Vector2(clampf(head.x-265,20,1050),clampf(head.y-155,240,670)),Vector2(530,160))
+
+func _text(value: String, baseline: Vector2, font_size: int, color: Color, font: Font = null) -> void:
+	var used: Font = PaperLanguage.handwriting if font==null else font
+	var line := LocalizationSystem.text(value)
+	if color.get_luminance()>.5:
+		draw_string_outline(used,baseline,line,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,3,Color("234d68",.9))
+	draw_string(used,baseline,line,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)

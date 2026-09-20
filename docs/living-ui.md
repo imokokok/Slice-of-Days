@@ -20,3 +20,12 @@
 ## 验证
 
 `tests/integration/test_living_ui.gd -- --isolated-save` 验证分页约束、拖拽、绘画、旋转缩放层级移除、存档往返、提交封存和隐私隔离、实际场景的低 HUD 与关闭后释放操作。加 `--screenshots` 可在非 headless 模式输出实机截图到 user 目录。`test_walking_journey.gd` 验证行走与章节流程。
+
+
+## Shared street and shop interface
+
+`PaperLanguage` applies the blue ink, warm paper, lemon hover/focus, handwritten type and fine paper fibres to controls created by shops, minigames, film/audio tools and secondary sheets. Floating thoughts keep their own animated renderer. Scene speech uses transparent surfaces and outlined text; a `scene_speech` group marks event and room dialogue. Native ingredient selections use the same yellow selected state after updates.
+
+The shop is a shelf with original line sketches and a receipt at the right. Purchasing still goes through EconomySystem's transaction/save handling and double-click guard. The bag is an object page inside Notebook, opened with B or I; items and quantities come from the real inventory. J and legacy journal routes now open the same Notebook instead of the old dashboard. Map and minigame headers no longer repeat money/time totals. Observatory return controls are frameless and use memory-oriented wording.
+
+Validation: `tests/integration/test_world_ui.gd -- --isolated-save` checks purchase amount, inventory, serialization, double-click guard, receipt, backpack route, scene/event speech and selected-state styling. Add `--screenshots` with the compatibility renderer for shop, bag, scene speech, event and cooking captures.

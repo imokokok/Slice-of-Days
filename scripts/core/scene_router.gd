@@ -109,7 +109,13 @@ func ending() -> void:
 
 
 func journal() -> void:
-	go_to(JOURNAL)
+	var scene := get_tree().current_scene
+	if scene != null and scene.has_node("GameplayShell"):
+		scene.get_node("GameplayShell").open_paper("notebook")
+	else:
+		var book = preload("res://scripts/residency/living_objects.gd").new()
+		book.mode="notebook"
+		get_tree().root.add_child(book)
 
 func town_map(destination := "") -> void:
 	if transitioning: return

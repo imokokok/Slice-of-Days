@@ -73,11 +73,12 @@ func build() -> void:
 	var english := ["Notebook","Archive","Camera","Recorder"]
 	var targets := ["notebook","dossier","gallery","sound_library"]
 	for i in 4:
-		var chosen: bool = mode==targets[i] or (i==0 and mode in ["home","map","today","knowledge","fieldbook"])
+		var chosen: bool = mode==targets[i] or (i==0 and mode in ["home","map","today","knowledge","fieldbook","bag"])
 		var b := _tab(names[i],english[i],Vector2(90+i*270,-38 if chosen else -30),Vector2(263,78 if chosen else 70),i,chosen,_switch_object.bind(targets[i]))
 		b.name="ObjectTab_"+targets[i]
 	button(body,"收起 ×",Vector2(1190,-20),Vector2(138,40),close)
 	match mode:
+		"bag": _inventory()
 		"counter": _counter()
 		"proofs": _proofs()
 		"controls": _home()
@@ -94,9 +95,9 @@ func build() -> void:
 		"fieldbook": _materials()
 		_:
 			mode="notebook"
-			for i in 3:
-				var targets2 := ["map","today","knowledge"]
-				button(body,["随身地图","计划与时间","认识的人与地方"][i],Vector2(40+i*260,82),Vector2(248,38),_switch_object.bind(targets2[i]))
+			for i in 4:
+				var targets2 := ["map","today","knowledge","bag"]
+				button(body,["随身地图","计划与时间","认识的人与地方","打开随身包"][i],Vector2(105+i*282,82),Vector2(268,38),_switch_object.bind(targets2[i]))
 			_free_page("notebook")
 	if mode not in ["dossier","notebook"]:
 		for item in body.get_children():
@@ -257,6 +258,30 @@ func _today() -> void:
 		var minute := int(commitment.get("return_by",commitment.get("start",0)))
 		label(body,"记得，%02d:%02d 去 %s。" % [minute/60,minute%60,TravelSystem.location_name(str(commitment.get("location","dorm")))],Vector2(110,510),Vector2(1090,65),23,BLUE)
 	button(body,"← 回到随身本",Vector2(110,627),Vector2(350,45),_switch_object.bind("notebook"))
+
+func _inventory() -> void:
+	label(body,"今天带在身边的东西",Vector2(110,90),Vector2(900,45),28,BLUE)
+	button(body,"纸片与纪念物 →",Vector2(970,92),Vector2(310,42),_switch_object.bind("fieldbook"))
+	var rows := scroll_area(body,Vector2(110,160),Vector2(1170,490))
+	var grid := GridContainer.new(); grid.columns=4; grid.add_theme_constant_override("h_separation",14); grid.add_theme_constant_override("v_separation",15); rows.add_child(grid)
+	var catalog: Dictionary = {}
+	for shop in JSON.parse_string(FileAccess.get_file_as_string("res://data/economy/shops.json")).shops:
+		for item in shop.get("items",[]): catalog[str(item.id)]=item
+	for id in GameState.inventory:
+		var count := int(GameState.inventory[id])
+		if count<=0: continue
+		var item: Dictionary = catalog.get(id,{"name":id,"description":"一路带来的小物件。"})
+		var card := Control.new(); card.custom_minimum_size=Vector2(272,211); grid.add_child(card)
+		var sketch := preload("res://scripts/ui/goods_sketch.gd").new(); sketch.item_id=str(id); sketch.position=Vector2(77,0); sketch.size=Vector2(118,100); card.add_child(sketch)
+		label(card,str(item.name)+"  ×"+str(count),Vector2(8,105),Vector2(260,35),22,BLUE).horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+		button(card,"拿近看看",Vector2(35,150),Vector2(205,36),func() -> void:
+			if is_instance_valid(detail): detail.queue_free()
+			detail=panel(body,Vector2(390,220),Vector2(600,300))
+			label(detail,str(item.name),Vector2(30,30),Vector2(530,45),28,BLUE)
+			label(detail,str(item.get("description","")),Vector2(30,98),Vector2(530,110),23,BLUE)
+			button(detail,"放回包里",Vector2(190,236),Vector2(220,40),func() -> void: detail.queue_free()))
+	if grid.get_child_count()==0: label(body,"包里还空着。",Vector2(110,245),Vector2(1040,60),25,BLUE)
+	button(body,"← 回到随身本",Vector2(110,671),Vector2(300,40),_switch_object.bind("notebook"))
 
 func _show_detail(id: String) -> void:
 	if is_instance_valid(detail): detail.queue_free()

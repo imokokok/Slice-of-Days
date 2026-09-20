@@ -3,10 +3,10 @@ extends Control
 const BACKGROUND := preload("res://art/ui/title-screen-background.png")
 const EndingEchoResolverScript := preload("res://scripts/core/ending_echo_resolver.gd")
 const ENDINGS_PATH := "res://data/story/endings.json"
-const PAPER := Color("fff8eb")
-const INK := Color("4a342b")
-const MUTED := Color("806b5c")
-const TERRACOTTA := Color("c85f43")
+const PAPER := Color("faf7ee")
+const INK := Color("31658b")
+const MUTED := Color("698594")
+const TERRACOTTA := Color("31658b")
 const TEAL := Color("4f7d83")
 const LINE := Color("b88963")
 

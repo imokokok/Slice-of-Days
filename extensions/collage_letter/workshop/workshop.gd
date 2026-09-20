@@ -62,6 +62,7 @@ var focused_original: Dictionary = {}
 var undo_stack: Array = []
 var redo_stack: Array = []
 var focus_amount := 0.0
+var focus_tween: Tween
 var focused_tool := ""
 var cut_start := Vector2(510,370)
 var cut_end := Vector2(1090,520)
@@ -404,12 +405,14 @@ func _focus_paper(paper: Node2D) -> void:
 	for other in papers.get_children(): other.visible = other == paper
 	tools_root.hide()
 	var tween := create_tween().set_parallel(true)
+	focus_tween=tween
 	tween.tween_property(paper,"position",Vector2(800,440),0.28).set_trans(Tween.TRANS_CUBIC)
 	tween.tween_property(paper,"rotation",0.0,0.28)
 	var fit := minf(620.0/paper.image.get_width(),420.0/paper.image.get_height())
 	tween.tween_property(paper,"scale",Vector2.ONE*fit,0.28)
 
 func _return_focus() -> void:
+	if focus_tween and focus_tween.is_valid(): focus_tween.kill()
 	if is_instance_valid(focused) and not focused_original.is_empty():
 		focused.position = focused_original.position
 		focused.rotation = focused_original.rotation
@@ -851,6 +854,9 @@ func begin_folding() -> void:
 	letter_preview=ImageTexture.create_from_image(viewport.get_texture().get_image())
 	viewport.queue_free()
 	if not smoke: letter_preview.get_image().save_png(preview_path)
+	envelope_inserted=false;envelope_flap=0;insert_amount=0;packing_drag=""
+	wax_step=0;wax_heat=0;wax_pour=0;wax_hold=0;wax_cool=0;wax_drag=""
+	match_lit=false;candle_lit=false;spoon_filled=false;spoon_on_fire=false;stamp_imprint=false
 	mode=Mode.FOLDING;stage="FOLDING";fold=0;fold_amount=0
 	papers.hide();tools_root.hide();busy=false
 	say("把信纸下半部向上拖，折出第一道折痕。")

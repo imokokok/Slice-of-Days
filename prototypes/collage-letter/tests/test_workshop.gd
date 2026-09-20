@@ -128,6 +128,9 @@ func run() -> void:
 	check(w.wax_step==6 and w.letter_preview!=null,"Draft reload preserves completed seal and artwork")
 	w.send_letter()
 	check(w.stage=="END","Sealed NPC letter should send")
+	w.return_desk()
+	await w.begin_folding()
+	check(not w.envelope_inserted and not w.candle_lit and not w.spoon_filled,"Refolding must start with a fresh envelope and sealing sequence")
 	w.audio.shutdown()
 	w.queue_free()
 	await process_frame

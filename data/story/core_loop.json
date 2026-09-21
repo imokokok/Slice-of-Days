@@ -198,7 +198,10 @@
       "cost": "existing module cost",
       "output": "canonical source material and existing module results",
       "return": "previous world location",
-      "persistence": "GameState artifacts and core_loop role state"
+      "persistence": "GameState artifacts and core_loop role state",
+      "relationship": "石泳琪和 BEETMAN 一起熬过了开店最难的日子，也一起寻找古怪的好味道。",
+      "share_reply": "这个搭法让我想起她第一次来挑菜。下次留两片柠檬皮最后放；我把这句写给她，省得她又忙忘了。",
+      "return_reply": "她还是记得我第一次把菜煮糊的事。柠檬皮我留好了，下一锅就试。"
     },
     "ghostwriting": {
       "npc": "mossner",
@@ -213,7 +216,10 @@
       "cost": "existing module cost",
       "output": "canonical source material and existing module results",
       "return": "previous world location",
-      "persistence": "GameState artifacts and core_loop role state"
+      "persistence": "GameState artifacts and core_loop role state",
+      "relationship": "Mossner 和 Maya 一起寄出过许多公益图书，也珍惜信纸上留下的语气。",
+      "share_reply": "这句停顿很像寄书的孩子回给我们的第一封信。我把那句回信抄在背面，给 Mossner 看看，他会认出来。",
+      "return_reply": "原来 Maya 还留着那封回信。我们寄出的书，后来真的到了一个人手里。"
     },
     "sound_sampling": {
       "npc": "xanni",
@@ -228,7 +234,10 @@
       "cost": "existing module cost",
       "output": "canonical source material and existing module results",
       "return": "previous world location",
-      "persistence": "GameState artifacts and core_loop role state"
+      "persistence": "GameState artifacts and core_loop role state",
+      "relationship": "CICI 常把路上的声音带给 Xanni；闹闹也会认真听她们聊起的歌。",
+      "share_reply": "这里有一小段声音，狗又抬头了。我记下它抬头的地方，带给 Xanni 听听吧。安静也许不用剪掉。",
+      "return_reply": "它听见的是这里呀。我留了那段空隙，原来真的有人等到了下一声。"
     },
     "chess": {
       "npc": "naonao",
@@ -243,7 +252,10 @@
       "cost": "existing module cost",
       "output": "canonical source material and existing module results",
       "return": "previous world location",
-      "persistence": "GameState artifacts and core_loop role state"
+      "persistence": "GameState artifacts and core_loop role state",
+      "relationship": "闹闹和 Xanni 常聊喜欢的歌手；棋局也会变成唱片店里的话题。",
+      "share_reply": "闹闹说这一步像一段歌突然停下来。我写了她哼的那两个节拍，拿回去问问，是不是这个地方。",
+      "return_reply": "就是这两下！我下棋时也会在心里数。原来 Xanni 连这个都记住了。"
     },
     "tarot": {
       "npc": "xia_touming",
@@ -258,7 +270,10 @@
       "cost": "existing module cost",
       "output": "canonical source material and existing module results",
       "return": "previous world location",
-      "persistence": "GameState artifacts and core_loop role state"
+      "persistence": "GameState artifacts and core_loop role state",
+      "relationship": "夏透明与尘缘从小相识；两人总为同一张牌的意思争个不停。",
+      "share_reply": "我还是不同意他的解释，但你问的那句话有道理。我把反驳写在这儿，你带回去，别让他只笑不答。",
+      "return_reply": "这口气，一看就是尘缘。我们小时候也这样，争完一件事，还要约着明天接着说。"
     },
     "contemplation": {
       "npc": "yuxingqing",
@@ -273,7 +288,10 @@
       "cost": "existing module cost",
       "output": "canonical source material and existing module results",
       "return": "previous world location",
-      "persistence": "GameState artifacts and core_loop role state"
+      "persistence": "GameState artifacts and core_loop role state",
+      "relationship": "宇星晴在山野取材时受过周晓六照应；他们会交换夜里的观察。",
+      "share_reply": "宇星晴总记得光，我更记得那晚的风。我把风向记在旁边了，给他看看，你们看到的是同一片天。",
+      "return_reply": "这阵风我记得。他总能记住我没拍到的东西。下次我也把声音一起带回来。"
     },
     "optical_illusion": {
       "npc": "mingming",
@@ -288,7 +306,10 @@
       "cost": "existing module cost",
       "output": "canonical source material and existing module results",
       "return": "previous world location",
-      "persistence": "GameState artifacts and core_loop role state"
+      "persistence": "GameState artifacts and core_loop role state",
+      "relationship": "冥冥与夏透明会交换各自看见的细节，不急着替它们定下答案。",
+      "share_reply": "冥冥说你肯换个角度再看一次。我写了另一个观察位置，你带给她，看看她是不是也发现了。",
+      "return_reply": "原来从那一边看也不一样。下次我们可以各站一边，说说自己看到的。"
     },
     "photography": {
       "npc": "yuxingqing",
@@ -303,7 +324,10 @@
       "cost": "existing module cost",
       "output": "canonical source material and existing module results",
       "return": "previous world location",
-      "persistence": "GameState artifacts and core_loop role state"
+      "persistence": "GameState artifacts and core_loop role state",
+      "relationship": "摄影柜台把拍下的片刻留在小镇；宇星晴关心每张照片里的光。",
+      "share_reply": "我在小票背面记下了冲洗时的颜色。给宇星晴看看，问问这是不是你们当时看到的光。",
+      "return_reply": "颜色留住了，不过当时的风只有我们记得。谢谢你又把这个片刻带回来。"
     },
     "archives": {
       "npc": "maya",
@@ -318,7 +342,10 @@
       "cost": "existing module cost",
       "output": "canonical source material and existing module results",
       "return": "previous world location",
-      "persistence": "GameState artifacts and core_loop role state"
+      "persistence": "GameState artifacts and core_loop role state",
+      "relationship": "Maya 与 Mossner 共同整理纸张的来处，也把旧书寄给远方的读者。",
+      "share_reply": "这张纸上的折痕，我在捐书包裹里见过。我把能够确认的来处写下了，交给 Maya，猜测的部分先空着。",
+      "return_reply": "这样就能把它放回合适的位置了。Mossner 没把不确定的部分说死，我很感谢他。"
     },
     "translation": {
       "npc": "beetman",
@@ -333,7 +360,10 @@
       "cost": "existing module cost",
       "output": "canonical source material and existing module results",
       "return": "previous world location",
-      "persistence": "GameState artifacts and core_loop role state"
+      "persistence": "GameState artifacts and core_loop role state",
+      "relationship": "CICI 与尘缘从一次争执中慢慢熟悉；小小的改变也会被记住。",
+      "share_reply": "他今天先问了狗能不能吃，没直接塞过来。我把这件小事记下了，给 BEETMAN 看看，不用再替我们担心。",
+      "return_reply": "这样就挺好。不用谁赢，只要下次肯先问一句。那天你留下的话没有白说。"
     },
     "memory": {
       "npc": "mingming",
@@ -348,7 +378,10 @@
       "cost": "existing module cost",
       "output": "canonical source material and existing module results",
       "return": "previous world location",
-      "persistence": "GameState artifacts and core_loop role state"
+      "persistence": "GameState artifacts and core_loop role state",
+      "relationship": "冥冥说过的细小往事，会被 Maya 仔细地留在纸上。",
+      "share_reply": "那个细节，我怕自己忘了，就写在这张纸上。你再碰见冥冥时，给她看看；不愿意说的部分可以继续空着。",
+      "return_reply": "这段话被人认真留着，我忽然没那么着急解释了。谢谢你带回来。"
     }
   },
   "opportunities": [

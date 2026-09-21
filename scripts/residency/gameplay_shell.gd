@@ -68,8 +68,7 @@ func _ready() -> void:
 	clock_label.add_theme_constant_override("shadow_offset_y",0)
 	clock_label.mouse_filter = MOUSE_FILTER_IGNORE
 	add_child(clock_label)
-	next_button = preload("res://scripts/ui/components/solmere_button.gd").new()
-	next_button.variant = "guidance"
+	next_button = preload("res://scripts/ui/components/direction_card.gd").new()
 	next_button.position = Vector2(1155,35)
 	next_button.size = Vector2(395,110)
 	next_button.flat = false
@@ -85,28 +84,27 @@ func _ready() -> void:
 	next_button.pressed.connect(_open_active_direction)
 	GuidanceSystem.updated.connect(_update_active_direction)
 	add_child(next_button)
-	var lead_rule := ColorRect.new(); lead_rule.color=PaperLanguage.YELLOW; lead_rule.position=Vector2(-6,13); lead_rule.size=Vector2(2,41); lead_rule.mouse_filter=MOUSE_FILTER_IGNORE; next_button.add_child(lead_rule)
-	# Contextual controls float directly over the world. Keeping this as a plain
-	# Control (rather than a Panel) prevents the hint area from masking scenery.
-	hints = Control.new()
+	# The readable prompt is also the mouse/controller route to the same action.
+	hints = preload("res://scripts/ui/components/solmere_button.gd").new()
+	hints.variant = "guidance"
 	hints.name = "ContextHints"
-	hints.position = Vector2(1160,250)
-	hints.size = Vector2(410,100)
-	hints.mouse_filter = MOUSE_FILTER_IGNORE
+	hints.position = Vector2(480,825)
+	hints.size = Vector2(640,49)
+	hints.pressed.connect(_activate_context)
 	add_child(hints)
 	hint_label = RichTextLabel.new()
 	hint_label.bbcode_enabled = true
 	hint_label.scroll_active = false
-	hint_label.position = Vector2(15,8)
-	hint_label.size = Vector2(380,87)
+	hint_label.position = Vector2(18,10)
+	hint_label.size = Vector2(604,32)
 	hint_label.add_theme_font_override("normal_font",hud_font)
-	hint_label.add_theme_font_size_override("normal_font_size",18)
+	hint_label.add_theme_font_size_override("normal_font_size",20)
 	hint_label.add_theme_color_override("default_color",Color("fff6df"))
 	hint_label.add_theme_color_override("default_outline_color",PROMPT_OUTLINE)
-	hint_label.add_theme_constant_override("outline_size",3)
+	hint_label.add_theme_constant_override("outline_size",0)
 	hint_label.add_theme_color_override("font_shadow_color",Color("203945",0.9))
 	hint_label.add_theme_constant_override("shadow_offset_x",1)
-	hint_label.add_theme_constant_override("shadow_offset_y",2)
+	hint_label.add_theme_constant_override("shadow_offset_y",0)
 	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint_label.mouse_filter = MOUSE_FILTER_IGNORE
 	hints.add_child(hint_label)
@@ -183,17 +181,41 @@ func _process(delta: float) -> void:
 		var lines: Array[String] = []
 		for line in LocalizationSystem.text(str(context.text)).split("\n"):
 			var parts := str(line).split("  ",true,1)
-			lines.append("[color=#fff6df]"+str(parts[0])+"[/color] "+(str(parts[1]) if parts.size()>1 else ""))
+			lines.append(str(parts[0])+" "+(str(parts[1]) if parts.size()>1 else ""))
 		hint_label.text = "\n".join(lines)
 		hint_debug.context = id
 		hint_debug.actions = str(context.text).split("\n")
 	hint_age += delta
 	hints.visible = clear_view and not id.is_empty()
-	var near := stage.nearest() as Dictionary
-	hints.position = PaperLanguage.near_actor(stage,hints.size,float(near.get("x",stage.player_x)))
-	hints.position.y += 35
+	hints.size.y=72 if hint_label.text.contains("\n") else 49
+	hint_label.size.y=hints.size.y-18
+	hints.position = Vector2((size.x-hints.size.x)*.5,size.y-hints.size.y-26)
+	next_button.position=Vector2(size.x-next_button.size.x-36,35)
 	hints.modulate.a = minf(hint_age/0.16,1.0)
-	hint_debug.fade = "in" if hint_age < .2 else "hold" if hint_age < 2.7 else "out" if hint_age < 3.05 else "hidden"
+	hint_debug.fade = "in" if hint_age < .2 else "hold" if hints.visible else "hidden"
+	hints.tooltip_text = hint_label.get_parsed_text()
+	hint_label.add_theme_color_override("default_color",Color("254b66") if hints.is_hovered() or hints.button_pressed else Color("fff6df"))
+
+func _activate_context() -> void:
+	if not bool(UIStateSystem.policy().notebook) or _blocked() or is_instance_valid(overlay) or is_instance_valid(tool) or focus_opening: return
+	if str(_context().id).begins_with("work_"): open_paper("map"); return
+	var special := _special()
+	if not special.is_empty():
+		_activate_special(special); return
+	if _talk_to_context(): return
+	if host.has_method("_interact"): host.call("_interact")
+
+func _talk_to_context() -> bool:
+	var near: Dictionary = stage.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
+	if near.is_empty(): return false
+	if host.has_method("_talk_to_nearest"): host.call("_talk_to_nearest")
+	elif host.has_method("_start_conversation") and str(near.get("kind", "")) == "person": host.call("_start_conversation", str(near.get("id", "")))
+	else: return false
+	return true
+
+func _activate_special(special: String) -> void:
+	if special == "residence": GameState.message_posted.emit(ResidencySystem.residence_proof()); open_paper("fieldbook")
+	else: open_paper(special)
 
 func _context() -> Dictionary:
 	var commitment := GameState.next_commitment()
@@ -201,7 +223,7 @@ func _context() -> Dictionary:
 		var due := int(commitment.get("return_by",commitment.get("start",0)))
 		var travel := WorldGraph.walk_minutes(GameState.current_location,str(commitment.get("location","dorm")))+5
 		if due-GameState.current_minute <= travel and due+10 >= GameState.current_minute and GameState.current_location != str(commitment.get("location","dorm")):
-			return {"id":"work_"+str(commitment.get("id","")),"text":"Tab  %02d:%02d 前回家工作\nH  随身物品" % [due/60,due%60]}
+			return {"id":"work_"+str(commitment.get("id","")),"text":SettingsSystem.binding_text("open_map")+"  %02d:%02d 前回家工作" % [due/60,due%60]}
 	var special := _special()
 	if not special.is_empty(): return {"id":special,"text":SettingsSystem.binding_text("interact")+"  "+str({"counter":"资料领取 / 提交","organize":"整理桌上的材料","proofs":"领取工作证明","residence":"居住确认"}.get(special,special))+"\n"+SettingsSystem.binding_text("open_archive")+"  居住档案"}
 	var talk_near: Dictionary = stage.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
@@ -254,17 +276,9 @@ func _handle_shortcut(event: InputEvent) -> void:
 	if event.is_action_pressed("open_camera"): open_tool("camera")
 	elif event.is_action_pressed("open_recorder"): open_tool("recorder")
 	elif event.is_action_pressed("talk"):
-		var near: Dictionary = stage.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
-		if near.is_empty(): return
-		if host.has_method("_talk_to_nearest"):
-			host.call("_talk_to_nearest")
-		elif host.has_method("_start_conversation") and str(near.get("kind", "")) == "person":
-			host.call("_start_conversation", str(near.get("id", "")))
-		else: return
+		if not _talk_to_context(): return
 	elif event.is_action_pressed("interact") and not _special().is_empty():
-		var special := _special()
-		if special == "residence": GameState.message_posted.emit(ResidencySystem.residence_proof()); open_paper("fieldbook")
-		else: open_paper(special)
+		_activate_special(_special())
 	else: return
 	get_viewport().set_input_as_handled()
 
@@ -309,12 +323,7 @@ func _camera_source() -> Image:
 func _update_active_direction() -> void:
 	if not is_instance_valid(next_button): return
 	var next := GuidanceSystem.next_step()
-	next_button.text=str(next.get("text",""))
-	if GuidanceSystem.help_level>=1 and not str(next.get("context","")).is_empty(): next_button.text+="\n"+str(next.context)
-	if GuidanceSystem.help_level>=2 and not str(next.get("source","")).is_empty(): next_button.text+=" · "+GuidanceSystem.source_name(str(next.source))
-	next_button.clip_text=true; next_button.size=Vector2(395,110)
-	next_button.tooltip_text=SettingsSystem.binding_text("open_map")+" · 看看路线"
-	next_button.selected=GuidanceSystem.help_level>=3
+	next_button.present(next)
 func _open_active_direction() -> void:
 	var next := GuidanceSystem.next_step()
 	if next.is_empty(): return

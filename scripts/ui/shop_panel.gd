@@ -6,6 +6,7 @@ const INK := Color("382e29")
 const MUTED := Color("75685e")
 const TERRACOTTA := Color("bd6248")
 const SEA := Color("537982")
+const PALETTE = preload("res://scripts/ui/components/interface_palette.gd")
 
 var shop_id := ""
 var shop: Dictionary = {}
@@ -21,6 +22,7 @@ var purchase_button: Button
 
 
 func _ready() -> void:
+	theme=PALETTE.theme_for_tools()
 	add_to_group("meta_modal")
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -46,18 +48,21 @@ func _build_ui() -> void:
 	shade.color=Color("16334b",.45); shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(shade)
 	var panel := Panel.new()
 	panel.name="ShopCounter"; panel.position=Vector2(120,85); panel.size=Vector2(1360,735)
-	var style := StyleBoxFlat.new(); style.bg_color=Color("edf3f4"); style.set_corner_radius_all(14)
+	var style := PALETTE.face(PALETTE.CREAM,12)
 	panel.add_theme_stylebox_override("panel",style); add_child(panel)
-	_label(panel,str(shop.get("name","小镇货架")),Vector2(45,24),Vector2(850,55),32,SEA)
-	_label(panel,"挑一件，带进今天的生活。",Vector2(45,87),Vector2(830,34),22,MUTED)
-	selection_panel=Control.new(); selection_panel.position=Vector2(990,95); selection_panel.size=Vector2(325,535); panel.add_child(selection_panel)
+	var art := preload("res://scripts/ui/components/interface_art.gd").new(); art.kind="counter"; art.size=panel.size; panel.add_child(art)
+	_label(panel,"SOLMERE  /  沿街小店",Vector2(44,20),Vector2(850,25),14,PALETTE.LEMON)
+	_label(panel,str(shop.get("name","小镇货架")),Vector2(43,47),Vector2(850,55),32,PALETTE.CREAM)
+	_label(panel,"挑一件，带进今天的生活。",Vector2(900,54),Vector2(400,36),18,PALETTE.CREAM)
+	var receipt := Panel.new(); receipt.position=Vector2(978,163); receipt.size=Vector2(346,493); receipt.add_theme_stylebox_override("panel",PALETTE.face(Color("e9e5d8"),5)); panel.add_child(receipt)
+	selection_panel=Control.new(); selection_panel.position=Vector2(999,178); selection_panel.size=Vector2(300,475); panel.add_child(selection_panel)
 	balance_label=_label(selection_panel,"",Vector2(0,0),Vector2(310,40),24,SEA)
-	budget_label=_label(selection_panel,"",Vector2(0,51),Vector2(310,50),17,MUTED)
-	status_label=_label(selection_panel,"",Vector2(0,120),Vector2(310,285),21,SEA)
+	budget_label=_label(selection_panel,"",Vector2(0,47),Vector2(292,53),16,MUTED)
+	status_label=_label(selection_panel,"",Vector2(0,119),Vector2(292,270),19,PALETTE.INK)
 	status_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	purchase_button=_button(selection_panel,"选择一件物品",Vector2(0,432),Vector2(310,52),true)
+	purchase_button=_button(selection_panel,"选择一件物品",Vector2(0,404),Vector2(300,52),true)
 	purchase_button.name="ConfirmPurchase"; purchase_button.disabled=true; purchase_button.pressed.connect(_confirm_purchase)
-	var scroll := ScrollContainer.new(); scroll.position=Vector2(40,150); scroll.size=Vector2(910,520)
+	var scroll := ScrollContainer.new(); scroll.position=Vector2(40,164); scroll.size=Vector2(910,490)
 	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; panel.add_child(scroll)
 	item_list=GridContainer.new(); item_list.columns=3; item_list.add_theme_constant_override("h_separation",20); item_list.add_theme_constant_override("v_separation",20); scroll.add_child(item_list)
 	var close := _button(panel,"收起",Vector2(1110,665),Vector2(200,42),false); close.tooltip_text=SettingsSystem.binding_text("ui_cancel"); close.pressed.connect(queue_free)
@@ -74,13 +79,8 @@ func _refresh() -> void:
 	for child in item_list.get_children(): item_list.remove_child(child); child.queue_free()
 	for raw in EconomySystem.stock(shop_id):
 		var item: Dictionary = raw.duplicate(true)
-		var card := preload("res://scripts/ui/components/solmere_button.gd").new(); card.variant="outlined"; card.custom_minimum_size=Vector2(278,237); item_list.add_child(card)
+		var card := preload("res://scripts/ui/components/goods_card.gd").new(); card.item=item; card.quantity="%d 元  ·  剩余 %d" % [int(item.price),int(item.remaining)]; item_list.add_child(card)
 		card.name="Select_"+str(item.id); card.selected=str(selected_item.get("id",""))==str(item.id); card.pressed.connect(_select.bind(item))
-		var sketch := preload("res://scripts/ui/goods_sketch.gd").new(); sketch.item_id=str(item.id); sketch.position=Vector2(80,0); sketch.size=Vector2(115,95); card.add_child(sketch)
-		_label(card,str(item.get("name","物件")),Vector2(8,97),Vector2(262,33),22,SEA,HORIZONTAL_ALIGNMENT_CENTER)
-		var description := _label(card,str(item.get("description","")),Vector2(12,136),Vector2(254,51),16,MUTED)
-		description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-		_label(card,"%d 元     ·     剩余 %d" % [int(item.price),int(item.remaining)],Vector2(16,195),Vector2(246,30),18,SEA,HORIZONTAL_ALIGNMENT_CENTER)
 	status_label.text="看看货架，挑一件喜欢的。\n\n购买前可以在这里核对价格。" if EconomySystem.shop_open(shop_id) else "柜台暂时无人。可以先看看货架，下次再来。"
 	if not selected_item.is_empty(): _show_selection()
 	elif item_list.get_child_count()>0: item_list.get_child(0).grab_focus()
@@ -142,6 +142,7 @@ func _label(parent: Node, value: String, at: Vector2, label_size: Vector2, font_
 	label.text = LocalizationSystem.text(value)
 	label.position = at
 	label.size = label_size
+	label.custom_maximum_size.x=label_size.x
 	label.horizontal_alignment = align
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
@@ -152,7 +153,7 @@ func _label(parent: Node, value: String, at: Vector2, label_size: Vector2, font_
 
 func _button(parent: Node, value: String, at: Vector2, button_size: Vector2, primary: bool) -> Button:
 	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
-	button.variant="outlined"; button.selected=primary
+	button.variant="paper"; button.selected=primary
 	button.text = LocalizationSystem.text(value)
 	button.position = at
 	button.size = button_size

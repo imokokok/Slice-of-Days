@@ -87,10 +87,18 @@ func must_objectives() -> Array:
 
 func leads() -> Array:
 	var result: Array=[]
+	var connections := CoreLoopSystem.connection_steps()
 	for fact in KnowledgeSystem.facts():
 		var location := str(fact.get("location",fact.get("subject_id","")))
 		if not ResidencySystem.locations.has(location): continue
-		result.append({"type":"Lead","id":str(fact.get("id","")),"text":str(fact.get("text","")),"location":location,"source":str(fact.get("source_npc_id","")),"available":str(fact.get("status",""))!="Outdated"})
+		if not CoreLoopSystem.lead_available(fact): continue
+		var row := {"type":"Lead","id":str(fact.get("id","")),"text":str(fact.get("text","")),"location":location,"source":str(fact.get("source_npc_id","")),"available":str(fact.get("status",""))!="Outdated"}
+		var callback_id := str(fact.get("callback_id",row.id.trim_prefix("return_") if row.id.begins_with("return_") else ""))
+		if not callback_id.is_empty():
+			for connection in connections:
+				if str(connection.id)=="exchange_"+callback_id+("_return" if str(fact.get("callback_stage","share"))=="return" else "_share"):
+					row.location=connection.location; row.available=connection.available; row.text=connection.text; row.context=connection.context
+		result.append(row)
 	for opportunity in CoreLoopSystem.opportunities():
 		var row: Dictionary=opportunity.duplicate(true)
 		row["available"]=str(row.status)!="missed"
@@ -152,10 +160,8 @@ func refresh() -> void:
 	var direction := str(next.get("id",next.get("text","")))
 	if direction!=last_direction:
 		last_direction=direction; updated.emit(); GameEvents.publish("ObjectiveUpdated",next)
-	var scene := get_tree().current_scene
-	if scene!=null and scene.has_node("GameplayShell") and not bool(CoreLoopSystem.day_state().brief_seen):
-		CoreLoopSystem.day_state().brief_seen=true
-		notification.emit("HEARD","Day %02d · %s"%[GameState.current_day,str(next.get("text","沿街走走，看看今天。"))])
+	# The direction card already introduces the day. Do not repeat it as a toast.
+	CoreLoopSystem.day_state().brief_seen=true
 
 func _ready() -> void:
 	notification.connect(queue_feedback)
@@ -174,9 +180,9 @@ func take_feedback() -> Dictionary:
 	var entries := feedback_queue.duplicate(true); feedback_queue.clear()
 	var parts: Array[String]=[]
 	for entry in entries:
-		parts.append(str(entry.kind)+" · "+str(entry.texts[0])+("（另有%d项）"%(entry.texts.size()-1) if entry.texts.size()>1 else ""))
+		parts.append(str(entry.texts[0])+("（另有%d项已记入随身本）"%(entry.texts.size()-1) if entry.texts.size()>1 else ""))
 	if entries.size()>2:
 		var summary: Array[String]=[]
-		for entry in entries.slice(1): summary.append(str(entry.kind)+" · %d 项"%entry.texts.size())
+		for entry in entries.slice(1): summary.append(str({"DONE":"今日记录","FOUND":"新材料","HEARD":"新线索","CONNECTED":"居民认可"}.get(entry.kind,"新记录"))+" %d 项"%entry.texts.size())
 		parts=[parts[0],"   ".join(summary)]
-	return {"text":"\n".join(parts),"entries":entries}
+	return {"heading":str({"DONE":"今天留下了一笔","FOUND":"收进随身包","HEARD":"听来的消息","CONNECTED":"有人记住了你"}.get(entries[0].kind,"刚刚发生")),"text":"\n".join(parts),"entries":entries}

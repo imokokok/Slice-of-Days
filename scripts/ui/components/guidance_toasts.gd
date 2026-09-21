@@ -1,15 +1,21 @@
 extends Control
-## One compact card. The queue survives scene changes in GuidanceSystem.
-var card: PanelContainer
+## One legible result beside the current direction, held while a modal is open.
+const PALETTE = preload("res://scripts/ui/components/interface_palette.gd")
+var card: Panel
 var words: Label
+var heading: Label
 var age := 0.0
+var lifetime := 6.0
 var current: Dictionary={}
 func _ready() -> void:
-	name="GuidanceToast"
-	mouse_filter=MOUSE_FILTER_IGNORE
-	card=PanelContainer.new(); card.position=Vector2(1155,162); card.custom_minimum_size=Vector2(395,68); card.mouse_filter=MOUSE_FILTER_IGNORE
-	var face := StyleBoxFlat.new(); face.bg_color=Color("faf7ee"); face.set_corner_radius_all(6); face.set_content_margin_all(12); face.border_width_left=3; face.border_color=PaperLanguage.YELLOW; card.add_theme_stylebox_override("panel",face); add_child(card)
-	words=Label.new(); words.custom_minimum_size=Vector2(367,50); words.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; words.max_lines_visible=3; words.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS; words.add_theme_font_size_override("font_size",17); words.add_theme_color_override("font_color",PaperLanguage.BLUE); words.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(words); card.hide()
+	name="GuidanceToast"; mouse_filter=MOUSE_FILTER_IGNORE
+	card=Panel.new(); card.mouse_filter=MOUSE_FILTER_IGNORE
+	var face := PALETTE.face(PALETTE.CREAM,8,0)
+	face.border_width_left=3; face.border_color=PALETTE.SAGE; card.add_theme_stylebox_override("panel",face); add_child(card)
+	heading=PALETTE.words(card,"",Vector2(22,15),346,15,PALETTE.MUTED)
+	words=PALETTE.words(card,"",Vector2(22,44),346,19,PALETTE.INK)
+	words.max_lines_visible=6; words.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	card.hide()
 func _process(delta: float) -> void:
 	var clear := bool(UIStateSystem.policy().notify)
 	visible=clear
@@ -17,11 +23,18 @@ func _process(delta: float) -> void:
 	if current.is_empty():
 		current=GuidanceSystem.take_feedback()
 		if current.is_empty(): return
+		heading.text=str(current.get("heading","刚刚发生"))
 		words.text=str(current.text); age=0; card.show()
-	age+=delta; card.modulate.a=minf(1,age/.15)*clampf((2.9-age)/.25,0,1)
-	if age>=2.9: current={}; card.hide()
+		card.size=Vector2(390,maxf(96,mini(6,words.get_line_count())*29+64))
+		lifetime=clampf(words.text.length()*.1+2.5,5,12)
+	var direction: Control=get_parent().get("next_button")
+	var bottom := 35.0
+	if is_instance_valid(direction) and direction.visible: bottom=direction.position.y+direction.size.y+12
+	card.position=Vector2(get_parent().size.x-card.size.x-36,bottom)
+	age+=delta
+	card.modulate.a=1 if SettingsSystem.reduced_motion() else minf(1,age/.16)*clampf((lifetime-age)/.2,0,1)
+	if age>=lifetime: current={}; card.hide()
 func _exit_tree() -> void:
-	# Carry an interrupted notification over the travel/scene boundary.
-	if not current.is_empty() and age<2.5:
+	if not current.is_empty() and age<lifetime-.4:
 		for entry in current.entries:
 			for text in entry.texts: GuidanceSystem.queue_feedback(str(entry.kind),str(text))

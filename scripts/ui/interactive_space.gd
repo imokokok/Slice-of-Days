@@ -388,23 +388,27 @@ func _unhandled_input(event: InputEvent) -> void:
 			notes_overlay.chosen.connect(func(topic: String) -> void: _start_conversation(str(target.id), topic))
 			add_child(notes_overlay)
 	elif event.is_action_pressed("interact"):
-		var nearest: Dictionary = stage.nearest()
-		match str(nearest.get("kind", "")):
-			"echo":
-				name_label.text = LocalizationSystem.text("黑板")
-				cue_label.text = LocalizationSystem.text(str(nearest.text))
-				detail_label.text = LocalizationSystem.text("Space · 收起视线")
-				room_dialogue.show()
-				MetaExperience.observe(GameState.current_location,str(nearest.text),{"kind":"place","event_id":"echo_"+GameState.current_location})
-			"exit": SceneRouter.leave_space()
-			"object":
-				_select_object(int(nearest.index))
-				_open_selected()
+		_interact()
 	elif event.is_action_pressed("ui_cancel"):
 		name_label.text = ""
 		cue_label.text = ""
 		detail_label.text = ""
 	get_viewport().set_input_as_handled()
+
+func _interact() -> void:
+	if MetaExperience.modal_open() or is_instance_valid(conversation) or is_instance_valid(pocket_panel) or is_instance_valid(notes_overlay) or SceneRouter.transitioning: return
+	var nearest: Dictionary = stage.nearest()
+	match str(nearest.get("kind", "")):
+		"echo":
+			name_label.text = LocalizationSystem.text("黑板")
+			cue_label.text = LocalizationSystem.text(str(nearest.text))
+			detail_label.text = SettingsSystem.binding_text("dialogue_advance")+" · 收起视线"
+			room_dialogue.show()
+			MetaExperience.observe(GameState.current_location,str(nearest.text),{"kind":"place","event_id":"echo_"+GameState.current_location})
+		"exit": SceneRouter.leave_space()
+		"object":
+			_select_object(int(nearest.index))
+			_open_selected()
 
 func _show_book_notes() -> void:
 	if is_instance_valid(notes_overlay): return

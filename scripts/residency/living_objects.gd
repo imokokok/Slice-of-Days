@@ -4,6 +4,7 @@ const CANVAS = preload("res://scripts/residency/living_canvas.gd")
 const BLUE := Color("31658b")
 const LEMON := Color("eed577")
 const TAB = preload("res://scripts/residency/paper_tab.gd")
+const PALETTE = preload("res://scripts/ui/components/interface_palette.gd")
 var canvas: Control
 var selection_tools: Control
 var archive_tab := "overview"
@@ -43,6 +44,7 @@ func panel(parent: Node, at: Vector2, dimensions: Vector2, color := Color("faf7e
 	return result
 
 func build() -> void:
+	theme=PALETTE.theme_for_tools()
 	if mode=="organize": mode="dossier"; archive_tab="days"; day=GameState.current_day
 	for child in get_children(): remove_child(child); child.queue_free()
 	detail=null; canvas=null; selection_tools=null; task_checks.clear()
@@ -73,6 +75,8 @@ func build() -> void:
 		paper.spread=mode in ["notebook","today"] or (mode=="dossier" and archive_tab=="days")
 		paper.ruled=mode in ["notebook","today"]
 		paper.size=DOSSIER_SIZE; body.add_child(paper)
+		if not paper.spread:
+			var spine := preload("res://scripts/ui/components/interface_art.gd").new(); spine.kind="folio"; spine.position=Vector2(26,22); spine.size=Vector2(16,700); body.add_child(spine)
 	elif mode not in ["pause","settings","map","sound_library"]:
 		var clean := StyleBoxFlat.new(); clean.bg_color=Color("eff3f3"); clean.set_corner_radius_all(12)
 		body.add_theme_stylebox_override("panel",clean)
@@ -86,9 +90,8 @@ func build() -> void:
 	for i in 4:
 		var chosen: bool=mode==targets[i] or (i==0 and mode in ["home","map","today","knowledge","fieldbook","bag"])
 		var b := button(body,names[i],Vector2(212+i*222,-42),Vector2(214,39),_switch_object.bind(targets[i]))
-		b.name="ObjectTab_"+targets[i]; b.selected=chosen
+		b.name="ObjectTab_"+targets[i]; b.variant="tab"; b.selected=chosen; b.refresh()
 		b.add_theme_font_size_override("font_size",17)
-		if not chosen: b.add_theme_color_override("font_color",Color("faf8ef",.82))
 	var back := button(body,"×",Vector2(1290,-42),Vector2(42,38),close)
 	back.tooltip_text=SettingsSystem.binding_text("ui_cancel")+" 收起"
 	back.add_theme_color_override("font_color",Color.WHITE)
@@ -305,9 +308,11 @@ func _today() -> void:
 	button(body,"← 回到随身本",Vector2(110,627),Vector2(350,45),_switch_object.bind("notebook"))
 
 func _inventory() -> void:
-	label(body,"今天带在身边的东西",Vector2(110,90),Vector2(900,45),28,BLUE)
-	button(body,"纸片与纪念物 →",Vector2(970,92),Vector2(310,42),_switch_object.bind("fieldbook"))
-	var rows := scroll_area(body,Vector2(110,160),Vector2(1170,490))
+	var art := preload("res://scripts/ui/components/interface_art.gd").new(); art.kind="bag"; art.size=DOSSIER_SIZE; body.add_child(art)
+	label(body,"随身包  /  POCKET",Vector2(76,31),Vector2(700,29),15,PALETTE.LEMON)
+	label(body,"今天带在身边的东西",Vector2(73,67),Vector2(800,45),31,PALETTE.CREAM)
+	var materials := button(body,"纸片与纪念物 →",Vector2(979,72),Vector2(290,40),_switch_object.bind("fieldbook")); materials.variant="tab"; materials.refresh()
+	var rows := scroll_area(body,Vector2(83,170),Vector2(1170,468))
 	var grid := GridContainer.new(); grid.columns=4; grid.add_theme_constant_override("h_separation",14); grid.add_theme_constant_override("v_separation",15); rows.add_child(grid)
 	var catalog: Dictionary = {}
 	for shop in JSON.parse_string(FileAccess.get_file_as_string("res://data/economy/shops.json")).shops:
@@ -316,10 +321,8 @@ func _inventory() -> void:
 		var count := int(GameState.inventory[id])
 		if count<=0: continue
 		var item: Dictionary = catalog.get(id,{"name":id,"description":"一路带来的小物件。"})
-		var card := Control.new(); card.custom_minimum_size=Vector2(272,211); grid.add_child(card)
-		var sketch := preload("res://scripts/ui/goods_sketch.gd").new(); sketch.item_id=str(id); sketch.position=Vector2(77,0); sketch.size=Vector2(118,100); card.add_child(sketch)
-		label(card,str(item.name)+"  ×"+str(count),Vector2(8,105),Vector2(260,35),22,BLUE).horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-		button(card,"拿近看看",Vector2(35,150),Vector2(205,36),func() -> void:
+		var card := preload("res://scripts/ui/components/goods_card.gd").new(); card.item=item.merged({"id":str(id)}); card.quantity="带着 %d 件  ·  拿近看看"%count; card.name="PocketItem_"+str(id); grid.add_child(card)
+		card.pressed.connect(func() -> void:
 			if is_instance_valid(detail): detail.queue_free()
 			detail=panel(body,Vector2(390,220),Vector2(600,300))
 			label(detail,str(item.name),Vector2(30,30),Vector2(530,45),28,BLUE)
@@ -394,12 +397,13 @@ func _browser(kind: String) -> void:
 	browser.kind=kind; browser.owner_ui=self; browser.position=Vector2(65,50); body.add_child(browser)
 
 func _notebook_page() -> void:
-	var categories := [["today","今天","TODAY"],["heard","听说了","HEARD"],["people","人物","PEOPLE"],["places","地点","PLACES"],["personal","私人","PERSONAL"],["materials","收藏","MATERIALS"]]
+	var categories := [["today","今天","TODAY"],["heard","听说了","LEADS"],["connections","回音","CONNECTIONS"],["people","人物","PEOPLE"],["places","地点","PLACES"],["personal","私人","PERSONAL"],["materials","收藏","MATERIALS"]]
 	for i in categories.size():
 		var key: String=categories[i][0]
-		var b := button(body,str(categories[i][1])+"\n"+str(categories[i][2]),Vector2(40,102+i*78),Vector2(162,70),func() -> void: notebook_section=key; build())
+		var b := button(body,str(categories[i][1])+"\n"+str(categories[i][2]),Vector2(40,102+i*72),Vector2(162,64),func() -> void: notebook_section=key; build())
 		b.selected=notebook_section==key; b.add_theme_font_size_override("font_size",16); b.alignment=HORIZONTAL_ALIGNMENT_LEFT
 	_hand("Day %02d" % GameState.current_day,Vector2(242,90),Vector2(370,54),34)
+	if notebook_section=="connections": _connections_page(); return
 	if notebook_section in ["people","places","materials"]:
 		_notebook_collection(notebook_section)
 		return
@@ -469,6 +473,34 @@ func _refresh_checks() -> void:
 	var rows := GuidanceSystem.must_objectives()
 	for i in mini(rows.size(),task_checks.size()):
 		if is_instance_valid(task_checks[i]): task_checks[i].set_pressed_no_signal(bool(rows[i].done))
+
+func _connections_page() -> void:
+	_hand("小事，也会有回音。",Vector2(758,98),Vector2(452,60),31)
+	var steps := CoreLoopSystem.connection_steps()
+	var rows := scroll_area(body,Vector2(236,176),Vector2(395,456))
+	if steps.is_empty():
+		_hand("暂时没有需要带去的话。\n与人一起做的事情，\n之后可以再去问问。",Vector2(248,227),Vector2(350,170),25)
+	for step in steps:
+		var card := preload("res://scripts/ui/components/solmere_button.gd").new(); card.variant="archive"; card.custom_minimum_size=Vector2(365,158); card.name="Connection_"+str(step.id); rows.add_child(card)
+		PALETTE.words(card,GuidanceSystem.source_name(str(step.source))+"  →  "+GuidanceSystem.source_name(str(step.npc)),Vector2(18,15),327,17,PALETTE.MUTED)
+		var title := PALETTE.words(card,str(step.text),Vector2(18,48),327,20)
+		var foot_y := 59.0+maxf(52,title.get_line_count()*29)
+		if not bool(step.available):
+			var availability := PALETTE.words(card,str(step.context),Vector2(18,foot_y),327,16,PALETTE.MUTED)
+			foot_y+=availability.get_line_count()*25+9
+		PALETTE.words(card,TravelSystem.location_name(str(step.location))+" · 查看地点 ›",Vector2(18,foot_y),327,15,PALETTE.SEA)
+		card.custom_minimum_size.y=foot_y+39; card.tooltip_text=str(step.context)
+		card.pressed.connect(func() -> void: _guidance_action(step))
+	var replies: Array=ResidencySystem.state().materials.values().filter(func(item: Dictionary) -> bool: return str(item.get("source",""))=="resident_reply")
+	if not replies.is_empty():
+		var reply: Dictionary=replies.back()
+		label(body,str(reply.title),Vector2(765,218),Vector2(429,56),26,BLUE)
+		var note := label(body,str(reply.text),Vector2(765,300),Vector2(429,223),23,BLUE); note.add_theme_font_override("font",PaperLanguage.handwriting)
+		label(body,"Day %02d · %s"%[int(reply.day),TravelSystem.location_name(str(reply.location))],Vector2(765,546),Vector2(425,32),16,PALETTE.MUTED)
+		button(body,"拿近看看这张纸 →",Vector2(765,603),Vector2(355,44),_show_detail.bind(str(reply.id)))
+	else:
+		_hand("有人记住你留下的东西，\n有人替你留下一句话。",Vector2(768,277),Vector2(430,136),29)
+		var coast := preload("res://scripts/ui/components/interface_art.gd").new(); coast.position=Vector2(887,481); coast.size=Vector2(168,97); body.add_child(coast)
 
 
 func _guidance_action(action: Dictionary) -> void:

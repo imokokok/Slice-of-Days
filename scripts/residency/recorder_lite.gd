@@ -11,6 +11,7 @@ var record_button: Button
 var mark_button: Button
 
 func _ready() -> void:
+	theme=preload("res://scripts/ui/components/interface_palette.gd").theme_for_tools()
 	add_to_group("world_tool")
 	add_to_group("mobile_recorder")
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -19,13 +20,14 @@ func _ready() -> void:
 	card.position = Vector2(1130,564)
 	card.size = Vector2(430,286)
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("204762",0.96)
+	style.bg_color = Color("254b66")
 	style.set_corner_radius_all(14)
 	card.add_theme_stylebox_override("panel",style)
 	add_child(card)
 	status = Label.new()
 	status.position = Vector2(24,20)
 	status.size = Vector2(382,96)
+	status.custom_maximum_size.x=382
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.add_theme_color_override("font_color",Color("fffaf1"))
 	status.add_theme_font_size_override("font_size",18)

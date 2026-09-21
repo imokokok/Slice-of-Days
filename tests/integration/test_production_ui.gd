@@ -48,7 +48,7 @@ func run() -> void:
 	var answer: Array=[]
 	ask.chosen.connect(func(topic: String) -> void: answer.append(topic))
 	var ask_buttons: Array=ask.find_children("*","Button",true,false)
-	check(ask_buttons.size()==4 and ask_buttons[0].variant=="choice","Follow-up questions share the real dialogue choice component")
+	check(ask_buttons.size()==4 and ask_buttons[0].get_script()==load("res://scripts/ui/components/dialogue_choice.gd"),"Follow-up questions share the real dialogue choice component")
 	await snap("ask_choices")
 	ask_buttons[0].pressed.emit(); ask_buttons[0].pressed.emit(); await settle()
 	check(answer==["schedule_info"],"Question selection emits the real topic once")

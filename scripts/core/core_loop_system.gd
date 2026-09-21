@@ -61,9 +61,15 @@ func dialogue_prefix(npc: String) -> Array:
 		var c: Dictionary=state().callbacks[id]
 		var material: Dictionary=ResidencySystem.state().materials.get(str(c.material_id),{})
 		if material.is_empty(): continue
-		result.append(["npc",str(contract(str(c.module)).get("callback","昨天留下的东西，我又看了一遍。"))])
-		result.append(["player","你还记得那一段。" if GameState.current_role=="A" else "原来你也留意到了。我还想再理一理。"])
-		result.append(["npc","记得。你留下的《"+str(material.title)+"》，我没有收进抽屉。"])
+		if bool(c.get("shared",false)):
+			result.append(["npc",str(contract(str(c.module)).get("callback","昨天留下的东西，我又想了一遍。"))])
+			result.append(["player","你还记得那一段。" if GameState.current_role=="A" else "原来你也留意到了。我还想再理一理。"])
+			result.append(["npc","记得。你给我看过的《"+str(material.title)+"》，那个细节还在。"])
+		else:
+			var origin := str(c.get("origin_npc",contract(str(c.module)).get("npc","")))
+			result.append(["npc",GuidanceSystem.source_name(origin)+"提起你们做的《"+str(material.title)+"》。你要是带着，也让我看看吧。"])
+			result.append(["player","我把它留在随身本里了。"])
+			result.append(["npc","愿意的话，拿给我看看。也想听你自己说。"])
 	for opportunity in opportunities():
 		if str(opportunity.source)==npc and str(opportunity.status)=="missed" and not bool(state().opportunities[opportunity.id].get("retold",false)):
 			result.append(["npc",str(opportunity.retell)])
@@ -82,9 +88,9 @@ func _module_completed(role: String, module: String, _outcome: Dictionary) -> vo
 	RelationshipSystem.record_encounter(npc,"made_"+material_id,["participated_"+module])
 	var id := GameState.current_role+"_"+material_id
 	if not state().callbacks.has(id):
-		state().callbacks[id]={"id":id,"npc":str(c.callback_npc),"module":module,"material_id":material_id,"day":mini(7,GameState.current_day+1),"acknowledged":false}
+		state().callbacks[id]={"id":id,"npc":str(c.callback_npc),"origin_npc":npc,"module":module,"material_id":material_id,"day":mini(7,GameState.current_day+1),"acknowledged":false,"shared":false,"returned":false}
 		GameEvents.publish("WorldCallbackScheduled",state().callbacks[id])
-	_learn("return_"+id,"改天问问"+GuidanceSystem.source_name(str(c.callback_npc))+"，这次留下的东西后来怎么样了。",npc,str(c.callback_place))
+	_learn("return_"+id,"把《"+str(material.get("title","这次的作品"))+"》带给"+GuidanceSystem.source_name(str(c.callback_npc))+"看看。",npc,str(c.callback_place),"",{"callback_id":id,"callback_stage":"share"})
 	GameState.shared_state.get_or_add("world_artifacts",{}).get_or_add("loop_contributions",{})[id]={"source_material":material_id,"location":GameState.current_location,"created_by":role,"day":GameState.current_day,"module":module}
 	GameEvents.publish("MinigameCompleted",{"module":module,"material_id":material_id})
 	_check_recognition(npc); GameState.commit_active_role_state()
@@ -111,19 +117,101 @@ func share_candidates(npc: String) -> Array:
 	for id in ResidencySystem.state().materials:
 		var item: Dictionary=ResidencySystem.state().materials[id]
 		if not bool(item.get("can_show_to_npc",true)) or str(item.get("source",""))=="walk" or state().shared.get(npc,[]).has(id): continue
-		if types.has(str(item.get("kind",""))) or str(item.get("source","")).begins_with("module:"+str(row.get("module","missing"))): result.append(item)
+		if not callback_for_material(npc,str(id)).is_empty() or types.has(str(item.get("kind",""))) or str(item.get("source","")).begins_with("module:"+str(row.get("module","missing"))): result.append(item)
+	result.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return not callback_for_material(npc,str(a.id)).is_empty() and callback_for_material(npc,str(b.id)).is_empty())
 	return result
 func share_material(npc: String, material_id: String) -> Dictionary:
 	if not share_candidates(npc).any(func(item: Dictionary) -> bool: return str(item.id)==material_id): return {"ok":false,"message":"这件材料现在不在身边。先在随身本里看看留下的东西。"}
 	var snapshot := GameState.to_save_data().duplicate(true)
 	var ids: Array=state().shared.get(npc,[]); ids.append(material_id); state().shared[npc]=ids
 	RelationshipSystem.record_encounter(npc,"shared_"+material_id,["shared_material"])
+	var callback := callback_for_material(npc,material_id)
+	var response := str(catalog.people[npc].get("share_reply","这个细节，我刚才还没注意到。谢谢你让我看看。"))
+	if not callback.is_empty(): response=_exchange_callback(callback,npc)
 	_check_recognition(npc)
 	GameState.commit_active_role_state()
 	if not SaveManager.save_or_report("分享暂时没能保存，可以再试一次"):
 		GameState.load_save_data(snapshot); return {"ok":false,"message":"还没能记住这次分享，材料仍在。可以再试一次。"}
 	GameEvents.publish("RelationshipChanged",{"npc":npc,"material_id":material_id,"meaningful":true})
-	return {"ok":true,"message":str(catalog.people[npc].get("share_reply","这个细节，我刚才还没注意到。谢谢你让我看看。"))}
+	return {"ok":true,"message":response}
+
+func callback_for_material(npc: String, material_id: String) -> Dictionary:
+	for c in state().callbacks.values():
+		if int(c.day)>GameState.current_day: continue
+		if str(c.npc)==npc and str(c.material_id)==material_id and not bool(c.get("shared",false)): return c
+		var origin := str(c.get("origin_npc",contract(str(c.module)).get("npc","")))
+		if origin==npc and str(c.get("reply_material",""))==material_id and not bool(c.get("returned",false)): return c
+	return {}
+
+func _exchange_callback(c: Dictionary, npc: String) -> String:
+	var detail := contract(str(c.module))
+	var origin := str(c.get("origin_npc",detail.get("npc","")))
+	if str(c.npc)==npc and not bool(c.get("shared",false)):
+		var reply := str(detail.get("share_reply",detail.get("callback","我会记住这次一起留下的东西。")))
+		var reply_id := "reply_"+str(c.id)
+		c.shared=true; c.reply_material=reply_id
+		ResidencySystem._add(reply_id,"note",GuidanceSystem.source_name(npc)+"留下的几句话",{"text":reply,"source":"resident_reply","source_material":str(c.material_id),"related_npc":npc,"callback_id":str(c.id),"can_edit":false})
+		_learn("reply_return_"+str(c.id),"把"+GuidanceSystem.source_name(npc)+"的回应带给"+GuidanceSystem.source_name(origin),npc,npc_place(origin,str(detail.get("next_place",""))),"",{"callback_id":str(c.id),"callback_stage":"return"})
+		RelationshipSystem.record_encounter(npc,"exchange_"+str(c.id),["remembered_"+str(c.module)])
+		return reply+"\n我写了几句。你下次碰见"+GuidanceSystem.source_name(origin)+"，也给对方看看吧。"
+	c.returned=true
+	RelationshipSystem.record_encounter(npc,"return_"+str(c.id),["remembered_"+str(c.module)])
+	return str(detail.get("return_reply","原来那件小事还留在对方心里。谢谢你特意带回来。"))
+
+func npc_place(npc: String, fallback := "") -> String:
+	if npc=="grocery": return "cafe"
+	# The street's real population includes post-argument lingering overrides.
+	for location in ResidencySystem.locations:
+		if DialogueSystem.people_at(str(location)).has(npc): return str(location)
+	if npc in DialogueSystem.ARGUMENT_PEOPLE and not bool(DialogueSystem.argument_state().get("finished",false)): return "produce_stall"
+	return fallback
+
+func next_meeting(npc: String) -> Dictionary:
+	var candidates: Array=[]
+	for activity in ScheduleSystem.residents.get(npc,{}).get("schedule",[]):
+		for day in activity.get("days",[]):
+			var moment := int(day)*1440+int(activity.start)
+			if moment>GameState.current_day*1440+GameState.current_minute: candidates.append({"moment":moment,"day":int(day),"minute":int(activity.start),"location":str(activity.location)})
+	candidates.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return int(a.moment)<int(b.moment))
+	return candidates[0] if not candidates.is_empty() else {}
+
+func connection_steps() -> Array:
+	var result: Array=[]
+	for c in state().callbacks.values():
+		if int(c.day)>GameState.current_day or bool(c.get("returned",false)): continue
+		var returning := bool(c.get("shared",false))
+		var detail := contract(str(c.module))
+		var origin := str(c.get("origin_npc",detail.get("npc","")))
+		var npc := origin if returning else str(c.npc)
+		var material_id := str(c.get("reply_material","")) if returning else str(c.material_id)
+		var item: Dictionary=ResidencySystem.state().materials.get(material_id,{})
+		if npc.is_empty() or item.is_empty(): continue
+		var location := npc_place(npc)
+		var available := not location.is_empty()
+		var meeting := next_meeting(npc) if not available else {}
+		if not available: location=str(meeting.get("location",detail.get("callback_place","")))
+		if not ResidencySystem.locations.has(location): continue
+		var title := str(item.get("title","这次留下的东西"))
+		var context := str(detail.get("relationship","你们做过的事，在另一个人那里有了下文。"))
+		var text := "把《"+title+"》带给"+GuidanceSystem.source_name(npc)
+		if npc in DialogueSystem.ARGUMENT_PEOPLE and not bool(DialogueSystem.argument_state().get("finished",false)):
+			text="去菜摊，先听听CICI和尘缘的事"; context="他们正在交谈。你可以主动加入，之后再把作品给对方看。"
+		elif not available:
+			context=("Day %02d · %s 后可以再去。"%[int(meeting.day),GuidanceSystem.time_text(int(meeting.minute))]) if not meeting.is_empty() else "现在没碰见对方。先把材料留好，之后再来看看。"
+		result.append({"id":"exchange_"+str(c.id)+( "_return" if returning else "_share"),"text":text,"context":context,"source":str(c.npc) if returning else origin,"npc":npc,"location":location,"action":"map","priority":"connection","material_id":material_id,"returning":returning,"available":available})
+	result.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return str(a.location)==GameState.current_location and str(b.location)!=GameState.current_location)
+	return result
+
+func lead_available(fact: Dictionary) -> bool:
+	var id := str(fact.get("id",""))
+	var callback_id := str(fact.get("callback_id",id.trim_prefix("return_") if id.begins_with("return_") else ""))
+	if not callback_id.is_empty() and state().callbacks.has(callback_id):
+		var c: Dictionary=state().callbacks[callback_id]
+		if int(c.day)>GameState.current_day: return false
+		return not bool(c.get("returned",false)) if str(fact.get("callback_stage","share"))=="return" else not bool(c.get("shared",false))
+	var module := str(fact.get("module",""))
+	if not module.is_empty() and not GameplayModuleSystem.state_for(module).get("outcomes",[]).is_empty(): return false
+	return true
 func _check_recognition(npc: String) -> void:
 	if not catalog.people.has(npc) or GameState.confirmed_residents.has(npc): return
 	var meaningful := false
@@ -173,6 +261,12 @@ func active_guidance() -> Dictionary:
 		var due := int(commitment.get("return_by",commitment.get("start",1440)))
 		if due>=GameState.current_minute and due-GameState.current_minute<=30: return {"text":"记得回到"+TravelSystem.location_name(str(commitment.location)),"context":GuidanceSystem.time_text(due)+"的约定","location":commitment.location,"action":"map","priority":"critical"}
 	if GameState.current_minute>=1260 and not bool(day_state().reviewed): return {"id":"evening","text":"回住处，把今天慢慢收好","context":"没有完成的事情可以留到明天。","location":home(),"action":"evening"}
+	# The player's choice outranks the suggested daily sequence, except deadlines.
+	var pinned := GuidanceSystem.tracked_lead()
+	if not pinned.is_empty(): return pinned.merged({"action":"map","priority":"personal"})
+	var connections := connection_steps()
+	for connection in connections:
+		if bool(connection.available): return connection
 	var rows := objectives()
 	for i in rows.size():
 		if bool(rows[i].done): continue
@@ -187,8 +281,6 @@ func active_guidance() -> Dictionary:
 			row.source=source
 		else: row.context="整理今日材料，也可以明天再补作品页。"
 		row["priority"]="must"; return row
-	var pinned := GuidanceSystem.tracked_lead()
-	if not pinned.is_empty(): return pinned.merged({"action":"map","priority":"personal"})
 	for personal in state().personal:
 		if not bool(personal.done): return personal.merged({"action":"personal","priority":"personal"})
 	for o in opportunities():
@@ -234,6 +326,10 @@ func _process(delta: float) -> void:
 func refresh() -> void:
 	if refreshing or catalog.is_empty(): return
 	refreshing=true
+	# Upgrade existing completed shares without losing or replaying their history.
+	for c in state().callbacks.values():
+		if int(c.day)<=GameState.current_day and not bool(c.get("shared",false)) and state().shared.get(str(c.npc),[]).has(str(c.material_id)):
+			_exchange_callback(c,str(c.npc))
 	var key := GameState.current_role+str(GameState.current_day)
 	if key!=_session: _session=key; _seen.clear()
 	for item in ResidencySystem.state().materials.values():
@@ -253,7 +349,7 @@ func material_in_use(id: String) -> bool:
 	for shared in state().shared.values():
 		if shared.has(id): return true
 	for callback in state().callbacks.values():
-		if str(callback.material_id)==id: return true
+		if str(callback.material_id)==id or str(callback.get("reply_material",""))==id: return true
 	for refs in ResidencySystem.state().get("final_references",{}).values():
 		if refs.has(id): return true
 	return false

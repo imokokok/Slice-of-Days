@@ -68,6 +68,7 @@ func label(parent: Node, text: String, at: Vector2, dimensions: Vector2, point :
 	var node := Label.new()
 	node.position = at
 	node.size = dimensions
+	node.custom_maximum_size.x=dimensions.x
 	node.text = LocalizationSystem.text(text)
 	node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	node.add_theme_font_size_override("font_size",point)

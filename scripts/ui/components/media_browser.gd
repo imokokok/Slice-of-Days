@@ -1,4 +1,5 @@
 extends Control
+const PALETTE = preload("res://scripts/ui/components/interface_palette.gd")
 var owner_ui: Control
 var kind := "photo"
 var entries: Array = []
@@ -12,6 +13,7 @@ var current_duration := 0.0
 var playback_icon: Control
 var photo_filter := "all"
 func _ready() -> void:
+	theme=PALETTE.theme_for_tools()
 	size=Vector2(1210,640)
 	player=AudioStreamPlayer.new(); player.bus="Music"; add_child(player)
 	refresh()
@@ -40,7 +42,9 @@ func refresh() -> void:
 		var filter_button := _button(["全部照片","今天拍的","在这里拍的"][i],Vector2(12+i*164,53),Vector2(150,40),func() -> void: photo_filter=filter_id; refresh())
 		filter_button.add_theme_font_size_override("font_size",16); filter_button.selected=photo_filter==filter_id
 	if entries.is_empty():
-		_label("还没有冲洗完成的照片。拍摄后到杂货店送洗，照片会进入这里。" if photo_filter=="all" else "这里暂时没有照片。可以换一个分类看看。",Vector2(40,154),Vector2(1000,70)); return
+		_label("还没有冲洗完成的照片。拍摄后到杂货店送洗，照片会进入这里。" if photo_filter=="all" else "这里暂时没有照片。可以换一个分类看看。",Vector2(350,245),Vector2(570,100))
+		var coast := preload("res://scripts/ui/components/interface_art.gd").new(); coast.position=Vector2(150,229); coast.size=Vector2(135,99); add_child(coast)
+		return
 	var scroll := ScrollContainer.new(); scroll.position=Vector2(5,111); scroll.size=Vector2(1180,474); add_child(scroll)
 	var grid := GridContainer.new(); grid.columns=4 if kind=="photo" else 1; grid.add_theme_constant_override("h_separation",16); grid.add_theme_constant_override("v_separation",16); scroll.add_child(grid)
 	for i in entries.size():
@@ -137,13 +141,17 @@ func _card_style() -> StyleBoxFlat:
 func _recorder_face() -> void:
 	var card := Panel.new(); card.position=Vector2(257,12); card.size=Vector2(700,627)
 	var face := StyleBoxFlat.new(); face.bg_color=Color("edf3f4"); face.set_corner_radius_all(14); card.add_theme_stylebox_override("panel",face); card.mouse_filter=MOUSE_FILTER_IGNORE; add_child(card); move_child(card,0)
+	# Inset sound window, readable controls and small speaker perforations.
+	var sound_window := Panel.new(); sound_window.position=Vector2(22,116); sound_window.size=Vector2(656,159); sound_window.add_theme_stylebox_override("panel",PALETTE.face(Color("d9e5e4"),7)); sound_window.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(sound_window)
+	for i in 9:
+		var hole := ColorRect.new(); hole.position=Vector2(569+i*10,36); hole.size=Vector2(3,15); hole.color=Color("95abae"); hole.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(hole)
 	_button("＋ 新录音",Vector2(459,586),Vector2(290,43),owner_ui._home_action.bind("recorder"))
 func _empty_recorder() -> void:
 	_recorder_face()
 	_label("录音机 / Recorder",Vector2(296,54),Vector2(560,60)).add_theme_font_size_override("font_size",29)
 	_label("还没有录音。\n把今天听到的小镇声音留下来。",Vector2(296,223),Vector2(560,100))
 func _label(value: String, at: Vector2, dimensions: Vector2) -> Label:
-	var label := Label.new(); label.text=value; label.position=at; label.size=dimensions; label.mouse_filter=MOUSE_FILTER_IGNORE; label.add_theme_color_override("font_color",PaperLanguage.BLUE); add_child(label); return label
+	var label := PALETTE.words(self,value,at,dimensions.x,20,PALETTE.INK); label.size=dimensions; return label
 func _button(value: String, at: Vector2, dimensions: Vector2, action: Callable) -> Button:
 	var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.text=value; button.position=at; button.size=dimensions; add_child(button); button.pressed.connect(action); return button
 func _image(parent: Node, data: Image, at: Vector2, dimensions: Vector2) -> void:

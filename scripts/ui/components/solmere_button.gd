@@ -32,19 +32,22 @@ func refresh() -> void:
 		face.bg_color=Color.TRANSPARENT
 		if variant=="choice": face.bg_color=Color("2f5579",.9)
 		elif variant=="guidance": face.bg_color=Color("254b66")
-		elif variant=="archive": face.bg_color=Color("dcd3b7",.22)
+		elif variant=="archive": face.bg_color=Color("e3dcc8",.46)
+		elif variant=="goods": face.bg_color=Color("e1ebea",.65)
+		elif variant=="tab": face.bg_color=Color("254b66")
 		elif variant=="paper": face.bg_color=PaperLanguage.WHITE
 		elif variant=="outlined": face.set_border_width_all(1); face.border_color=Color("9d9988",.36)
 		if state in ["hover","pressed"] or (state=="normal" and selected): face.bg_color=Color("f0d982",1.0 if state=="pressed" else .86 if selected else .38)
 		if variant=="guidance" and (state in ["hover","pressed"] or selected): face.bg_color=Color("eed577")
+		if variant=="tab" and (state in ["hover","pressed"] or selected): face.bg_color=Color("eed577")
 		if state=="focus":
 			face.bg_color=Color.TRANSPARENT; face.set_border_width_all(2); face.border_color=PaperLanguage.YELLOW if dark else PaperLanguage.BLUE
 		if state=="disabled": face.bg_color=Color("73828a",.07)
 		add_theme_stylebox_override(state,face)
-	add_theme_color_override("font_color",PaperLanguage.WHITE if dark and not selected else PaperLanguage.BLUE)
+	add_theme_color_override("font_color",PaperLanguage.WHITE if (dark or variant=="tab") and not selected else PaperLanguage.BLUE)
 	add_theme_color_override("font_hover_color",PaperLanguage.BLUE)
 	add_theme_color_override("font_pressed_color",PaperLanguage.BLUE)
-	add_theme_color_override("font_focus_color",PaperLanguage.WHITE if dark and not selected else PaperLanguage.BLUE)
+	add_theme_color_override("font_focus_color",PaperLanguage.WHITE if (dark or variant=="tab") and not selected else PaperLanguage.BLUE)
 	add_theme_color_override("font_disabled_color",Color("798c93",.5))
 	add_theme_font_override("font",PaperLanguage.body_font)
 	if not has_theme_font_size_override("font_size"): add_theme_font_size_override("font_size",20)

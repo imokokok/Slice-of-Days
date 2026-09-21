@@ -103,10 +103,12 @@ func run() -> void:
 	check(is_instance_valid(shell),"Playable scene uses living object shell")
 	if is_instance_valid(shell):
 		shell.time_notice_age=8; shell._process(.01)
-		check(not shell.folder.visible and not shell.clock_label.visible and not shell.next_button.visible,"Exploration has no permanent HUD")
+		check(not shell.folder.visible and not current_scene.wallet_label.visible and shell.clock_back.size.x<=250 and shell.next_button.size.x<=400,"Exploration keeps only the requested light clock and bounded direction, without a permanent wallet or bag")
 		shell.open_paper("dossier")
 		await process_frame
 		check(is_instance_valid(shell.overlay),"Archive opens in live scene")
+		shell._process(.01)
+		check(not shell.clock_label.visible and not shell.next_button.visible,"Opening an object hides exploration guidance")
 		if OS.get_cmdline_user_args().has("--screenshots"):
 			await RenderingServer.frame_post_draw
 			root.get_texture().get_image().save_png("user://ui_live_archive.png")

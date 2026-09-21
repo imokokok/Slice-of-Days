@@ -56,12 +56,13 @@ func run() -> void:
 	var product: Dictionary=root.get_node("EconomySystem").stock("grocery")[0]
 	shop._select(product); await snap("shop_selected")
 	var before: int=state.money
-	shop.purchase_button.pressed.emit(); await settle(); check(state.money==before,"Selecting purchase does not charge before confirmation")
+	shop.purchase_button.pressed.emit(); await settle(); check(state.money==before,"Adding to basket does not charge")
+	shop.mode="basket"; shop._refresh_right()
 	await snap("purchase_confirm")
-	await accept_confirmation(); check(state.money==before-int(product.price),"Purchase confirmation charges once")
+	shop.purchase_button.pressed.emit(); await settle(); check(state.money==before-int(product.price),"Explicit basket checkout charges once")
 	check(int(state.inventory.get(product.id,0))>0,"Bought item enters actual inventory")
 	await snap("purchase_receipt")
-	state.money=0; shop._refresh(); check(shop.purchase_button.disabled,"Insufficient balance disables purchase")
+	state.money=0; shop._quantity(str(product.id),1); shop.mode="basket"; shop._refresh(); check(shop.purchase_button.disabled,"Insufficient balance disables checkout")
 	await snap("shop_insufficient"); state.money=800; shop.queue_free(); await settle()
 	shell.open_paper("bag"); await settle(); await snap("inventory"); shell.overlay.close(); await settle()
 	film.notice_camera()

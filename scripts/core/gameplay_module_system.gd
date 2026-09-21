@@ -242,6 +242,9 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 	if module_id == "cooking":
 		results.erase("money")
 		role_results.erase("money")
+		for artifact in results.get("artifacts",[]):
+			if str(artifact.get("collection",""))!="recipes": continue
+			artifact.data.merge({"id":"recipe_"+Crypto.new().generate_random_bytes(12).hex_encode(),"format":"solmere.recipe.v1","author":GameState.current_role,"ingredients":stored_interaction.get("selected_tokens",[]).duplicate(),"heat":float(stored_interaction.get("mechanic",{}).get("heat",0.58)),"notes":"按记录的顺序下锅，温热拌匀。\n这道菜留在今天的公共菜谱里。","strokes":[]},true)
 	EventSystem.apply_results("module_%s_%s" % [module_id, choice_id], results)
 	EventSystem.apply_results("module_%s_%s" % [module_id, choice_id], role_results)
 	var outcome := {

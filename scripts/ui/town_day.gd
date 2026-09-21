@@ -624,6 +624,8 @@ func _rebuild_hotspots() -> void:
 	street.queue_redraw()
 	var building_center := _place_center()
 	var center := building_center + Composition.entry_offset(GameState.current_location)
+	if preload("res://scripts/core/coastal_fishing.gd").LOCATIONS.has(GameState.current_location):
+		street.hotspots.append({"x":_world_x(current_index,940) if GameState.current_location=="park" else center-350,"kind":"fishing","label":"在海边钓鱼 · 每竿 10 分钟"})
 	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
 		street.hotspots.append({"x":_world_x(current_index, 1060), "kind":"closed", "label":"观景台 · 21:00 开放"})
 		return
@@ -676,6 +678,8 @@ func _interact() -> void:
 		"door":
 			if not _guard_pocket_audio(): SceneRouter.enter_space(str(item.id))
 		"shop": _open_shop(str(item.id))
+		"fishing":
+			if not is_instance_valid(pocket_panel): _show_pocket_panel(preload("res://scripts/ui/coastal_fishing_panel.gd").new())
 		"argument": _start_market_encounter()
 		"argument_observation": _observe_market_afterward()
 		"module":

@@ -3,7 +3,7 @@ const PALETTE = preload("res://scripts/ui/components/interface_palette.gd")
 var item: Dictionary={}
 var quantity := ""
 func _ready() -> void:
-	variant="goods"; custom_minimum_size=Vector2(278,264)
+	variant="quiet"; custom_minimum_size=Vector2(278,264)
 	super._ready()
 	var sketch := preload("res://scripts/ui/goods_sketch.gd").new()
 	sketch.item_id=str(item.get("id","")); sketch.position=Vector2(62,10); sketch.size=Vector2(154,133); add_child(sketch)

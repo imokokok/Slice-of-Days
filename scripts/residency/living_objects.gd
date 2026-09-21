@@ -308,15 +308,16 @@ func _today() -> void:
 	button(body,"← 回到随身本",Vector2(110,627),Vector2(350,45),_switch_object.bind("notebook"))
 
 func _inventory() -> void:
-	var art := preload("res://scripts/ui/components/interface_art.gd").new(); art.kind="bag"; art.size=DOSSIER_SIZE; body.add_child(art)
-	label(body,"随身包  /  POCKET",Vector2(76,31),Vector2(700,29),15,PALETTE.LEMON)
-	label(body,"今天带在身边的东西",Vector2(73,67),Vector2(800,45),31,PALETTE.CREAM)
+	preload("res://scripts/ui/components/handmade_assets.gd").picture(body,"tote",Vector2(5,0),DOSSIER_SIZE,true)
+	label(body,"随身包  /  POCKET",Vector2(140,31),Vector2(700,29),15,PALETTE.SEA)
+	label(body,"今天带在身边的东西",Vector2(140,67),Vector2(800,45),31,PALETTE.SEA)
 	var materials := button(body,"纸片与纪念物 →",Vector2(979,72),Vector2(290,40),_switch_object.bind("fieldbook")); materials.variant="tab"; materials.refresh()
-	var rows := scroll_area(body,Vector2(83,170),Vector2(1170,468))
-	var grid := GridContainer.new(); grid.columns=4; grid.add_theme_constant_override("h_separation",14); grid.add_theme_constant_override("v_separation",15); rows.add_child(grid)
+	var rows := scroll_area(body,Vector2(158,170),Vector2(1030,468))
+	var grid := GridContainer.new(); grid.columns=3; grid.add_theme_constant_override("h_separation",49); grid.add_theme_constant_override("v_separation",15); rows.add_child(grid)
 	var catalog: Dictionary = {}
 	for shop in JSON.parse_string(FileAccess.get_file_as_string("res://data/economy/shops.json")).shops:
 		for item in shop.get("items",[]): catalog[str(item.id)]=item
+	for fish in preload("res://scripts/core/coastal_fishing.gd").SPECIES: catalog[str(fish.id)]={"name":fish.name,"description":"海边钓来的鲜鱼，可以在料理台用它做菜。"}
 	for id in GameState.inventory:
 		var count := int(GameState.inventory[id])
 		if count<=0: continue

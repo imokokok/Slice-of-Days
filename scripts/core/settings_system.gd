@@ -27,6 +27,7 @@ const AUDIO_BUS_LAYOUT := [
 	["TownWorldSoundEffects", "TownWorld"],
 ]
 const DEFAULT_INPUT_ACTIONS := {
+	"fishing_action": [KEY_SPACE],
 	"nebula_left": [KEY_A,KEY_LEFT],
 	"nebula_right": [KEY_D,KEY_RIGHT],
 	"nebula_up": [KEY_W,KEY_UP],

@@ -14,6 +14,9 @@ func _initialize() -> void:
 
 
 func run() -> void:
+	if not OS.get_cmdline_user_args().has("--isolated-save"): quit(2); return
+	if OS.get_cmdline_user_args().has("--screenshots"):
+		root.content_scale_size=Vector2i(1600,900); root.content_scale_mode=Window.CONTENT_SCALE_MODE_CANVAS_ITEMS; root.size=Vector2i(1600,900)
 	var requested_module := ""
 	for argument in OS.get_cmdline_user_args():
 		if argument.begins_with("--module="):
@@ -66,12 +69,13 @@ func _exercise(module_id: String, tokens: Array[String], choice_id: String, slid
 	if module_id == "sound_sampling":
 		await create_timer(2.6).timeout
 	check(scene.stage_ready, "%s mechanic should reach its completion gate" % module_id)
+	if OS.get_cmdline_user_args().has("--screenshots"):
+		DirAccess.make_dir_recursive_absolute("res://.runtime/handmade-captures")
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://.runtime/handmade-captures/module-%s.png" % module_id)
 	scene._complete_choice(choice_id)
 	check(scene.completed, "%s should complete through the gameplay result contract" % module_id)
 	check(gameplay.pending_module_id().is_empty(), "%s completion should clear its pending session" % module_id)
 	check(bool(gameplay.state_for(module_id).get("completed", false)), "%s result should persist in role state" % module_id)
-	if OS.get_cmdline_user_args().has("--screenshots"):
-		await RenderingServer.frame_post_draw
-		root.get_texture().get_image().save_png("/private/tmp/solmere-%s.png" % module_id)
 	scene.queue_free()
 	await process_frame

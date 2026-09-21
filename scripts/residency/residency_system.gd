@@ -504,7 +504,8 @@ func audit(role := "") -> Dictionary:
 			if granted.has(resident) and not marks.has(resident): marks.append(resident)
 		if valid_living_receipt(item,s.ledger):
 			living_receipts += 1
-			if not receipt_categories.has(str(item.category)): receipt_categories.append(str(item.category))
+			for category in item.get("categories",[str(item.category)]):
+				if not receipt_categories.has(str(category)): receipt_categories.append(str(category))
 		if valid_exploration(item,s):
 			if not exploration_kinds.has(str(item.exploration_kind)): exploration_kinds.append(str(item.exploration_kind))
 		if item.get("kind","") != "proof": continue

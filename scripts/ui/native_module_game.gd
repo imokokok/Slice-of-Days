@@ -58,72 +58,100 @@ func _ready() -> void:
 
 
 func _build_theme() -> void:
-	var ui_theme := Theme.new()
-	if DisplayServer.get_name() != "headless":
-		var font := SystemFont.new()
-		font.font_names = PackedStringArray(["PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", "sans-serif"])
-		font.allow_system_fallback = true
-		ui_theme.default_font = font
-	ui_theme.default_font_size = 16
-	theme = ui_theme
+	theme=preload("res://scripts/ui/components/interface_palette.gd").theme_for_tools()
 
 
 func _build_ui() -> void:
-	var header := _panel(self, Vector2(24, 20), Vector2(1552, 82), Color.TRANSPARENT, Color.TRANSPARENT)
-	_label(header, _eyebrow(), Vector2(22, 10), Vector2(520, 24), 13, PAPER)
-	_label(header, str(prototype.get("title", module_id)), Vector2(22, 32), Vector2(760, 38), 27, PAPER)
-	var leave := _button(header, "暂时离开", Vector2(1320, 18), Vector2(205, 48), false)
-	leave.variant="camera"; leave.refresh()
-	leave.pressed.connect(_return_or_cancel)
-
-	var side := _panel(self, Vector2(985, 122), Vector2(590, 644), Color("edf3f4",.97), Color.TRANSPARENT)
-	instruction_label = _label(side, str(interaction.get("prompt", "完成这段操作。")), Vector2(22, 16), Vector2(546, 72), 15, INK)
-	instruction_label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-	selection_label = _label(side, "", Vector2(22, 92), Vector2(546, 52), 14, SEA)
-	selection_label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-	var tokens: Array = interaction.get("tokens", [])
-	for index in tokens.size():
-		var token: Dictionary = tokens[index]
-		var token_id := str(token.get("id", ""))
-		var at := Vector2(22,150+index*52)
-		var extent := Vector2(546,44)
-		if module_id=="cooking": at=Vector2(22+(index%3)*184,145+(index/3)*82); extent=Vector2(174,73)
-		var token_button := _button(side, _token_button_text(token), at, extent, false)
-		if module_id=="cooking":
-			token_button.add_theme_font_size_override("font_size",15); token_button.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; token_button.clip_text=true
-			token_button.size=extent
-			token_button.icon_alignment=HORIZONTAL_ALIGNMENT_LEFT
-			token_button.tooltip_text=str(token.get("detail",""))
-		token_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		token_button.tooltip_text = LocalizationSystem.text(token.get("detail", ""))
-		token_button.pressed.connect(_toggle_token.bind(token_id))
-		token_buttons[token_id] = token_button
-
 	if module_id=="cooking":
-		ingredient_art=Control.new(); ingredient_art.mouse_filter=MOUSE_FILTER_IGNORE; add_child(ingredient_art)
+		_build_cooking_ui()
+		return
+	var p=preload("res://scripts/ui/components/interface_palette.gd")
+	p.words(self,str(prototype.get("title",module_id)),Vector2(70,40),1150,32)
+	p.words(self,_eyebrow(),Vector2(72,91),1080,16,p.MUTED)
+	var leave := _button(self,"暂时离开",Vector2(1290,45),Vector2(235,48),false)
+	leave.pressed.connect(_return_or_cancel)
+	var side := Control.new(); side.position=Vector2(975,155); side.size=Vector2(550,610); add_child(side)
+	instruction_label=p.words(side,str(interaction.get("prompt","完成这段操作。")),Vector2(22,0),516,20)
+	selection_label=p.words(side,"",Vector2(22,100),516,17)
+	var tokens: Array=interaction.get("tokens",[])
+	for index in tokens.size():
+		var token: Dictionary=tokens[index]
+		var id := str(token.id)
+		var button := _button(side,_token_button_text(token),Vector2(22,175+index*45),Vector2(516,41),false)
+		button.alignment=HORIZONTAL_ALIGNMENT_LEFT
+		button.tooltip_text=str(token.get("detail",""))
+		button.pressed.connect(_toggle_token.bind(id))
+		token_buttons[id]=button
 	_build_module_control(side)
-	var choice_y := 522
-	for choice in prototype.get("choices", []):
-		var choice_id := str(choice.get("id", ""))
-		var minutes := int(choice.get("cost", {}).get("minutes", 0))
-		if module_id == "cooking": minutes = int(EconomySystem.cooking_cost(choice.get("cost", {})).get("minutes", minutes))
-		var choice_button := _button(side, "%s · %d分钟" % [str(choice.get("label", choice_id)), minutes], Vector2(22, choice_y), Vector2(546, 42), true)
-		choice_button.tooltip_text = LocalizationSystem.text(choice.get("detail", ""))
-		choice_button.pressed.connect(_confirm_choice.bind(choice_id))
-		choice_buttons[choice_id] = choice_button
-		choice_y += 50
-
-	var footer := _panel(self, Vector2(42, 780), Vector2(1510, 92), Color("214860",.92), Color.TRANSPARENT)
-	status_label = _label(footer, _initial_status(), Vector2(24, 15), Vector2(1120, 64), 18, PAPER)
-	status_label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-	return_button = _button(footer, "返回原空间", Vector2(1225, 18), Vector2(250, 54), false)
-	return_button.variant="camera"; return_button.refresh()
+	primary_button.position=Vector2(325,416); primary_button.size.x=210
+	var y := 520
+	for choice in prototype.get("choices",[]):
+		var id := str(choice.id)
+		var button := _button(side,"%s · %d分钟" % [str(choice.get("label",id)),int(choice.get("cost",{}).get("minutes",0))],Vector2(22,y),Vector2(516,42),false)
+		button.tooltip_text=str(choice.get("detail","")); button.pressed.connect(_confirm_choice.bind(id)); choice_buttons[id]=button
+		y+=50
+	status_label=p.words(self,_initial_status(),Vector2(72,804),1130,20)
+	return_button=_button(self,"返回原空间",Vector2(1280,815),Vector2(245,48),false)
 	return_button.pressed.connect(_return_or_cancel)
-	_label(self, "选择材料 · "+SettingsSystem.binding_text("restart_module")+" 操作 · "+SettingsSystem.binding_text("ui_cancel")+" 返回", Vector2(520, 879), Vector2(560, 20), 12, Color(PAPER, 0.9), HORIZONTAL_ALIGNMENT_CENTER)
+	if module_id=="archives":
+		for i in 3:
+			var note := p.words(self,"先从右侧取一份记录",Vector2(139+i*272,318+(i%2)*32),187,21)
+			note.name="SourceNote"+str(i)
 
+func _build_cooking_ui() -> void:
+	var art = preload("res://scripts/ui/components/handmade_assets.gd")
+	var p = preload("res://scripts/ui/components/interface_palette.gd")
+	theme=p.theme_for_tools()
+	p.words(self,"潮汐饭店 · 手边的料理",Vector2(70,40),1010,34)
+	p.words(self,"取食材，调火候，把今天的味道留成一页。",Vector2(72,96),1100,20,p.MUTED)
+	var book_button := _button(self,"翻开菜谱",Vector2(1175,48),Vector2(300,50),false)
+	book_button.variant="quiet"; book_button.refresh(); book_button.pressed.connect(_open_recipe_book)
+	art.picture(self,"worktop",Vector2(65,183),Vector2(820,455),true)
+	art.picture(self,"recipe_book",Vector2(940,176),Vector2(592,426),true)
+	instruction_label=p.words(self,"从下面取三样食材。\n\n先后顺序，也是一道菜的记忆。",Vector2(994,219),209,21)
+	selection_label=p.words(self,"",Vector2(1256,218),230,19)
+	ingredient_art=Control.new(); ingredient_art.mouse_filter=MOUSE_FILTER_IGNORE; add_child(ingredient_art)
+	var tokens: Array=interaction.get("tokens",[])
+	for i in tokens.size():
+		var token: Dictionary=tokens[i]
+		var b := preload("res://scripts/ui/components/handmade_item.gd").new()
+		b.item_id=str(token.id); b.caption=str(token.label)
+		b.position=Vector2(70+i*160,646); b.size=Vector2(142,141)
+		b.name="Ingredient_"+str(token.id); b.pressed.connect(_toggle_token.bind(str(token.id)))
+		token_buttons[str(token.id)]=b; add_child(b)
+	var x := 986
+	for choice in prototype.get("choices",[]):
+		var id := str(choice.id)
+		var b := _button(self,"即兴出餐" if id=="improvise" else "按菜谱出餐",Vector2(x,416),Vector2(224,46),false)
+		b.variant="quiet"; b.refresh(); b.pressed.connect(_confirm_choice.bind(id)); choice_buttons[id]=b; x+=270
+	value_label=p.words(self,"",Vector2(82,594),455,20)
+	value_slider=HSlider.new(); value_slider.position=Vector2(80,555); value_slider.size=Vector2(480,27)
+	value_slider.min_value=0; value_slider.max_value=1; value_slider.step=.01; value_slider.value=.58
+	value_slider.value_changed.connect(_on_value_changed); add_child(value_slider)
+	primary_button=_button(self,"拌匀 · 确认火候",Vector2(600,567),Vector2(294,52),false)
+	primary_button.variant="quiet"; primary_button.refresh(); primary_button.pressed.connect(_perform_primary_action)
+	status_label=p.words(self,"先从下方拿取三样食材。",Vector2(74,809),1190,20)
+	return_button=_button(self,"离开料理台",Vector2(1310,815),Vector2(215,50),false)
+	return_button.variant="quiet"; return_button.refresh(); return_button.pressed.connect(_return_or_cancel)
+	token_buttons.values()[0].grab_focus()
+
+func _open_recipe_book() -> void:
+	if not get_tree().get_nodes_in_group("recipe_book").is_empty(): return
+	var book := preload("res://scripts/ui/recipe_book_panel.gd").new()
+	book.ingredients=selected_tokens.duplicate(); book.heat=value_slider.value
+	book.follow_recipe.connect(func(recipe: Dictionary):
+		selected_tokens.clear()
+		for id in recipe.ingredients:
+			if token_buttons.has(str(id)) and EconomySystem.ingredient_available(str(id)): selected_tokens.append(str(id))
+		value_slider.value=float(recipe.heat); stage_ready=false
+		instruction_label.text=str(recipe.title)+"\n\n"+str(recipe.notes).left(60)
+		_update_state()
+		status_label.text="正在照着「%s」做。%s" % [recipe.title,"还缺食材，先去采购或钓鱼。" if selected_tokens.size()<3 else "食材就位，可以调火候。"]
+	)
+	add_child(book)
 
 func _build_module_control(parent: Control) -> void:
-	value_label = _label(parent, "", Vector2(22, 414), Vector2(320, 28), 14, MUTED)
+	value_label = _label(parent, "", Vector2(22, 414), Vector2(285, 28), 18, MUTED)
 	primary_button = _button(parent, _primary_text(), Vector2(366, 416), Vector2(202, 48), true)
 	primary_button.pressed.connect(_perform_primary_action)
 	if module_id in ["cooking", "photography", "optical_illusion"]:
@@ -137,9 +165,9 @@ func _build_module_control(parent: Control) -> void:
 		value_slider.value_changed.connect(_on_value_changed)
 		parent.add_child(value_slider)
 	elif module_id == "sound_sampling":
-		_label(parent, "时间线会按选择顺序播放；来源标记始终和片段一起移动。", Vector2(22, 446), Vector2(324, 52), 12, MUTED).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		preload("res://scripts/ui/components/interface_palette.gd").words(parent,"片段按选择顺序播放，来源标记始终保留。",Vector2(22,454),280,17,MUTED)
 	else:
-		_label(parent, "来源编号不会从记录上剥离；建立连接和保留缺口都属于有效整理。", Vector2(22, 446), Vector2(324, 52), 12, MUTED).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		preload("res://scripts/ui/components/interface_palette.gd").words(parent,"保留来源；无法确认的地方，可以留下空格。",Vector2(22,454),280,17,MUTED)
 
 
 func _toggle_token(token_id: String) -> void:
@@ -233,7 +261,7 @@ func _update_state() -> void:
 		for index in selected_tokens.size():
 			var sketch := preload("res://scripts/ui/goods_sketch.gd").new(); sketch.item_id=selected_tokens[index]
 			var angle := -PI*.8+index*PI*.6
-			sketch.position=Vector2(400,363)+Vector2(cos(angle),sin(angle))*65; sketch.size=Vector2(86,80); ingredient_art.add_child(sketch)
+			sketch.position=Vector2(348,330)+Vector2(cos(angle),sin(angle))*59; sketch.size=Vector2(115,106); ingredient_art.add_child(sketch)
 	var minimum := int(interaction.get("min_select", 0))
 	var labels: Array[String] = []
 	for token_id in selected_tokens:
@@ -335,10 +363,11 @@ func _fail() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not get_tree().get_nodes_in_group("recipe_book").is_empty(): return
 	if not get_tree().get_nodes_in_group("native_confirmation").is_empty(): return
-	if not event is InputEventKey or not event.pressed or event.echo:
+	if not event.is_pressed() or event.is_echo():
 		return
-	if event.keycode >= KEY_1 and event.keycode <= KEY_5:
+	if event is InputEventKey and event.keycode >= KEY_1 and event.keycode <= KEY_5:
 		var index := int(event.keycode - KEY_1)
 		var tokens: Array = interaction.get("tokens", [])
 		if index < tokens.size():
@@ -350,73 +379,48 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _draw() -> void:
-	if background_texture != null:
-		draw_texture_rect(background_texture, Rect2(Vector2.ZERO, size), false)
-	else:
-		draw_rect(Rect2(Vector2.ZERO, size), Color("718087"))
-	draw_rect(Rect2(Vector2.ZERO, size), Color(INK, 0.45))
-	draw_style_box(_board_style(), BOARD)
+	draw_rect(Rect2(Vector2.ZERO,size),Color("f4f1e6"))
+	if module_id=="cooking": return
+	var art=preload("res://scripts/ui/components/handmade_assets.gd")
 	match module_id:
-		"cooking": _draw_cooking()
-		"sound_sampling": _draw_sound()
-		"photography": _draw_photography()
-		"optical_illusion": _draw_perspective()
+		"sound_sampling":
+			draw_texture_rect(art.texture("tape_workstation"),Rect2(64,170,854,565),false)
+			_draw_sound()
+		"photography":
+			if background_texture: draw_texture_rect(background_texture,Rect2(177,269,634,361),false)
+			draw_texture_rect(art.texture("photo_mat"),Rect2(67,154,865,575),false)
+			_draw_photography()
+		"optical_illusion":
+			draw_texture_rect(art.texture("window_frame"),Rect2(84,155,826,576),false)
+			_draw_perspective()
 		"archives": _draw_archives()
 
-
-func _draw_cooking() -> void:
-	draw_texture_rect(cooking_pan,Rect2(76,160,852,500),false)
-	var heat := value_slider.value if value_slider != null else 0.0
-	draw_rect(Rect2(210, 662, 590, 18), Color("d9cbb7"))
-	draw_rect(Rect2(210, 662, 590 * heat, 18), TERRACOTTA if heat >= 0.42 and heat <= 0.74 else GOLD)
-	draw_line(Vector2(210 + 590 * 0.42, 654), Vector2(210 + 590 * 0.42, 688), PAPER, 3)
-	draw_line(Vector2(210 + 590 * 0.74, 654), Vector2(210 + 590 * 0.74, 688), PAPER, 3)
-
-
 func _draw_sound() -> void:
+	# Waveforms are an abstract visualization; cursor follows actual audition time.
 	for track in 3:
-		var y := 292.0 + track * 112
-		draw_line(Vector2(112, y), Vector2(890, y), Color(SEA, 0.55), 2)
-		if track < selected_tokens.size():
-			var id := selected_tokens[track]
-			var unsafe := id in ["cafe_cups", "old_hinge"]
-			var block := Rect2(150 + track * 115, y - 36, 360, 72)
-			draw_rect(block, Color(TERRACOTTA if unsafe else SAGE, 0.88))
-			for wave in 16:
-				var x := block.position.x + 12 + wave * 21
-				var height: float = 8.0 + absf(sin(float(wave * 3 + track))) * 22.0
-				draw_line(Vector2(x, y - height), Vector2(x, y + height), Color(PAPER, 0.75), 3)
-	if playback_active or playback_cursor > 0:
-		var x := lerpf(112, 890, playback_cursor)
-		draw_line(Vector2(x, 220), Vector2(x, 610), GOLD, 4)
-
+		var y := 338.0+track*74
+		draw_line(Vector2(178,y),Vector2(806,y),Color(SEA,.16),1)
+		if track<selected_tokens.size():
+			var unsafe := selected_tokens[track] in ["cafe_cups","old_hinge"]
+			for wave in 40:
+				var x := 185+wave*15.5
+				var height := 5.0+absf(sin(float(wave*3+track)))*19.0
+				draw_line(Vector2(x,y-height),Vector2(x,y+height),Color(GOLD if unsafe else SEA,.8),2)
+	if playback_active or playback_cursor>0:
+		var x := lerpf(177,807,playback_cursor)
+		draw_line(Vector2(x,310),Vector2(x,520),GOLD,3)
 
 func _draw_photography() -> void:
-	var frame := Rect2(145, 185, 710, 475)
-	draw_rect(frame, Color("688b91", 0.28))
-	draw_line(frame.position + Vector2(frame.size.x / 3, 0), frame.position + Vector2(frame.size.x / 3, frame.size.y), Color(PAPER, 0.35), 2)
-	draw_line(frame.position + Vector2(frame.size.x * 2 / 3, 0), frame.position + Vector2(frame.size.x * 2 / 3, frame.size.y), Color(PAPER, 0.35), 2)
-	draw_line(frame.position + Vector2(0, frame.size.y / 3), frame.position + Vector2(frame.size.x, frame.size.y / 3), Color(PAPER, 0.35), 2)
-	draw_line(frame.position + Vector2(0, frame.size.y * 2 / 3), frame.position + Vector2(frame.size.x, frame.size.y * 2 / 3), Color(PAPER, 0.35), 2)
-	var anchors := {
-		"reflection": Rect2(190, 225, 155, 230),
-		"people": Rect2(420, 330, 150, 250),
-		"sea_edge": Rect2(605, 205, 210, 155),
-		"empty_chair": Rect2(640, 455, 145, 120),
-	}
-	for token_id in anchors:
-		var rect: Rect2 = anchors[token_id]
-		if selected_tokens.has(token_id):
-			draw_rect(rect, Color(GOLD, 0.18))
-			draw_rect(rect, GOLD, false, 4)
-		else:
-			draw_rect(rect, Color(GOLD, 0.32), false, 3)
-	var exposure := value_slider.value if value_slider != null else 0.5
-	draw_rect(frame, Color(1, 0.94, 0.78, absf(exposure - 0.5) * 0.72))
-	draw_circle(frame.get_center(), 7, TERRACOTTA)
-	draw_line(frame.get_center() - Vector2(22, 0), frame.get_center() + Vector2(22, 0), TERRACOTTA, 2)
-	draw_line(frame.get_center() - Vector2(0, 22), frame.get_center() + Vector2(0, 22), TERRACOTTA, 2)
-
+	var frame := Rect2(187,275,610,345)
+	for third in [1,2]:
+		draw_line(frame.position+Vector2(frame.size.x*third/3,0),frame.position+Vector2(frame.size.x*third/3,frame.size.y),Color(PAPER,.35),1)
+	var anchors := {"reflection":Vector2(274,375),"people":Vector2(460,507),"sea_edge":Vector2(678,320),"empty_chair":Vector2(695,552)}
+	for token_id in selected_tokens:
+		if anchors.has(token_id):
+			var point: Vector2=anchors[token_id]
+			draw_arc(point,24,0,TAU,28,GOLD,3,true)
+	var exposure := value_slider.value if value_slider!=null else .5
+	draw_rect(frame,Color(1,.94,.78,absf(exposure-.5)*.72))
 
 func _draw_perspective() -> void:
 	var angle := value_slider.value if value_slider != null else 0.0
@@ -437,25 +441,20 @@ func _draw_perspective() -> void:
 
 
 func _draw_archives() -> void:
-	var cards := [
-		Rect2(125, 205, 225, 320),
-		Rect2(390, 250, 225, 320),
-		Rect2(655, 185, 225, 320),
-	]
-	for index in cards.size():
-		var card: Rect2 = cards[index]
-		draw_rect(card, Color(PAPER, 0.92))
-		draw_rect(card, Color(GOLD if index < selected_tokens.size() else SEA, 0.8), false, 5)
-		for line in 7:
-			var line_width := card.size.x - 44 - (line % 3) * 24
-			draw_line(card.position + Vector2(22, 78 + line * 28), card.position + Vector2(22 + line_width, 78 + line * 28), Color(MUTED, 0.42), 3)
-		draw_circle(card.position + Vector2(card.size.x - 38, 36), 13, TERRACOTTA if index < selected_tokens.size() else Color(SEA, 0.5))
-	if selected_tokens.size() >= 2:
-		draw_line(cards[0].get_center(), cards[1].get_center(), Color(GOLD, 0.76), 4)
-	if selected_tokens.size() >= 3:
-		draw_line(cards[1].get_center(), cards[2].get_center(), Color(GOLD, 0.76), 4)
-		draw_line(cards[0].get_center(), cards[2].get_center(), Color(GOLD, 0.42), 2)
-
+	var art=preload("res://scripts/ui/components/handmade_assets.gd")
+	for i in 3:
+		var card := Rect2(98+i*272,213+(i%2)*32,255,432)
+		draw_texture_rect(art.texture("archive_sheet"),card,false)
+		var note := get_node_or_null("SourceNote"+str(i)) as Label
+		if note:
+			note.text="先从右侧取一份记录"
+			if i<selected_tokens.size():
+				var id := selected_tokens[i]
+				note.text=_token_label(id)+"\n\n"
+				for token in interaction.get("tokens",[]):
+					if str(token.id)==id: note.text+=str(token.get("detail",""))
+		if i<selected_tokens.size():
+			draw_line(card.position+Vector2(44,card.size.y-35),card.position+Vector2(card.size.x-38,card.size.y-35),GOLD,3,true)
 
 func _perspective_target() -> float:
 	if selected_tokens.has("photo_door") and selected_tokens.has("map_door"):
@@ -552,7 +551,7 @@ func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, 
 
 func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, primary: bool) -> Button:
 	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
-	button.variant="outlined"
+	button.variant="quiet"
 	button.text = LocalizationSystem.text(text_value)
 	button.position = at
 	button.size = button_size

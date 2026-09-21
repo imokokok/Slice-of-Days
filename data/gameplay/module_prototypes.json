@@ -52,6 +52,16 @@
             "id": "star_salt",
             "label": "星形盐片",
             "detail": "杂货店的奇怪食材，需实际购买。"
+          },
+          {
+            "id": "sardine",
+            "label": "沙丁鱼",
+            "detail": "在海边钓到后带来的鲜鱼。"
+          },
+          {
+            "id": "sea_bream",
+            "label": "金鳍海鲷",
+            "detail": "亲手钓来的鱼，适合配柠檬和香草。"
           }
         ]
       },

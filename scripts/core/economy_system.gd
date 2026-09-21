@@ -60,6 +60,80 @@ func shop_open(shop_id: String) -> bool:
 	var hours: Array = config.shop_hours.get(shop_id,[0,1440])
 	return GameState.current_minute >= int(hours[0]) and GameState.current_minute < int(hours[1])
 
+
+func cart(shop_id: String) -> Dictionary:
+	if not state().has("carts"): state().carts={}
+	return state().carts.get(shop_id,{}).duplicate(true)
+
+func set_cart_quantity(shop_id: String, item_id: String, quantity: int) -> Dictionary:
+	if mutating: return {"ok":false,"message":"请等这一笔结算完。"}
+	if not catalog.has(shop_id): return {"ok":false,"message":"找不到这个柜台。"}
+	var basket := cart(shop_id)
+	if quantity>0:
+		var listed := false
+		for item in stock(shop_id):
+			if item.id==item_id and quantity<=int(item.remaining): listed=true
+		if not listed or quantity>99: return {"ok":false,"message":"货架上没有这么多，可以减少数量。"}
+	var before := GameState.to_save_data().duplicate(true)
+	if quantity<=0: basket.erase(item_id)
+	else: basket[item_id]=quantity
+	state().carts[shop_id]=basket
+	if not _save("购物篮保存失败"):
+		GameState.load_save_data(before)
+		return {"ok":false,"message":"购物篮没能保存，请重试。"}
+	return {"ok":true,"message":"已放进购物篮。" if quantity>0 else "已从篮子取出。"}
+
+func cart_quote(shop_id: String) -> Dictionary:
+	var lines: Array=[]
+	var categories: Array=[]
+	var total := 0
+	var minutes := 0
+	var available: Dictionary={}
+	for item in stock(shop_id): available[item.id]=item
+	for id in cart(shop_id):
+		var count := int(cart(shop_id)[id])
+		if not available.has(id) or count<1 or count>int(available[id].remaining):
+			return {"ok":false,"message":"货架已变化，请取出缺货的商品后再结账。"}
+		var item: Dictionary=available[id]
+		var category := str(item.get("category","household"))
+		if not categories.has(category): categories.append(category)
+		lines.append({"item_id":id,"name":item.name,"quantity":count,"unit_price":int(item.price),"total":count*int(item.price),"category":category})
+		total+=count*int(item.price); minutes+=count*int(item.get("minutes",0))
+	return {"ok":not lines.is_empty(),"lines":lines,"categories":categories,"total":total,"minutes":minutes,"message":"篮子还是空的。" if lines.is_empty() else ""}
+
+func purchase_cart(shop_id: String) -> Dictionary:
+	if mutating: return {"ok":false,"message":"这一笔正在结算。"}
+	if not shop_open(shop_id): return {"ok":false,"message":"柜台已经收好了，篮子会替你保留。"}
+	var quote := cart_quote(shop_id)
+	if not quote.ok: return quote
+	if GameState.money<int(quote.total): return {"ok":false,"message":"还差 %d 元，先从篮子取出一些物品。" % (int(quote.total)-GameState.money)}
+	if not GameState.can_fit_now(int(quote.minutes)): return {"ok":false,"message":"时间不够，篮子会替你保留。"}
+	mutating=true
+	var before := GameState.to_save_data().duplicate(true)
+	GameState.spend_money(int(quote.total),str(catalog[shop_id].name)+" · 购物篮结账")
+	var receipt := record_service_receipt(shop_id,quote.lines,str(quote.categories[0]) if quote.categories.size()==1 else "mixed",GameState.money_ledger.back(),false)
+	receipt["categories"]=quote.categories.duplicate()
+	ResidencySystem.ingest_receipt(receipt)
+	for line in quote.lines:
+		var id := str(line.item_id)
+		GameState.inventory[id]=int(GameState.inventory.get(id,0))+int(line.quantity)
+		var key := "%s:%d:%s" % [shop_id,GameState.current_day,id]
+		state().stock_sold[key]=int(state().stock_sold.get(key,0))+int(line.quantity)
+		for item in catalog[shop_id].items:
+			if item.id==id and item.get("category","")=="collection":
+				var collection_id := str(receipt.id)+"_"+id
+				state().collections[collection_id]={"id":collection_id,"item_id":id,"name":item.name,"nickname":"","note":"","slot":item.get("display_slot","shelf"),"day":GameState.current_day,"form":item.get("form","card"),"color":item.get("color","819c9b"),"purpose":item.get("purpose","private")}
+	state().carts[shop_id]={}
+	GameState.use_free_time(int(quote.minutes))
+	GameState.add_journal_entry({"id":receipt.id,"kind":"purchase","text":"在%s买下 %d 种物品 · %d 元，小票已收好。" % [catalog[shop_id].name,quote.lines.size(),quote.total]})
+	if not _save():
+		GameState.load_save_data(before); mutating=false
+		return {"ok":false,"message":"保存失败，钱款、库存和篮子已恢复，可重新结账。"}
+	mutating=false
+	GameState.message_posted.emit("小票已收入生活记录 · 物品已放进随身包")
+	if GameState.current_role=="B": MetaExperience.queue_important("b_purchase_receipt",{"text":"小票留好了。","receipt_id":receipt.id})
+	return {"ok":true,"message":"买好了，带上小票。","receipt":receipt}
+
 func purchase(shop_id: String, item_id: String) -> Dictionary:
 	if mutating: return {"ok":false,"message":"这一笔正在结算。"}
 	if not shop_open(shop_id): return {"ok":false,"message":"柜台已经收好了，明天再来。"}

@@ -1,163 +1,191 @@
 extends Control
-
-const CATALOG_PATH := "res://data/economy/shops.json"
-const PAPER := Color("fff5df")
-const INK := Color("382e29")
-const MUTED := Color("75685e")
-const TERRACOTTA := Color("bd6248")
-const SEA := Color("537982")
-const PALETTE = preload("res://scripts/ui/components/interface_palette.gd")
-
-var shop_id := ""
-var shop: Dictionary = {}
+const ART = preload("res://scripts/ui/components/handmade_assets.gd")
+const P = preload("res://scripts/ui/components/interface_palette.gd")
+const ITEM = preload("res://scripts/ui/components/handmade_item.gd")
+var shop_id := "grocery"
+var shop: Dictionary={}
+var selected_item: Dictionary={}
+var item_list: Control
+var selection_panel: Control
 var balance_label: Label
 var budget_label: Label
 var status_label: Label
-var item_list: GridContainer
+var purchase_button: Button
+var basket_button: Button
+var right: Control
+var mode := "shelf"
 var buying := false
 var last_purchase_msec := -1000
-var selected_item: Dictionary = {}
-var selection_panel: Control
-var purchase_button: Button
-
-
+var receipt: Dictionary={}
 func _ready() -> void:
-	theme=PALETTE.theme_for_tools()
-	add_to_group("meta_modal")
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	mouse_filter = Control.MOUSE_FILTER_STOP
-	_load_shop()
-	_build_ui()
-	_refresh()
-
-
-func _load_shop() -> void:
-	if not FileAccess.file_exists(CATALOG_PATH):
-		return
-	var parsed = JSON.parse_string(FileAccess.get_file_as_string(CATALOG_PATH))
-	if not parsed is Dictionary:
-		return
-	for raw in parsed.get("shops", []):
-		if raw is Dictionary and str(raw.get("id", "")) == shop_id:
-			shop = (raw as Dictionary).duplicate(true)
-			return
-
-
-func _build_ui() -> void:
-	var shade := ColorRect.new()
-	shade.color=Color("16334b",.45); shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(shade)
-	var panel := Panel.new()
-	panel.name="ShopCounter"; panel.position=Vector2(120,85); panel.size=Vector2(1360,735)
-	var style := PALETTE.face(PALETTE.CREAM,12)
-	panel.add_theme_stylebox_override("panel",style); add_child(panel)
-	var art := preload("res://scripts/ui/components/interface_art.gd").new(); art.kind="counter"; art.size=panel.size; panel.add_child(art)
-	_label(panel,"SOLMERE  /  沿街小店",Vector2(44,20),Vector2(850,25),14,PALETTE.LEMON)
-	_label(panel,str(shop.get("name","小镇货架")),Vector2(43,47),Vector2(850,55),32,PALETTE.CREAM)
-	_label(panel,"挑一件，带进今天的生活。",Vector2(900,54),Vector2(400,36),18,PALETTE.CREAM)
-	var receipt := Panel.new(); receipt.position=Vector2(978,163); receipt.size=Vector2(346,493); receipt.add_theme_stylebox_override("panel",PALETTE.face(Color("e9e5d8"),5)); panel.add_child(receipt)
-	selection_panel=Control.new(); selection_panel.position=Vector2(999,178); selection_panel.size=Vector2(300,475); panel.add_child(selection_panel)
-	balance_label=_label(selection_panel,"",Vector2(0,0),Vector2(310,40),24,SEA)
-	budget_label=_label(selection_panel,"",Vector2(0,47),Vector2(292,53),16,MUTED)
-	status_label=_label(selection_panel,"",Vector2(0,119),Vector2(292,270),19,PALETTE.INK)
-	status_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	purchase_button=_button(selection_panel,"选择一件物品",Vector2(0,404),Vector2(300,52),true)
-	purchase_button.name="ConfirmPurchase"; purchase_button.disabled=true; purchase_button.pressed.connect(_confirm_purchase)
-	var scroll := ScrollContainer.new(); scroll.position=Vector2(40,164); scroll.size=Vector2(910,490)
-	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; panel.add_child(scroll)
-	item_list=GridContainer.new(); item_list.columns=3; item_list.add_theme_constant_override("h_separation",20); item_list.add_theme_constant_override("v_separation",20); scroll.add_child(item_list)
-	var close := _button(panel,"收起",Vector2(1110,665),Vector2(200,42),false); close.tooltip_text=SettingsSystem.binding_text("ui_cancel"); close.pressed.connect(queue_free)
+	add_to_group("meta_modal"); set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	theme=P.theme_for_tools()
+	shop=EconomySystem.catalog.get(shop_id,{})
+	var backdrop := ColorRect.new(); backdrop.color=Color("f4f1e6"); backdrop.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(backdrop)
+	P.words(self,str(shop.get("name","小镇杂货")) ,Vector2(80,42),830,32)
+	P.words(self,"挑些今天用得上的。",Vector2(82,91),580,19,P.MUTED)
+	balance_label=P.words(self,"",Vector2(1090,54),310,22)
+	budget_label=P.words(self,"",Vector2(780,112),690,17,P.MUTED)
+	_btn(self,"收起 · "+SettingsSystem.binding_text("ui_cancel"),Vector2(1360,40),Vector2(175,48),queue_free)
+	ART.picture(self,"crates" if shop_id=="produce_stall" else "shelf",Vector2(70,170),Vector2(845,590),true)
+	item_list=Control.new(); item_list.position=Vector2(70,170); item_list.size=Vector2(845,590); add_child(item_list)
+	right=Control.new(); right.position=Vector2(975,165); right.size=Vector2(550,645); add_child(right)
+	selection_panel=right
+	status_label=P.words(self,"点击货品看价签，再放进篮子。",Vector2(80,815),1080,20)
+	_btn(self,"买过的东西 / 小票",Vector2(1180,815),Vector2(345,48),func(): mode="history"; _refresh_right())
 	if shop_id=="grocery":
-		var photo := _button(panel,"摄影与冲洗",Vector2(45,670),Vector2(250,40),false)
-		photo.pressed.connect(func() -> void: FilmSystem.open_counter(get_parent()); queue_free())
-
-
-func _refresh() -> void:
-	balance_label.text="钱包里 · %d 元" % GameState.money
-	budget_label.text="Day %02d · 购买后小票会收进生活材料。" % GameState.current_day
-	if not GameState.spending_plan_text().is_empty(): budget_label.text=GameState.spending_plan_text()
-	budget_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	for child in item_list.get_children(): item_list.remove_child(child); child.queue_free()
-	for raw in EconomySystem.stock(shop_id):
-		var item: Dictionary = raw.duplicate(true)
-		var card := preload("res://scripts/ui/components/goods_card.gd").new(); card.item=item; card.quantity="%d 元  ·  剩余 %d" % [int(item.price),int(item.remaining)]; item_list.add_child(card)
-		card.name="Select_"+str(item.id); card.selected=str(selected_item.get("id",""))==str(item.id); card.pressed.connect(_select.bind(item))
-	status_label.text="看看货架，挑一件喜欢的。\n\n购买前可以在这里核对价格。" if EconomySystem.shop_open(shop_id) else "柜台暂时无人。可以先看看货架，下次再来。"
-	if not selected_item.is_empty(): _show_selection()
-	elif item_list.get_child_count()>0: item_list.get_child(0).grab_focus()
-
-func _select(item: Dictionary) -> void:
-	selected_item=item.duplicate(true)
-	for card in item_list.get_children(): card.selected=card.name=="Select_"+str(item.id)
-	_show_selection()
-
-func _show_selection() -> void:
-	for item in EconomySystem.stock(shop_id):
-		if str(item.id)==str(selected_item.id): selected_item=item.duplicate(true); break
-	var reason := ""
-	if not EconomySystem.shop_open(shop_id): reason="店主现在不在柜台"
-	elif int(selected_item.remaining)<=0: reason="今天已经售完"
-	elif int(selected_item.price)>GameState.money: reason="钱包余额不足"
-	status_label.text="%s\n\n%s\n\n单价  %d 元\n数量  1\n\n%s" % [str(selected_item.name),str(selected_item.get("description","")),int(selected_item.price),reason if not reason.is_empty() else "物品放进随身包，小票收入生活记录。"]
-	purchase_button.text="购买 · %d 元" % int(selected_item.price)
-	purchase_button.disabled=not reason.is_empty()
-	purchase_button.tooltip_text=reason
-
-func _confirm_purchase() -> void:
-	if selected_item.is_empty() or buying: return
-	var chosen := selected_item.duplicate(true)
-	var confirm := preload("res://scripts/ui/components/confirm_sheet.gd").new()
-	confirm.heading="带上"+str(chosen.name)+"？"
-	confirm.description="数量 1\n合计 %d 元\n购买后钱包余 %d 元\n\n物品与小票都会收好。" % [int(chosen.price),GameState.money-int(chosen.price)]
-	confirm.confirm_text="确认购买"
-	confirm.accepted.connect(func() -> void: _buy(chosen); confirm.queue_free())
-	add_child(confirm)
-
-
-func _buy(item: Dictionary) -> void:
-	if buying or Time.get_ticks_msec() - last_purchase_msec < 350: return
-	buying = true
-	var result := EconomySystem.purchase(shop_id, str(item.id))
-	if not bool(result.get("ok", false)):
-		buying = false
-		WorldSound.play_ui("error")
-		_refresh()
-		status_label.text = LocalizationSystem.text(str(result.get("message", "这次没能买下。")))
-		return
-	WorldSound.play_ui("coin")
-	last_purchase_msec = Time.get_ticks_msec()
-	buying = false
+		_btn(self,"摄影 · 冲洗",Vector2(80,754),Vector2(235,44),func(): FilmSystem.open_counter(self))
 	_refresh()
-	var receipt: Dictionary = result.get("receipt",{})
-	status_label.text="%s\n× 1\n\n实付  %d 元\n\n物品已放入随身包。\n小票已收入生活记录。" % [str(item.get("name",item.id)),int(receipt.get("total",item.get("price",0)))]
-
-
+func _btn(parent: Node, text: String, at: Vector2, extent: Vector2, action: Callable) -> Button:
+	var b := preload("res://scripts/ui/components/solmere_button.gd").new()
+	b.text=text; b.variant="quiet"; b.position=at; b.size=extent; b.pressed.connect(action); parent.add_child(b)
+	return b
+func _clear(node: Node) -> void:
+	for child in node.get_children(): node.remove_child(child); child.queue_free()
+func _refresh() -> void:
+	balance_label.text="钱包  %d 元" % GameState.money
+	budget_label.text=GameState.spending_plan_text()
+	var focused := ""
+	var owner := get_viewport().gui_get_focus_owner()
+	if is_instance_valid(owner): focused=str(owner.name)
+	_clear(item_list)
+	var stock := EconomySystem.stock(shop_id)
+	for i in stock.size():
+		var item: Dictionary=stock[i]
+		var b := ITEM.new(); b.name="Select_"+str(item.id); b.item_id=item.id
+		b.caption={"hotel_307_tag":"307 房牌","misprint_postcard":"海湾明信片","crooked_cup":"缺口杯"}.get(str(item.id),str(item.name)); b.size=Vector2(175,150)
+		if shop_id=="produce_stall":
+			b.position=Vector2(30+(i%3)*260,110) if i<3 else Vector2(343,295)
+			b.size=Vector2(225,185)
+		else: b.position=Vector2(48+(i%4)*190,[55,205,330][i/4])
+		b.selected=selected_item.get("id","")==item.id
+		b.disabled=int(item.remaining)<=0
+		b.pressed.connect(_select.bind(item)); item_list.add_child(b)
+		if str(b.name)==focused: b.grab_focus()
+	_refresh_right()
+func _select(item: Dictionary) -> void:
+	selected_item=item.duplicate(true); mode="shelf"; WorldSound.play_ui("paper"); _refresh()
+func _refresh_right() -> void:
+	var owner := get_viewport().gui_get_focus_owner()
+	var previous := str(owner.name) if is_instance_valid(owner) and right.is_ancestor_of(owner) else ""
+	_clear(right)
+	match mode:
+		"basket": _basket()
+		"history": _history()
+		"receipt": _receipt()
+		_: _tag()
+	if not previous.is_empty():
+		var replacement := right.find_child(previous,true,false) as Button
+		if is_instance_valid(replacement) and not replacement.disabled: replacement.grab_focus()
+	if get_viewport().gui_get_focus_owner()==null:
+		for candidate in right.find_children("*","Button",true,false):
+			if candidate.visible and not candidate.disabled: candidate.grab_focus(); break
+func _tag() -> void:
+	ART.picture(right,"tag",Vector2(0,5),Vector2(530,280),true)
+	if selected_item.is_empty():
+		P.words(right,"挑一件看看",Vector2(178,135),292,27)
+		P.words(right,"价格写在这里。",Vector2(178,184),290,20,P.MUTED)
+	else:
+		var available := 0
+		for item in EconomySystem.stock(shop_id):
+			if item.id==selected_item.id: available=int(item.remaining)
+		P.words(right,str(selected_item.name),Vector2(178,130),288,23)
+		P.words(right,"%d 元 / 件" % int(selected_item.price),Vector2(178,173),290,29)
+		P.words(right,"剩余 %d · 已有 %d" % [available,int(GameState.inventory.get(selected_item.id,0))],Vector2(178,216),240,17,P.MUTED)
+		P.words(right,str(selected_item.get("description","")),Vector2(34,302),470,21)
+		purchase_button=_btn(right,"放进购物篮  +",Vector2(30,370),Vector2(470,48),func(): _change(selected_item.id,1,false))
+		purchase_button.name="AddToBasket"
+		purchase_button.disabled=available<=int(EconomySystem.cart(shop_id).get(selected_item.id,0)) or not EconomySystem.shop_open(shop_id)
+	ART.picture(right,"basket",Vector2(105,425),Vector2(300,170))
+	var count := 0
+	for q in EconomySystem.cart(shop_id).values(): count+=int(q)
+	basket_button=_btn(right,"打开购物篮 · %d 件" % count,Vector2(36,590),Vector2(470,52),func(): mode="basket"; _refresh_right())
+	basket_button.name="OpenBasket"
+func _scroll(at: Vector2, extent: Vector2) -> VBoxContainer:
+	var scroll := ScrollContainer.new(); scroll.position=at; scroll.size=extent; scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; right.add_child(scroll)
+	var rows := VBoxContainer.new(); rows.size_flags_horizontal=SIZE_EXPAND_FILL; rows.add_theme_constant_override("separation",12); scroll.add_child(rows)
+	return rows
+func _basket() -> void:
+	P.words(right,"带走这些",Vector2(24,10),350,31)
+	_btn(right,"返回货架",Vector2(365,4),Vector2(155,42),func():mode="shelf"; _refresh_right())
+	var rows := _scroll(Vector2(15,73),Vector2(520,408))
+	var basket := EconomySystem.cart(shop_id)
+	for id in basket:
+		var item: Dictionary={}
+		for candidate in shop.items:
+			if candidate.id==id: item=candidate
+		var row := Control.new(); row.custom_minimum_size=Vector2(495,95); rows.add_child(row)
+		ART.picture(row,str(id),Vector2(0,2),Vector2(90,83))
+		P.words(row,str(item.get("name",id)),Vector2(105,1),380,20)
+		P.words(row,"%d 元 × %d" % [int(item.get("price",0)),int(basket[id])],Vector2(106,48),200,18)
+		_btn(row,"−",Vector2(310,43),Vector2(46,42),_change.bind(str(id),-1,true)).name="Less_"+str(id)
+		_btn(row,"+",Vector2(367,43),Vector2(46,42),_change.bind(str(id),1,true)).name="More_"+str(id)
+		_btn(row,"取出",Vector2(420,43),Vector2(73,42),func():_quantity(str(id),0))
+	if basket.is_empty():
+		var label := Label.new(); label.text="篮子空着，还没选东西。"; rows.add_child(label)
+	var quote := EconomySystem.cart_quote(shop_id)
+	P.words(right,"合计  %d 元" % int(quote.get("total",0)),Vector2(24,499),480,28)
+	P.words(right,"结账后，小票和物品一起收好。",Vector2(24,545),480,18,P.MUTED)
+	purchase_button=_btn(right,"结账 · %d 元" % int(quote.get("total",0)),Vector2(24,586),Vector2(480,52),_checkout)
+	purchase_button.name="Checkout"
+	purchase_button.disabled=buying or not bool(quote.ok) or int(quote.get("total",0))>GameState.money or not EconomySystem.shop_open(shop_id)
+	if not bool(quote.ok) and not basket.is_empty(): status_label.text=str(quote.message)
+func _change(id: String, delta: int, in_basket: bool) -> void:
+	mode="basket" if in_basket else "shelf"
+	_quantity(id,int(EconomySystem.cart(shop_id).get(id,0))+delta)
+func _quantity(id: String, count: int) -> void:
+	var result := EconomySystem.set_cart_quantity(shop_id,id,count)
+	_refresh(); status_label.text=str(result.message)
+	WorldSound.play_ui("paper" if result.ok else "error")
+	if mode=="shelf" and is_instance_valid(purchase_button): purchase_button.grab_focus()
+func _checkout() -> void:
+	if buying or Time.get_ticks_msec()-last_purchase_msec<350: return
+	buying=true
+	var result := EconomySystem.purchase_cart(shop_id)
+	buying=false; status_label.text=str(result.message)
+	if result.ok:
+		receipt=result.receipt; mode="receipt"; last_purchase_msec=Time.get_ticks_msec(); WorldSound.play_ui("coin")
+	else: WorldSound.play_ui("error")
+	_refresh()
+func _receipt() -> void:
+	ART.picture(right,"receipt",Vector2(12,0),Vector2(520,632),true)
+	P.words(right,"SOLMERE · 小票",Vector2(100,105),355,27)
+	P.words(right,"DAY %02d · %02d:%02d" % [int(receipt.get("day",1)),int(receipt.get("minute",0))/60,int(receipt.get("minute",0))%60],Vector2(100,150),355,17)
+	var rows := _scroll(Vector2(100,200),Vector2(355,208))
+	for line in receipt.get("line_items",[]):
+		var label := Label.new(); label.text="%s ×%d\n%d 元" % [line.name,line.quantity,line.total]; label.add_theme_font_size_override("font_size",20)
+		label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; label.custom_maximum_size.x=345; label.size_flags_horizontal=SIZE_EXPAND_FILL; rows.add_child(label)
+	P.words(right,"实付  %d 元" % int(receipt.get("total",0)),Vector2(100,430),355,28)
+	P.words(right,"已报销 %d 元 · 原票保留" % int(receipt.get("reimbursed_amount",0)) if bool(receipt.get("reimbursed",false)) else "收进生活记录了。",Vector2(100,472),355,19,P.MUTED)
+	_btn(right,"继续挑选",Vector2(90,527),Vector2(280,48),func(): mode="shelf"; _refresh_right()).grab_focus()
+func _history() -> void:
+	P.words(right,"买过的东西",Vector2(20,8),335,31)
+	_btn(right,"返回",Vector2(390,5),Vector2(130,43),func():mode="shelf";_refresh_right())
+	var rows := _scroll(Vector2(14,75),Vector2(526,540))
+	var all_receipts: Array=EconomySystem.state().receipts.values().duplicate()
+	all_receipts.reverse()
+	var found := false
+	for entry in all_receipts:
+		if entry.get("merchant_id","")!=shop_id: continue
+		found=true
+		var box := VBoxContainer.new(); rows.add_child(box)
+		for line in entry.get("line_items",[]):
+			var row := Control.new(); row.custom_minimum_size=Vector2(486,70); box.add_child(row)
+			ART.picture(row,str(line.item_id),Vector2(0,0),Vector2(70,65))
+			P.words(row,"%s ×%d" % [line.name,line.quantity],Vector2(83,15),392,20)
+		var b := preload("res://scripts/ui/components/solmere_button.gd").new()
+		b.text="DAY %02d · 合计 %d 元 · 看小票" % [int(entry.day),int(entry.total)]
+		b.custom_minimum_size.y=46; box.add_child(b)
+		b.pressed.connect(func():receipt=entry; mode="receipt"; _refresh_right())
+	if not found:
+		var empty := Label.new(); empty.text="还没有在这里买过东西。"; rows.add_child(empty)
+func _buy(item: Dictionary) -> void:
+	# Existing callers keep the real one-item checkout path.
+	var result := EconomySystem.purchase(shop_id,str(item.id))
+	if result.ok: receipt=result.receipt; mode="receipt"; WorldSound.play_ui("coin")
+	_refresh(); status_label.text=str(result.message)
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.is_action_pressed("ui_cancel"):
-		queue_free()
+	if event.is_action_pressed("ui_cancel"):
+		if mode!="shelf": mode="shelf"; _refresh_right()
+		else: queue_free()
 		get_viewport().set_input_as_handled()
-
-
-func _label(parent: Node, value: String, at: Vector2, label_size: Vector2, font_size: int, color: Color, align := HORIZONTAL_ALIGNMENT_LEFT) -> Label:
-	var label := Label.new()
-	label.text = LocalizationSystem.text(value)
-	label.position = at
-	label.size = label_size
-	label.custom_maximum_size.x=label_size.x
-	label.horizontal_alignment = align
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", color)
-	label.mouse_filter=MOUSE_FILTER_IGNORE
-	parent.add_child(label)
-	return label
-
-
-func _button(parent: Node, value: String, at: Vector2, button_size: Vector2, primary: bool) -> Button:
-	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
-	button.variant="paper"; button.selected=primary
-	button.text = LocalizationSystem.text(value)
-	button.position = at
-	button.size = button_size
-	button.custom_minimum_size = button_size
-	button.add_theme_font_size_override("font_size", 17)
-	parent.add_child(button)
-	return button

@@ -23,8 +23,12 @@ func _draw() -> void:
 	var ink := Color("31658b")
 	var face := Color("fffdf6") if kind in ["photo","receipt"] else Color("f5edcc")
 	if kind=="recognition": face=Color("e3edf2")
-	draw_rect(Rect2(Vector2.ZERO,size),face)
-	draw_rect(Rect2(Vector2(1,1),size-Vector2(2,2)),Color("e3c557") if hovering else Color(ink,.25),false,1)
+	var artwork := str(item.get("asset_id","receipt" if kind=="receipt" else ""))
+	if not artwork.is_empty():
+		var tex := preload("res://scripts/ui/components/handmade_assets.gd").texture(artwork)
+		draw_texture_rect(tex,Rect2(Vector2.ZERO,size),false)
+	else: draw_rect(Rect2(Vector2.ZERO,size),face)
+	if hovering: draw_line(Vector2(8,size.y-3),Vector2(size.x-8,size.y-3),Color("e3c557"),3,true)
 	var top := 21.0
 	if photo!=null:
 		var area := size-Vector2(16,40)

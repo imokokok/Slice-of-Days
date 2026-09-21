@@ -6,10 +6,16 @@ const LEMON := Color("eed577")
 const TAB = preload("res://scripts/residency/paper_tab.gd")
 var canvas: Control
 var selection_tools: Control
-var archive_tab := "requirements"
+var archive_tab := "overview"
+var pause_owned := false
+var task_checks: Array = []
+var notebook_section := "today"
 
 func _ready() -> void:
+	process_mode=PROCESS_MODE_ALWAYS
 	super._ready()
+	GameState.state_changed.connect(_refresh_checks)
+	GuidanceSystem.updated.connect(_refresh_checks)
 	resized.connect(_layout_frame)
 	_layout_frame()
 
@@ -19,9 +25,14 @@ func _layout_frame() -> void:
 	body.scale=Vector2.ONE*minf(1.0,minf(size.x*.78/DOSSIER_SIZE.x,size.y*.82/DOSSIER_SIZE.y))
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and event.physical_keycode==KEY_ESCAPE and mode=="settings":
-		mode="pause"; build(); get_viewport().set_input_as_handled(); return
-	super._input(event)
+	if event.is_action_pressed("ui_cancel"):
+		if mode=="settings": mode="pause"; build()
+		elif is_instance_valid(detail): detail.queue_free(); detail=null
+		else: close()
+		get_viewport().set_input_as_handled()
+
+func _exit_tree() -> void:
+	if pause_owned: get_tree().paused=false
 
 func panel(parent: Node, at: Vector2, dimensions: Vector2, color := Color("faf7ee")) -> Panel:
 	var result := super.panel(parent,at,dimensions,color)
@@ -31,9 +42,11 @@ func panel(parent: Node, at: Vector2, dimensions: Vector2, color := Color("faf7e
 	return result
 
 func build() -> void:
-	if mode=="organize": mode="notebook"
+	if mode=="organize": mode="dossier"; archive_tab="days"; day=GameState.current_day
 	for child in get_children(): remove_child(child); child.queue_free()
-	detail=null; canvas=null; selection_tools=null
+	detail=null; canvas=null; selection_tools=null; task_checks.clear()
+	if mode in ["pause","settings"]: pause_owned=true
+	elif pause_owned: get_tree().paused=false; pause_owned=false
 	var dim := ColorRect.new()
 	dim.color=Color("233f50",.22)
 	dim.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -49,26 +62,19 @@ func build() -> void:
 	frame.bg_color=Color.TRANSPARENT
 	body.add_theme_stylebox_override("panel",frame)
 	_layout_frame()
-	var grain := TextureRect.new()
-	var folder := AtlasTexture.new()
-	folder.atlas=load("res://art/ui/living-folder.png")
-	folder.region=Rect2(64,36,1555,868)
-	grain.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; grain.mouse_filter=MOUSE_FILTER_IGNORE
-	grain.texture=folder; grain.position=Vector2(0,32); grain.size=Vector2(1340,718)
-	body.add_child(grain)
+	var paper_mode := mode in ["notebook","today","dossier","knowledge","fieldbook"]
+	if paper_mode:
+		var paper := preload("res://scripts/ui/components/paper_page.gd").new()
+		paper.position=Vector2(0,32); paper.size=Vector2(1340,718); paper.mouse_filter=MOUSE_FILTER_IGNORE; body.add_child(paper)
+	else:
+		var clean := StyleBoxFlat.new(); clean.bg_color=Color("edf2f3"); clean.set_corner_radius_all(10)
+		body.add_theme_stylebox_override("panel",clean)
 	feedback=label(body,"",Vector2(32,712),Vector2(1250,30),17,BLUE)
-	if mode=="pause":
-		grain.hide()
-		body.add_theme_stylebox_override("panel",StyleBoxEmpty.new())
-		for i in 3:
-			var actions := ["close","settings","exit"]
-			var captions := ["继续","设置","返回主菜单"]
-			var b := button(body,captions[i],Vector2(510,260+i*70),Vector2(320,50),_home_action.bind(actions[i]))
-			b.add_theme_color_override("font_color",Color("fffaf0"))
+	if mode in ["pause","settings"]:
+		if mode=="pause": body.add_theme_stylebox_override("panel",StyleBoxEmpty.new())
+		var menu := preload("res://scripts/ui/components/runtime_menu.gd").new()
+		menu.owner_ui=self; menu.settings=mode=="settings"; body.add_child(menu)
 		return
-	if mode=="settings":
-		button(body,"← 返回",Vector2(110,-20),Vector2(150,38),func() -> void: mode="pause"; build())
-		_home(); return
 	var names := ["随身本","档案","相机","录音机"]
 	var english := ["Notebook","Archive","Camera","Recorder"]
 	var targets := ["notebook","dossier","gallery","sound_library"]
@@ -76,7 +82,7 @@ func build() -> void:
 		var chosen: bool = mode==targets[i] or (i==0 and mode in ["home","map","today","knowledge","fieldbook","bag"])
 		var b := _tab(names[i],english[i],Vector2(90+i*270,-38 if chosen else -30),Vector2(263,78 if chosen else 70),i,chosen,_switch_object.bind(targets[i]))
 		b.name="ObjectTab_"+targets[i]
-	button(body,"收起 ×",Vector2(1190,-20),Vector2(138,40),close)
+	button(body,"收起 · "+SettingsSystem.binding_text("ui_cancel"),Vector2(1190,-20),Vector2(138,40),close)
 	match mode:
 		"bag": _inventory()
 		"counter": _counter()
@@ -85,12 +91,12 @@ func build() -> void:
 		"dossier": _archive()
 		"gallery":
 			button(body,"拿起相机",Vector2(40,84),Vector2(220,42),_home_action.bind("camera"))
-			_media_library("photo")
+			_browser("photo")
 		"sound_library":
 			button(body,"拿起录音机",Vector2(40,84),Vector2(220,42),_home_action.bind("recorder"))
-			_media_library("sound")
+			_browser("sound")
 		"map": _map()
-		"today": _today()
+		"today": _notebook_page()
 		"knowledge": _knowledge()
 		"fieldbook": _materials()
 		_:
@@ -98,12 +104,7 @@ func build() -> void:
 			for i in 4:
 				var targets2 := ["map","today","knowledge","bag"]
 				button(body,["随身地图","计划与时间","认识的人与地方","打开随身包"][i],Vector2(105+i*282,82),Vector2(268,38),_switch_object.bind(targets2[i]))
-			_free_page("notebook")
-	if mode not in ["dossier","notebook"]:
-		for item in body.get_children():
-			if item is Control and not item is TextureRect and item!=feedback and item.position.y>40 and item.position.x<100:
-				item.position.x=110
-				item.size.x=minf(item.size.x,1190)
+			_notebook_page()
 
 func edit(parent: Node, value: String, at: Vector2, dimensions: Vector2, action: Callable, placeholder := "") -> TextEdit:
 	var field := super.edit(parent,value,at,dimensions,action,placeholder)
@@ -116,14 +117,8 @@ func edit(parent: Node, value: String, at: Vector2, dimensions: Vector2, action:
 	return field
 
 func button(parent: Node, text: String, at: Vector2, dimensions: Vector2, action: Callable) -> Button:
-	var b := super.button(parent,text,at,dimensions,action)
-	b.add_theme_color_override("font_color",BLUE)
-	b.add_theme_color_override("font_hover_color",BLUE)
-	for state_name in ["normal","hover","pressed","focus"]:
-		var style := StyleBoxFlat.new()
-		style.bg_color=Color(0,0,0,0) if state_name=="normal" else Color("f5e7ab")
-		style.border_color=BLUE; style.border_width_bottom=1 if state_name!="normal" else 0
-		b.add_theme_stylebox_override(state_name,style)
+	var b := preload("res://scripts/ui/components/solmere_button.gd").new()
+	b.text=LocalizationSystem.text(text); b.position=at; b.size=dimensions; parent.add_child(b); b.pressed.connect(action)
 	return b
 
 func _switch_object(target: String) -> void:
@@ -132,6 +127,14 @@ func _switch_object(target: String) -> void:
 	mode=target; build()
 
 func _archive() -> void:
+	if archive_tab=="overview":
+		label(body,"Solmere / 永居申请",Vector2(100,90),Vector2(1050,65),38,BLUE)
+		var names := ["申请要求","个人信息","生活记录","居民认可","七天作品集","最终文件"]
+		var keys := ["requirements","personal","life","recognition","days","final"]
+		for i in 6:
+			var b := button(body,names[i],Vector2(100+(i%3)*385,205+(i/3)*205),Vector2(350,175),func() -> void: archive_tab=keys[i]; build())
+			b.name="ArchiveSection_"+keys[i]
+		return
 	var keys := ["requirements","personal","life","recognition","days","final"]
 	var titles := ["申请要求","个人信息","生活记录","居民认可","七天作品集","最终文件"]
 	var translations := ["Requirements","Personal","Life Log","Recognition","Seven Days Portfolio","Final Paper"]
@@ -149,7 +152,7 @@ func _archive() -> void:
 				var d := i+1
 				var b := button(body,"%02d" % d,Vector2(290+i*105,138),Vector2(85,35),func() -> void: day=d; build())
 				b.name="PortfolioDay_%02d" % d
-				if day==d: b.text="[ %02d ]" % d
+				b.selected=day==d
 			_free_page("day_%d" % day)
 		_: _free_page(archive_tab)
 
@@ -170,9 +173,12 @@ func _free_page(key: String) -> void:
 	canvas=CANVAS.new(); canvas.name="FreePaper"
 	canvas.position=Vector2(103,177); canvas.size=Vector2(1200,460)
 	canvas.pieces=pages[key]
+	canvas.page_id=key
 	canvas.read_only=not ResidencySystem.state().submitted.is_empty() and key!="notebook"
 	body.add_child(canvas)
-	canvas.changed.connect(func() -> void: ResidencySystem.persist())
+	canvas.changed.connect(func() -> void:
+		if key=="day_%d" % GameState.current_day: ResidencySystem._record_organize()
+		ResidencySystem.persist())
 	canvas.selection_changed.connect(_selection_toolbar)
 	if not canvas.read_only:
 		button(body,"＋ 素材",Vector2(105,654),Vector2(110,36),_material_tray)
@@ -322,6 +328,10 @@ func _show_detail(id: String) -> void:
 	else: label(detail,str(item.get("text",item.get("title",""))),Vector2(50,90),Vector2(1160,430),24,BLUE)
 
 func _tab(cn: String, en: String, at: Vector2, dimensions: Vector2, palette: int, chosen: bool, action: Callable) -> Button:
+	if mode not in ["notebook","today","dossier","knowledge","fieldbook"]:
+		var clean := button(body,cn+" / "+en,at,dimensions,action)
+		clean.selected=chosen
+		return clean
 	var tab_button := TAB.new()
 	tab_button.chinese=cn; tab_button.english=en; tab_button.position=at; tab_button.size=dimensions
 	tab_button.tint=[Color("a4c6df"),Color("f3eee1"),LEMON][palette%3]
@@ -359,3 +369,51 @@ func _requirements_sheet() -> void:
 		var words := _official(descriptions[i],Vector2(x,576),Vector2(212,73),20); words.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	label(body,"这里没有唯一的答案，\n但我们始终欢迎认真生活的人。",Vector2(110,673),Vector2(680,55),22,BLUE)
 	_official("S O L M E R E\n一 座 更 温 柔 的 明 天",Vector2(1030,681),Vector2(260,45),15)
+
+func _browser(kind: String) -> void:
+	var browser := preload("res://scripts/ui/components/media_browser.gd").new()
+	browser.kind=kind; browser.owner_ui=self; browser.position=Vector2(85,142); body.add_child(browser)
+
+func _notebook_page() -> void:
+	for i in 3:
+		var key: String=["today","heard","personal"][i]
+		var b := button(body,["TODAY · 今天","HEARD · 听说了","PERSONAL · 私人"][i],Vector2(85+i*390,160),Vector2(365,48),func() -> void: notebook_section=key; build())
+		b.selected=notebook_section==key
+	if notebook_section=="today":
+		label(body,"Day %02d · 今天从这里开始" % GameState.current_day,Vector2(100,245),Vector2(1100,55),29,BLUE)
+		var tasks := GuidanceSystem.must_objectives()
+		for i in tasks.size():
+			var row: Dictionary=tasks[i]
+			var check := CheckBox.new(); check.text=str(row.text); check.button_pressed=bool(row.done)
+			check.position=Vector2(100,320+i*82); check.size=Vector2(1090,62); check.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+			check.name="TaskCheck_"+str(i); body.add_child(check); task_checks.append(check)
+			check.pressed.connect(func() -> void: _refresh_checks(); _guidance_action(row))
+		label(body,"完成行动后会自动记下。选择一项，看看下一步去哪。",Vector2(100,620),Vector2(1090,40),20,BLUE)
+	elif notebook_section=="heard":
+		var rows := scroll_area(body,Vector2(90,245),Vector2(1150,440))
+		var leads := GuidanceSystem.leads()
+		if leads.is_empty(): label(body,"还没听到新的线索。沿街和遇见的人说说话吧。",Vector2(100,300),Vector2(1050,60),24,BLUE)
+		for lead in leads:
+			var row := HBoxContainer.new(); rows.add_child(row)
+			var words := Label.new(); words.text=str(lead.text)+"\n— "+GuidanceSystem.source_name(str(lead.source)); words.custom_minimum_size=Vector2(800,85); words.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; row.add_child(words)
+			var follow := preload("res://scripts/ui/components/solmere_button.gd").new(); follow.text="取消追踪" if str(GuidanceSystem.state().tracked_lead)==str(lead.id) else "追踪"; follow.disabled=not bool(lead.available); row.add_child(follow)
+			follow.pressed.connect(func() -> void: GuidanceSystem.track("" if str(GuidanceSystem.state().tracked_lead)==str(lead.id) else str(lead.id)); build())
+			var map := preload("res://scripts/ui/components/solmere_button.gd").new(); map.text="看地图"; row.add_child(map); map.pressed.connect(func() -> void: _guidance_action({"action":"map","location":str(lead.location)}))
+	else:
+		label(body,"留给自己的话",Vector2(100,245),Vector2(1050,55),29,BLUE)
+		var s := ResidencySystem.state()
+		var note := edit(body,str(s.get("private_note","")),Vector2(100,315),Vector2(1110,345),func(value: String) -> void: s.private_note=value; ResidencySystem.persist(),"写下临时想法，或自己想继续的事……")
+		note.name="PrivateNotebookText"
+
+func _refresh_checks() -> void:
+	var rows := GuidanceSystem.must_objectives()
+	for i in mini(rows.size(),task_checks.size()):
+		if is_instance_valid(task_checks[i]): task_checks[i].set_pressed_no_signal(bool(rows[i].done))
+
+
+func _guidance_action(action: Dictionary) -> void:
+	var kind := str(action.get("action","today"))
+	if kind=="heard": mode="notebook"; notebook_section="heard"; build(); return
+	if kind in ["exploration","requirements","recognition","receipts","personal"]:
+		mode="dossier"; archive_tab={"exploration":"life","requirements":"requirements","recognition":"recognition","receipts":"life","personal":"personal"}[kind]; build(); return
+	super._guidance_action(action)

@@ -3,7 +3,7 @@ static func build() -> Theme:
 	var skin: Theme = preload("res://art/ui/solmere_ui.tres").duplicate()
 	skin.default_font_size = 18
 	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["KaiTi", "Microsoft YaHei", "Noto Sans CJK SC"])
+	font.font_names = PackedStringArray(["Microsoft YaHei", "Noto Sans CJK SC"])
 	skin.default_font = font
 	for kind in ["Label", "Button", "OptionButton"]: skin.set_color("font_color", kind, Color("31658b"))
 	for state in ["normal", "hover", "pressed"]:

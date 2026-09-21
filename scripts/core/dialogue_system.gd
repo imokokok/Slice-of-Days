@@ -165,6 +165,8 @@ func linear_conversation(npc: String) -> Array:
 	if not episodes.is_empty():
 		var beats: Array = (episodes[count % episodes.size()] if bool(row.get("rotate", false)) else episodes[count] if count < episodes.size() else row.get("after",episodes.back())).duplicate(true)
 		var remembered := EconomySystem.remembered_line(npc)
+		if npc=="wu_wu" and ResidencySystem.state().visits.has("record_store") and KnowledgeSystem.facts().any(func(f: Dictionary) -> bool: return str(f.get("id",""))=="cici_record_store"):
+			remembered="你去过唱片店了？我就知道，你们能聊到一块儿。下回路过，可以把新录的声音带上。"
 		if not remembered.is_empty(): beats.push_front(["npc", remembered])
 		if npc == "zhou_xiaoliu" and count == 0:
 			if GameState.current_role == "A":
@@ -209,6 +211,13 @@ func should_invite(npc: String) -> bool:
 	return not offer.is_empty() and not invitation_accepted(str(offer.module)) and not GameState.shared_state.get("invitations_heard",{}).has("%s_%d_%s" % [GameState.current_role,GameState.current_day,npc])
 
 func mark_invitation_heard(npc: String, persist := true) -> void:
+	var invitation := invitation_for(npc)
+	if not invitation.is_empty():
+		# Called only after the invitation has actually been heard.
+		var fact := {"id":"invite_"+str(invitation.module),"text":str(invitation.label),"source_npc_id":npc,"subject_id":str(invitation.location),"predicate":"lead","confidence":1.0,"learned_day":GameState.current_day}
+		var facts: Array=GameState.shared_state.get("knowledge_"+GameState.current_role,[])
+		if not facts.any(func(row: Dictionary) -> bool: return row.get("id","")==fact.id): facts.append(fact)
+		GameState.shared_state["knowledge_"+GameState.current_role]=facts
 	var heard: Dictionary = GameState.shared_state.get("invitations_heard",{})
 	heard["%s_%d_%s" % [GameState.current_role,GameState.current_day,npc]] = true
 	GameState.shared_state["invitations_heard"] = heard

@@ -75,10 +75,10 @@ func _ready() -> void:
 	count_label=_label(finder_layer,"",Vector2(1140,807),Vector2(180,40),21)
 	count_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	zoom_label=_label(finder_layer,"",Vector2(1190,67),Vector2(130,32),17)
-	hint=_label(finder_layer,"Space 拍摄  /  Scroll 缩放  /  Esc 放下",Vector2(490,844),Vector2(740,34),18)
+	hint=_label(finder_layer,SettingsSystem.binding_text("camera_shutter")+" 拍摄  /  Scroll 缩放  /  "+SettingsSystem.binding_text("ui_cancel")+" 放下",Vector2(490,844),Vector2(740,34),18)
 	hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	shutter=Button.new()
-	shutter.visible=false
+	shutter=preload("res://scripts/ui/components/solmere_button.gd").new()
+	shutter.name="Shutter"; shutter.text="拍摄"; shutter.position=Vector2(715,802); shutter.size=Vector2(170,52)
 	shutter.pressed.connect(take_photo)
 	finder_layer.add_child(shutter)
 	capture_card=Panel.new()
@@ -93,6 +93,9 @@ func _ready() -> void:
 	finder_layer.add_child(flash)
 	finder_layer.hide()
 	_refresh_count()
+	for parent in [hold_layer,finder_layer]:
+		var back := preload("res://scripts/ui/components/solmere_button.gd").new(); back.text="收起相机"; back.position=Vector2(1380,330); back.size=Vector2(170,42); parent.add_child(back); back.pressed.connect(queue_free)
+	var focus := preload("res://scripts/ui/components/solmere_button.gd").new(); focus.text="查看取景框"; focus.position=Vector2(1210,250); focus.size=Vector2(355,48); hold_layer.add_child(focus); focus.pressed.connect(enter_viewfinder)
 
 func _label(parent: Node, text: String, at: Vector2, dimensions: Vector2, font_size: int) -> Label:
 	var label:=Label.new()
@@ -168,6 +171,11 @@ func _scroll(direction: int) -> void:
 func take_photo() -> void:
 	if not focus_active or _focusing or shutter.disabled: return
 	shutter.disabled=true
+	if source_provider.is_valid():
+		hide()
+		var latest = await source_provider.call()
+		if latest is Image: source=latest
+		show()
 	var shot:=context.duplicate(true)
 	shot.merge({"subject_id":str(current_subject.get("id","")),"subject_name":str(current_subject.get("name","")),"location":GameState.current_location,"role":GameState.current_role},true)
 	shot["title"]=TravelSystem.location_name(GameState.current_location)+" · "+GameState.clock_text()
@@ -186,7 +194,7 @@ func _refresh_count() -> void:
 	var roll:=FilmSystem.active_roll()
 	var used:=int(roll.get("exposures_used",0))
 	var title:=str(FilmSystem.config.types.get(str(roll.get("film_type","normal")),{}).get("name","胶片"))
-	held_label.text=LocalizationSystem.text(("%02d / 24  ·  %s\nLMB 查看取景框\nC / Esc 收起" % [24-used,title]) if not roll.is_empty() else "相机里没有胶卷\n到杂货店装一卷\nC / Esc 收起")
+	held_label.text=LocalizationSystem.text(("%02d / 24  ·  %s\n选择查看取景框\n拍摄后到杂货店冲洗" % [24-used,title]) if not roll.is_empty() else "相机里没有胶卷\n到杂货店装一卷\n选择收起相机")
 	count_label.text="%02d / 24" % used
 	focus_label.text=LocalizationSystem.text(title+" · 24张" if used<24 else "这一卷已拍满 · 杂货店可送洗")
 
@@ -201,17 +209,15 @@ func _viewfinder_input(event: InputEvent) -> void:
 		preview_frame.accept_event()
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
+	if event.is_pressed() and not event.is_echo() and not event is InputEventMouseButton:
 		if event.is_action_pressed("open_camera"): queue_free()
 		elif event.is_action_pressed("ui_cancel"):
 			if focus_active: leave_viewfinder()
 			else: queue_free()
-		elif event.is_action_pressed("dialogue_advance") and focus_active: take_photo()
+		elif event.is_action_pressed("camera_shutter") and focus_active: take_photo()
 		else: return
 		get_viewport().set_input_as_handled()
-	elif event is InputEventMouseButton and event.pressed and not focus_active and event.button_index==MOUSE_BUTTON_LEFT:
-		enter_viewfinder()
-		get_viewport().set_input_as_handled()
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	_input(event)

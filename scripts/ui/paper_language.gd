@@ -5,14 +5,15 @@ const WHITE := Color("faf7ee")
 const YELLOW := Color("eed577")
 const MUTED := Color("698594")
 var handwriting := SystemFont.new()
+var body_font := SystemFont.new()
 
 func _ready() -> void:
 	handwriting.font_names=PackedStringArray(["KaiTi","Microsoft YaHei","Noto Sans CJK SC"])
+	body_font.font_names=PackedStringArray(["Microsoft YaHei","Noto Sans CJK SC","Arial"])
 	get_tree().node_added.connect(_added)
 
 func _added(node: Node) -> void:
 	if node is Control and not _context(node,["workshop.gd"]):
-		# Controls may be removed before the deferred style pass runs.
 		_style_id.call_deferred(node.get_instance_id())
 
 func _style_id(instance_id: int) -> void:
@@ -39,7 +40,9 @@ func speech(node: Node) -> bool:
 func button_style(button: Button, in_scene := false) -> void:
 	for state in ["normal","hover","pressed","focus","disabled"]:
 		var style := StyleBoxFlat.new()
-		style.bg_color=Color.TRANSPARENT if state in ["normal","disabled","focus"] else Color(YELLOW,.18 if in_scene else .7)
+		style.bg_color={"normal":Color(BLUE,.06),"hover":Color(YELLOW,.45),"pressed":YELLOW,"focus":Color.TRANSPARENT,"disabled":Color(MUTED,.08)}[state]
+		style.set_corner_radius_all(6)
+		if state=="focus": style.set_border_width_all(2)
 		style.border_width_bottom=1 if state in ["hover","pressed","focus"] else 0
 		style.border_color=YELLOW if in_scene else BLUE
 		style.content_margin_left=10; style.content_margin_right=10
@@ -48,7 +51,7 @@ func button_style(button: Button, in_scene := false) -> void:
 	for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:
 		button.add_theme_color_override(state,WHITE if in_scene else BLUE)
 	button.add_theme_color_override("font_disabled_color",Color(MUTED,.55))
-	if DisplayServer.get_name()!="headless": button.add_theme_font_override("font",handwriting)
+	if DisplayServer.get_name()!="headless": button.add_theme_font_override("font",body_font)
 	button.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
 	if in_scene:
 		button.add_theme_color_override("font_outline_color",Color("173c5d",.9))
@@ -56,7 +59,7 @@ func button_style(button: Button, in_scene := false) -> void:
 
 func _style(node: Control) -> void:
 	if not is_instance_valid(node) or not node.is_inside_tree() or node.is_queued_for_deletion(): return
-	if _context(node,["main_menu.gd","living_objects.gd","runtime_debug.gd","flowing_thought.gd","workshop.gd"]): return
+	if _context(node,["main_menu.gd","living_objects.gd","media_browser.gd","guidance_toasts.gd","runtime_menu.gd","solmere_button.gd","paper_page.gd","portfolio_item.gd","runtime_debug.gd","flowing_thought.gd","workshop.gd"]): return
 	if speech(node): return
 	if node is Button:
 		button_style(node,speech(node))
@@ -72,9 +75,7 @@ func _style(node: Control) -> void:
 		paper.bg_color=WHITE
 		if speech(node): paper.bg_color=Color.TRANSPARENT; paper.set_border_width_all(0)
 		node.add_theme_stylebox_override("panel",paper)
-		if not speech(node) and not node.has_node("PaperGrain"):
-			var grain := preload("res://scripts/ui/paper_grain.gd").new()
-			grain.name="PaperGrain"; node.add_child(grain)
+
 	elif node is LineEdit or node is TextEdit:
 		for state in ["normal","focus","read_only"]:
 			var sheet := StyleBoxFlat.new()
@@ -86,7 +87,7 @@ func _style(node: Control) -> void:
 		node.add_theme_color_override("selection_color",Color(YELLOW,.65))
 	elif node is Label:
 		if DisplayServer.get_name()!="headless":
-			node.add_theme_font_override("font",handwriting)
+			node.add_theme_font_override("font",body_font)
 		var color := node.get_theme_color("font_color")
 		if color.a==0: return
 		if speech(node):
@@ -104,8 +105,12 @@ func _has_paper_parent(node: Node) -> bool:
 		at=at.get_parent()
 	return false
 
-func near_actor(_stage: Node, extent: Vector2, _world_x: float = -1.0) -> Vector2:
-	return Vector2((1600-extent.x)*.5,900-extent.y-28)
+func near_actor(stage: Node, extent: Vector2, world_x: float = -1.0) -> Vector2:
+	if not is_instance_valid(stage): return Vector2((1600-extent.x)*.5,420-extent.y*.5)
+	if world_x<0: world_x=float(stage.get("player_x"))
+	var x := world_x-float(stage.get("camera_x"))
+	var head := float(stage.call("_actor_ground_at",world_x))-float(stage.call("_actor_height"))
+	return Vector2(clampf(x-extent.x*.5,24,1576-extent.x),clampf(head-extent.y-26,40,872-extent.y))
 
 func selected_button(button: Button, selected: bool) -> void:
 	button.set_meta("paper_selected",selected)

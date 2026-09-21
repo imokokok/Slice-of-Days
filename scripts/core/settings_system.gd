@@ -35,6 +35,13 @@ const DEFAULT_INPUT_ACTIONS := {
 	"ask_directly": [KEY_1],
 	"dialogue_advance": [KEY_SPACE, KEY_ENTER],
 	"open_journal": [KEY_J],
+	"open_notebook": [KEY_J],
+	"open_archive": [KEY_F],
+	"open_bag": [KEY_B,KEY_I],
+	"open_plan": [KEY_T],
+	"camera_shutter": [KEY_SPACE],
+	"record_mark": [KEY_SPACE],
+	"portfolio_delete": [KEY_DELETE],
 	"open_map": [KEY_TAB],
 	"open_camera": [KEY_C],
 	"open_recorder": [KEY_R],
@@ -66,6 +73,10 @@ func _ensure_input_actions() -> void:
 			var input := InputEventKey.new()
 			input.physical_keycode = int(keycode)
 			InputMap.action_add_event(action, input)
+
+	for action in {"open_notebook":JOY_BUTTON_BACK,"open_archive":JOY_BUTTON_Y,"interact":JOY_BUTTON_A,"talk":JOY_BUTTON_X,"open_camera":JOY_BUTTON_LEFT_SHOULDER,"open_recorder":JOY_BUTTON_RIGHT_SHOULDER,"camera_shutter":JOY_BUTTON_A,"record_mark":JOY_BUTTON_X}:
+		var pad := InputEventJoypadButton.new(); pad.button_index={"open_notebook":JOY_BUTTON_BACK,"open_archive":JOY_BUTTON_Y,"interact":JOY_BUTTON_A,"talk":JOY_BUTTON_X,"open_camera":JOY_BUTTON_LEFT_SHOULDER,"open_recorder":JOY_BUTTON_RIGHT_SHOULDER,"camera_shutter":JOY_BUTTON_A,"record_mark":JOY_BUTTON_X}[action]
+		if not InputMap.action_has_event(action,pad): InputMap.action_add_event(action,pad)
 
 
 func _ensure_audio_buses() -> void:
@@ -216,3 +227,9 @@ func set_language(locale: String) -> void:
 	save_settings()
 	language_changed.emit(locale)
 	settings_changed.emit()
+
+func binding_text(action: String) -> String:
+	for event in InputMap.action_get_events(action):
+		if event is InputEventKey:
+			return OS.get_keycode_string(event.physical_keycode if event.physical_keycode!=0 else event.keycode)
+	return InputMap.action_get_events(action)[0].as_text() if not InputMap.action_get_events(action).is_empty() else "未绑定"

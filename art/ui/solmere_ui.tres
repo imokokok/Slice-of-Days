@@ -3,7 +3,7 @@
 [ext_resource type="Texture2D" path="res://art/ui/paper-slider.svg" id="1"]
 
 [sub_resource type="SystemFont" id="Font"]
-font_names = PackedStringArray("KaiTi", "Microsoft YaHei", "Noto Sans CJK SC")
+font_names = PackedStringArray("Microsoft YaHei", "Noto Sans CJK SC")
 
 [sub_resource type="StyleBoxFlat" id="Paper"]
 bg_color = Color(0.98, 0.97, 0.94, 1)
@@ -75,3 +75,10 @@ HScrollBar/styles/scroll = SubResource("Track")
 HScrollBar/styles/grabber = SubResource("Progress")
 VScrollBar/styles/scroll = SubResource("Track")
 VScrollBar/styles/grabber = SubResource("Progress")
+
+Label/colors/font_color = Color(0.19, 0.40, 0.55, 1)
+CheckBox/colors/font_color = Color(0.19, 0.40, 0.55, 1)
+CheckBox/colors/font_focus_color = Color(0.19, 0.40, 0.55, 1)
+LineEdit/colors/font_color = Color(0.19, 0.40, 0.55, 1)
+LineEdit/colors/caret_color = Color(0.19, 0.40, 0.55, 1)
+LineEdit/colors/font_placeholder_color = Color(0.4, 0.52, 0.59, 1)

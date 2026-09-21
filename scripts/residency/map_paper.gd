@@ -2,7 +2,7 @@ extends Control
 
 signal selected(location: String)
 
-const OVERVIEW = preload("res://art/ui/solmere-map-overview.jpg")
+
 var points: Dictionary = {
 	"bus_stop": Vector2(178, 268),
 	"cafe": Vector2(334, 268),
@@ -23,30 +23,37 @@ var points: Dictionary = {
 var dragging := false
 
 func _ready() -> void:
-	size = Vector2(1050, 700)
-	mouse_filter = MOUSE_FILTER_STOP
+	size=Vector2(1050,700)
+	mouse_filter=MOUSE_FILTER_STOP
+	var lead := GuidanceSystem.tracked_lead()
+	var i := 0
 	for id in points:
-		var button := Button.new()
-		button.name = "Destination_" + str(id)
-		button.set_meta("location", id)
-		button.tooltip_text = LocalizationSystem.text(TravelSystem.location_name(str(id)))
-		button.position = Vector2(points[id]) - Vector2(25, 25)
-		button.size = Vector2(50, 50)
-		button.flat = true
-		button.modulate = Color(1, 1, 1, 0.01)
-		button.pressed.connect(func() -> void: selected.emit(str(id)))
-		add_child(button)
+		points[id]=Vector2(100+(i%5)*202,235+(i/5)*133)
+		i+=1
+		var marker := preload("res://scripts/ui/components/location_marker.gd").new()
+		marker.name="Destination_"+str(id); marker.set_meta("location",id)
+		var discovered: bool = ResidencySystem.state().visits.has(id) or str(id)==GameState.current_location
+		var route := TravelSystem.route(GameState.current_location,str(id),"walk",GameState.current_role,GameState.current_minute)
+		marker.set_meta("state","discovered" if discovered else "undiscovered")
+		if not bool(route.get("available",false)) and str(id)!=GameState.current_location: marker.set_meta("state","unavailable")
+		marker.text=TravelSystem.location_name(str(id))
+		marker.tooltip_text=("已经到访" if discovered else "尚未到访")+"\n"+str(route.get("reason",""))
+		marker.position=Vector2(points[id])-Vector2(85,20); marker.size=Vector2(172,42)
+		marker.add_theme_font_size_override("font_size",16); add_child(marker)
+		marker.selected=str(lead.get("location",""))==str(id)
+		marker.pressed.connect(func() -> void: selected.emit(str(id)))
 	queue_redraw()
 
 func _draw() -> void:
-	draw_texture_rect(OVERVIEW, Rect2(Vector2.ZERO, size), false)
+	draw_rect(Rect2(Vector2.ZERO,size),Color("e5edf0"))
+	draw_colored_polygon(PackedVector2Array([Vector2(0,615),Vector2(220,585),Vector2(440,638),Vector2(725,604),Vector2(1050,620),Vector2(1050,700),Vector2(0,700)]),Color("80b6ca"))
+	var font := ThemeDB.fallback_font
+	draw_string(font,Vector2(45,164),"Solmere",HORIZONTAL_ALIGNMENT_LEFT,-1,38,PaperLanguage.BLUE)
+	for row in 3:
+		draw_polyline(PackedVector2Array([Vector2(70,235+row*133),Vector2(310,239+row*133),Vector2(700,232+row*133),Vector2(1000,235+row*133)]),Color("b9c8ba"),4,true)
+	for col in [1,3]: draw_line(Vector2(100+col*202,235),Vector2(100+col*202,505),Color("b9c8ba"),3,true)
 	for id in points:
-		var marker: Vector2 = points[id]
-		if ResidencySystem.state().map_notes.has(id):
-			draw_circle(marker + Vector2(23, -20), 5, Color("b86e4e"))
-		if str(id) == GameState.current_location:
-			draw_circle(marker, 13, Color("f4f0df", 0.96))
-			draw_circle(marker, 8, Color("c85f43"))
+		if str(id)==GameState.current_location: draw_circle(Vector2(points[id])+Vector2(0,33),5,PaperLanguage.BLUE)
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:

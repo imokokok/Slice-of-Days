@@ -15,7 +15,7 @@ func _ready() -> void:
 	mouse_filter = MOUSE_FILTER_IGNORE
 	var card := Panel.new()
 	card.position = Vector2(1240,155)
-	card.size = Vector2(330,155)
+	card.size = Vector2(330,295)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color("f7f1e4",0.92)
 	style.set_corner_radius_all(4)
@@ -28,13 +28,16 @@ func _ready() -> void:
 	status.add_theme_color_override("font_color",Color("375456"))
 	status.add_theme_font_size_override("font_size",18)
 	card.add_child(status)
-	status.text = LocalizationSystem.text("R 开始 / 停止 · A / D 走动\nSpace 留下标记\nEsc 保存并收起")
+	status.text = "记录身边的声音\n"+SettingsSystem.binding_text("open_recorder")+" 开始 / 停止"
+	for i in 3:
+		var b := preload("res://scripts/ui/components/solmere_button.gd").new(); b.text=["开始 / 停止并保存","留下时间标记","保存并收起"][i]; b.position=Vector2(14,151+i*44); b.size=Vector2(302,40); card.add_child(b)
+		b.pressed.connect([toggle_recording,mark_recording,finish_for_exit][i])
 	recorder = FieldRecorder.new()
 	add_child(recorder)
 	recorder.meter_changed.connect(func(peak: float, seconds: float) -> void:
 		levels.append(peak)
 		if levels.size()>95: levels.pop_front()
-		status.text = LocalizationSystem.text("●  录音  %02d:%02d\nR 停止 · Space 标记\n已留 %d 个标记" % [int(seconds)/60,int(seconds)%60,marks.size()])
+		status.text = LocalizationSystem.text("●  录音  %02d:%02d\n正在收集小镇声音\n已留 %d 个标记" % [int(seconds)/60,int(seconds)%60,marks.size()])
 		queue_redraw())
 	recorder.failed.connect(func(message: String) -> void: status.text = LocalizationSystem.text(message); close_after = false)
 	recorder.completed.connect(_complete)
@@ -60,7 +63,7 @@ func _save(warning := "") -> void:
 	saved = true
 	status.text = LocalizationSystem.text("已保存到素材本\n"+warning+"\nB 查看 · 即将收起")
 	if close_after: queue_free()
-	else: _dismiss_saved()
+	else: status.text="已保存到录音机，可以继续录制。"
 
 func _dismiss_saved() -> void:
 	await get_tree().create_timer(0.8).timeout
@@ -76,18 +79,16 @@ func finish_for_exit() -> bool:
 	queue_free()
 	return true
 
+func toggle_recording() -> void:
+	if pending_wav!=null: _save()
+	elif recorder.capturing: recorder.stop()
+	else: saved=false; marks.clear(); levels.clear(); recorder.start("","game")
+func mark_recording() -> void:
+	if recorder.capturing: marks.append(snappedf(recorder.elapsed,.01))
 func _input(event: InputEvent) -> void:
-	if not event is InputEventKey or not event.pressed or event.echo: return
-	match event.physical_keycode:
-		KEY_R:
-			if pending_wav != null: _save()
-			elif recorder.capturing: recorder.stop()
-			else: saved = false; marks.clear(); levels.clear(); recorder.start("","game")
-		KEY_SPACE:
-			if recorder.capturing: marks.append(snappedf(recorder.elapsed,0.01))
-		KEY_ESCAPE:
-			if recorder.capturing: close_after = true; recorder.stop()
-			elif pending_wav != null: close_after = true; _save()
-			else: queue_free()
-		_: return
+	if not event.is_pressed() or event.is_echo(): return
+	if event.is_action_pressed("open_recorder"): toggle_recording()
+	elif event.is_action_pressed("record_mark"): mark_recording()
+	elif event.is_action_pressed("ui_cancel"): finish_for_exit()
+	else: return
 	get_viewport().set_input_as_handled()

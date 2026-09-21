@@ -10,11 +10,16 @@ var photo_cache: Dictionary = {}
 var drawing := false
 var stroke: Array = []
 var read_only := false
+var page_id := ""
+var item_nodes: Dictionary = {}
 
 func _ready() -> void:
 	clip_contents = true
 	mouse_filter = MOUSE_FILTER_STOP
 	focus_mode=FOCUS_ALL
+	changed.connect(_sync_items)
+	selection_changed.connect(_sync_items)
+	_sync_items()
 
 func _input(event: InputEvent) -> void:
 	# Finish even if the pointer has left the paper before release.
@@ -39,37 +44,7 @@ func piece_rect(p: Dictionary) -> Rect2:
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO,size),Color.WHITE)
-	for i in pieces.size():
-		var p: Dictionary = pieces[i]
-		draw_set_transform(Vector2(float(p.x),float(p.y)),float(p.get("rotation",0)),Vector2.ONE*float(p.get("scale",1)))
-		var r := piece_rect(p)
-		var ink := Color("31658b")
-		if p.get("kind","") == "drawing":
-			var points := PackedVector2Array()
-			for point in p.get("points",[]): points.append(Vector2(point[0],point[1]))
-			if points.size()>1: draw_polyline(points,ink,2,true)
-		elif p.get("kind","") == "photo":
-			var id := str(p.get("material",""))
-			if not photo_cache.has(id):
-				var library := PhotoLibrary.new()
-				var source: Dictionary = ResidencySystem.state().materials.get(id,{})
-				library.root_path = str(source.get("library_root",library.root_path))
-				var image := library.load_photo(id)
-				photo_cache[id] = ImageTexture.create_from_image(image) if image != null else null
-			draw_rect(r,Color("fffaf0"))
-			if photo_cache[id] != null:
-				var texture: Texture2D = photo_cache[id]
-				var fit := minf((r.size.x-16)/texture.get_width(),(r.size.y-16)/texture.get_height())
-				var fitted := texture.get_size()*fit
-				draw_texture_rect(texture,Rect2(-fitted*.5,fitted),false)
-		else:
-			if p.get("kind","") not in ["text","recognition"]: draw_rect(r,Color("faf4df"))
-			var paragraph := TextParagraph.new()
-			paragraph.width=r.size.x-16
-			paragraph.add_string(str(p.get("text","")),get_theme_font("font"),22)
-			paragraph.draw(get_canvas_item(),r.position+Vector2(8,8),ink)
-		if selected == i: draw_rect(r,Color("e8c75d"),false,2)
-	draw_set_transform(Vector2.ZERO)
+
 	if stroke.size()>1:
 		var line := PackedVector2Array()
 		for point in stroke: line.append(Vector2(point[0],point[1]))
@@ -98,7 +73,7 @@ func _gui_input(event: InputEvent) -> void:
 		if drawing and not stroke.is_empty(): stroke.append([event.position.x,event.position.y]); queue_redraw(); accept_event()
 		elif dragging and selected>=0:
 			var at: Vector2 = (event.position-drag_offset).clamp(Vector2(20,20),size-Vector2(20,20))
-			pieces[selected].x=at.x; pieces[selected].y=at.y; queue_redraw(); accept_event()
+			pieces[selected].x=at.x; pieces[selected].y=at.y; _sync_items(); queue_redraw(); accept_event()
 
 func add_piece(data: Dictionary, at: Vector2) -> void:
 	if read_only: return
@@ -126,3 +101,30 @@ func _drop_data(at: Vector2, data: Variant) -> void:
 	var id := str(data.residency_material)
 	var item: Dictionary = ResidencySystem.state().materials.get(id,{})
 	add_piece({"material":id,"kind":str(item.get("kind","object")),"text":str(item.get("text",item.get("title",""))),"w":220,"h":160},at)
+
+func _sync_items() -> void:
+	var keep: Array[String]=[]
+	for i in pieces.size():
+		var p: Dictionary=pieces[i]
+		if not p.has("id"): p.id="piece_"+Crypto.new().generate_random_bytes(12).hex_encode()
+		p.page=page_id; p.day=int(page_id.trim_prefix("day_")) if page_id.begins_with("day_") else 0
+		p.source_asset=str(p.get("material","")); p.position={"x":p.x,"y":p.y}; p.z_index=i
+		var id := str(p.id); keep.append(id)
+		if not item_nodes.has(id):
+			var item := preload("res://scripts/ui/components/portfolio_item.gd").new()
+			item.data=p; item.owner_canvas=self; item.name=id; add_child(item); item_nodes[id]=item
+		var item: Control=item_nodes[id]
+		item.size=Vector2(float(p.get("w",180)),float(p.get("h",130)))
+		item.pivot_offset=item.size*.5; item.position=Vector2(p.x,p.y)-item.size*.5
+		item.scale=Vector2.ONE*float(p.get("scale",1)); item.rotation=float(p.get("rotation",0)); item.z_index=i
+		item.selected=i==selected; item.mouse_filter=MOUSE_FILTER_IGNORE if drawing or read_only else MOUSE_FILTER_STOP
+		item.focus_mode=FOCUS_NONE if read_only else FOCUS_ALL; item.queue_redraw()
+	for id in item_nodes.keys():
+		if not keep.has(id): item_nodes[id].queue_free(); item_nodes.erase(id)
+func select_id(id: String) -> void:
+	for i in pieces.size():
+		if str(pieces[i].get("id",""))==id: selected=i; selection_changed.emit(); return
+func move_selected(offset: Vector2) -> void:
+	if read_only or selected<0: return
+	var at := (Vector2(pieces[selected].x,pieces[selected].y)+offset).clamp(Vector2(20,20),size-Vector2(20,20))
+	pieces[selected].x=at.x; pieces[selected].y=at.y; changed.emit()

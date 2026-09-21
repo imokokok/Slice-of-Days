@@ -6,6 +6,7 @@ var item: Dictionary = {}
 var photo: Texture2D
 var hovering := false
 func _ready() -> void:
+	focus_mode=FOCUS_ALL
 	mouse_default_cursor_shape=CURSOR_DRAG
 	mouse_filter=MOUSE_FILTER_STOP
 	clip_contents=true
@@ -57,5 +58,6 @@ func _get_drag_data(_position: Vector2) -> Variant:
 	preview.add_child(card); set_drag_preview(preview)
 	return {"residency_material":material_id}
 func _gui_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_accept"): activated.emit(); accept_event()
 	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed and event.double_click:
 		activated.emit(); accept_event()

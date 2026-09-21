@@ -8,6 +8,7 @@ func _ready() -> void:
 	mouse_default_cursor_shape=CURSOR_POINTING_HAND
 	tooltip_text=chinese+" / "+english
 	mouse_entered.connect(queue_redraw); mouse_exited.connect(queue_redraw)
+	focus_entered.connect(queue_redraw); focus_exited.connect(queue_redraw); button_down.connect(queue_redraw); button_up.connect(queue_redraw)
 	var title := Label.new()
 	title.text=chinese; title.position=Vector2(10,8); title.size=Vector2(size.x-20,30)
 	title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
@@ -23,7 +24,9 @@ func _draw() -> void:
 	var h := size.y
 	var outline := PackedVector2Array([Vector2(0,h),Vector2(8,h-8),Vector2(19,13),Vector2(25,4),Vector2(34,2),Vector2(w-30,3),Vector2(w-22,7),Vector2(w-17,19),Vector2(w-6,h-7),Vector2(w,h)])
 	var fill := tint if chosen else tint.lerp(Color("faf7ee"),.36)
-	if is_hovered(): fill=fill.lerp(Color("eed577"),.26)
+	if disabled: fill=fill.lerp(Color.GRAY,.45)
+	elif is_pressed(): fill=Color("d7b941")
+	elif is_hovered(): fill=fill.lerp(Color("eed577"),.26)
 	draw_colored_polygon(outline,fill)
 	draw_polyline(outline,Color("4f7690",.65),1.2,true)
 	var fibres := RandomNumberGenerator.new(); fibres.seed=312

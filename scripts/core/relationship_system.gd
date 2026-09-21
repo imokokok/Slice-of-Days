@@ -131,21 +131,23 @@ func request_confirmation(resident_id: String) -> Dictionary:
 		return {"ok": false, "message": "现在还不适合提出这个请求。"}
 	var state := ensure_resident(resident_id)
 	var previous := str(state.get("confirmation", "unknown"))
-	var encounters: int = state.get("encounter_events", []).size()
+	# Repeated greetings or generic visits are not evidence of meaningful exchange.
+	var meaningful: Array=state.get("encounter_events",[]).filter(func(id: Variant) -> bool: return not str(id).begins_with("chat_") and not str(id).begins_with("visit_"))
+	var encounters: int=meaningful.size()
 	var resident: Dictionary = ScheduleSystem.residents.get(resident_id, {})
 	var name := str(resident.get("display_name", resident_id))
 	var next_status := previous
 	var message := ""
 	if previous == "refused":
-		if encounters >= 4:
+		if encounters >= 2:
 			next_status = "granted"
 			message = "%s看了看之前留下的几次记录，这次愿意写下名字。" % name
 		else:
 			message = "%s没有改变答复。也许还需要真正一起经历一些事。" % name
-	elif encounters >= 3:
+	elif encounters >= 2:
 		next_status = "granted"
 		message = "%s确认这些相处不是一次路过，愿意写下名字。" % name
-	elif encounters == 2:
+	elif encounters == 1:
 		next_status = "pending"
 		message = "%s没有拒绝，但说想再考虑一下。" % name
 	else:

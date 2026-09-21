@@ -43,8 +43,8 @@ func _ready() -> void:
 	mouse_filter = MOUSE_FILTER_STOP
 	day = clampi(GameState.current_day,1,7)
 	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["KaiTi","Microsoft YaHei"])
-	theme = Theme.new()
+	font.font_names = PackedStringArray(["Microsoft YaHei","Noto Sans CJK SC"])
+	theme = preload("res://art/ui/solmere_ui.tres").duplicate()
 	theme.default_font = font
 	theme.default_font_size = 21
 	ResidencySystem._sync_sources()
@@ -1076,7 +1076,7 @@ func _knowledge() -> void:
 		entry[0].add_child(text)
 
 func _map() -> void:
-	label(body,"拖动地图 · 滚轮缩放 · 选择目的地",Vector2(35,86),Vector2(1240,38),21)
+	label(body,("追踪："+str(GuidanceSystem.tracked_lead().get("text",""))+" — "+GuidanceSystem.source_name(str(GuidanceSystem.tracked_lead().get("source","")))) if not GuidanceSystem.tracked_lead().is_empty() else "选择地点查看路线 · 拖动 / 滚轮缩放",Vector2(35,86),Vector2(1240,38),21)
 	var viewport := panel(body,Vector2(28,137),Vector2(1284,540),Color("e4ead9"))
 	viewport.name = "MapViewport"
 	viewport.clip_contents = true

@@ -1,5 +1,6 @@
 extends Node
 
+signal session_restored
 signal state_changed
 signal message_posted(message: String)
 signal role_changed(role: String)
@@ -45,6 +46,7 @@ func _ready() -> void:
 
 
 func begin_new_game(start_role: String = "A") -> void:
+	session_restored.emit()
 	_initialize_new_state(start_role)
 	state_changed.emit()
 
@@ -728,6 +730,7 @@ func to_save_data() -> Dictionary:
 
 
 func load_save_data(data: Dictionary) -> void:
+	session_restored.emit()
 	if data.has("role_states"):
 		role_states = data.get("role_states", {}).duplicate(true)
 		shared_state = data.get("shared_state", {}).duplicate(true)

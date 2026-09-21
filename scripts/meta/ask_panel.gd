@@ -18,17 +18,18 @@ func _ready() -> void:
 	title.text = LocalizationSystem.text("问一件事 · %d分钟" % int(MetaExperience.catalog.timing.ask_minutes))
 	box.add_child(title)
 	for row in [["今天什么时候在？","schedule_info"],["附近有什么地方？","town_info"],["最近听到了什么？","rumor"]]:
-		var button := Button.new()
+		var button := preload("res://scripts/ui/components/solmere_button.gd").new()
 		button.text = LocalizationSystem.text(str(row[0]))
 		button.custom_minimum_size.y = 54
 		box.add_child(button)
 		button.pressed.connect(func() -> void:
 			chosen.emit(str(row[1]))
 			queue_free())
-	var close := Button.new()
+	var close := preload("res://scripts/ui/components/solmere_button.gd").new()
 	close.text = LocalizationSystem.text("先不问了")
 	box.add_child(close)
 	close.pressed.connect(queue_free)
+	box.get_child(1).grab_focus()
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):

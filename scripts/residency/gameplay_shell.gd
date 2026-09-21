@@ -24,6 +24,7 @@ var time_notice_age := 8.0
 
 func _ready() -> void:
 	name = "GameplayShell"
+	add_child(preload("res://scripts/ui/components/guidance_toasts.gd").new())
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter = MOUSE_FILTER_IGNORE
 	host = get_parent()
@@ -188,15 +189,17 @@ func _context() -> Dictionary:
 		if due-GameState.current_minute <= travel and due+10 >= GameState.current_minute and GameState.current_location != str(commitment.get("location","dorm")):
 			return {"id":"work_"+str(commitment.get("id","")),"text":"Tab  %02d:%02d 前回家工作\nH  随身物品" % [due/60,due%60]}
 	var special := _special()
-	if not special.is_empty(): return {"id":special,"text":"E  "+str({"counter":"资料领取 / 提交","organize":"整理桌上的材料","proofs":"领取工作证明","residence":"居住确认"}.get(special,special))+"\nF  居住档案"}
+	if not special.is_empty(): return {"id":special,"text":SettingsSystem.binding_text("interact")+"  "+str({"counter":"资料领取 / 提交","organize":"整理桌上的材料","proofs":"领取工作证明","residence":"居住确认"}.get(special,special))+"\n"+SettingsSystem.binding_text("open_archive")+"  居住档案"}
 	var talk_near: Dictionary = stage.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
 	if not talk_near.is_empty():
-		return {"id":str(talk_near),"text":"W  聊一会 · %d 分钟 · %s结束\n1  问点事 · %d 分钟" % [int(MetaExperience.catalog.timing.chat_minutes),GuidanceSystem.time_text(GameState.current_minute+int(MetaExperience.catalog.timing.chat_minutes)),int(MetaExperience.catalog.timing.ask_minutes)]}
+		var tracked := GuidanceSystem.tracked_lead()
+		var relevant := str(tracked.get("source",""))==str(talk_near.get("id","")) or str(tracked.get("location",""))==GameState.current_location
+		return {"id":str(talk_near)+str(relevant),"text":("[color=#eed577]—[/color] " if relevant else "")+GuidanceSystem.source_name(str(talk_near.get("id","")))+"  ·  "+SettingsSystem.binding_text("talk")+" 交谈"}
 	var near: Dictionary = stage.nearest()
 	if not near.is_empty():
-		var text := "E  "+str(near.get("label","互动"))
+		var text := SettingsSystem.binding_text("interact")+"  "+str(near.get("label","互动"))
 		return {"id":str(near),"text":text}
-	return {"id":"walk_"+last_location,"text":"A / D  走走\nTab  去社区中心" if not ResidencySystem.state().packet else "A / D  走走\nTab  地图    T  今日"}
+	return {"id":"walk_"+last_location,"text":SettingsSystem.binding_text("move_left")+" / "+SettingsSystem.binding_text("move_right")+" 走走\n"+SettingsSystem.binding_text("open_notebook")+" 今日计划"}
 
 func _special() -> String:
 	if not stage.indoor: return ""
@@ -227,13 +230,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	_handle_shortcut(event)
 
 func _handle_shortcut(event: InputEvent) -> void:
-	if not event is InputEventKey or not event.pressed or event.echo or _blocked() or is_instance_valid(tool) or focus_opening: return
+	if not event.is_pressed() or event.is_echo() or _blocked() or is_instance_valid(tool) or focus_opening: return
 	if get_viewport().gui_get_focus_owner() is TextEdit or get_viewport().gui_get_focus_owner() is LineEdit: return
-	var key: int = event.physical_keycode
-	var modes := {KEY_TAB:"map",KEY_T:"today",KEY_G:"gallery",KEY_B:"bag",KEY_I:"bag",KEY_F:"dossier",KEY_H:"home",KEY_J:"notebook",KEY_ESCAPE:"pause"}
-	if modes.has(key): open_paper(str(modes[key]))
-	elif key == KEY_C: open_tool("camera")
-	elif key == KEY_R: open_tool("recorder")
+	var modes := {"open_map":"map","open_plan":"today","open_album":"gallery","open_bag":"bag","open_archive":"dossier","open_home":"home","open_notebook":"notebook","ui_cancel":"pause"}
+	for action in modes:
+		if event.is_action_pressed(action):
+			open_paper(str(modes[action])); get_viewport().set_input_as_handled(); return
+	if event.is_action_pressed("open_camera"): open_tool("camera")
+	elif event.is_action_pressed("open_recorder"): open_tool("recorder")
 	elif event.is_action_pressed("talk"):
 		var near: Dictionary = stage.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
 		if near.is_empty(): return
@@ -242,7 +246,7 @@ func _handle_shortcut(event: InputEvent) -> void:
 		elif host.has_method("_start_conversation") and str(near.get("kind", "")) == "person":
 			host.call("_start_conversation", str(near.get("id", "")))
 		else: return
-	elif key == KEY_E and not _special().is_empty():
+	elif event.is_action_pressed("interact") and not _special().is_empty():
 		var special := _special()
 		if special == "residence": GameState.message_posted.emit(ResidencySystem.residence_proof()); open_paper("fieldbook")
 		else: open_paper(special)

@@ -89,8 +89,8 @@ func run() -> void:
 	check(not data.submitted.snapshot.free_pages.has("notebook"),"Private notebook never enters application snapshot")
 	paper.mode="dossier"; paper.archive_tab="personal"; paper.build()
 	check(paper.canvas.read_only,"Submitted archive is sealed")
-	paper.mode="notebook"; paper.build()
-	check(not paper.canvas.read_only,"Private notebook remains writable")
+	paper.mode="notebook"; paper.notebook_section="personal"; paper.build()
+	check(paper.body.find_child("PrivateNotebookText",true,false).editable,"Private notebook remains writable")
 	state.confirmed_residents.assign(original_marks)
 	paper.queue_free()
 	await process_frame

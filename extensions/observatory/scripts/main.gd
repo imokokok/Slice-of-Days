@@ -20,6 +20,7 @@ func enter_sky() -> void:
  sky = load("res://extensions/observatory/scenes/StarGazing3D.tscn").instantiate()
  add_child(sky)
  sky.return_requested.connect(leave_sky)
+ sky.finish_requested.connect(leave_sky)
  ObservatoryAudio.set_stargazing(true)
  await dim(0.0)
  fade.mouse_filter = Control.MOUSE_FILTER_IGNORE

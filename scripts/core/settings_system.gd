@@ -27,6 +27,12 @@ const AUDIO_BUS_LAYOUT := [
 	["TownWorldSoundEffects", "TownWorld"],
 ]
 const DEFAULT_INPUT_ACTIONS := {
+	"nebula_left": [KEY_A,KEY_LEFT],
+	"nebula_right": [KEY_D,KEY_RIGHT],
+	"nebula_up": [KEY_W,KEY_UP],
+	"nebula_down": [KEY_S,KEY_DOWN],
+	"nebula_near": [KEY_Q],
+	"nebula_far": [KEY_E],
 	"move_left": [KEY_A, KEY_LEFT],
 	"move_right": [KEY_D, KEY_RIGHT],
 	"move_fast": [KEY_SHIFT],
@@ -79,6 +85,11 @@ func _ensure_input_actions() -> void:
 	for action in {"open_notebook":JOY_BUTTON_BACK,"open_archive":JOY_BUTTON_Y,"interact":JOY_BUTTON_A,"talk":JOY_BUTTON_X,"open_camera":JOY_BUTTON_LEFT_SHOULDER,"open_recorder":JOY_BUTTON_RIGHT_SHOULDER,"camera_shutter":JOY_BUTTON_A,"record_mark":JOY_BUTTON_X}:
 		var pad := InputEventJoypadButton.new(); pad.button_index={"open_notebook":JOY_BUTTON_BACK,"open_archive":JOY_BUTTON_Y,"interact":JOY_BUTTON_A,"talk":JOY_BUTTON_X,"open_camera":JOY_BUTTON_LEFT_SHOULDER,"open_recorder":JOY_BUTTON_RIGHT_SHOULDER,"camera_shutter":JOY_BUTTON_A,"record_mark":JOY_BUTTON_X}[action]
 		if not InputMap.action_has_event(action,pad): InputMap.action_add_event(action,pad)
+
+	for binding in [["nebula_left",JOY_AXIS_RIGHT_X,-1.0],["nebula_right",JOY_AXIS_RIGHT_X,1.0],["nebula_up",JOY_AXIS_RIGHT_Y,-1.0],["nebula_down",JOY_AXIS_RIGHT_Y,1.0],["nebula_near",JOY_AXIS_TRIGGER_LEFT,1.0],["nebula_far",JOY_AXIS_TRIGGER_RIGHT,1.0]]:
+		var motion := InputEventJoypadMotion.new()
+		motion.axis=int(binding[1]); motion.axis_value=float(binding[2])
+		if not InputMap.action_has_event(binding[0],motion): InputMap.action_add_event(binding[0],motion)
 
 
 func _ensure_audio_buses() -> void:

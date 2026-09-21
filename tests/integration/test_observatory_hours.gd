@@ -26,7 +26,7 @@ func run() -> void:
 	await create_timer(0.8).timeout
 	var sky = current_scene.experience
 	check(sky is Node3D and sky.camera is Camera3D, "Telescope must directly enter real 3D")
-	check(sky.data.positions == sky.source_data.positions, "Authored star depth must remain intact")
+	check(sky.volume.depth_range.y - sky.volume.depth_range.x > 3, "Nebula must have world-space depth")
 	var before: Transform3D = sky.camera.transform
 	# Dispatch through the actual viewport and host UI, not directly to the controller.
 	var press := InputEventMouseButton.new()
@@ -43,15 +43,17 @@ func run() -> void:
 	root.push_input(press, true)
 	await process_frame
 	check(not sky.camera.transform.is_equal_approx(before), "Dragging through the host UI rotates the real 3D camera")
-	check(sky.data.positions == sky.source_data.positions, "Mouse dragging preserves world-space star depth")
+	check(sky.volume.sample_count > 30000, "Mouse dragging preserves the nebula volume")
 	check(not sky.has_node("UI/Adjustment"), "Mouse sky has no directional button panel")
-	before = sky.camera.transform
-	sky.adjust(Vector2i(1, 0))
-	check(not sky.camera.transform.is_equal_approx(before), "Telescope controls must rotate the 3D camera")
-	sky.adjustment = sky.solution
-	sky.look_offset = Vector2.ZERO
-	sky.update_layout()
-	check(sky.checker.measure(sky.camera, sky.data) < 0.05, "Original star puzzle must remain solvable")
+	sky.open_constellations()
+	await process_frame
+	var old = sky.legacy
+	old.adjustment = old.solution
+	old.look_offset = Vector2.ZERO
+	old.update_layout()
+	check(old.checker.measure(old.camera, old.data) < 0.05, "Original star puzzle must remain solvable")
+	old.return_requested.emit()
+	await process_frame
 	sky.return_requested.emit()
 	await create_timer(0.8).timeout
 	check(current_scene.scene_file_path.ends_with("town_day.tscn"), "Leaving telescope must return to town")

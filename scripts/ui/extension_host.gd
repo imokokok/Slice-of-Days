@@ -52,6 +52,7 @@ func _ready() -> void:
 		add_child(experience)
 	if module_id == "contemplation":
 		experience.return_requested.connect(_cancel)
+		experience.finish_requested.connect(_complete)
 		ObservatoryAudio.set_stargazing(true)
 	_fit_experience()
 	_build_host_bar()
@@ -83,6 +84,10 @@ func _fit_experience() -> void:
 
 
 func _build_host_bar() -> void:
+	# The telescope owns its controls; route shared errors to its visible hint.
+	if module_id == "contemplation":
+		status_label = experience.hint
+		return
 	var layer := CanvasLayer.new()
 	layer.layer = 500
 	add_child(layer)
@@ -176,7 +181,7 @@ func _experience_completed() -> bool:
 		"chess":
 			return bool(experience.get("solmere_completed"))
 		"contemplation":
-			return bool(ObservatoryState.discovered.get("bird", false)) or bool(ObservatoryState.discovered.get("whale", false))
+			return bool(experience.get("solmere_completed"))
 	return true
 
 
@@ -184,6 +189,9 @@ func _complete() -> void:
 	if submitting or SceneRouter.transitioning or not _experience_completed():
 		return
 	submitting = true
+	if module_id == "contemplation":
+		experience.view_age=0
+		status_label.modulate.a=1
 	var money_before := GameState.money
 	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	var pending: Dictionary = GameState.shared_state.get("pending_module", {})
@@ -200,6 +208,8 @@ func _complete() -> void:
 		"source_event_id": source_event_id,
 		"interaction": {"mode": "extension", "selected_labels": [str(metadata.get("name", module_id))]},
 	}
+	if module_id == "contemplation":
+		outcome["interaction"].merge(experience.observation_result(),true)
 	if module_id == "ghostwriting":
 		# END is reached only after NPC delivery or a successful real public publish.
 		var public_id := int(experience.get("bottle_published_id"))
@@ -221,6 +231,9 @@ func _complete() -> void:
 
 func _cancel() -> void:
 	if submitting or SceneRouter.transitioning: return
+	if module_id == "contemplation":
+		experience.view_age=0
+		status_label.modulate.a=1
 	var rollback_snapshot := GameState.to_save_data().duplicate(true)
 	if module_id == "ghostwriting" and is_instance_valid(experience) and experience.has_method("save_game"):
 		experience.save_game()
@@ -231,6 +244,8 @@ func _cancel() -> void:
 		preserved_key = "myriorama_" + GameState.current_role
 		preserved_extension_state = GameState.shared_state.get(preserved_key, {}).duplicate(true)
 	GameplayModuleSystem.cancel_session()
+	if module_id == "contemplation" and is_instance_valid(experience):
+		experience.preserve_after_cancel()
 	if not preserved_key.is_empty() and not preserved_extension_state.is_empty():
 		GameState.shared_state[preserved_key] = preserved_extension_state
 		GameState.commit_active_role_state()

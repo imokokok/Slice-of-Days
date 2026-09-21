@@ -12,7 +12,7 @@
     {
       "id": "telescope",
       "name": "走到望远镜前",
-      "detail": "调整水平与垂直视角，寻找飞鸟与鲸鱼星座。",
+      "detail": "转动望远镜查看三维星云，留下观测照片；也可以寻找飞鸟与鲸鱼。",
       "kind": "module",
       "module_id": "contemplation",
       "icon": "星",

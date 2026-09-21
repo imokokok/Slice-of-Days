@@ -1,142 +1,314 @@
 extends Node3D
 signal return_requested
-const BIRD = preload("res://extensions/observatory/resources/bird_constellation.tres")
-const WHALE = preload("res://extensions/observatory/resources/whale_constellation.tres")
-const STEP_ANGLE := 0.04
-const STEP_LIMIT := 12
-var source_data: ConstellationData
-var data: ConstellationData
-var adjustment := Vector2i.ZERO
-var look_offset := Vector2.ZERO
-var solution := Vector2i.ZERO
-var reveal_tween: Tween
+signal finish_requested
+const Volume = preload("res://extensions/observatory/scripts/nebula_volume.gd")
+const ButtonComponent = preload("res://scripts/ui/components/solmere_button.gd")
+const Catalog = preload("res://extensions/observatory/resources/nebula_catalog.gd")
+var entries: Array = Catalog.entries()
+var selected_index := 0
+var angles := Vector2.ZERO
+var distance := 52.0
+var pan := Vector3.ZERO
+var camera: Camera3D
+var volume: Node3D
+var ui: CanvasLayer
+var chrome: Control
+var sky_drag: Control
+var heading: Label
+var description: Label
+var credits: RichTextLabel
+var hint: Label
+var capture_button: Button
+var finish_button: Button
+var tabs: Array[Button] = []
+var library := PhotoLibrary.new()
+var legacy: Node3D
+var gallery: Control
 var is_capturing := false
-var guidance_age := 0.0
-var idle_age := 0.0
-@onready var camera := $Camera3D
-@onready var field := $StarField
-@onready var checker := $ProjectionChecker
-@onready var hint := $UI/Hint
-@onready var capture := $UI/Capture
-@onready var next := $UI/Next
-@onready var lines := $UI/Lines
+var solmere_completed := false
+var session_photos: Array[Dictionary] = []
+var view_age := 0.0
+var original_views: Dictionary = {}
+var legacy_ui: CanvasLayer
+var captured_session_ids: Array[String] = []
+var pending_image: Image
+var pending_context: Dictionary
+
 func _ready() -> void:
- $UI/Return.pressed.connect(func(): return_requested.emit())
- capture.pressed.connect(collect)
- $UI/Album.pressed.connect(func():
-  DirAccess.make_dir_recursive_absolute("user://album")
-  OS.shell_open(ProjectSettings.globalize_path("user://album")))
- next.pressed.connect(func(): select_constellation(WHALE if data.id == "bird" else BIRD))
- checker.matched.connect(found)
- build_controls()
- select_constellation(WHALE if ObservatoryState.discovered.bird and not ObservatoryState.discovered.whale else BIRD)
-func build_controls() -> void:
- for child in $UI.get_children():
-  if child is Button: PaperLanguage.button_style(child,true)
-  elif child is Label: child.add_theme_color_override("font_color",Color("faf7ee"))
- var surface := Control.new()
- surface.name = "SkyDrag"
- $UI.add_child(surface)
- $UI.move_child(surface, 0)
- surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- surface.mouse_default_cursor_shape = Control.CURSOR_DRAG
- surface.gui_input.connect(_sky_input)
- $UI/Instructions.text = LocalizationSystem.text("拖动转动望远镜 · 方向键微调 · "+SettingsSystem.binding_text("ui_cancel")+" 返回")
+	camera = $Camera3D
+	volume = Volume.new()
+	add_child(volume)
+	original_views = GameState.artifacts.get("telescope_views", {}).duplicate(true)
+	_build_ui()
+	var previous := str(GameState.artifacts.get("telescope_selected", "orion"))
+	for i in entries.size():
+		if entries[i].id == previous: selected_index=i
+	select_nebula(selected_index)
+
+func _button(parent: Node, text: String, callback: Callable) -> Button:
+	var b := ButtonComponent.new()
+	b.variant="camera"; b.text=text
+	b.add_theme_font_size_override("font_size",18)
+	b.custom_minimum_size=Vector2(90,44)
+	parent.add_child(b)
+	b.pressed.connect(callback)
+	b.pressed.connect(func():
+		if is_instance_valid(sky_drag) and not is_instance_valid(gallery) and not is_instance_valid(legacy):
+			sky_drag.grab_focus())
+	return b
+
+func _label(parent: Node, text: String, font_size := 20) -> Label:
+	var label := Label.new()
+	label.text=text
+	label.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	label.add_theme_font_override("font",PaperLanguage.body_font)
+	label.add_theme_font_size_override("font_size",font_size)
+	label.add_theme_color_override("font_color",Color("faf7ee"))
+	parent.add_child(label)
+	return label
+
+func _build_ui() -> void:
+	ui=CanvasLayer.new(); ui.name="UI"; ui.layer=30; add_child(ui)
+	chrome=Control.new(); chrome.name="Chrome"; ui.add_child(chrome)
+	chrome.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	chrome.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	sky_drag=Control.new(); sky_drag.name="SkyDrag"; chrome.add_child(sky_drag)
+	sky_drag.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sky_drag.focus_mode=Control.FOCUS_ALL
+	sky_drag.mouse_default_cursor_shape=Control.CURSOR_DRAG
+	sky_drag.gui_input.connect(_sky_input)
+	var top := HBoxContainer.new(); top.name="Navigation"; chrome.add_child(top)
+	top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	top.offset_left=32; top.offset_right=-32; top.offset_top=24
+	top.add_theme_constant_override("separation",12)
+	_button(top,"← 海边",_return)
+	var space := Control.new(); space.size_flags_horizontal=Control.SIZE_EXPAND_FILL; top.add_child(space)
+	for i in entries.size():
+		tabs.append(_button(top,entries[i].title,select_nebula.bind(i)))
+	space=Control.new(); space.size_flags_horizontal=Control.SIZE_EXPAND_FILL; top.add_child(space)
+	_button(top,"连星",open_constellations)
+	_button(top,"观测册",open_gallery)
+	var bottom := HBoxContainer.new(); bottom.name="Observation"; chrome.add_child(bottom)
+	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	bottom.offset_left=40; bottom.offset_right=-40; bottom.offset_top=-205; bottom.offset_bottom=-76
+	bottom.alignment=BoxContainer.ALIGNMENT_BEGIN
+	bottom.add_theme_constant_override("separation",14)
+	var info := VBoxContainer.new(); info.size_flags_horizontal=Control.SIZE_EXPAND_FILL; bottom.add_child(info)
+	heading=_label(info,"",30)
+	description=_label(info,"",17)
+	description.add_theme_color_override("font_color",Color("c6d3df"))
+	hint=_label(info,"",16)
+	hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	var actions := VBoxContainer.new(); actions.size_flags_vertical=Control.SIZE_SHRINK_END; bottom.add_child(actions)
+	var zooms := HBoxContainer.new(); actions.add_child(zooms)
+	_button(zooms,"－ 远",zoom.bind(1.15))
+	_button(zooms,"＋ 近",zoom.bind(.87))
+	_button(zooms,"复位",reset_view)
+	capture_button=_button(actions,"留下这片星光",collect)
+	finish_button=_button(actions,"带着观测回去",func():finish_requested.emit())
+	finish_button.hide()
+	credits=RichTextLabel.new(); credits.name="Credits"; ui.add_child(credits)
+	credits.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	credits.offset_left=40; credits.offset_right=-40; credits.offset_top=-62; credits.offset_bottom=-8
+	credits.add_theme_font_override("normal_font",PaperLanguage.body_font)
+	credits.add_theme_font_size_override("normal_font_size",14)
+	credits.add_theme_color_override("default_color",Color("c6d3df"))
+	credits.bbcode_enabled=true; credits.scroll_active=false
+	credits.meta_clicked.connect(func(url: Variant): OS.shell_open(str(url)))
+	sky_drag.grab_focus()
+
+func _remember_view() -> void:
+	var views: Dictionary = GameState.artifacts.get("telescope_views",{})
+	views[entries[selected_index].id]={"angles":[angles.x,angles.y],"distance":distance,"pan":[pan.x,pan.y,pan.z]}
+	GameState.artifacts["telescope_views"]=views
+	original_views=views.duplicate(true)
+	GameState.artifacts["telescope_selected"]=entries[selected_index].id
+
+func select_nebula(index: int) -> void:
+	if is_capturing: return
+	if volume.get_child_count()>0: _remember_view()
+	selected_index=posmod(index,entries.size())
+	var entry: Dictionary=entries[selected_index]
+	var view: Dictionary=GameState.artifacts.get("telescope_views",{}).get(entry.id,{})
+	var a: Array=view.get("angles",[0.0,0.0])
+	angles=Vector2(float(a[0]),float(a[1]))
+	distance=clampf(float(view.get("distance",52.0)),24,85)
+	var p: Array=view.get("pan",[0.0,0.0,0.0])
+	pan=Vector3(float(p[0]),float(p[1]),float(p[2]))
+	volume.build(entry)
+	heading.text=entry.title+"  /  "+entry.subtitle
+	description.text=entry.treatment
+	credits.text="[url="+entry.source+"]"+entry.credit+"[/url]\n"+("照片 [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url] · " if not str(entry.image).is_empty() else "")+"Solmere：空间呈现与着色；非机构背书"
+	for i in tabs.size(): tabs[i].selected=i==selected_index
+	view_age=0
+	hint.text="拖动环绕 · 滚轮拉近 · "+SettingsSystem.binding_text("nebula_left")+"/"+SettingsSystem.binding_text("nebula_right")+" 转动 · "+SettingsSystem.binding_text("ui_cancel")+" 返回"
+	update_camera()
+
+func update_camera() -> void:
+	angles.y=clampf(angles.y,-1.15,1.15)
+	if not entries[selected_index].has("model"): angles.x=clampf(angles.x,-1.20,1.20)
+	var basis := Basis.from_euler(Vector3(angles.y,angles.x,0))
+	camera.transform=Transform3D(basis,pan+basis*Vector3(0,0,distance))
+
 func _sky_input(event: InputEvent) -> void:
- if is_capturing: return
- if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
-  idle_age=0.0
-  look_offset = (look_offset + event.relative * Vector2(-0.003, -0.003)).clamp(Vector2(-0.6, -0.6), Vector2(0.6, 0.6))
-  checker.elapsed = 0.0
-  update_layout()
-  $UI/SkyDrag.accept_event()
-func select_constellation(value: ConstellationData) -> void:
- if reveal_tween: reveal_tween.kill()
- source_data = value
- # Only the display copy changes; authored world coordinates stay immutable.
- data = value.duplicate(true)
- solution = Vector2i(-4, 3) if value.id == "bird" else Vector2i(5, -3)
- adjustment = Vector2i.ZERO
- look_offset = Vector2.ZERO
- camera.transform = Transform3D.IDENTITY
- camera.fov = 55.0
- guidance_age=0.0; idle_age=0.0
- checker.configure(data)
- update_layout()
- field.show_constellation(data)
- lines.camera = camera
- lines.data = data
- lines.strength = 0.0
- lines.reveal_progress = 0.0
- refresh_buttons()
-func adjust(change: Vector2i) -> void:
- if is_capturing: return
- var updated := (adjustment + change).clamp(Vector2i(-STEP_LIMIT, -STEP_LIMIT), Vector2i(STEP_LIMIT, STEP_LIMIT))
- if updated == adjustment: return
- idle_age=0.0
- adjustment = updated
- checker.elapsed = 0.0
- update_layout()
- for i in field.key_stars.size():
-  field.key_stars[i].position = data.positions[i]
-func update_layout() -> void:
- # Keep the original authored points in three-dimensional world space.
- # Only the real perspective camera orbits; depth and parallax remain intact.
- var angles := source_data.reference_angles + Vector2(adjustment - solution) * STEP_ANGLE + look_offset
- var basis := Basis.from_euler(Vector3(angles.y, angles.x, 0))
- camera.transform = Transform3D(basis, basis * Vector3(0, 0, source_data.orbit_radius))
- data.positions = source_data.positions.duplicate()
- lines.queue_redraw()
-func refresh_buttons() -> void:
- capture.visible = checker.completed and checker.error < data.error_threshold * 3.0
- capture.text = LocalizationSystem.text("已收入观测册 · 再拍一张" if ObservatoryState.collected[data.id] else "拍下这片星光")
- next.visible = ObservatoryState.discovered.bird
- next.text = LocalizationSystem.text("寻找鲸鱼 →" if data.id == "bird" else "重访飞鸟 →")
- $UI/Album.text = LocalizationSystem.text("观测册")
-func _unhandled_input(event: InputEvent) -> void:
- if not event.is_pressed() or event.is_echo(): return
- if event.is_action_pressed("ui_cancel"): return_requested.emit()
- elif event.is_action_pressed("ui_left"): adjust(Vector2i(-1,0))
- elif event.is_action_pressed("ui_right"): adjust(Vector2i(1,0))
- elif event.is_action_pressed("ui_up"): adjust(Vector2i(0,-1))
- elif event.is_action_pressed("ui_down"): adjust(Vector2i(0,1))
+	if is_capturing or is_instance_valid(gallery): return
+	if event is InputEventMouseButton and event.pressed:
+		sky_drag.grab_focus()
+		if event.button_index==MOUSE_BUTTON_WHEEL_UP: zoom(.9)
+		elif event.button_index==MOUSE_BUTTON_WHEEL_DOWN: zoom(1.1)
+		sky_drag.accept_event()
+	elif event is InputEventMouseMotion:
+		if event.button_mask & MOUSE_BUTTON_MASK_LEFT:
+			angles-=event.relative*.004
+			update_camera(); sky_drag.accept_event()
+		elif event.button_mask & MOUSE_BUTTON_MASK_RIGHT:
+			pan += camera.basis * Vector3(-event.relative.x,event.relative.y,0)*distance*.0007
+			pan=pan.clamp(Vector3(-12,-12,-8),Vector3(12,12,8))
+			update_camera(); sky_drag.accept_event()
+
+func zoom(factor: float) -> void:
+	if is_capturing: return
+	distance=clampf(distance*factor,24,85)
+	update_camera()
+
+func reset_view() -> void:
+	angles=Vector2.ZERO; pan=Vector3.ZERO; distance=52.0
+	update_camera()
+
 func _process(delta: float) -> void:
- if not data: return
- guidance_age+=delta; idle_age+=delta
- $UI/Instructions.modulate.a=clampf(7-guidance_age,0,1)
- hint.modulate.a=1.0 if checker.completed or idle_age>25 else clampf(6-guidance_age,0,1)
- checker.step(camera,data,delta)
- var aligned: bool = checker.completed and checker.error < data.error_threshold * 3.0
- lines.strength = move_toward(lines.strength,1.0 if aligned else 0.0,delta*1.8)
- field.set_brightness(0.95 + checker.attraction*0.4 + lines.strength*2.2)
- capture.visible = aligned and not is_capturing
- if not checker.completed:
-  hint.text = LocalizationSystem.text("观测册") + "  /  " + LocalizationSystem.text(data.title) + "\n" + (LocalizationSystem.text("轮廓已对齐，等待星光相连……") if checker.elapsed > 0.05 else LocalizationSystem.text(data.hint) + "\n" + LocalizationSystem.text("转动望远镜寻找完整轮廓，对准后停留片刻。"))
- lines.queue_redraw()
-func found() -> void:
- ObservatoryState.discovered[data.id] = true
- ObservatoryState.save_state()
- ObservatoryAudio.feedback(true)
- lines.reveal_progress = 0.0
- reveal_tween = create_tween()
- reveal_tween.tween_property(lines,"reveal_progress",1.0,1.4).set_trans(Tween.TRANS_SINE)
- hint.text = LocalizationSystem.text("观测册") + "  /  " + LocalizationSystem.text(data.title) + "\n" + LocalizationSystem.text("星光在这里相遇了。")
- refresh_buttons()
+	if is_capturing or is_instance_valid(legacy) or is_instance_valid(gallery): return
+	view_age+=delta
+	hint.modulate.a=clampf(10-view_age,0,1) if pending_image==null else 1.0
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused != null and focused != sky_drag: return
+	var direction := Input.get_vector("nebula_left","nebula_right","nebula_up","nebula_down")
+	if direction.length_squared()>.001:
+		angles+=direction*delta*.55
+		update_camera()
+	var zoom_input := Input.get_axis("nebula_near","nebula_far")
+	if absf(zoom_input)>.01: zoom(exp(zoom_input*delta*.6))
+
+func _unhandled_input(event: InputEvent) -> void:
+	if is_instance_valid(legacy) or is_capturing: return
+	if event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		if is_instance_valid(gallery): close_gallery()
+		else: _return()
+	elif event.is_action_pressed("camera_shutter") and not is_instance_valid(gallery):
+		get_viewport().set_input_as_handled()
+		collect()
+
+func _return() -> void:
+	if is_capturing: return
+	_remember_view()
+	return_requested.emit()
+
+func preserve_after_cancel() -> void:
+	# Cancel rolls the gameplay session back. Keep only earned local media and
+	# telescope view settings, without silently completing/charging the activity.
+	var views: Dictionary=original_views.duplicate(true)
+	views[entries[selected_index].id]={"angles":[angles.x,angles.y],"distance":distance,"pan":[pan.x,pan.y,pan.z]}
+	GameState.artifacts["telescope_views"]=views
+	GameState.artifacts["telescope_selected"]=entries[selected_index].id
+	for photo in session_photos: GameState.add_artifact("photos",photo)
+	ResidencySystem._sync_sources()
+	GameState.commit_active_role_state()
+
 func collect() -> void:
- if is_capturing: return
- is_capturing = true
- for child in $UI.get_children():
-  if child != lines: child.hide()
- await RenderingServer.frame_post_draw
- var folder := "user://album"
- DirAccess.make_dir_recursive_absolute(folder)
- var path := folder.path_join(data.id+".png")
- var result := get_viewport().get_texture().get_image().save_png(path)
- is_capturing = false
- for child in $UI.get_children(): child.show()
- if result == OK:
-  ObservatoryState.collected[data.id] = true
-  ObservatoryState.save_state()
-  hint.text = LocalizationSystem.text("观测册") + "  /  " + LocalizationSystem.text(data.title) + "\n" + LocalizationSystem.text("已收藏，星光留在了相册里。")
- else: hint.text = LocalizationSystem.text("照片暂时无法保存，请检查存储空间。")
- refresh_buttons()
+	if is_capturing or is_instance_valid(legacy) or is_instance_valid(gallery): return
+	is_capturing=true
+	capture_button.disabled=true
+	if pending_image==null:
+		chrome.hide()
+		await RenderingServer.frame_post_draw
+		if not is_inside_tree(): return
+		pending_image=get_viewport().get_texture().get_image()
+		chrome.show()
+		var entry: Dictionary=entries[selected_index]
+		pending_context={"title":"星云观测 · "+entry.title,"location":"夜海观景台","location_id":"park","day":GameState.current_day,"game_minute":GameState.current_minute,"role":GameState.current_role,"capture_id":"telescope_"+str(Time.get_ticks_usec()),"source":"telescope","nebula_id":entry.id,"source_url":entry.source,"credit":entry.credit,"treatment":entry.treatment,"view_angles":[angles.x,angles.y],"view_distance":distance}
+	var photo := library.save_photo(pending_image,pending_context)
+	if not photo.is_empty():
+		photo.merge(pending_context,true)
+		photo["id"]=photo.photo_id; photo["kind"]="photo"; photo["status"]="DEVELOPED"
+		photo["developed_path"]=library.root_path.path_join(str(photo.photo_id)).path_join("photo.png")
+		if library.update_metadata(str(photo.photo_id),photo):
+			var snapshot := GameState.to_save_data().duplicate(true)
+			GameState.add_artifact("photos",photo)
+			_remember_view()
+			ResidencySystem._sync_sources()
+			GameState.commit_active_role_state()
+			if SaveManager.save_game():
+				session_photos.append(photo)
+				captured_session_ids.append(str(photo.nebula_id))
+				solmere_completed=true
+				pending_image=null
+				finish_button.show()
+				ObservatoryAudio.feedback(true)
+				hint.text="已收入相册，也可以放进七天作品集。"
+				view_age=0
+			else:
+				GameState.load_save_data(snapshot)
+				hint.text="画面已保留，存档暂时没写入。点击重试保存。"
+		else: hint.text="照片信息未写入；画面已保留，点击重试。"
+	else: hint.text=library.last_error
+	capture_button.text="重试保存星光" if pending_image!=null else "再留一张"
+	capture_button.disabled=false
+	is_capturing=false
+
+func open_constellations() -> void:
+	if is_capturing or is_instance_valid(legacy): return
+	_remember_view()
+	chrome.hide(); credits.hide(); volume.hide(); $StarField.hide()
+	legacy=load("res://extensions/observatory/scenes/Constellations3D.tscn").instantiate()
+	add_child(legacy)
+	# Nested legacy layer must sit above the telescope's retained UI layer.
+	legacy_ui=legacy.get_node("UI")
+	legacy_ui.layer=31
+	legacy.return_requested.connect(func():
+		solmere_completed=solmere_completed or bool(legacy.solmere_completed)
+		remove_child(legacy); legacy.queue_free(); legacy=null
+		camera.make_current(); chrome.show(); credits.show(); volume.show(); $StarField.show()
+		finish_button.visible=solmere_completed
+		sky_drag.grab_focus())
+
+func open_gallery() -> void:
+	if is_capturing or is_instance_valid(gallery): return
+	gallery=PanelContainer.new(); gallery.name="ObservationAlbum"; ui.add_child(gallery)
+	gallery.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	gallery.offset_left=72; gallery.offset_top=85; gallery.offset_right=-72; gallery.offset_bottom=-80
+	var style := StyleBoxFlat.new()
+	style.bg_color=Color("142337"); style.set_content_margin_all(24); style.set_corner_radius_all(8)
+	gallery.add_theme_stylebox_override("panel",style)
+	var layout := VBoxContainer.new(); gallery.add_child(layout)
+	var photos := library.list_photos().filter(func(row: Dictionary)->bool:return row.get("source","")=="telescope" and row.get("role","")==GameState.current_role)
+	var header := HBoxContainer.new(); layout.add_child(header)
+	_label(header,"观测册",24).size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	_button(header,"返回星空",close_gallery)
+	if photos.is_empty():
+		_label(layout,"还没有留下星云。转动望远镜，选一个想带走的角度。",20)
+		return
+	var image := TextureRect.new(); image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	image.size_flags_vertical=Control.SIZE_EXPAND_FILL; layout.add_child(image)
+	var caption := _label(layout,"",17)
+	caption.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	var nav := HBoxContainer.new(); nav.alignment=BoxContainer.ALIGNMENT_CENTER; layout.add_child(nav)
+	gallery.set_meta("index",0)
+	var show_photo := func():
+		var row: Dictionary=photos[int(gallery.get_meta("index"))]
+		var loaded := library.load_photo(row.photo_id)
+		image.texture=ImageTexture.create_from_image(loaded) if loaded!=null else null
+		caption.text=str(row.title)+" · Day "+str(row.day)+"\n"+str(row.get("credit",""))
+		if loaded==null: caption.text+="\n这张照片文件暂时无法读取。"
+	_button(nav,"← 上一张",func(): gallery.set_meta("index",posmod(int(gallery.get_meta("index"))-1,photos.size())); show_photo.call())
+	_button(nav,"下一张 →",func(): gallery.set_meta("index",posmod(int(gallery.get_meta("index"))+1,photos.size())); show_photo.call())
+	show_photo.call()
+	nav.get_child(0).grab_focus()
+
+func close_gallery() -> void:
+	if not is_instance_valid(gallery): return
+	gallery.queue_free(); gallery=null
+	sky_drag.grab_focus()
+
+func observation_result() -> Dictionary:
+	return {"nebula_ids":captured_session_ids.duplicate(),"photo_ids":session_photos.map(func(p:Dictionary)->String:return p.photo_id)}

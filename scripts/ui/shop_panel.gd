@@ -57,7 +57,7 @@ func _refresh() -> void:
 		if shop_id=="produce_stall":
 			b.position=Vector2(30+(i%3)*260,110) if i<3 else Vector2(343,295)
 			b.size=Vector2(225,185)
-		else: b.position=Vector2(48+(i%4)*190,[55,205,330][i/4])
+		else: b.position=Vector2(48+(i%4)*190+(22 if i%4==0 else 0),[55,205,330][i/4])
 		b.selected=selected_item.get("id","")==item.id
 		b.disabled=int(item.remaining)<=0
 		b.pressed.connect(_select.bind(item)); item_list.add_child(b)
@@ -96,10 +96,11 @@ func _tag() -> void:
 		purchase_button=_btn(right,"放进购物篮  +",Vector2(30,370),Vector2(470,48),func(): _change(selected_item.id,1,false))
 		purchase_button.name="AddToBasket"
 		purchase_button.disabled=available<=int(EconomySystem.cart(shop_id).get(selected_item.id,0)) or not EconomySystem.shop_open(shop_id)
-	ART.picture(right,"basket",Vector2(105,425),Vector2(300,170))
 	var count := 0
 	for q in EconomySystem.cart(shop_id).values(): count+=int(q)
-	basket_button=_btn(right,"打开购物篮 · %d 件" % count,Vector2(36,590),Vector2(470,52),func(): mode="basket"; _refresh_right())
+	basket_button=ITEM.new(); basket_button.item_id="basket"; basket_button.caption="打开购物篮 · %d 件" % count
+	basket_button.position=Vector2(36,430); basket_button.size=Vector2(470,212)
+	basket_button.pressed.connect(func():mode="basket"; _refresh_right()); right.add_child(basket_button)
 	basket_button.name="OpenBasket"
 func _scroll(at: Vector2, extent: Vector2) -> VBoxContainer:
 	var scroll := ScrollContainer.new(); scroll.position=at; scroll.size=extent; scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; right.add_child(scroll)

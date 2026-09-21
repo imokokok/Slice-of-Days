@@ -14,7 +14,6 @@ func _ready() -> void:
 	art=ART.picture(self,item_id,Vector2(6,4),Vector2(size.x-12,size.y-38))
 	var label := preload("res://scripts/ui/components/interface_palette.gd").words(self,caption,Vector2(0,size.y-30),size.x,17)
 	label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	tooltip_text=caption
 	for state in ["mouse_entered","mouse_exited","focus_entered","focus_exited","button_down","button_up"]: connect(state,_feedback)
 	resized.connect(func(): art.size=Vector2(size.x-12,size.y-38); label.position.y=size.y-30; label.size.x=size.x)
 func _feedback() -> void:

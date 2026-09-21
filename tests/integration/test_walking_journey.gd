@@ -98,6 +98,11 @@ func run() -> void:
 	check(not state.shared_state.get("sleep_pending", false), "Bed cannot be used from across the room")
 	home.stage.player_x = home._hotspot_x(bed_index)
 	home._open_selected()
+	await process_frame
+	check(not get_nodes_in_group("evening_review").is_empty(),"Bed opens evening review before ending the day")
+	var evening = get_nodes_in_group("evening_review").back()
+	evening.reflection.text="今天从车站走到了自己的住处。"
+	evening._rest()
 	await settle(4.4)
 	check(state.current_role == "B" and state.current_day == 1, "Sleeping switches to B's first day")
 	check(state.current_location == "dorm", "B must wake at B's own home")

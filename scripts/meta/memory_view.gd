@@ -22,6 +22,7 @@ var close: Button
 var entry_background: Texture2D
 
 func _ready() -> void:
+	add_to_group("memory_space")
 	add_to_group("meta_modal")
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var container := SubViewportContainer.new()
@@ -216,13 +217,22 @@ func _input(event: InputEvent) -> void:
 
 func _leave() -> void:
 	if exit_started or not ready_to_walk: return
+	var snapshot := GameState.to_save_data().duplicate(true)
 	exit_started = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if transition_tween: transition_tween.kill()
 	var seen: Array = GameState.shared_state.get("memory_visits",[])
 	if not seen.has(str(definition.id)): seen.append(str(definition.id))
 	GameState.shared_state["memory_visits"] = seen
-	SaveManager.save_or_report("房间记忆保存失败")
+	if not objects.examined.is_empty():
+		var material_id := "memory_"+str(definition.id)
+		if not ResidencySystem.state().materials.has(material_id):
+			ResidencySystem._add(material_id,"work","房间里记住的片刻",{"source":"memory:"+str(definition.id),"related_npc":"maya","examined":objects.examined.duplicate()})
+			GameState.spend_time(5)
+		CoreLoopSystem.participated(material_id)
+		CoreLoopSystem.memory_return(material_id)
+	if not SaveManager.save_or_report("房间记忆保存失败"):
+		GameState.load_save_data(snapshot); exit_started=false; caption.text="还没能保存，请再试一次收起记忆。"; return
 	queue_free()
 
 func _exit_tree() -> void:

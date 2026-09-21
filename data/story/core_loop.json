@@ -1,0 +1,395 @@
+{
+  "days": {
+    "1": [
+      "认识小镇，和一位居民说上话",
+      "循着第一条消息，留下一件东西",
+      "回房收好今天的材料"
+    ],
+    "2": [
+      "再和一位居民聊聊",
+      "沿一条介绍去参与一件事",
+      "把新的材料放在一起"
+    ],
+    "3": [
+      "问问熟人最近的事",
+      "做一次工作或留下自己的记录",
+      "给今天留几句话"
+    ],
+    "4": [
+      "听听上次的事情后来怎样",
+      "参与一件事，也留意会错过的机会",
+      "记下今天改变的想法"
+    ],
+    "5": [
+      "回应一位记得你的居民",
+      "把带来的材料给合适的人看看",
+      "收好今天的相遇"
+    ],
+    "6": [
+      "再去见见熟悉的人",
+      "完成想继续的事，补一份记录",
+      "挑出想留在申请里的瞬间"
+    ],
+    "7": [
+      "回看这七天留下的页面",
+      "完成最终文件与申请",
+      "把这段生活收好"
+    ]
+  },
+  "daily_contacts": [
+    "wu_wu",
+    "mossner",
+    "xanni",
+    "beetman",
+    "naonao",
+    "maya",
+    "mingming"
+  ],
+  "people": {
+    "wu_wu": {
+      "place": "record_store",
+      "module": "sound_sampling",
+      "lead": "Xanni 说制作台空着一边。带一段路上的声音去，她准会认真听。",
+      "likes": [
+        "photo",
+        "sound"
+      ],
+      "share_reply": "你还记得它怕突然的声音。这个细节，我喜欢。"
+    },
+    "xanni": {
+      "place": "record_store",
+      "module": "sound_sampling",
+      "lead": "把听来的声音放到制作台上，一起找一个开头。",
+      "likes": [
+        "sound",
+        "work"
+      ],
+      "share_reply": "这里留了一小段安静。我听出来了，你没有把它填满。"
+    },
+    "mossner": {
+      "place": "handcraft_shop",
+      "module": "ghostwriting",
+      "lead": "书写桌有一封没找到语气的信，剪几句话陪我试试。",
+      "likes": [
+        "letter",
+        "object",
+        "work"
+      ],
+      "share_reply": "你留下的停顿比句号还管用。我会让写信的人自己决定。"
+    },
+    "maya": {
+      "place": "library",
+      "module": "archives",
+      "lead": "书店有几张没有来源的旧纸条，想一起理一理吗？",
+      "likes": [
+        "letter",
+        "note",
+        "work"
+      ],
+      "share_reply": "纸上的旧折痕还在。谢谢你没有替它编一个来处。"
+    },
+    "chenyuan": {
+      "place": "tarot_stall",
+      "module": "tarot",
+      "lead": "夏透明拿一张牌绕了我半天，你去听听他的解释。",
+      "likes": [
+        "work",
+        "photo"
+      ],
+      "share_reply": "这张我记得，我们那天居然争了那么久。"
+    },
+    "xia_touming": {
+      "place": "tarot_stall",
+      "module": "tarot",
+      "lead": "牌桌上有个没讲完的故事。你来问，我翻牌。",
+      "likes": [
+        "work",
+        "note"
+      ],
+      "share_reply": "你没急着把每个细节讲通，故事就有了空隙。"
+    },
+    "beetman": {
+      "place": "night_market",
+      "module": "cooking",
+      "lead": "石泳琪又拿走一筐长得很古怪的菜，去看看她准备怎么做。",
+      "likes": [
+        "receipt",
+        "ticket",
+        "work",
+        "object"
+      ],
+      "share_reply": "原来她真把这味道留住了。下一筐我给她挑更奇怪的。"
+    },
+    "shi_yongqi": {
+      "place": "night_market",
+      "module": "cooking",
+      "lead": "厨房台上有三样菜，还没决定怎么搭。来帮我试一手？",
+      "likes": [
+        "work",
+        "object",
+        "receipt"
+      ],
+      "share_reply": "你还记得我说过怕浪费。这一口不是为了把盘子摆满。"
+    },
+    "naonao": {
+      "place": "chess_stall",
+      "module": "chess",
+      "lead": "棋盘对面空着，带上你自己的走法来就好。",
+      "likes": [
+        "work",
+        "photo"
+      ],
+      "share_reply": "你记住的不是输赢，是那步让我犹豫的棋。"
+    },
+    "yuxingqing": {
+      "place": "park",
+      "module": "contemplation",
+      "lead": "晚上九点后，观景台的星点会慢慢亮起来。",
+      "likes": [
+        "photo",
+        "work"
+      ],
+      "share_reply": "原来你也看见那个角度了。换个地方它又散开了。"
+    },
+    "mingming": {
+      "place": "tarot_stall",
+      "module": "optical_illusion",
+      "lead": "那间小展室里的两条线，从侧面看完全不一样。",
+      "likes": [
+        "photo",
+        "note",
+        "work"
+      ],
+      "share_reply": "你肯停下来多看一眼，我就觉得这段话有地方放了。"
+    },
+    "zhou_xiaoliu": {
+      "place": "park",
+      "module": "contemplation",
+      "lead": "下工后我常去观景台吹风。晚一点再来，不用赶。",
+      "likes": [
+        "sound",
+        "work",
+        "note"
+      ],
+      "share_reply": "这段风声像我们那天等车的时候。居然被你留下了。"
+    },
+    "grocery": {
+      "place": "cafe",
+      "module": "photography",
+      "lead": "相机就在摄影柜台，可以先问问胶卷和冲洗的事。",
+      "likes": [
+        "photo",
+        "receipt"
+      ],
+      "share_reply": "这束光拍得真像今天。等下张洗出来，也拿来看看。"
+    }
+  },
+  "modules": {
+    "cooking": {
+      "npc": "shi_yongqi",
+      "callback_npc": "beetman",
+      "callback_place": "produce_stall",
+      "callback": "你上回搭的那几样菜，石泳琪后来又问我要了一次。",
+      "next_place": "chess_stall",
+      "next_module": "chess",
+      "next_text": "闹闹说棋摊旁边风凉，带点吃的去也好。",
+      "action": "到料理台试一道菜",
+      "entry": "introduced lead or voluntary interaction",
+      "cost": "existing module cost",
+      "output": "canonical source material and existing module results",
+      "return": "previous world location",
+      "persistence": "GameState artifacts and core_loop role state"
+    },
+    "ghostwriting": {
+      "npc": "mossner",
+      "callback_npc": "maya",
+      "callback_place": "library",
+      "callback": "Mossner讲起那封改了好几次的信，说终于有一句像本人说的了。",
+      "next_place": "tarot_stall",
+      "next_module": "tarot",
+      "next_text": "夏透明最近也收着一些旧信，可以和他聊聊。",
+      "action": "到书写桌完成那封信",
+      "entry": "introduced lead or voluntary interaction",
+      "cost": "existing module cost",
+      "output": "canonical source material and existing module results",
+      "return": "previous world location",
+      "persistence": "GameState artifacts and core_loop role state"
+    },
+    "sound_sampling": {
+      "npc": "xanni",
+      "callback_npc": "wu_wu",
+      "callback_place": "produce_stall",
+      "callback": "昨天路过唱片店，Xanni又在放你留下的那一段。狗抬着头听了好久。",
+      "next_place": "chess_stall",
+      "next_module": "chess",
+      "next_text": "闹闹也爱听那位歌手，傍晚可以去棋摊问问。",
+      "action": "和 Xanni 在制作台完成一段声音",
+      "entry": "introduced lead or voluntary interaction",
+      "cost": "existing module cost",
+      "output": "canonical source material and existing module results",
+      "return": "previous world location",
+      "persistence": "GameState artifacts and core_loop role state"
+    },
+    "chess": {
+      "npc": "naonao",
+      "callback_npc": "xanni",
+      "callback_place": "record_store",
+      "callback": "闹闹把那局棋讲给我听了，讲到一半还拿唱片当棋子。",
+      "next_place": "library",
+      "next_module": "archives",
+      "next_text": "Maya收着几张旧棋谱，你也许会想看。",
+      "action": "到棋摊完成一局棋",
+      "entry": "introduced lead or voluntary interaction",
+      "cost": "existing module cost",
+      "output": "canonical source material and existing module results",
+      "return": "previous world location",
+      "persistence": "GameState artifacts and core_loop role state"
+    },
+    "tarot": {
+      "npc": "xia_touming",
+      "callback_npc": "chenyuan",
+      "callback_place": "produce_stall",
+      "callback": "夏透明又提起你问的那个细节。我本来想反驳，结果也想了一晚上。",
+      "next_place": "handcraft_shop",
+      "next_module": "ghostwriting",
+      "next_text": "Mossner桌上那封信，说不定适合用这个故事开头。",
+      "action": "和夏透明把牌上的故事接下去",
+      "entry": "introduced lead or voluntary interaction",
+      "cost": "existing module cost",
+      "output": "canonical source material and existing module results",
+      "return": "previous world location",
+      "persistence": "GameState artifacts and core_loop role state"
+    },
+    "contemplation": {
+      "npc": "yuxingqing",
+      "callback_npc": "zhou_xiaoliu",
+      "callback_place": "print_shop",
+      "callback": "昨天的天很清，宇星晴说你也看到了连起来的那几颗星。",
+      "next_place": "record_store",
+      "next_module": "sound_sampling",
+      "next_text": "Xanni想找一段夜里的声音，路上有合适的可以留一段。",
+      "action": "等夜色到来，在望远镜前停一会儿",
+      "entry": "introduced lead or voluntary interaction",
+      "cost": "existing module cost",
+      "output": "canonical source material and existing module results",
+      "return": "previous world location",
+      "persistence": "GameState artifacts and core_loop role state"
+    },
+    "optical_illusion": {
+      "npc": "mingming",
+      "callback_npc": "xia_touming",
+      "callback_place": "tarot_stall",
+      "callback": "冥冥说你在那两条线前站了好久。换个方向就不像刚才了，对吧。",
+      "next_place": "park",
+      "next_module": "contemplation",
+      "next_text": "宇星晴的星图也得换个角度看。",
+      "action": "调整视角，让两条线相遇",
+      "entry": "introduced lead or voluntary interaction",
+      "cost": "existing module cost",
+      "output": "canonical source material and existing module results",
+      "return": "previous world location",
+      "persistence": "GameState artifacts and core_loop role state"
+    },
+    "photography": {
+      "npc": "yuxingqing",
+      "callback_npc": "grocery",
+      "callback_place": "cafe",
+      "callback": "昨天那张照片里的光，我今天经过时又找了一次。",
+      "next_place": "library",
+      "next_module": "archives",
+      "next_text": "Maya喜欢收有地点的照片，拿给她看看也好。",
+      "action": "在摄影工作台留下一个画面",
+      "entry": "introduced lead or voluntary interaction",
+      "cost": "existing module cost",
+      "output": "canonical source material and existing module results",
+      "return": "previous world location",
+      "persistence": "GameState artifacts and core_loop role state"
+    },
+    "archives": {
+      "npc": "maya",
+      "callback_npc": "mossner",
+      "callback_place": "handcraft_shop",
+      "callback": "Maya把你核对过的纸条夹回书里了，来处终于对上了。",
+      "next_place": "night_market",
+      "next_module": "cooking",
+      "next_text": "石泳琪也在记自己的菜谱，可以去问问她怎么写。",
+      "action": "核对纸条的来源",
+      "entry": "introduced lead or voluntary interaction",
+      "cost": "existing module cost",
+      "output": "canonical source material and existing module results",
+      "return": "previous world location",
+      "persistence": "GameState artifacts and core_loop role state"
+    },
+    "translation": {
+      "npc": "beetman",
+      "callback_npc": "wu_wu",
+      "callback_place": "produce_stall",
+      "callback": "那天说完以后，尘缘买东西会先问一句了。没有突然变成另一个人，就是先问一句。",
+      "next_place": "tarot_stall",
+      "next_module": "tarot",
+      "next_text": "夏透明认识尘缘很久，也许你们能聊聊他。",
+      "action": "听完两个人各自记着的事",
+      "entry": "introduced lead or voluntary interaction",
+      "cost": "existing module cost",
+      "output": "canonical source material and existing module results",
+      "return": "previous world location",
+      "persistence": "GameState artifacts and core_loop role state"
+    },
+    "memory": {
+      "npc": "mingming",
+      "callback_npc": "maya",
+      "callback_place": "library",
+      "callback": "冥冥说你记住了房间里很小的东西，连她自己差点都忘了。",
+      "next_place": "handcraft_shop",
+      "next_module": "ghostwriting",
+      "next_text": "有些事情写进信里会更容易留住，Mossner那边有纸。",
+      "action": "把房间里的一件事记住",
+      "entry": "introduced lead or voluntary interaction",
+      "cost": "existing module cost",
+      "output": "canonical source material and existing module results",
+      "return": "previous world location",
+      "persistence": "GameState artifacts and core_loop role state"
+    }
+  },
+  "opportunities": [
+    {
+      "id": "naonao_evening",
+      "day": 4,
+      "start": 1020,
+      "end": 1140,
+      "source": "naonao",
+      "location": "chess_stall",
+      "text": "闹闹傍晚会带那本旧棋谱来",
+      "retell": "昨天后来起风了，我收了棋盘。下次带给你看。",
+      "repeatable": false,
+      "critical": false,
+      "fallback": "talk_to_source_later"
+    },
+    {
+      "id": "xanni_listening",
+      "day": 5,
+      "start": 900,
+      "end": 1020,
+      "source": "xanni",
+      "location": "record_store",
+      "text": "Xanni下午会放几段新收的声音",
+      "retell": "昨天那段试听结束了。我把声音留着，下次你来再放。",
+      "repeatable": false,
+      "critical": false,
+      "fallback": "talk_to_source_later"
+    },
+    {
+      "id": "maya_return",
+      "day": 6,
+      "start": 780,
+      "end": 900,
+      "source": "maya",
+      "location": "library",
+      "text": "Maya想把借来的旧纸条当面还给你",
+      "retell": "昨天没碰见你，纸条就夹在柜台那本书里。我替你留着。",
+      "repeatable": false,
+      "critical": false,
+      "fallback": "talk_to_source_later"
+    }
+  ]
+}

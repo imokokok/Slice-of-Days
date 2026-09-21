@@ -2,6 +2,8 @@
 
 Updated 2026-09-22. This change implements the visual hierarchy and usable native controls described in the supplied Solmere UI references and Production Overhaul document. The existing town art and gameplay backends remain in use. This is not a claim that every proposed new gameplay system in the document exists.
 
+The subsequent [core loop integration](core-loop.md) replaces the old daily-objective projection, adds sourced NPC return paths and evening reflection, and gives the exploration clock/direction solid, high-contrast backdrops.
+
 ## Visual and architectural coverage
 
 | Surface | Native UI and actual behavior |

@@ -156,5 +156,6 @@ func travel_to(destination: String, method: String) -> Dictionary:
 	for fact in KnowledgeSystem.facts():
 		if not before_facts.any(func(before: Dictionary) -> bool: return before.get("id","")==fact.get("id","")): events.append(str(fact.get("text","听来一条消息")))
 	pending_journey={"from":origin,"to":destination,"start":start_minute,"finish":GameState.current_minute,"minutes":GameState.current_minute-start_minute,"method":str(option.get("label","")),"cost":int(option.get("cost",0)),"events":events}
+	GameEvents.publish("TravelCompleted",pending_journey)
 	town_day()
 	return result

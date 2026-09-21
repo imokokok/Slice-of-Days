@@ -25,6 +25,7 @@ driver/enable_input=true
 PaperLanguage="*res://scripts/ui/paper_language.gd"
 LocalizationSystem="*res://scripts/core/localization_system.gd"
 CharacterSystem="*res://scripts/core/character_system.gd"
+GameEvents="*res://scripts/core/game_events.gd"
 GameState="*res://scripts/core/game_state.gd"
 ScheduleSystem="*res://scripts/core/schedule_system.gd"
 ResidentProfileSystem="*res://scripts/core/resident_profile_system.gd"
@@ -49,6 +50,8 @@ ResidencySystem="*res://scripts/residency/residency_system.gd"
 EconomySystem="*res://scripts/core/economy_system.gd"
 FilmSystem="*res://scripts/photography/film_system.gd"
 GuidanceSystem="*res://scripts/core/guidance_system.gd"
+CoreLoopSystem="*res://scripts/core/core_loop_system.gd"
+UIStateSystem="*res://scripts/core/ui_state_system.gd"
 
 [display]
 

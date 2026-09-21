@@ -24,17 +24,19 @@ func _feedback(active: bool) -> void:
 	feedback_tween=create_tween()
 	feedback_tween.tween_property(self,"self_modulate",Color.WHITE if active else Color(.94,.96,.98),.01 if SettingsSystem.reduced_motion() else .14)
 func refresh() -> void:
-	var dark := variant in ["choice","pause","camera"]
+	var dark := variant in ["choice","pause","camera","guidance"]
 	for state in ["normal","hover","pressed","focus","disabled"]:
 		var face := StyleBoxFlat.new()
 		face.set_corner_radius_all(10 if variant=="choice" else 7)
 		face.set_content_margin_all(10)
 		face.bg_color=Color.TRANSPARENT
 		if variant=="choice": face.bg_color=Color("2f5579",.9)
+		elif variant=="guidance": face.bg_color=Color("254b66")
 		elif variant=="archive": face.bg_color=Color("dcd3b7",.22)
 		elif variant=="paper": face.bg_color=PaperLanguage.WHITE
 		elif variant=="outlined": face.set_border_width_all(1); face.border_color=Color("9d9988",.36)
 		if state in ["hover","pressed"] or (state=="normal" and selected): face.bg_color=Color("f0d982",1.0 if state=="pressed" else .86 if selected else .38)
+		if variant=="guidance" and (state in ["hover","pressed"] or selected): face.bg_color=Color("eed577")
 		if state=="focus":
 			face.bg_color=Color.TRANSPARENT; face.set_border_width_all(2); face.border_color=PaperLanguage.YELLOW if dark else PaperLanguage.BLUE
 		if state=="disabled": face.bg_color=Color("73828a",.07)

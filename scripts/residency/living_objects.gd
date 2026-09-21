@@ -264,7 +264,9 @@ func _final_paper() -> void:
 	var questions := ["最初是什么让你来到 Solmere？","真正生活在这里之后，什么最吸引你？","什么经历改变了你对 Solmere 最初的理解？","如果只能留下这七天中的一个瞬间，你会选择什么？为什么？","如果 Solmere 成为你的家，你希望自己成为这里怎样的一部分？"]
 	for i in 5:
 		var key := str(i)
-		_official(questions[i],Vector2(110,148+i*91),Vector2(1140,30),21)
+		_official(questions[i],Vector2(110,148+i*91),Vector2(965,30),21)
+		var reference := button(body,"引用经历",Vector2(1110,143+i*91),Vector2(140,34),_reference_picker.bind(key))
+		reference.name="Reference_"+key; reference.disabled=not s.submitted.is_empty(); reference.add_theme_font_size_override("font_size",16)
 		var answer := edit(body,str(s.final_answers.get(key,"")),Vector2(110,181+i*91),Vector2(1140,50),func(value: String) -> void: s.final_answers[key]=value,"")
 		answer.editable=s.submitted.is_empty()
 	label(body,"签名",Vector2(110,624),Vector2(80,35),20,BLUE)
@@ -436,8 +438,14 @@ func _notebook_page() -> void:
 			var map := preload("res://scripts/ui/components/solmere_button.gd").new(); map.text="看地图"; actions.add_child(map); map.pressed.connect(func() -> void: _guidance_action({"action":"map","location":str(lead.location)}))
 	else:
 		var s := ResidencySystem.state()
-		var note := edit(body,str(s.get("private_note","")),Vector2(242,176),Vector2(370,470),func(value: String) -> void: s.private_note=value; ResidencySystem.persist(),"留给自己的话……")
+		var note := edit(body,str(s.get("private_note","")),Vector2(242,176),Vector2(370,178),func(value: String) -> void: s.private_note=value; ResidencySystem.persist(),"留给自己的话……")
 		note.name="PrivateNotebookText"; note.add_theme_font_override("font",PaperLanguage.handwriting); note.add_theme_font_size_override("font_size",25)
+		var plan := LineEdit.new(); plan.name="PersonalPlanText"; plan.position=Vector2(242,369); plan.size=Vector2(258,43); plan.placeholder_text="想做的一件小事"; body.add_child(plan)
+		button(body,"记下",Vector2(510,369),Vector2(100,43),func() -> void: CoreLoopSystem.pin_personal(plan.text); build()).name="PinPersonalPlan"
+		var plans := scroll_area(body,Vector2(242,427),Vector2(375,210))
+		for entry in CoreLoopSystem.state().personal:
+			var check := CheckBox.new(); check.text=str(entry.text); check.button_pressed=bool(entry.done); check.custom_minimum_size=Vector2(345,54); check.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; plans.add_child(check)
+			check.toggled.connect(func(done: bool) -> void: entry.done=done; ResidencySystem.persist(); GuidanceSystem.updated.emit())
 	# Only the player's actual photograph can appear on the private page.
 	var library := PhotoLibrary.new()
 	var photos := library.list_photos().filter(func(photo: Dictionary) -> bool: return str(photo.get("role",GameState.current_role))==GameState.current_role)
@@ -466,9 +474,33 @@ func _refresh_checks() -> void:
 func _guidance_action(action: Dictionary) -> void:
 	var kind := str(action.get("action","today"))
 	if kind=="heard": mode="notebook"; notebook_section="heard"; build(); return
+	if kind=="personal": mode="notebook"; notebook_section="personal"; build(); return
+	if kind in ["portfolio","final"]:
+		mode="dossier"; archive_tab="days" if kind=="portfolio" else "final"; day=GameState.current_day; build(); return
+	if kind=="evening":
+		if GameState.current_location==CoreLoopSystem.home(): close(); CoreLoopSystem.open_evening.call_deferred()
+		else: map_selected=CoreLoopSystem.home(); mode="map"; build()
+		return
 	if kind in ["exploration","requirements","recognition","receipts","personal"]:
 		mode="dossier"; archive_tab={"exploration":"life","requirements":"requirements","recognition":"recognition","receipts":"life","personal":"personal"}[kind]; build(); return
 	super._guidance_action(action)
+
+func _reference_picker(question: String) -> void:
+	if is_instance_valid(detail): detail.queue_free()
+	detail=panel(body,Vector2(540,150),Vector2(725,475))
+	label(detail,"从真正留下的经历里选一件",Vector2(22,18),Vector2(625,44),23,BLUE)
+	button(detail,"×",Vector2(663,16),Vector2(42,38),func() -> void: detail.queue_free())
+	var rows := scroll_area(detail,Vector2(22,76),Vector2(680,370))
+	var entries := CoreLoopSystem.reference_entries()
+	for entry in entries:
+		var choose := preload("res://scripts/ui/components/solmere_button.gd").new(); choose.text=str(entry.text); choose.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; choose.custom_minimum_size=Vector2(646,64); rows.add_child(choose)
+		choose.pressed.connect(func() -> void:
+			var s := ResidencySystem.state(); var references: Dictionary=s.get_or_add("final_references",{})
+			var ids: Array=references.get_or_add(question,[])
+			if not ids.has(entry.id):
+				ids.append(entry.id); s.final_answers[question]=str(s.final_answers.get(question,""))+"\n"+str(entry.text)
+			ResidencySystem.persist(); build())
+	if entries.is_empty(): label(detail,"还没有可引用的生活材料。",Vector2(45,140),Vector2(620,90),24,BLUE)
 
 func _hand(value: String, at: Vector2, dimensions: Vector2, point: int) -> Label:
 	var words := label(body,value,at,dimensions,point,BLUE)

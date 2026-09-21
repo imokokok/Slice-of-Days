@@ -103,7 +103,10 @@ func exercise_scene(indoor: bool) -> void:
 	check(gs.artifacts.get("samples", []).size() == before_samples + 1, label + " saved audio enters materials once")
 	check(stage.enabled, label + " saved confirmation leaves walking enabled")
 	await create_timer(1.0).timeout
-	check(not is_instance_valid(shell.tool), label + " saved recorder automatically dismisses")
+	check(is_instance_valid(shell.tool), label + " saved recording remains available for playback")
+	await tap(KEY_ESCAPE)
+	await create_timer(.2).timeout
+	check(not is_instance_valid(shell.tool), label + " Esc puts the saved recorder away")
 	check(get_nodes_in_group("mobile_recorder").is_empty(), label + " recorder releases scene ownership")
 	await dismiss_meta_modals()
 	await hold_right(stage, true, label + " walking after recorder dismissal")
@@ -123,8 +126,7 @@ func exercise_scene(indoor: bool) -> void:
 	check(is_instance_valid(shell.tool), label + " C opens camera")
 	if not is_instance_valid(shell.tool):
 		return
-	check(not shell.blocks_walking() and stage.enabled, label + " held camera remains mobile before looking through the finder")
-	shell.tool.enter_viewfinder()
+	check(shell.blocks_walking() and not stage.enabled, label + " full-screen camera enters its actual viewfinder")
 	await create_timer(0.35).timeout
 	check(shell.blocks_walking() and not stage.enabled, label + " viewfinder retains its movement lock")
 	await hold_right(stage, false, label + " camera prevents movement")
@@ -149,6 +151,9 @@ func run() -> void:
 		quit(1)
 		return
 	root.get_node("GameState").begin_new_game("A")
+	var state=root.get_node("GameState"); state.current_location="cafe"; state.money=500
+	root.get_node("FilmSystem").notice_camera()
+	check(root.get_node("FilmSystem").acquire_camera(false).ok,"Fixture acquires a real camera before testing its input")
 	await exercise_scene(false)
 	await exercise_scene(true)
 	for code in [KEY_D, KEY_R, KEY_SPACE, KEY_F, KEY_C, KEY_ESCAPE]:

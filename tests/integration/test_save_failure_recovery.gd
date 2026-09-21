@@ -61,5 +61,26 @@ func run() -> void:
 	gameplay.cancel_session()
 	host.free()
 	state.load_save_data(before)
+	# New loop transitions use the same rollback boundary as the established economy.
+	state.begin_new_game("A"); state.current_location="residence"; state.current_minute=1200
+	var loop=root.get_node("CoreLoopSystem"); var residency=root.get_node("ResidencySystem")
+	saves.set_script(failing)
+	check(not loop.review_day("今天在路上听到了风声。").ok,"Failed evening save reports failure")
+	check(not loop.day_state().reviewed and not residency.state().materials.has("reflection_A_1"),"Failed evening save restores both objective and canonical material")
+	saves.set_script(original_script)
+	check(loop.review_day("今天在路上听到了风声。").ok,"Evening save can be retried")
+	residency._add("share_test","work","真实作品",{"source":"module:sound_sampling:0"}); loop.encounter("xanni")
+	saves.set_script(failing)
+	check(not loop.share_material("xanni","share_test").ok and not loop.state().shared.has("xanni") and not state.confirmed_residents.has("xanni"),"Failed material sharing cannot grant a signature or consume sharing")
+	saves.set_script(original_script)
+	check(loop.share_material("xanni","share_test").ok,"Material sharing retries once")
+	state.current_day=7; state.confirmed_residents.assign(loop.catalog.people.keys().filter(func(id: String) -> bool: return id!="grocery"))
+	var dossier: Dictionary=residency.state(); dossier.free_pages={"personal":[{"kind":"text","text":"我"}],"life":[{"material":"share_test"}]}
+	for day in range(1,8): dossier.free_pages["day_%d"%day]=[{"kind":"text","text":"当天的记录"}]
+	dossier.final_answers={"0":"来看看","1":"人","2":"风","3":"声音","4":"倾听","signature":"A"}
+	saves.set_script(failing)
+	check(not residency.submit_free_application().ok and residency.state().submitted.is_empty(),"Failed final save cannot seal an unsubmitted application")
+	check(residency.state().free_pages.size()==9,"Failed final save keeps all personal, life and seven portfolio pages")
+	saves.set_script(original_script)
 	print("SAVE FAILURE RECOVERY PASS" if failures == 0 else "SAVE FAILURE RECOVERY FAIL")
 	quit(failures)

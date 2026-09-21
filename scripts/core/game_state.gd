@@ -241,6 +241,7 @@ func current_time_guidance() -> String:
 
 ## Shared by street and indoor exploration; paused scenes do not feed the clock.
 func advance_world_clock(real_seconds: float) -> void:
+	if is_instance_valid(get_node_or_null("/root/UIStateSystem")) and not bool(UIStateSystem.policy().world_time): return
 	if real_seconds <= 0.0 or not is_finite(real_seconds): return
 	if bool(shared_state.get("pending_commitment", false)):
 		return

@@ -19,6 +19,7 @@ func _ready() -> void:
 	map_font.font_names=PackedStringArray(["Segoe Script"])
 	mouse_filter=MOUSE_FILTER_STOP
 	var lead := GuidanceSystem.tracked_lead()
+	if GuidanceSystem.help_level>=3: lead=GuidanceSystem.next_step()
 	for id in points:
 		var marker := preload("res://scripts/ui/components/location_marker.gd").new()
 		marker.name="Destination_"+str(id); marker.set_meta("location",id)

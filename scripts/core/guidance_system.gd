@@ -8,69 +8,29 @@ var _previous: Dictionary = {}
 var idle_seconds := 0.0
 var progress_key := ""
 var reminded := ""
+var help_level := 0
+var feedback_queue: Array=[]
+var feedback_age := 0.0
+var last_direction := ""
 
 func time_text(minute: int) -> String:
 	return "%02d:%02d" % [minute/60,minute%60]
 
 func organized(day: int) -> bool:
-	var s := ResidencySystem.state()
-	var page: Array=s.get("free_pages",{}).get("day_%d" % day,[])
-	return ResidencySystem.night_organized(day) or (not page.is_empty() and not s.pages[day-1].get("organized_at",{}).is_empty())
+	return bool(CoreLoopSystem.state().days.get(str(day),{}).get("reviewed",false)) or ResidencySystem.night_organized(day)
 
 func today_rows() -> Array:
-	var s := ResidencySystem.state()
-	var audit := ResidencySystem.audit()
-	var receipts: int = EconomySystem.state().receipts.size()
-	var visits: int = s.visits.size()
-	var rows: Array = []
-	match GameState.current_day:
-		1:
-			rows = [{"text":"领取资料袋，走访三个地方","done":bool(s.packet) and visits>=3,"action":"map","location":"print_shop"}, {"text":"留下一张消费小票","done":receipts>=1,"action":"map","location":"cafe"}]
-		2:
-			rows = [{"text":"记录一次新发现","done":audit.get("exploration_kinds",[]).has("discover"),"action":"exploration"},{"text":"换个时段回访，写下想带人来的地方","done":bool(audit.requirements.exploration),"action":"exploration"}]
-		3:
-			rows = [{"text":"完成一次工作，领取收入证明","done":bool(audit.requirements.income),"action":"map","location":"night_market"},{"text":"累计三张小票，覆盖两种用途","done":bool(audit.requirements.living_receipts) and bool(audit.requirements.receipt_categories),"action":"receipts"}]
-		4:
-			var contribution_place := "handcraft_shop"
-			var revisited := false
-			for contribution in GameState.shared_state.get("world_artifacts",{}).get("contributions",[]):
-				if str(contribution.get("created_by","")) != GameState.current_role or not bool(contribution.get("accepted",false)): continue
-				contribution_place = str(contribution.location)
-				if contribution.has("revisited_day"): revisited = true
-			rows = [{"text":"把一件作品交给小镇，领取贡献证明","done":bool(audit.requirements.contribution),"action":"map","location":contribution_place},{"text":"回到作品留下的地方看一看","done":revisited,"action":"map","location":contribution_place}]
-		5:
-			rows = [{"text":"查看已留下的居民认可","done":bool(audit.requirements.recognition),"action":"recognition"},{"text":"认识不同生活圈的居民","done":bool(audit.requirements.recognition_circles),"action":"recognition"}]
-		6:
-			rows = [{"text":"补齐申请要求里的空缺","done":bool(audit.requirements.income) and bool(audit.requirements.contribution) and bool(audit.requirements.exploration),"action":"requirements"},{"text":"留下自己的选择与感受","done":bool(audit.requirements.personal),"action":"personal"}]
-		7:
-			rows = [{"text":"逐页核对七日记录","done":bool(audit.requirements.pages) and bool(audit.requirements.ledger),"action":"requirements"},{"text":"18:00 前到社区中心交件","done":not s.submitted.is_empty(),"action":"map","location":"print_shop"}]
-	rows.append({"text":"回房整理今天的材料与收支","done":organized(GameState.current_day),"action":"organize","location":"residence" if GameState.current_role=="A" else "dorm"})
-	return rows
+	return CoreLoopSystem.objectives()
 
 func next_step() -> Dictionary:
-	var s := ResidencySystem.state()
-	if not bool(s.packet): return {"text":"去社区中心领取资料袋","action":"map","location":"print_shop"}
-	var commitment := GameState.next_commitment()
-	if not commitment.is_empty():
-		var start := int(commitment.get("return_by",commitment.get("start",1440)))
-		var destination := str(commitment.get("location","dorm"))
-		if GameState.current_minute+maxi(0,WorldGraph.walk_minutes(GameState.current_location,destination))+10>=start and start+10>=GameState.current_minute:
-			return {"text":time_text(start)+" 前到"+TravelSystem.location_name(destination)+"工作","action":"map","location":destination}
-	if GameState.current_day==1:
-		if EconomySystem.state().receipts.is_empty(): return {"text":"去杂货店买一件需要的小物，收好小票","action":"map","location":"cafe"}
-		if not KnowledgeSystem.facts().any(func(f: Dictionary)->bool:return str(f.get("id","")) in ["grocery_hours","beetman_shopping"]):
-			return {"text":"问问店主营业时间，记进手记","action":"map","location":"cafe"}
-		if s.visits.size()<3: return {"text":"去菜摊走走，留下第一印象","action":"map","location":"produce_stall"}
-		if not organized(1): return {"text":"回住处，把小票放进 Day 1","action":"organize","location":"residence" if GameState.current_role=="A" else "dorm"}
-	if not EconomySystem.active_order().is_empty() and not bool(EconomySystem.active_order().get("completed",false)):
-		var procurement := EconomySystem.procurement_summary()
-		return {"text":procurement.next,"action":"map","location":procurement.source_locations[0]}
-	for row in today_rows():
-		if not bool(row.done): return row
-	return {"text":"今天的材料收好了，可以自由走走","action":"today"}
+	return CoreLoopSystem.active_guidance()
 
 func opportunities(location := "") -> Array:
 	var rows: Array = []
+	for opportunity in CoreLoopSystem.opportunities():
+		if int(opportunity.day)!=GameState.current_day or str(opportunity.status)=="missed": continue
+		if not location.is_empty() and str(opportunity.location)!=location: continue
+		rows.append(opportunity)
 	for appointment in GameState.appointments:
 		if int(appointment.get("day",0))!=GameState.current_day or str(appointment.get("status","scheduled")) not in ["scheduled","active"]: continue
 		if not location.is_empty() and str(appointment.get("location",""))!=location: continue
@@ -104,17 +64,16 @@ func preview(minutes: int, destination := "") -> String:
 		if not hours.is_empty() and not hours.any(func(h: Array)->bool:return finish>=int(h[0]) and finish<int(h[1])): lines.append("到达时柜台休息")
 	return "\n".join(lines)
 
-func idle_tick(delta: float, walking: bool) -> void:
-	var key := str(GameState.current_day)+GameState.current_location+str(ResidencySystem.state().materials.size())+str(KnowledgeSystem.facts().size())
-	if key!=progress_key or walking: idle_seconds=0; progress_key=key
+func idle_tick(delta: float, _walking: bool) -> void:
+	var key := JSON.stringify(CoreLoopSystem.day_state())+str(ResidencySystem.state().materials.size())+str(KnowledgeSystem.facts().size())+GameState.current_location
+	if key!=progress_key: idle_seconds=0; progress_key=key; reminded=""
 	else: idle_seconds+=delta
-	if idle_seconds<90 or reminded==key: return
-	for entry in opportunities():
-		if entry.has("start") and int(entry.start)>GameState.current_minute and int(entry.start)-GameState.current_minute<=30:
-			GameState.message_posted.emit("那件约好的事快到时间了。Tab 看看路。")
-			reminded=key
-			break
-
+	var level := mini(4,int(idle_seconds/45.0))
+	if help_level!=level: help_level=level; updated.emit()
+	if level>=4 and reminded!=key:
+		var next := next_step()
+		if not next.is_empty(): CoreLoopSystem.direction_thought()
+		reminded=key
 
 func state() -> Dictionary:
 	var key := "guidance_"+GameState.current_role
@@ -124,15 +83,7 @@ func state() -> Dictionary:
 
 # Public records are projections, not a second quest/material inventory.
 func must_objectives() -> Array:
-	var rows := today_rows()
-	if GameState.current_day==2:
-		rows=[{"text":"认识两位居民，听听各自的事","done":GameState.encountered_residents.size()>=2,"action":"map","location":"record_store"},{"text":"循着一条听来的线索去看看","done":leads().any(func(lead: Dictionary) -> bool: return ResidencySystem.state().visits.has(str(lead.location))),"action":"heard"},rows.back()]
-	elif GameState.current_day==3:
-		rows=[rows[0],{"text":"留下一份照片、录音或自己的作品","done":ResidencySystem.state().materials.values().any(func(item: Dictionary) -> bool: return str(item.get("kind","")) in ["photo","sound","work"]),"action":"sound_library"},rows.back()]
-	for i in rows.size():
-		rows[i]["id"]="must_%d_%d" % [GameState.current_day,i]
-		rows[i]["type"]="MustObjective"
-	return rows.slice(0,3)
+	return CoreLoopSystem.objectives()
 
 func leads() -> Array:
 	var result: Array=[]
@@ -140,6 +91,12 @@ func leads() -> Array:
 		var location := str(fact.get("location",fact.get("subject_id","")))
 		if not ResidencySystem.locations.has(location): continue
 		result.append({"type":"Lead","id":str(fact.get("id","")),"text":str(fact.get("text","")),"location":location,"source":str(fact.get("source_npc_id","")),"available":str(fact.get("status",""))!="Outdated"})
+	for opportunity in CoreLoopSystem.opportunities():
+		var row: Dictionary=opportunity.duplicate(true)
+		row["available"]=str(row.status)!="missed"
+		row["type"]="Lead"
+		row.text="Day %02d · %s–%s\n%s%s"%[int(row.day),time_text(int(row.start)),time_text(int(row.end)),str(row.text),"\n已经错过，可以再向对方打听。" if not row.available else ""]
+		result.append(row)
 	return result
 
 func tracked_lead() -> Dictionary:
@@ -161,6 +118,7 @@ func hear(id: String, text: String, source: String, location: String) -> void:
 	refresh()
 
 func _process(delta: float) -> void:
+	feedback_age+=delta
 	_elapsed+=delta
 	if _elapsed<0.5: return
 	_elapsed=0
@@ -175,19 +133,50 @@ func refresh() -> void:
 		if bool(lead.available): snapshot["lead_"+str(lead.id)]={"kind":"HEARD","text":str(lead.text)+" — "+source_name(str(lead.source))}
 	for id in ResidencySystem.state().materials:
 		var material: Dictionary=ResidencySystem.state().materials[id]
-		if str(material.get("kind","")) in ["photo","sound","receipt","work","letter"]:
+		if str(material.get("kind","")) not in ["official","proof"]:
 			snapshot["material_"+str(id)]={"type":"Material","kind":"FOUND","text":str(material.get("title","新材料"))}
 	for id in GameState.confirmed_residents:
 		snapshot["recognition_"+str(id)]={"type":"RecognitionEvent","kind":"CONNECTED","text":source_name(str(id))+"留下了认可"}
 	var key := GameState.current_role+":"+str(GameState.current_day)
 	if _session_key!=key:
-		_session_key=key; _previous=snapshot; return
+		_session_key=key; _previous=snapshot
+		feedback_queue.clear()
 	var seen: Dictionary=state().seen
 	for id in snapshot:
 		if not _previous.has(id) and not seen.has(id):
 			notification.emit(str(snapshot[id].kind),str(snapshot[id].text)); seen[id]=true
+			GameEvents.publish({"DONE":"ObjectiveCompleted","FOUND":"MaterialAdded","HEARD":"LeadDiscovered","CONNECTED":"RecognitionGranted"}[str(snapshot[id].kind)],snapshot[id].merged({"id":id}))
 	if snapshot!=_previous: updated.emit()
 	_previous=snapshot
+	var next := next_step()
+	var direction := str(next.get("id",next.get("text","")))
+	if direction!=last_direction:
+		last_direction=direction; updated.emit(); GameEvents.publish("ObjectiveUpdated",next)
+	var scene := get_tree().current_scene
+	if scene!=null and scene.has_node("GameplayShell") and not bool(CoreLoopSystem.day_state().brief_seen):
+		CoreLoopSystem.day_state().brief_seen=true
+		notification.emit("HEARD","Day %02d · %s"%[GameState.current_day,str(next.get("text","沿街走走，看看今天。"))])
 
 func _ready() -> void:
+	notification.connect(queue_feedback)
 	GameState.session_restored.connect(func() -> void: _session_key=""; _previous.clear())
+
+func queue_feedback(kind: String, text: String) -> void:
+	for entry in feedback_queue:
+		if entry.kind==kind:
+			if not entry.texts.has(text): entry.texts.append(text)
+			return
+	feedback_queue.append({"kind":kind,"texts":[text],"priority":{"CONNECTED":4,"DONE":3,"HEARD":2,"FOUND":1}.get(kind,0)})
+	feedback_age=0
+func take_feedback() -> Dictionary:
+	if feedback_queue.is_empty() or feedback_age<.25 or not bool(UIStateSystem.policy().notify): return {}
+	feedback_queue.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return a.priority>b.priority)
+	var entries := feedback_queue.duplicate(true); feedback_queue.clear()
+	var parts: Array[String]=[]
+	for entry in entries:
+		parts.append(str(entry.kind)+" · "+str(entry.texts[0])+("（另有%d项）"%(entry.texts.size()-1) if entry.texts.size()>1 else ""))
+	if entries.size()>2:
+		var summary: Array[String]=[]
+		for entry in entries.slice(1): summary.append(str(entry.kind)+" · %d 项"%entry.texts.size())
+		parts=[parts[0],"   ".join(summary)]
+	return {"text":"\n".join(parts),"entries":entries}

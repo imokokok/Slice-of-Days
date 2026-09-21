@@ -29,6 +29,7 @@ var offer_decided := false
 var offer_accepted := false
 var encounter_choice := false
 var encounter_finished := false
+var shared_choice_offered := false
 
 func _ready() -> void:
 	add_to_group("meta_dialogue")
@@ -89,6 +90,8 @@ func _append(speaker: String, text: String) -> void:
 func _build_conversation() -> void:
 	dialogue_id = DialogueSystem.conversation_id(npc, starting_topic)
 	records_story = starting_topic == "greeting"
+	if records_story:
+		for beat in CoreLoopSystem.dialogue_prefix(npc): _append(str(beat[0]),str(beat[1]))
 	if records_story and npc=="wu_wu" and int(GameState.shared_state.get("linear_talk_counts_"+GameState.current_role,{}).get(npc,0))==0:
 		encounter_choice=true
 		_append("npc","它平时没这么喜欢陌生人。刚才还躲在我腿后面。")
@@ -132,6 +135,12 @@ func _finish() -> void:
 		_show_encounter_choices(); return
 	if not offer.is_empty() and not offer_decided:
 		_show_invitation_choices(); return
+	if records_story and not shared_choice_offered:
+		shared_choice_offered=true
+		var materials := CoreLoopSystem.share_candidates(npc)
+		if not materials.is_empty():
+			_choice_box([["给你看看《"+str(materials[0].title)+"》",str(materials[0].id)],["下次再带给你看。",""]],_share_loop_material)
+			return
 	if npc in ["beetman", "grocery"] and not shop_id.is_empty():
 		if not vendor_committed:
 			var before := GameState.to_save_data().duplicate(true)
@@ -178,6 +187,12 @@ func _close() -> void:
 	closing = true
 	closed.emit()
 	queue_free()
+
+func _share_loop_material(id: String) -> void:
+	_clear_choices()
+	if id.is_empty(): _finish(); return
+	var result := CoreLoopSystem.share_material(npc,id)
+	_append("npc",str(result.message)); index=lines.size()-1; _show_line()
 
 func _show_vendor_choices() -> void:
 	if is_instance_valid(vendor_choices): return

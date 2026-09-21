@@ -22,6 +22,8 @@ var guidance_tick := 0.0
 var last_time_period := ""
 var time_notice_age := 8.0
 
+var clock_back: Panel
+
 func _ready() -> void:
 	name = "GameplayShell"
 	add_child(preload("res://scripts/ui/components/guidance_toasts.gd").new())
@@ -50,6 +52,8 @@ func _ready() -> void:
 	folder.add_theme_stylebox_override("normal",paper)
 	folder.pressed.connect(func() -> void: open_paper("dossier"))
 	add_child(folder)
+	clock_back=Panel.new(); clock_back.name="ClockBackdrop"; clock_back.add_to_group("solid_hud"); clock_back.position=Vector2(30,23); clock_back.size=Vector2(215,47); clock_back.mouse_filter=MOUSE_FILTER_IGNORE
+	var clock_face := StyleBoxFlat.new(); clock_face.bg_color=Color("254b66"); clock_face.set_corner_radius_all(7); clock_back.add_theme_stylebox_override("panel",clock_face); add_child(clock_back)
 	clock_label = Label.new()
 	clock_label.position = Vector2(42,30)
 	clock_label.size = Vector2(330,32)
@@ -58,34 +62,35 @@ func _ready() -> void:
 	clock_label.add_theme_font_size_override("font_size",18)
 	clock_label.add_theme_color_override("font_color",Color("fff6df"))
 	clock_label.add_theme_color_override("font_outline_color",PROMPT_OUTLINE)
-	clock_label.add_theme_constant_override("outline_size",3)
+	clock_label.add_theme_constant_override("outline_size",0)
 	clock_label.add_theme_color_override("font_shadow_color",Color("254552",0.8))
 	clock_label.add_theme_constant_override("shadow_offset_x",1)
-	clock_label.add_theme_constant_override("shadow_offset_y",2)
+	clock_label.add_theme_constant_override("shadow_offset_y",0)
 	clock_label.mouse_filter = MOUSE_FILTER_IGNORE
 	add_child(clock_label)
 	next_button = preload("res://scripts/ui/components/solmere_button.gd").new()
-	next_button.variant = "camera"
-	next_button.position = Vector2(31,78)
-	next_button.size = Vector2(335,67)
-	next_button.flat = true
+	next_button.variant = "guidance"
+	next_button.position = Vector2(1155,35)
+	next_button.size = Vector2(395,110)
+	next_button.flat = false
 	next_button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	next_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	next_button.add_theme_font_override("font",hud_font)
-	next_button.add_theme_font_size_override("font_size",16)
+	next_button.add_theme_font_size_override("font_size",20)
 	next_button.add_theme_color_override("font_color",Color("fff6df"))
 	next_button.add_theme_color_override("font_outline_color",PROMPT_OUTLINE)
-	next_button.add_theme_constant_override("outline_size",3)
+	next_button.add_theme_constant_override("outline_size",0)
 	next_button.add_theme_color_override("font_shadow_color",Color("254552"))
-	next_button.add_theme_constant_override("shadow_offset_y",2)
-	next_button.pressed.connect(func() -> void: open_paper("today"))
+	next_button.add_theme_constant_override("shadow_offset_y",0)
+	next_button.pressed.connect(_open_active_direction)
+	GuidanceSystem.updated.connect(_update_active_direction)
 	add_child(next_button)
 	var lead_rule := ColorRect.new(); lead_rule.color=PaperLanguage.YELLOW; lead_rule.position=Vector2(-6,13); lead_rule.size=Vector2(2,41); lead_rule.mouse_filter=MOUSE_FILTER_IGNORE; next_button.add_child(lead_rule)
 	# Contextual controls float directly over the world. Keeping this as a plain
 	# Control (rather than a Panel) prevents the hint area from masking scenery.
 	hints = Control.new()
 	hints.name = "ContextHints"
-	hints.position = Vector2(1160,175)
+	hints.position = Vector2(1160,250)
 	hints.size = Vector2(410,100)
 	hints.mouse_filter = MOUSE_FILTER_IGNORE
 	add_child(hints)
@@ -129,6 +134,7 @@ func _blocked() -> bool:
 	return is_instance_valid(host.get("conversation")) or not get_tree().get_nodes_in_group("meta_dialogue").is_empty() or MetaExperience.modal_open() or SceneRouter.transitioning or is_instance_valid(host.get("pocket_panel")) or (host.get("event_overlay") != null and host.event_overlay.visible) or (host.get("room_dialogue") != null and host.room_dialogue.visible)
 
 func blocks_walking() -> bool:
+	if not bool(UIStateSystem.policy().move): return true
 	if is_instance_valid(tool) and tool.get("focus_active") != null: return focus_opening or bool(tool.focus_active)
 	return focus_opening or (is_instance_valid(tool) and not tool.is_in_group("mobile_recorder"))
 
@@ -144,18 +150,17 @@ func _process(delta: float) -> void:
 	var period_key := str(GameState.current_day)+period
 	if last_time_period != period_key:
 		last_time_period=period_key; time_notice_age=0
-		clock_label.text="DAY %02d   %s" % [GameState.current_day,GameState.clock_text()]
+		clock_label.text=CoreLoopSystem.day_stamp()+"   "+GameState.clock_text()
 	time_notice_age+=delta
 	var clear_view := not is_instance_valid(overlay) and not is_instance_valid(tool) and not _blocked()
 	clock_label.visible=clear_view
-	clock_label.modulate.a=.85
+	clock_back.visible=clear_view
+	clock_label.modulate.a=1.0
 	guidance_tick -= delta
 	if guidance_tick <= 0:
 		guidance_tick = 1.0
-		clock_label.text="DAY %02d   %s" % [GameState.current_day,GameState.clock_text()]
-		var tracked := GuidanceSystem.tracked_lead()
-		next_button.text = str(tracked.get("text",GuidanceSystem.next_step().text))
-		next_button.tooltip_text = SettingsSystem.binding_text("open_notebook")+" · 打开随身本"
+		clock_label.text=CoreLoopSystem.day_stamp()+"   "+GameState.clock_text()
+		_update_active_direction()
 	next_button.visible = clear_view and not next_button.text.is_empty()
 	if last_location != GameState.current_location:
 		last_location = GameState.current_location
@@ -239,6 +244,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	_handle_shortcut(event)
 
 func _handle_shortcut(event: InputEvent) -> void:
+	if not bool(UIStateSystem.policy().notebook): return
 	if not event.is_pressed() or event.is_echo() or _blocked() or is_instance_valid(tool) or focus_opening: return
 	if get_viewport().gui_get_focus_owner() is TextEdit or get_viewport().gui_get_focus_owner() is LineEdit: return
 	var modes := {"open_map":"map","open_plan":"today","open_album":"gallery","open_bag":"bag","open_archive":"dossier","open_home":"home","open_notebook":"notebook","ui_cancel":"pause"}
@@ -299,3 +305,19 @@ func _camera_source() -> Image:
 		if is_instance_valid(child): child.show()
 	focus_opening = false
 	return image
+
+func _update_active_direction() -> void:
+	if not is_instance_valid(next_button): return
+	var next := GuidanceSystem.next_step()
+	next_button.text=str(next.get("text",""))
+	if GuidanceSystem.help_level>=1 and not str(next.get("context","")).is_empty(): next_button.text+="\n"+str(next.context)
+	if GuidanceSystem.help_level>=2 and not str(next.get("source","")).is_empty(): next_button.text+=" · "+GuidanceSystem.source_name(str(next.source))
+	next_button.clip_text=true; next_button.size=Vector2(395,110)
+	next_button.tooltip_text=SettingsSystem.binding_text("open_map")+" · 看看路线"
+	next_button.selected=GuidanceSystem.help_level>=3
+func _open_active_direction() -> void:
+	var next := GuidanceSystem.next_step()
+	if next.is_empty(): return
+	if str(next.get("action",""))=="evening" and GameState.current_location==CoreLoopSystem.home(): CoreLoopSystem.open_evening(); return
+	open_paper("notebook")
+	if is_instance_valid(overlay): overlay._guidance_action(next)

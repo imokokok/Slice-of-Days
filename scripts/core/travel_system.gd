@@ -104,6 +104,9 @@ func route(from_id: String, to_id: String, method: String, role: String, minute:
 	if not GameState.can_fit_at(role, GameState.current_day, minute, duration):
 		return {"available":false, "reason":"当前空闲时段不足以完成这段路程。"}
 	var conflicts: Array[String] = []
+	for opportunity in CoreLoopSystem.opportunities():
+		if int(opportunity.day)==GameState.current_day and str(opportunity.status)!="missed" and minute+duration>int(opportunity.end):
+			conflicts.append(str(opportunity.text))
 	for appointment in GameState.appointments:
 		if int(appointment.get("day", 0)) == GameState.current_day and str(appointment.get("status", "")) in ["scheduled", "active"] and str(appointment.get("location", "")) != to_id and minute < int(appointment.get("end", 1440)) and minute + duration > int(appointment.get("start", 1440)):
 			conflicts.append(str(appointment.get("label", "已知预约")))

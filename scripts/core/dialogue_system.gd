@@ -184,6 +184,7 @@ func linear_conversation(npc: String) -> Array:
 	return result
 
 func complete_linear_conversation(npc: String) -> void:
+	CoreLoopSystem.encounter(npc)
 	EconomySystem.chat_completed(npc)
 	var key := "linear_talk_counts_"+GameState.current_role
 	var counts: Dictionary = GameState.shared_state.get(key,{})

@@ -28,6 +28,8 @@ func state() -> Dictionary:
 	if not s.has("explorations"): s.explorations = {}
 	if not s.has("cover_photo_id"): s.cover_photo_id = ""
 	s.version = 3
+	for material in s.materials.values():
+		if not material.has("can_use_in_portfolio"): _material_metadata(material)
 	return s
 
 func persist() -> void:
@@ -51,7 +53,7 @@ func _sync_sources() -> void:
 			var id := str(item.get("id",""))
 			if id.is_empty(): continue
 			if collection == "photos" and str(item.get("status","DEVELOPED")) != "DEVELOPED": continue
-			var kind := "photo" if collection == "photos" else "sound" if collection == "samples" else "object"
+			var kind := "photo" if collection == "photos" else "sound" if collection == "samples" else "letter" if collection=="letters" else "object"
 			var details: Dictionary = item.duplicate(true)
 			details["kind"] = kind
 			if s.materials.has(id): s.materials[id].merge(details,true)
@@ -72,8 +74,13 @@ func _add(id: String, kind: String, title: String, details: Dictionary = {}) -> 
 	if s.materials.has(id): return
 	var row := {"id":id,"kind":kind,"title":title,"day":GameState.current_day,"minute":GameState.current_minute,"role":GameState.current_role,"location":GameState.current_location,"collected":true}
 	row.merge(details,true)
+	_material_metadata(row)
 	s.materials[id] = row
 	changed.emit()
+
+func _material_metadata(row: Dictionary) -> void:
+	var kind := str(row.get("kind","note"))
+	row.merge({"type":kind,"source":str(row.get("source",row.id)),"time":int(row.get("minute",540)),"related_npc":str(row.get("related_npc","")),"can_use_in_portfolio":true,"can_show_to_npc":kind!="official","can_send":kind in ["letter","photo","note"],"can_edit":kind in ["note","letter"],"protected":kind in ["proof","official"]},false)
 
 func _money(row: Dictionary, announce := true) -> void:
 	var s := state()
@@ -574,8 +581,12 @@ func submit_free_application() -> Dictionary:
 		if str(answers.get(key,"")).strip_edges().is_empty(): return {"ok":false,"message":"请补完最终文件，并留下签名。"}
 	var application_pages := pages.duplicate(true)
 	application_pages.erase("notebook")
-	s.submitted={"day":GameState.current_day,"minute":GameState.current_minute,"role":GameState.current_role,"outcome":"你的申请已收到。谢谢你把这七天留给 Solmere。","snapshot":{"free_pages":application_pages,"final_answers":answers.duplicate(true)}}
-	persist()
+	var before := GameState.to_save_data().duplicate(true)
+	s.submitted={"day":GameState.current_day,"minute":GameState.current_minute,"role":GameState.current_role,"outcome":"你的申请已收到。谢谢你把这七天留给 Solmere。","snapshot":{"free_pages":application_pages,"final_answers":answers.duplicate(true),"final_references":s.get("final_references",{}).duplicate(true)}}
+	GameState.commit_active_role_state()
+	if not SaveManager.save_or_report("申请未能保存，请重试"):
+		GameState.load_save_data(before); return {"ok":false,"message":"申请还没有交出，所有页面仍在，请重试。"}
+	changed.emit()
 	return {"ok":true,"message":s.submitted.outcome}
 
 func add_note(text: String, revision_of := "", mark := "") -> String:

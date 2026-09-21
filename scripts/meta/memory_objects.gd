@@ -11,6 +11,7 @@ var page := 0
 var pages: Array = []
 var spatial_sound: AudioStreamPlayer3D
 var paper_sound: AudioStreamPlayer
+var examined: Array[String]=[]
 
 func setup(owner_view: Control, room: Node) -> void:
 	view = owner_view
@@ -40,7 +41,7 @@ func setup(owner_view: Control, room: Node) -> void:
 	view.world.add_child(spatial_sound)
 	paper_sound = AudioStreamPlayer.new()
 	paper_sound.bus = "SoundEffects"
-	paper_sound.stream = load("res://audio/meta/v2_paper.wav")
+	paper_sound.stream = WorldSound.make_ui("paper")
 	paper_sound.volume_db = -16
 	add_child(paper_sound)
 
@@ -64,12 +65,13 @@ func update_target() -> void:
 	var item: Dictionary = hit.collider.get_meta("memory_item")
 	if origin.distance_to(hit.position)>float(item.get("range",2.1)):return
 	selected = item
-	prompt.text = "E · " + LocalizationSystem.text(str(item.name))
+	prompt.text = SettingsSystem.binding_text("interact")+" · " + LocalizationSystem.text(str(item.name))
 
 func interact(item: Dictionary = {}) -> void:
 	if not view.ready_to_walk: return
 	if item.is_empty(): item = selected
 	if item.is_empty(): return
+	if str(item.kind)!="leave" and not examined.has(str(item.id)): examined.append(str(item.id))
 	var node := targets.get(str(item.id)) as Node3D
 	match str(item.kind):
 		"read":
@@ -78,7 +80,7 @@ func interact(item: Dictionary = {}) -> void:
 			return
 		"listen":
 			spatial_sound.global_position = _center(node)
-			spatial_sound.stream = load("res://audio/meta/v2_"+_cue(item)+".wav")
+			spatial_sound.stream = WorldSound.make_ui("record_start") if _cue(item)=="alarm" else WorldSound.make_detail("cafe" if _cue(item)=="clink" else "residence")
 			spatial_sound.play()
 		"drawer":
 			var opened := not bool(node.get_meta("opened",false))
@@ -87,7 +89,7 @@ func interact(item: Dictionary = {}) -> void:
 			node.set_meta("home",home)
 			view.create_tween().tween_property(node,"position",home+Vector3(-.3 if opened else 0,0,0),.4)
 			spatial_sound.global_position = _center(node)
-			spatial_sound.stream = load("res://audio/meta/v2_drawer.wav")
+			spatial_sound.stream = WorldSound.make_detail("residence")
 			spatial_sound.play()
 		"toggle":
 			if str(item.name) in ["屏幕","电脑","录音设备"]:
@@ -99,7 +101,7 @@ func interact(item: Dictionary = {}) -> void:
 				if spatial_sound.playing:spatial_sound.stop()
 				else:
 					spatial_sound.global_position=_center(node)
-					spatial_sound.stream=load("res://audio/meta/v2_water.wav")
+					spatial_sound.stream=_running_water()
 					spatial_sound.play()
 				return
 			if str(item.name) in ["窗帘","板擦"]:
@@ -138,6 +140,20 @@ func _cue(item: Dictionary) -> String:
 	if name_text.contains("钟") or name_text.contains("手机"): return "alarm"
 	if name_text.contains("杯") or name_text.contains("钥匙"): return "clink"
 	return "room"
+
+func _running_water() -> AudioStreamWAV:
+	var wav := AudioStreamWAV.new(); wav.mix_rate=22050; wav.format=AudioStreamWAV.FORMAT_16_BITS
+	var samples := PackedByteArray(); samples.resize(22050*2*2)
+	var random := RandomNumberGenerator.new(); random.seed=7226
+	var low := 0.0
+	for frame in 44100:
+		var noise := random.randf_range(-1,1); low=lerpf(low,noise,.12)
+		var time := frame/22050.0
+		var edge := minf(1,minf(time*40,(2-time)*40))
+		var value := ((noise-low)*.06+low*.18)*(0.8+0.2*sin(time*TAU*3))*edge
+		samples.encode_s16(frame*2,int(value*32767))
+	wav.data=samples; wav.loop_mode=AudioStreamWAV.LOOP_FORWARD; wav.loop_end=44100
+	return wav
 
 func _center(node: Node3D) -> Vector3:
 	for child in node.get_children():

@@ -116,6 +116,8 @@ func show_entry(index: int) -> void:
 		for page in ResidencySystem.state().get("free_pages",{}).values():
 			if page.any(func(piece: Dictionary) -> bool: return str(piece.get("material",""))==str(item.id)):
 				remove.disabled=true; remove.tooltip_text="这段录音仍在作品页中使用。"
+		if CoreLoopSystem.material_in_use(str(item.id)):
+			remove.disabled=true; remove.tooltip_text="这段录音已留在分享或申请的记录里。"
 
 func _process(_delta: float) -> void:
 	if is_instance_valid(progress):

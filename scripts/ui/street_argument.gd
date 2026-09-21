@@ -42,7 +42,7 @@ func _process(delta: float) -> void:
 	Input.set_default_cursor_shape(Input.CURSOR_DRAG if drag_index>=0 else Input.CURSOR_POINTING_HAND if hand else Input.CURSOR_ARROW)
 
 func _head(side: int) -> Vector2:
-	var x := world_x + (-46 if side == 0 else 46)
+	var x := world_x + (-70 if side == 0 else 70)
 	return Vector2(x-street.camera_x,street._actor_ground_at(x)-street._actor_height())
 
 func _thought_rect(index: int) -> Rect2:

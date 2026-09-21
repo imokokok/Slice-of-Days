@@ -9,6 +9,8 @@ const ACTOR_BASE_HEIGHT := 121.0
 const OUTDOOR_ACTOR_HEIGHT := 184.0
 const INDOOR_ACTOR_HEIGHT := 320.0
 const CURB_Y := 718.0
+const Composition = preload("res://scripts/ui/street_composition.gd")
+const COASTAL_GRADE = preload("res://scripts/ui/coastal_grade.gdshader")
 const Atlas = preload("res://scripts/ui/scene_atlas.gd")
 const COAST_ART = preload("res://art/user_scenes/lookout_approach.png")
 const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
@@ -44,8 +46,12 @@ var walk_limit := INF
 var visual_phase := -1
 var lookout_was_open := false
 var dialogue_scenery: Array[Rect2] = []
+var world_labels: Dictionary = {}
 
 func _ready() -> void:
+	var finish := ShaderMaterial.new()
+	finish.shader = COASTAL_GRADE
+	material = finish if not indoor else null
 	original_resident = preload("res://scripts/ui/original_resident.gd").new()
 	add_child(original_resident)
 	original_resident.hide()
@@ -69,8 +75,25 @@ func _process(delta: float) -> void:
 	if enabled and DisplayServer.window_is_focused():
 		axis = _walk_axis()
 	move_player(axis, delta, Input.is_action_pressed("move_fast"))
+	_update_world_finish()
 	if not is_equal_approx(previous_player_x, player_x) or not is_equal_approx(previous_camera_x, camera_x) or not is_equal_approx(previous_facing, facing) or not is_equal_approx(previous_gait, gait_weight):
 		queue_redraw()
+
+func _update_world_finish() -> void:
+	if indoor:
+		material = null
+		if is_instance_valid(original_resident): original_resident.material.set_shader_parameter("amount",0.0)
+		return
+	if not material is ShaderMaterial: return
+	var light := Composition.daylight(GameState.current_minute)
+	material.set_shader_parameter("camera_offset", Vector2(camera_x,0))
+	material.set_shader_parameter("daylight", Vector3(light.r,light.g,light.b))
+	material.set_shader_parameter("amount", 0.0 if indoor else 1.0)
+	for label: Label in world_labels.values(): label.modulate = light
+	if is_instance_valid(original_resident):
+		original_resident.material.set_shader_parameter("camera_offset", Vector2(camera_x,0))
+		original_resident.material.set_shader_parameter("daylight", Vector3(light.r,light.g,light.b))
+		original_resident.material.set_shader_parameter("amount", 0.0 if indoor else 1.0)
 
 func _walk_axis() -> float:
 	# SettingsSystem supplies the named actions.  The physical-key fallback keeps
@@ -117,7 +140,7 @@ func nearest_of(kinds: Array) -> Dictionary:
 		if not kinds.is_empty() and str(item.get("kind", "")) not in kinds: continue
 		var gap := absf(float(item.get("x", 0.0)) - player_x)
 		# A pair can be addressed from beside them, without standing between them.
-		if str(item.get("kind","")) == "argument": gap = maxf(0,gap-55)
+		if str(item.get("kind","")) == "argument": gap = maxf(0,gap-70)
 		var reach := float(item.get("reach", REACH))
 		if gap < reach and gap < distance:
 			distance = gap
@@ -126,6 +149,7 @@ func nearest_of(kinds: Array) -> Dictionary:
 
 func _draw() -> void:
 	dialogue_scenery.clear()
+	for label: Label in world_labels.values(): label.hide()
 	var night := GameState.current_minute >= 1080
 	draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
 	# The lighthouse panorama is a rear layer.  Buildings and trees draw above
@@ -153,17 +177,20 @@ func _draw() -> void:
 		if x < -120 or x > 1720:
 			continue
 		var kind := str(item.get("kind", ""))
-		if kind == "person" or kind == "event" or kind == "shopkeeper":
+		if kind == "person" or kind == "shopkeeper":
 			if str(item.get("id", "")) == "zhou_xiaoliu": continue
-			var shades := [Color("324b62"),Color("567363"),Color("76554c"),Color("ada16b")]
+			var shades := [Color("68868c"),Color("8b9d80"),Color("b9876e"),Color("c5b67f")]
 			var shade: Color = shades[absi(str(item.get("id", "")).hash()) % shades.size()]
 			if _draw_authored_npc(str(item.get("id", "")), Vector2(x, _actor_ground_at(float(item.x))), -1.0):
 				continue
 			_draw_person(Vector2(x, _actor_ground_at(float(item.x))), shade, 0.0, 0.0, -1.0)
 		elif kind == "argument":
 			# 尘缘坚持吃肉，CICI 则坚持素食；两位都用用户提供的形象。
-			_draw_authored_npc("chenyuan", Vector2(x-56,ground), 1.0)
-			_draw_authored_npc("wu_wu", Vector2(x+56,ground), -1.0)
+			_draw_authored_npc("chenyuan", Vector2(x-70,ground), 1.0)
+			_draw_authored_npc("wu_wu", Vector2(x+70,ground), -1.0)
+		elif kind == "event":
+			# An event is a notice at its place, never an extra anonymous resident.
+			_draw_event_notice(x)
 		elif kind == "echo" and not illustrated:
 			draw_rect(Rect2(x-55,572,110,118),Color("4c4937"))
 			draw_rect(Rect2(x-49,580,98,102),Color("203f43"))
@@ -239,10 +266,8 @@ func _ground_at(world_x: float) -> float:
 	return 713.0
 
 func _actor_ground_at(world_x: float) -> float:
-	# The black road begins at y=718.  People stand inside this foreground
-	# layer instead of floating at the curb with the middle scenery. Keep one
-	# shared foot line for the protagonist, authored NPCs and silhouettes.
-	return 820.0 if not indoor else _ground_at(world_x)
+	# A shared foreground walk line keeps feet away from the planted curb.
+	return Composition.FEET if not indoor else _ground_at(world_x)
 
 func _draw_lookout_approach() -> void:
 	# One full-height original panorama. Horizontal camera movement reveals it;
@@ -257,6 +282,8 @@ func coast_art_rect() -> Rect2:
 	return Rect2(-progress*(art_width-1600),0,art_width,900)
 
 func _scene_art_tint() -> Color:
+	# Outdoor lighting is now applied once, by the common world material.
+	if not indoor: return Color.WHITE
 	match Atlas.phase(GameState.current_minute):
 		2: return Color("596c89")
 		1: return Color("edc6a4")
@@ -305,38 +332,31 @@ func _draw_street_middle() -> void:
 		if x < -700 or x > 2300: continue
 		var place_id := str(place.get("id", ""))
 		if place_id in ["residence", "dorm"]:
-			_draw_authored_building(PLAYER_HOME_ART, x, Vector2(610, 520), 1166.0)
+			_draw_authored_building(PLAYER_HOME_ART, x, place_id)
 			continue
 		if place_id == "produce_stall":
-			_draw_authored_building(PRODUCE_STALL_ART, x, Vector2(720, 470), 941.0)
+			_draw_authored_building(PRODUCE_STALL_ART, x, place_id)
 			continue
 		if place_id == "night_market":
-			_draw_authored_building(RESTAURANT_ART, x, Vector2(610, 540), 1193.0)
+			_draw_authored_building(RESTAURANT_ART, x, place_id)
 			continue
 		if place_id == "print_shop":
 			# This cutout includes foreground furniture and is drawn after the road.
 			continue
 		if str(place.get("kind", "")) == "tarot":
-			_draw_user_scene(TAROT_ART, Rect2(113, 141, 995, 484), x, 710.0)
+			_draw_user_scene(TAROT_ART, Rect2(113, 141, 995, 484), x, Composition.SCENE_WIDTHS.tarot_stall)
 			continue
 		if not bool(place.get("interior", true)):
 			_draw_outdoor(x, str(place.get("kind", "street")))
 			continue
 		_draw_facade(x, str(place.get("kind", "")), str(place.get("name", "")))
-		if i % 2 == 0: _draw_tree(x + 370, 718, 0.72)
-	# Low foreground grasses pass faster than the distant coastal scenery.
-	for i in range(7):
-		var x := float(i) * 290.0 - fmod(camera_x * 1.08, 290.0)
-		draw_line(Vector2(x, 718), Vector2(x - 15, 696), Color("455d55"), 2)
-		draw_line(Vector2(x, 718), Vector2(x + 11, 692), Color("455d55"), 2)
+		# Plant only the gaps between facades, outside the conversational pockets.
+		if i % 2 == 0: _draw_tree(x - 555, CURB_Y, 0.48)
 
-func _draw_authored_building(texture: Texture2D, center_x: float, maximum_size: Vector2, source_ground_y: float) -> void:
+func _draw_authored_building(texture: Texture2D, center_x: float, location: String) -> void:
 	# Each cutout has a different amount of transparent padding below its feet.
 	# Align the authored contact point, not the texture canvas, with the curb.
-	var source_size := texture.get_size()
-	var scale_value := minf(maximum_size.x / source_size.x, maximum_size.y / source_size.y)
-	var size := source_size * scale_value
-	var rect := Rect2(Vector2(center_x - size.x * 0.5, CURB_Y - source_ground_y * scale_value), size)
+	var rect := Composition.cutout_rect(location, texture.get_size(), center_x)
 	dialogue_scenery.append(rect.grow(12))
 	draw_texture_rect(texture, rect, false, _scene_art_tint())
 
@@ -347,16 +367,52 @@ func _draw_street_foreground() -> void:
 		if str(place.get("id", "")) != "print_shop": continue
 		var x := float(place.x) - camera_x
 		if x < -700 or x > 2300: continue
-		_draw_authored_building(CORRESPONDENCE_OFFICE_ART, x, Vector2(760, 490), 920.0)
+		_draw_authored_building(CORRESPONDENCE_OFFICE_ART, x, "print_shop")
 
 func _draw_foreground_road() -> void:
-	# A dedicated foreground road hides the bottom of the middle layer and
-	# keeps the player's feet anchored to one continuous walk surface.
-	draw_rect(Rect2(0, 718, 1600, 182), Color("202120", 0.96))
-	draw_line(Vector2(0, 718), Vector2(1600, 718), Color("e3bd59", 0.85), 3)
+	# The original curb and road silhouette remain. Sunlit aggregate replaces
+	# the opaque black overlay; joints belong to world space, not a parallax HUD.
+	draw_polygon(PackedVector2Array([Vector2(0,CURB_Y),Vector2(1600,CURB_Y),Vector2(1600,900),Vector2(0,900)]),PackedColorArray([Color("c5c2ad"),Color("c5c2ad"),Color("9caa9f"),Color("9caa9f")]))
+	draw_rect(Rect2(0,CURB_Y,1600,26),Color("d9d4bc"))
+	draw_line(Vector2(0,CURB_Y+3),Vector2(1600,CURB_Y+3),Color("eee7d0"),4)
+	draw_line(Vector2(0,CURB_Y+26),Vector2(1600,CURB_Y+26),Color("657c79",.25),2)
 	for i in range(9):
-		var x := fmod(float(i) * 235.0 - camera_x * 0.12, 1880.0) - 120.0
-		draw_line(Vector2(x, 806), Vector2(x + 126, 806), Color("a38b5b", 0.18), 2)
+		var x := float(i)*240.0-fposmod(camera_x,240.0)-120.0
+		draw_line(Vector2(x,CURB_Y+5),Vector2(x-6,CURB_Y+24),Color("969f8c",.40),1)
+	for place in places:
+		var x := float(place.x)-camera_x
+		if x < -700 or x > 2300: continue
+		if str(place.get("id","")) == "town_entrance": continue
+		# Shallow contact shade rather than a heavy drop shadow around cutouts.
+		draw_colored_polygon(PackedVector2Array([Vector2(x-245,723),Vector2(x+240,723),Vector2(x+268,740),Vector2(x-212,740)]),Color("556b64",.11))
+
+func _world_label(key: String, rect: Rect2, text: String, color: Color) -> void:
+	# Font distance fields need Godot's native text shader. Keep lettering out
+	# of the pigment shader, with the same ambient light but perfectly sharp.
+	var label: Label = world_labels.get(key)
+	if not is_instance_valid(label):
+		label = Label.new()
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.add_theme_font_size_override("font_size",22)
+		add_child(label)
+		world_labels[key] = label
+	label.position=rect.position; label.size=rect.size
+	label.text=text
+	label.add_theme_color_override("font_color",color)
+	label.modulate=Composition.daylight(GameState.current_minute)
+	label.show()
+
+func _draw_event_notice(x: float) -> void:
+	var y := CURB_Y-45.0
+	draw_line(Vector2(x,y+16),Vector2(x,CURB_Y+4),Color("72897d"),3)
+	draw_set_transform(Vector2(x,y),-.055)
+	draw_rect(Rect2(-19,-17,38,35),Color("f5edd8"))
+	for i in 3: draw_line(Vector2(-11,-6+i*7),Vector2(10-i*3,-6+i*7),Color("6c8888",.65),1)
+	draw_rect(Rect2(-5,-19,10,6),Color("cabb74"))
+	draw_set_transform(Vector2.ZERO)
+	dialogue_scenery.append(Rect2(x-23,y-22,46,72))
 
 func _draw_sea(night: bool) -> void:
 	var sky := Color("3862d0") if not night else Color("243647")
@@ -410,7 +466,7 @@ func _draw_facade(x: float, kind: String, title: String) -> void:
 	draw_rect(Rect2(x - 36, 573, 72, 115), Color("398d9b"))
 	draw_line(Vector2(x + 23, 641), Vector2(x + 23, 664), Color("d8c49d"), 3)
 	draw_rect(Rect2(x - 149, 508, 298, 36), Color("cec0a0"))
-	draw_string(ThemeDB.fallback_font, Vector2(x - 144, 533), LocalizationSystem.text(title), HORIZONTAL_ALIGNMENT_CENTER, 288, 22, Color("3d5551"))
+	_world_label("facade_"+str(roundi(x+camera_x)),Rect2(x-144,509,288,33),LocalizationSystem.text(title),Color("3d5551"))
 	if kind in ["restaurant", "grocery", "records"]:
 		draw_colored_polygon(PackedVector2Array([Vector2(x - 258, 544), Vector2(x + 258, 544), Vector2(x + 278, 562), Vector2(x - 278, 562)]), Color("a5ad60"))
 	if kind == "post":
@@ -449,15 +505,15 @@ func _draw_outdoor(x: float, kind: String) -> void:
 	var wood := Color("48554e")
 	match kind:
 		"chess":
-			_draw_user_scene(CHESS_ART, Rect2(68, 13, 1423, 1014), x, 900.0)
+			_draw_user_scene(CHESS_ART, Rect2(68, 13, 1423, 1014), x, Composition.SCENE_WIDTHS.chess_stall)
 		"bus":
-			_draw_user_scene(BUS_ART, Rect2(447, 501, 835, 419), x, 650.0)
+			_draw_user_scene(BUS_ART, Rect2(447, 501, 835, 419), x, Composition.SCENE_WIDTHS.bus_stop)
 			# The Solmere direction sign belongs beside the station, on its right.
 			var sign_post_x := x + 380.0
 			dialogue_scenery.append(Rect2(x+328,488,214,242))
 			draw_rect(Rect2(sign_post_x, 500, 9, 218), wood)
 			draw_rect(Rect2(x + 340, 516, 190, 55), Color("b5a27a"))
-			draw_string(ThemeDB.fallback_font, Vector2(x + 362, 553), "SOLMERE   →", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("3e5350"))
+			_world_label("station_sign",Rect2(x+343,521,182,44),"SOLMERE   →",Color("3e5350"))
 		"street":
 			pass
 		"lookout":
@@ -549,10 +605,10 @@ func dialogue_obstacles(npc_id := "") -> Dictionary:
 	actors.append(Rect2(player_x-camera_x-height*.32,_actor_ground_at(player_x)-height,height*.64,height+12).grow(18))
 	for item in hotspots:
 		var kind := str(item.get("kind",""))
-		if kind not in ["person","event","shopkeeper","argument"]: continue
+		if kind not in ["person","shopkeeper","argument"]: continue
 		var x := float(item.get("x",0))-camera_x
 		var ground := _actor_ground_at(float(item.get("x",0)))
-		var half_width := height*.32+(56 if kind=="argument" else 0)
+		var half_width := height*.32+(70 if kind=="argument" else 0)
 		actors.append(Rect2(x-half_width,ground-height,half_width*2,height+12).grow(18))
 		if str(item.get("id",""))==npc_id: anchor=Vector2(x,ground-height*.7)
 	var scenery: Array=dialogue_scenery.duplicate()
@@ -613,9 +669,9 @@ func _draw_person(at: Vector2, coat: Color, gait_phase: float, gait_strength: fl
 	draw_set_transform(origin, 0, Vector2(facing_sign * lerpf(0.72, 1.0, absf(direction)), 1) * actor_scale)
 	var cloth := Color("39484e") if role == "A" else Color("648180") if role == "B" else coat.darkened(0.2)
 	var shadow := cloth.darkened(0.2)
-	var trousers := Color("29383e")
-	var skin := Color("9b9d8c")
-	var hair := Color("29383b")
+	var trousers := Color("647b7f")
+	var skin := Color("d9b99a")
+	var hair := Color("40534f")
 	# Long, quiet shapes: adult proportions and no eyes, mouth or nose details.
 	if seated:
 		_draw_jointed_limb(Vector2(-4,-49),Vector2(22,-45),Vector2(26,-16),6.5,trousers.darkened(0.12))

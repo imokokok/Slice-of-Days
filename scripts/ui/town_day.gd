@@ -27,6 +27,7 @@ var BLOCK_WIDTH := 1600.0
 var route_offset := 0.0
 var route_hint: Label
 const Atlas = preload("res://scripts/ui/scene_atlas.gd")
+const Composition = preload("res://scripts/ui/street_composition.gd")
 var outdoor_objects: Array = []
 var current_index := -1
 var segment_id := ""
@@ -61,7 +62,7 @@ func _ready() -> void:
 	street.route_id = segment_id
 	street.composition_anchor = 800.0
 	for index in street_order.size():
-		street.places.append({"id": street_order[index], "name": _location_name(street_order[index]), "kind":locations[street_order[index]].kind, "interior":locations[street_order[index]].interior, "x": _world_x(index, 800), "width":BLOCK_WIDTH})
+		street.places.append({"id": street_order[index], "name": _location_name(street_order[index]), "kind":locations[street_order[index]].kind, "interior":locations[street_order[index]].interior, "x": _world_x(index, Composition.center_local(street_order[index])), "width":BLOCK_WIDTH})
 	# Load this connected street before walking so a new plate never stalls a boundary crossing.
 	for location_id in street_order:
 		Atlas.plate(Atlas.street(location_id))
@@ -73,6 +74,7 @@ func _ready() -> void:
 	GameState.shared_state["street_positions"] = saved
 	GameState.shared_state["street_layout_version"] = 6
 	var key := "%s_%d_%s" % [GameState.current_role, GameState.current_day, segment_id]
+	var restore_saved_position := saved.has(key)
 	var default_x := _world_x(maxi(0, street_order.find(GameState.current_location)), 300)
 	if not saved.has(key):
 		var legacy := WorldGraph.legacy_segment_for(GameState.current_location)
@@ -103,6 +105,14 @@ func _ready() -> void:
 	GameState.state_changed.connect(_refresh)
 	_on_walk(street.player_x)
 	_refresh()
+	if not restore_saved_position:
+		var block_left := route_offset+current_index*BLOCK_WIDTH
+		var clear_x := Composition.clear_arrival(street.player_x,street.hotspots,block_left,block_left+BLOCK_WIDTH)
+		if not is_equal_approx(clear_x,street.player_x):
+			street.player_x=clear_x
+			street.move_player(0,0)
+			_remember_position()
+			SaveManager.save_or_report("抵达位置保存失败")
 	WorldSound.set_active(true)
 	ChapterSystem.mark_opening_seen()
 	add_child(preload("res://scripts/residency/gameplay_shell.gd").new())
@@ -547,7 +557,7 @@ func _start_market_encounter() -> void:
 	add_child(conversation)
 	var words = preload("res://scripts/ui/street_argument.gd").new()
 	words.street = street
-	words.world_x = _world_x(current_index,1210)
+	words.world_x = _place_center() + Composition.argument_offset()
 	words.finish_requested.connect(_finish_market_encounter.bind(words))
 	words.cancel_requested.connect(func() -> void:
 		if is_instance_valid(conversation): conversation.queue_free())
@@ -583,6 +593,9 @@ func _observe_market_afterward() -> void:
 func _world_x(index: int, local_x: float) -> float:
 	return route_offset + index * BLOCK_WIDTH + local_x * BLOCK_WIDTH / 1600.0
 
+func _place_center() -> float:
+	return _world_x(current_index,Composition.center_local(GameState.current_location))
+
 func _index_at(x: float) -> int:
 	return clampi(int((x - route_offset) / BLOCK_WIDTH), 0, street_order.size() - 1)
 
@@ -609,7 +622,8 @@ func _remember_position() -> void:
 func _rebuild_hotspots() -> void:
 	street.hotspots.clear()
 	street.queue_redraw()
-	var center := _world_x(current_index, float(Atlas.street(GameState.current_location).get("door_x",800)))
+	var building_center := _place_center()
+	var center := building_center + Composition.entry_offset(GameState.current_location)
 	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
 		street.hotspots.append({"x":_world_x(current_index, 1060), "kind":"closed", "label":"观景台 · 21:00 开放"})
 		return
@@ -617,18 +631,14 @@ func _rebuild_hotspots() -> void:
 	var people := DialogueSystem.people_at(GameState.current_location)
 	for index in mini(people.size(), 3):
 		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
-		var local_x := float((850 if GameState.current_location == "cafe" else 450) + index * 150)
-		if GameState.current_location == "produce_stall":
-			if people[index] == "beetman": local_x = 875
-			elif people[index] == "ahe": local_x = 1120
-			elif people[index] == "chen_chuan": local_x = 1370
-		street.hotspots.append({"x":_world_x(current_index, local_x), "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
+		var person_x := building_center + Composition.npc_offset(GameState.current_location,str(people[index]),index)
+		street.hotspots.append({"x":person_x, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
 	if GameState.current_location in ["residence", "dorm"]:
 		var own_home := "residence" if GameState.current_role == "A" else "dorm"
 		if GameState.current_location == own_home:
 			street.hotspots.append({"x":center, "kind":"home", "reach":street.DOOR_REACH, "label":"回家"})
 	elif GameState.current_location == "cafe":
-		street.hotspots.append({"x":center, "kind":"shopkeeper", "id":"grocery", "label":"和杂货店老板说话"})
+		street.hotspots.append({"x":center-125.0, "kind":"shopkeeper", "id":"grocery", "label":"和杂货店老板说话"})
 	else:
 		var rooms := _spaces_at(GameState.current_location)
 		for i in rooms.size():
@@ -637,8 +647,8 @@ func _rebuild_hotspots() -> void:
 		if str(item.get("location_id", "")) == GameState.current_location:
 			if str(item.get("kind","")) == "encounter":
 				if bool(DialogueSystem.argument_state().get("finished", false)):
-					street.hotspots.append({"x":_world_x(current_index,1235),"kind":"argument_observation","id":"market_argument_finished","label":"看看菜篮留下的印子"})
-				else: street.hotspots.append({"x":_world_x(current_index,1210),"kind":"argument","id":"translation","label":str(item.name)})
+					street.hotspots.append({"x":building_center+Composition.argument_offset(),"kind":"argument_observation","id":"market_argument_finished","label":"看看菜篮留下的印子"})
+				else: street.hotspots.append({"x":building_center+Composition.argument_offset(),"kind":"argument","id":"translation","label":str(item.name)})
 			elif str(item.get("kind","")) == "dialogue":
 				if not DialogueSystem.invitation_for(str(item.npc_id)).is_empty(): street.hotspots.append({"x":center,"kind":"invitation","id":str(item.npc_id),"label":str(item.name)})
 			elif str(item.get("kind", "")) == "shop":

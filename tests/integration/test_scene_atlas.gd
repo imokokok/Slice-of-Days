@@ -39,7 +39,9 @@ func run() -> void:
 	var door: Dictionary = {}
 	for item in current_scene.street.hotspots:
 		if item.kind == "door": door = item
-	var door_x: float = current_scene._world_x(3,740)
+	# The current cutout's threshold is 48 world pixels left of its center.
+	# Legacy atlas coordinates above still describe the original room plates.
+	var door_x: float = current_scene._world_x(3,800)-48.0
 	check(not door.is_empty() and is_equal_approx(float(door.get("x",0)),door_x),"Restaurant interaction aligns with its pictured door on the main street")
 	current_scene.street.player_x = door_x + current_scene.street.DOOR_REACH + 1.0
 	check(current_scene.street.nearest_of(["door"]).is_empty(),"Restaurant entry prompt stays hidden beside the building")

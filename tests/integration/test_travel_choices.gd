@@ -18,6 +18,8 @@ func run() -> void:
 	var travel = root.get_node("TravelSystem")
 	chapters.start_new_game("A")
 	state.current_minute = 545
+	check(not travel.route("residence","park","friend","A",545).available,"Friend ride requires a real relationship")
+	root.get_node("RelationshipSystem").add_flags("wu_wu",["ride_offered"])
 
 	var walk: Dictionary = travel.route("residence", "park", "walk", "A", 545)
 	var borrowed: Dictionary = travel.route("residence", "park", "friend", "A", 545)
@@ -46,7 +48,10 @@ func run() -> void:
 	paper.queue_free()
 	TranslationServer.set_locale("en")
 	var borrowed_label: String = root.get_node("LocalizationSystem").text_with_values("%s · %d 分钟 / %d 元", [root.get_node("LocalizationSystem").text("找人借车"), 18, 20])
-	check(borrowed_label == "Borrow a Car · 18 min / ¥20", "Travel choice template is localized")
+	if FileAccess.file_exists("res://localization/en.json"):
+		check(borrowed_label == "Borrow a Car · 18 min / ¥20", "Travel choice template is localized")
+	else:
+		check(borrowed_label == "找人借车 · 18 分钟 / 20 元", "Missing optional English catalog preserves authored travel text")
 	TranslationServer.set_locale("zh_CN")
 	print("TRAVEL CHOICES ", checks - failures, " checks / ", failures, " failures")
 	quit(0 if failures == 0 else 1)

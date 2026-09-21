@@ -126,19 +126,22 @@ func _ready() -> void:
 	status.position = Vector2(44,34)
 	status.text = LocalizationSystem.text(str(definition.title))
 	status.add_theme_font_size_override("font_size",26)
+	status.add_theme_color_override("font_color",Color("fff9eb"))
 	add_child(status)
 	caption = Label.new()
 	caption.position = Vector2(250,730)
 	caption.size = Vector2(1100,130)
 	caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	caption.add_theme_font_size_override("font_size",24)
+	caption.add_theme_color_override("font_color",Color("fff9eb"))
 	caption.add_theme_color_override("font_shadow_color",Color("132126"))
 	caption.add_theme_constant_override("shadow_offset_y",2)
 	add_child(caption)
-	close = Button.new()
+	close = preload("res://scripts/ui/components/solmere_button.gd").new()
+	close.variant="camera"
 	close.position = Vector2(1350,35)
 	close.size = Vector2(190,44)
-	close.text = LocalizationSystem.text("收起记忆 · Esc")
+	close.text = LocalizationSystem.text("收起记忆"); close.tooltip_text=SettingsSystem.binding_text("ui_cancel")
 	close.disabled = true
 	close.pressed.connect(_leave)
 	add_child(close)
@@ -156,7 +159,7 @@ func _ready() -> void:
 	if exit_started: return
 	ready_to_walk = true
 	close.disabled = false
-	status.text = LocalizationSystem.text(str(definition.title)+"   ·   WASD 走动 / 鼠标环顾 / E 看物件 / Esc 返回")
+	status.text = LocalizationSystem.text(str(definition.title)+"   ·   "+SettingsSystem.binding_text("interact")+" 看物件 · "+SettingsSystem.binding_text("ui_cancel")+" 返回")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _add_collisions(node: Node) -> void:
@@ -182,10 +185,8 @@ func _physics_process(delta: float) -> void:
 	if is_instance_valid(objects.reading): return
 	elapsed += delta
 	var input := Vector2.ZERO
-	if Input.is_physical_key_pressed(KEY_A): input.x -= 1
-	if Input.is_physical_key_pressed(KEY_D): input.x += 1
-	if Input.is_physical_key_pressed(KEY_W): input.y -= 1
-	if Input.is_physical_key_pressed(KEY_S): input.y += 1
+	input.x=Input.get_axis("move_left","move_right")
+	input.y=Input.get_axis("move_forward","move_backward")
 	var direction := Basis(Vector3.UP,yaw)*Vector3(input.x,0,input.y).normalized()
 	body.velocity.x = direction.x*1.8
 	body.velocity.z = direction.z*1.8
@@ -194,6 +195,7 @@ func _physics_process(delta: float) -> void:
 	camera.position = body.position+Vector3(0,1.57,0)
 	camera.rotation = Vector3(pitch,yaw,0)
 	if elapsed > 9: caption.text = ""
+	status.modulate.a=clampf(7-elapsed,0,1)
 
 func _input(event: InputEvent) -> void:
 	if exit_started: return
@@ -205,11 +207,11 @@ func _input(event: InputEvent) -> void:
 		yaw -= event.relative.x*.0022
 		pitch = clampf(pitch-event.relative.y*.0022,-1.35,1.35)
 		get_viewport().set_input_as_handled()
-	elif event is InputEventKey and event.pressed and not event.echo:
-		if event.physical_keycode == KEY_E and ready_to_walk:
-			if not is_instance_valid(objects.reading): objects.interact()
-		elif event.physical_keycode == KEY_TAB and ready_to_walk and not is_instance_valid(objects.reading):
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else Input.MOUSE_MODE_CAPTURED
+	elif event.is_action_pressed("interact") and ready_to_walk:
+		if not is_instance_valid(objects.reading): objects.interact()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("open_map") and ready_to_walk and not is_instance_valid(objects.reading):
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else Input.MOUSE_MODE_CAPTURED
 		get_viewport().set_input_as_handled()
 
 func _leave() -> void:

@@ -71,7 +71,10 @@ func _fit_experience() -> void:
 		return
 	if experience is Control:
 		experience.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		if module_id == "tarot": experience.offset_top = 60
+		if module_id == "tarot":
+			experience.offset_top = 60
+			if not has_node("TableHeader"):
+				var backdrop := ColorRect.new(); backdrop.name="TableHeader"; backdrop.color=Color("214860"); backdrop.size=Vector2(size.x,60); backdrop.mouse_filter=Control.MOUSE_FILTER_IGNORE; add_child(backdrop)
 	if experience is Node2D:
 		if module_id == "translation":
 			var fit := minf(size.x / 1280.0, maxf(1.0,size.y-100.0) / 960.0)
@@ -88,12 +91,12 @@ func _build_host_bar() -> void:
 	panel.position = Vector2(825, 12)
 	panel.size = Vector2(755, 88)
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(CREAM, 0.96)
+	style.bg_color = Color("edf3f4",.95)
 	style.border_color = Color(TERRACOTTA, 0.85)
-	style.set_border_width_all(2)
+	style.set_border_width_all(0)
 	style.set_corner_radius_all(10)
 	style.shadow_color = Color(INK, 0.2)
-	style.shadow_size = 8
+	style.shadow_size = 0
 	panel.add_theme_stylebox_override("panel", style)
 	layer.add_child(panel)
 	var title := Label.new()
@@ -131,6 +134,7 @@ func _build_host_bar() -> void:
 		if module_id == "tarot": panel.position.y = 0
 		panel.size = Vector2(360, 60)
 		panel.add_to_group("scene_speech")
+		panel.add_theme_stylebox_override("panel",StyleBoxEmpty.new())
 		leave.text = "收起"
 		complete_button.text = "带着回忆回去"
 		title.hide()
@@ -142,18 +146,9 @@ func _build_host_bar() -> void:
 
 
 func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, primary: bool) -> Button:
-	var button := Button.new()
-	button.text = LocalizationSystem.text(text_value)
-	button.position = at
-	button.size = button_size
-	var style := StyleBoxFlat.new()
-	style.bg_color = TERRACOTTA if primary else Color(SEA, 0.14)
-	style.border_color = TERRACOTTA if primary else SEA
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(7)
-	button.add_theme_stylebox_override("normal", style)
-	button.add_theme_color_override("font_color", CREAM if primary else INK)
-	parent.add_child(button)
+	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
+	button.variant="camera" if module_id in ["tarot","contemplation"] else "outlined"
+	button.selected=primary; button.text=LocalizationSystem.text(text_value); button.position=at; button.size=button_size; parent.add_child(button)
 	return button
 
 
@@ -161,6 +156,7 @@ func _process(_delta: float) -> void:
 	if experience == null or complete_button == null:
 		return
 	var ready := _experience_completed()
+	if module_id=="contemplation": complete_button.visible=ready
 	if ready == completion_ready:
 		return
 	completion_ready = ready

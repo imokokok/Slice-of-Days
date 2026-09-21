@@ -10,6 +10,8 @@ const SAGE := Color("8caa87")
 const GOLD := Color("eed577")
 const BOARD := Rect2(42, 122, 920, 610)
 
+var cooking_pan: Texture2D=preload("res://art/ui/enamel-cooking-pan.png")
+var ingredient_art: Control
 var module_id := ""
 var prototype: Dictionary = {}
 var interaction: Dictionary = {}
@@ -67,13 +69,14 @@ func _build_theme() -> void:
 
 
 func _build_ui() -> void:
-	var header := _panel(self, Vector2(24, 20), Vector2(1552, 82), Color(PAPER, 0.96), TERRACOTTA)
-	_label(header, _eyebrow(), Vector2(22, 10), Vector2(520, 24), 13, SEA)
-	_label(header, str(prototype.get("title", module_id)), Vector2(22, 32), Vector2(760, 38), 27, INK)
+	var header := _panel(self, Vector2(24, 20), Vector2(1552, 82), Color.TRANSPARENT, Color.TRANSPARENT)
+	_label(header, _eyebrow(), Vector2(22, 10), Vector2(520, 24), 13, PAPER)
+	_label(header, str(prototype.get("title", module_id)), Vector2(22, 32), Vector2(760, 38), 27, PAPER)
 	var leave := _button(header, "暂时离开", Vector2(1320, 18), Vector2(205, 48), false)
+	leave.variant="camera"; leave.refresh()
 	leave.pressed.connect(_return_or_cancel)
 
-	var side := _panel(self, Vector2(985, 122), Vector2(590, 610), Color(PAPER, 0.96), Color(SEA, 0.75))
+	var side := _panel(self, Vector2(985, 122), Vector2(590, 644), Color("edf3f4",.97), Color.TRANSPARENT)
 	instruction_label = _label(side, str(interaction.get("prompt", "完成这段操作。")), Vector2(22, 16), Vector2(546, 72), 15, INK)
 	instruction_label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 	selection_label = _label(side, "", Vector2(22, 92), Vector2(546, 52), 14, SEA)
@@ -82,12 +85,22 @@ func _build_ui() -> void:
 	for index in tokens.size():
 		var token: Dictionary = tokens[index]
 		var token_id := str(token.get("id", ""))
-		var token_button := _button(side, _token_button_text(token), Vector2(22, 150 + index * (36 if module_id == "cooking" else 52)), Vector2(546, 32 if module_id == "cooking" else 44), false)
+		var at := Vector2(22,150+index*52)
+		var extent := Vector2(546,44)
+		if module_id=="cooking": at=Vector2(22+(index%3)*184,145+(index/3)*82); extent=Vector2(174,73)
+		var token_button := _button(side, _token_button_text(token), at, extent, false)
+		if module_id=="cooking":
+			token_button.add_theme_font_size_override("font_size",15); token_button.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; token_button.clip_text=true
+			token_button.size=extent
+			token_button.icon_alignment=HORIZONTAL_ALIGNMENT_LEFT
+			token_button.tooltip_text=str(token.get("detail",""))
 		token_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		token_button.tooltip_text = LocalizationSystem.text(token.get("detail", ""))
 		token_button.pressed.connect(_toggle_token.bind(token_id))
 		token_buttons[token_id] = token_button
 
+	if module_id=="cooking":
+		ingredient_art=Control.new(); ingredient_art.mouse_filter=MOUSE_FILTER_IGNORE; add_child(ingredient_art)
 	_build_module_control(side)
 	var choice_y := 522
 	for choice in prototype.get("choices", []):
@@ -96,16 +109,17 @@ func _build_ui() -> void:
 		if module_id == "cooking": minutes = int(EconomySystem.cooking_cost(choice.get("cost", {})).get("minutes", minutes))
 		var choice_button := _button(side, "%s · %d分钟" % [str(choice.get("label", choice_id)), minutes], Vector2(22, choice_y), Vector2(546, 42), true)
 		choice_button.tooltip_text = LocalizationSystem.text(choice.get("detail", ""))
-		choice_button.pressed.connect(_complete_choice.bind(choice_id))
+		choice_button.pressed.connect(_confirm_choice.bind(choice_id))
 		choice_buttons[choice_id] = choice_button
 		choice_y += 50
 
-	var footer := _panel(self, Vector2(112, 754), Vector2(1376, 122), Color(PAPER, 0.97), TERRACOTTA)
-	status_label = _label(footer, _initial_status(), Vector2(24, 18), Vector2(1040, 82), 16, INK)
+	var footer := _panel(self, Vector2(42, 780), Vector2(1510, 92), Color("214860",.92), Color.TRANSPARENT)
+	status_label = _label(footer, _initial_status(), Vector2(24, 15), Vector2(1120, 64), 18, PAPER)
 	status_label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-	return_button = _button(footer, "返回原空间", Vector2(1092, 34), Vector2(250, 54), false)
+	return_button = _button(footer, "返回原空间", Vector2(1225, 18), Vector2(250, 54), false)
+	return_button.variant="camera"; return_button.refresh()
 	return_button.pressed.connect(_return_or_cancel)
-	_label(self, "数字键选择素材 · R 执行操作 · Esc 暂时离开", Vector2(520, 879), Vector2(560, 20), 12, Color(PAPER, 0.9), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(self, "选择材料 · "+SettingsSystem.binding_text("restart_module")+" 操作 · "+SettingsSystem.binding_text("ui_cancel")+" 返回", Vector2(520, 879), Vector2(560, 20), 12, Color(PAPER, 0.9), HORIZONTAL_ALIGNMENT_CENTER)
 
 
 func _build_module_control(parent: Control) -> void:
@@ -164,7 +178,7 @@ func _perform_primary_action() -> void:
 		"cooking":
 			var heat := value_slider.value
 			if heat < 0.42 or heat > 0.74:
-				status_label.text = LocalizationSystem.text("火候还没有进入稳定区。让指针停在陶土色刻度之间。")
+				status_label.text = LocalizationSystem.text("火候还没有进入稳定区。让指针停在蓝色刻度之间。")
 				return
 			stage_ready = true
 			status_label.text = LocalizationSystem.text("火候稳定，三样材料已经完成同一轮处理。现在决定怎样出餐。")
@@ -214,6 +228,12 @@ func _process(delta: float) -> void:
 
 
 func _update_state() -> void:
+	if is_instance_valid(ingredient_art):
+		for old in ingredient_art.get_children(): ingredient_art.remove_child(old); old.queue_free()
+		for index in selected_tokens.size():
+			var sketch := preload("res://scripts/ui/goods_sketch.gd").new(); sketch.item_id=selected_tokens[index]
+			var angle := -PI*.8+index*PI*.6
+			sketch.position=Vector2(400,363)+Vector2(cos(angle),sin(angle))*65; sketch.size=Vector2(86,80); ingredient_art.add_child(sketch)
 	var minimum := int(interaction.get("min_select", 0))
 	var labels: Array[String] = []
 	for token_id in selected_tokens:
@@ -252,6 +272,18 @@ func _update_module_value() -> void:
 		"archives":
 			value_label.text = LocalizationSystem.text("已展开 %d / 3 份来源记录" % selected_tokens.size())
 
+
+func _confirm_choice(choice_id: String) -> void:
+	if completed or not stage_ready: return
+	for choice in prototype.get("choices",[]):
+		if str(choice.get("id",""))!=choice_id: continue
+		var cost: Dictionary=EconomySystem.cooking_cost(choice.get("cost",{})) if module_id=="cooking" else choice.get("cost",{})
+		var sheet := preload("res://scripts/ui/components/confirm_sheet.gd").new()
+		sheet.heading=str(choice.get("label","完成这段经历"))
+		sheet.description="这段操作需要 %d 分钟。\n\n%s" % [int(cost.get("minutes",0)),"将使用选中的真实食材，并留下今天的出餐记录。" if module_id=="cooking" else str(choice.get("detail","完成后将留下对应的经历与材料。"))]
+		sheet.confirm_text="确认"; add_child(sheet)
+		sheet.accepted.connect(func() -> void: _complete_choice(choice_id); sheet.queue_free())
+		return
 
 func _complete_choice(choice_id: String) -> void:
 	if completed or not stage_ready:
@@ -303,6 +335,7 @@ func _fail() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not get_tree().get_nodes_in_group("native_confirmation").is_empty(): return
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if event.keycode >= KEY_1 and event.keycode <= KEY_5:
@@ -332,14 +365,7 @@ func _draw() -> void:
 
 
 func _draw_cooking() -> void:
-	var center := Vector2(505, 424)
-	draw_circle(center, 154, Color("3d3834"))
-	draw_circle(center, 128, Color("bb6a48"))
-	draw_circle(center, 111, Color("e5b55f"))
-	for index in selected_tokens.size():
-		var angle := -PI * 0.82 + index * PI * 0.45
-		var color: Color = [Color("e1c34f"), Color("bd5e43"), Color("708b66"), Color("f1dfb8"), Color("d7aa67")][abs(hash(selected_tokens[index])) % 5]
-		draw_circle(center + Vector2(cos(angle), sin(angle)) * 68, 28, color)
+	draw_texture_rect(cooking_pan,Rect2(76,160,852,500),false)
 	var heat := value_slider.value if value_slider != null else 0.0
 	draw_rect(Rect2(210, 662, 590, 18), Color("d9cbb7"))
 	draw_rect(Rect2(210, 662, 590 * heat, 18), TERRACOTTA if heat >= 0.42 and heat <= 0.74 else GOLD)
@@ -451,7 +477,7 @@ func _token_button_text(token: Dictionary) -> String:
 	if module_id == "cooking":
 		var count := int(GameState.inventory.get(str(token.get("id", "")), 0))
 		if count > 0:
-			return "%s  ·  随身有%d" % [label, count]
+			return "%s\n随身 %d" % [label, count]
 	if module_id == "sound_sampling":
 		return ("△  " if str(token.get("id", "")) in ["cafe_cups", "old_hinge"] else "✓  ") + label
 	return label
@@ -491,8 +517,8 @@ func _board_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color("e6eff0")
 	style.border_color = Color(INK, 0.35)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(3)
+	style.set_border_width_all(0)
+	style.set_corner_radius_all(14)
 	return style
 
 
@@ -503,10 +529,10 @@ func _panel(parent: Node, at: Vector2, panel_size: Vector2, color: Color, border
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
 	style.border_color = border
-	style.set_border_width_all(2)
+	style.set_border_width_all(0)
 	style.set_corner_radius_all(12)
 	style.shadow_color = Color(INK, 0.18)
-	style.shadow_size = 8
+	style.shadow_size = 0
 	panel.add_theme_stylebox_override("panel", style)
 	parent.add_child(panel)
 	return panel
@@ -525,7 +551,8 @@ func _label(parent: Node, text_value: String, at: Vector2, label_size: Vector2, 
 
 
 func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, primary: bool) -> Button:
-	var button := Button.new()
+	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
+	button.variant="outlined"
 	button.text = LocalizationSystem.text(text_value)
 	button.position = at
 	button.size = button_size
@@ -536,4 +563,4 @@ func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2
 
 
 func _style_button(button: Button, selected_or_primary: bool) -> void:
-	PaperLanguage.selected_button(button,selected_or_primary)
+	button.selected=selected_or_primary

@@ -41,12 +41,12 @@ func _ready() -> void:
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color("faf9f2",0.97)
-	style.set_corner_radius_all(5)
+	style.set_corner_radius_all(18)
 	panel.add_theme_stylebox_override("panel",style)
 	add_child(panel)
 	speech_tail=Polygon2D.new(); speech_tail.color=style.bg_color; speech_tail.polygon=PackedVector2Array([Vector2(-10,0),Vector2(12,0),Vector2(0,18)]); panel.add_child(speech_tail)
 	speaker_label = _label(panel,Vector2(18,12),Vector2(394,26),17,Color("31658b"))
-	text_label = _label(panel,Vector2(18,47),Vector2(394,93),22,Color("252c32"))
+	text_label = _label(panel,Vector2(18,47),Vector2(394,93),22,Color("315c7c"))
 	hint_label = _label(panel,Vector2(18,149),Vector2(394,25),13,Color("617480"))
 	hint_label.text = SettingsSystem.binding_text("dialogue_advance")+" 继续 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
 	typewriter = bool(GameState.shared_state.get("typewriter",true))
@@ -181,7 +181,7 @@ func _close() -> void:
 
 func _show_vendor_choices() -> void:
 	if is_instance_valid(vendor_choices): return
-	speech_card.size.y = 340
+	speech_card.size.y = 163
 	_position_card("npc")
 	speaker_label.text = LocalizationSystem.text("BEETMAN" if npc == "beetman" else "杂货店老板")
 	text_label.text = LocalizationSystem.text("我就在摊边。你想接着聊，还是看看今天的罐头？" if npc == "beetman" else "你慢慢看。想买什么、冲照片，或者再说几句都可以。")
@@ -189,14 +189,14 @@ func _show_vendor_choices() -> void:
 	text_label.size.y = 58
 	hint_label.hide()
 	vendor_choices = VBoxContainer.new()
-	vendor_choices.position = Vector2(18, 111)
-	vendor_choices.size = Vector2(394, 168)
-	vendor_choices.add_theme_constant_override("separation", 3)
-	speech_card.add_child(vendor_choices)
+	vendor_choices.position = _choice_position(5)
+	vendor_choices.size = Vector2(365, 290)
+	vendor_choices.add_theme_constant_override("separation", 10)
+	add_child(vendor_choices)
 	var options := [["再聊一会儿 · 15分钟", "chat"], ["看看今天的罐头" if npc == "beetman" else "看看货架", "shop"], ["问点事 · 5分钟", "ask"], ["约个时间挑旧标签" if npc == "beetman" else "摄影与冲洗", "appointment" if npc == "beetman" else "film"], ["先走了", "leave"]]
 	for option in options:
 		var button := preload("res://scripts/ui/components/solmere_button.gd").new()
-		button.text=LocalizationSystem.text(str(option[0])); button.custom_minimum_size.y=36
+		button.variant="choice"; button.text=LocalizationSystem.text(str(option[0])); button.custom_minimum_size=Vector2(365,52); button.alignment=HORIZONTAL_ALIGNMENT_LEFT
 		button.add_theme_font_size_override("font_size",17); vendor_choices.add_child(button)
 		button.pressed.connect(_vendor_action.bind(str(option[1])))
 	vendor_choices.get_child(0).grab_focus()
@@ -296,11 +296,11 @@ func _position_card(speaker: String) -> void:
 
 func _choice_box(options: Array, action: Callable) -> void:
 	if is_instance_valid(vendor_choices): return
-	speech_card.size.y=165+options.size()*42; text_label.size.y=65; hint_label.hide()
+	speech_card.size.y=164; text_label.size.y=65; hint_label.hide()
 	_position_card("npc")
-	vendor_choices=VBoxContainer.new(); vendor_choices.position=Vector2(18,115); vendor_choices.size.x=394; vendor_choices.add_theme_constant_override("separation",5); speech_card.add_child(vendor_choices)
+	vendor_choices=VBoxContainer.new(); vendor_choices.position=_choice_position(options.size()); vendor_choices.size.x=365; vendor_choices.add_theme_constant_override("separation",10); add_child(vendor_choices)
 	for option in options:
-		var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.text=str(option[0]); button.custom_minimum_size.y=37; vendor_choices.add_child(button); button.pressed.connect(action.bind(str(option[1])))
+		var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.variant="choice"; button.text=str(option[0]); button.alignment=HORIZONTAL_ALIGNMENT_LEFT; button.custom_minimum_size=Vector2(365,58); vendor_choices.add_child(button); button.pressed.connect(action.bind(str(option[1])))
 	vendor_choices.get_child(0).grab_focus()
 
 func _clear_choices() -> void:
@@ -332,3 +332,10 @@ func _choose_encounter(choice: String) -> void:
 	_append("npc","Xanni 也爱收集路上的声音。上次我在唱片店听了半天，才发现那段是雨落在狗碗里。")
 	_append("npc","你要是录到什么，带去给她听听。她的制作台常空着一边。")
 	index=start; _show_line()
+
+func _choice_position(count: int) -> Vector2:
+	var at := speech_card.position+Vector2(speech_card.size.x+30,45)
+	if at.x+365>1560: at.x=speech_card.position.x-395
+	at.x=clampf(at.x,32,1200)
+	at.y=clampf(at.y,100,820-count*68)
+	return at

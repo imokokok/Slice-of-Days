@@ -1,4 +1,4 @@
-extends Button
+extends "res://scripts/ui/components/solmere_button.gd"
 var sample: Dictionary
 
 func _get_drag_data(_at: Vector2) -> Variant:

@@ -6,13 +6,13 @@ var status: Label
 var note := ""
 var working := false
 var film_page := 0
-const INK := Color("374a46")
+const INK := Color("31658b")
 
 func _ready() -> void:
 	add_to_group("meta_modal")
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter=MOUSE_FILTER_STOP
-	theme=preload("res://scripts/town_sound/MediaTheme.gd").build()
+	theme=preload("res://art/ui/solmere_ui.tres")
 	FilmSystem.developing_progress.connect(_progress)
 	rebuild()
 
@@ -31,19 +31,14 @@ func label(parent: Node, text: String, at: Vector2, dimensions: Vector2, font_si
 	return l
 
 func button(parent: Node, title: String, at: Vector2, dimensions: Vector2, action: Callable, disabled := false) -> Button:
-	var b:=Button.new()
+	var b:=preload("res://scripts/ui/components/solmere_button.gd").new()
+	b.variant="outlined"
 	b.text=LocalizationSystem.text(title)
 	b.position=at
 	b.size=dimensions
 	b.disabled=disabled
 	b.add_theme_font_size_override("font_size",18)
 	b.add_theme_color_override("font_color",INK)
-	var style:=StyleBoxFlat.new()
-	style.bg_color=Color("e5e3cc")
-	style.border_color=Color("b4bca9")
-	style.set_border_width_all(1)
-	b.add_theme_stylebox_override("normal",style)
-	b.add_theme_stylebox_override("hover",style)
 	b.pressed.connect(action)
 	parent.add_child(b)
 	return b
@@ -58,9 +53,8 @@ func rebuild() -> void:
 	paper.position=Vector2(180,62)
 	paper.size=Vector2(1240,778)
 	var style:=StyleBoxFlat.new()
-	style.bg_color=Color("f1ead7")
-	style.shadow_color=Color(0,0,0,.25)
-	style.shadow_size=12
+	style.bg_color=Color("edf3f4")
+	style.set_corner_radius_all(14)
 	paper.add_theme_stylebox_override("panel",style)
 	add_child(paper)
 	label(paper,"杂货店 · 摄影柜台" if mode=="counter" else "这张照片，接下来",Vector2(38,22),Vector2(900,50),29)
@@ -127,6 +121,22 @@ func _counter() -> void:
 
 func _act(action: String, id := "") -> void:
 	if working: return
+	if action in ["help","camera","buy","standard","rush"]:
+		var confirm := preload("res://scripts/ui/components/confirm_sheet.gd").new()
+		confirm.heading={"help":"整理旧货","camera":"带走这台相机","buy":"买一卷胶片","standard":"普通冲洗","rush":"加急冲洗"}[action]
+		var cost := int(FilmSystem.economy().camera_price) if action=="camera" else 0
+		if action=="buy": cost=int(FilmSystem.economy().film_prices[id])
+		if action in ["standard","rush"]:
+			cost=FilmSystem.processing_price(action)
+			var roll: Dictionary=FilmSystem.state().rolls.get(id,{})
+			confirm.description="%d 张底片\n费用 %d 元\n%s\n\n冲好后，回到柜台领取照片。" % [int(roll.get("exposures_used",0)),cost,"次日 10:00 可以领取" if action=="standard" else "需要 180 分钟"]
+		else: confirm.description="花费 %d 元\n钱包余额 %d 元\n\n%s" % [cost,GameState.money,"需要 25 分钟，整理完成后领取相机。" if action=="help" else "放入随身包，随时可以使用。"]
+		confirm.accepted.connect(func() -> void: confirm.queue_free(); _execute(action,id))
+		add_child(confirm)
+	else: _execute(action,id)
+
+func _execute(action: String, id := "") -> void:
+	if working: return
 	working=true
 	_disable_buttons(self)
 	var result: Dictionary={}
@@ -185,6 +195,7 @@ func _photo_actions() -> void:
 	if people.is_empty(): label(paper,"下次碰见人时，再把照片拿出来。",Vector2(800,442),Vector2(385,100),19)
 
 func _input(event: InputEvent) -> void:
+	if not get_tree().get_nodes_in_group("native_confirmation").is_empty(): return
 	if working:
 		if event is InputEventKey or event is InputEventMouseButton: get_viewport().set_input_as_handled()
 		return

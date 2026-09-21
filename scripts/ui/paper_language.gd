@@ -59,7 +59,7 @@ func button_style(button: Button, in_scene := false) -> void:
 
 func _style(node: Control) -> void:
 	if not is_instance_valid(node) or not node.is_inside_tree() or node.is_queued_for_deletion(): return
-	if _context(node,["main_menu.gd","living_objects.gd","media_browser.gd","guidance_toasts.gd","runtime_menu.gd","solmere_button.gd","paper_page.gd","portfolio_item.gd","runtime_debug.gd","flowing_thought.gd","workshop.gd"]): return
+	if _context(node,["star_gazing_controller.gd","economy_paper.gd","StudioScreen.gd","myriorama_tarot/scripts/table.gd","native_module_game.gd","save_slots.gd","shop_panel.gd","film_paper.gd","confirm_sheet.gd","travel_card.gd","main_menu.gd","PocketCamera.gd","recorder_lite.gd","shutter_button.gd","living_objects.gd","media_browser.gd","guidance_toasts.gd","runtime_menu.gd","solmere_button.gd","paper_page.gd","portfolio_item.gd","runtime_debug.gd","flowing_thought.gd","workshop.gd"]): return
 	if speech(node): return
 	if node is Button:
 		button_style(node,speech(node))
@@ -70,9 +70,9 @@ func _style(node: Control) -> void:
 		if current is StyleBoxFlat:
 			paper=current.duplicate()
 		paper.shadow_size=0; paper.shadow_offset=Vector2.ZERO
-		paper.set_corner_radius_all(3); paper.set_border_width_all(1)
+		paper.set_corner_radius_all(10); paper.set_border_width_all(0)
 		paper.border_color=Color(BLUE,.32)
-		paper.bg_color=WHITE
+		paper.bg_color=WHITE if _context(node,["journal.gd","economy_paper.gd"]) else Color("edf3f4",.97)
 		if speech(node): paper.bg_color=Color.TRANSPARENT; paper.set_border_width_all(0)
 		node.add_theme_stylebox_override("panel",paper)
 

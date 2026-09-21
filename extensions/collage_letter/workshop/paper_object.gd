@@ -6,6 +6,7 @@ var cut_history: Array = []
 var drawing_layer: Array = []
 var tape_layers: Array = []
 var source_id := -1
+var photo_id := ""
 var paper_kind := "paper"
 var selected := false
 var ink := Color("343f39")
@@ -80,7 +81,7 @@ func split_mask(polygon: PackedVector2Array, kind: String) -> Array:
 	return [inside, outside]
 
 func record() -> Dictionary:
-	return {"id":object_id, "title":title, "kind":paper_kind, "source":source_id,
+	return {"id":object_id, "title":title, "kind":paper_kind, "source":source_id, "photo_id":photo_id,
 		"position":[position.x,position.y], "rotation":rotation, "scale":[scale.x,scale.y], "z":z_index,
 		"png":Marshalls.raw_to_base64(image.save_png_to_buffer()), "cut_history":cut_history,
 		"drawing_layer":drawing_layer, "tape_layers":tape_layers,
@@ -93,6 +94,7 @@ func restore(data: Dictionary) -> bool:
 	title = data.get("title", "纸片")
 	paper_kind = data.get("kind", "paper")
 	source_id = int(data.get("source", -1))
+	photo_id = str(data.get("photo_id",""))
 	set_image(restored)
 	position = Vector2(data.position[0], data.position[1])
 	rotation = float(data.get("rotation", 0))

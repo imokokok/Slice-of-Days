@@ -2,8 +2,8 @@ extends Control
 
 const PAPER := Color("fff8eb")
 const PAPER_SOFT := Color("f1dfc7")
-const INK := Color("4a342b")
-const MUTED := Color("806b5c")
+const INK := Color("31658b")
+const MUTED := Color("698594")
 const TERRACOTTA := Color("c85f43")
 const TEAL := Color("4f7d83")
 const SAGE := Color("7d8f59")
@@ -82,7 +82,7 @@ func _process(_delta: float) -> void:
 		for child in navigation.get_children():
 			if child is Button:
 				child.disabled = false
-				child.focus_mode = Control.FOCUS_NONE
+				child.focus_mode = Control.FOCUS_ALL
 
 func _build_navigation() -> void:
 	navigation = Control.new()
@@ -90,7 +90,7 @@ func _build_navigation() -> void:
 	navigation.size = Vector2(330,182)
 	navigation.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(navigation)
-	for y in [0,180]:
+	for y in [0,228 if SaveManager.has_any_save() else 180]:
 		var rule := ColorRect.new()
 		rule.position = Vector2(0,y)
 		rule.size = Vector2(330,1)
@@ -98,19 +98,21 @@ func _build_navigation() -> void:
 		rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		navigation.add_child(rule)
 	var titles := ["新游戏","章节","设置"]
+	var names := ["NewGame","Chapters","Settings"]
 	var actions := [_launch_new_game,_show_chapters,_show_settings]
+	if SaveManager.has_any_save(): titles.push_front("继续旅程"); names.push_front("Continue"); actions.push_front(_continue_latest)
 	var menu_font := SystemFont.new()
 	menu_font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Arial", "sans-serif"])
 	menu_font.font_weight = 300
 	for i in titles.size():
 		var button := Button.new()
-		button.name = ["NewGame","Chapters","Settings"][i]
+		button.name = names[i]
 		button.text = LocalizationSystem.text(titles[i])
 		button.position = Vector2(40,24+i*44)
 		button.size = Vector2(250,40)
 		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		button.disabled = true
-		button.focus_mode = Control.FOCUS_NONE
+		button.focus_mode = Control.FOCUS_ALL
 		button.flat = true
 		button.add_theme_font_size_override("font_size",23)
 		button.add_theme_font_override("font",menu_font)
@@ -119,12 +121,14 @@ func _build_navigation() -> void:
 			button.add_theme_stylebox_override(state,StyleBoxEmpty.new())
 		button.add_theme_color_override("font_color",Color.WHITE)
 		button.add_theme_color_override("font_hover_color",Color("fffdf6"))
-		button.add_theme_color_override("font_focus_color",Color("fffdf6"))
+		button.add_theme_color_override("font_focus_color",Color("eed577"))
 		button.add_theme_color_override("font_pressed_color",Color("f4dfb0"))
 		button.add_theme_color_override("font_shadow_color",Color("183e4e",.8))
 		button.add_theme_constant_override("shadow_offset_y",1)
 		navigation.add_child(button)
 		button.pressed.connect(actions[i])
+	for i in 2:
+		var extra := preload("res://scripts/ui/components/solmere_button.gd").new(); extra.variant="camera"; extra.text=["制作人员","退出"][i]; extra.position=Vector2(645+i*185,814); extra.size=Vector2(150,38); add_child(extra); extra.add_theme_font_size_override("font_size",16); extra.pressed.connect([_show_credits,_show_quit_confirmation][i])
 	navigation.modulate.a = 1
 
 
@@ -154,13 +158,14 @@ func _launch_new_game() -> void:
 	_on_new_game_pressed()
 	if not SceneRouter.transitioning:
 		entering = false
-		intro_background.queue_free()
+		if is_instance_valid(intro_background): intro_background.queue_free()
 		intro_video = null
 		intro_wash.queue_free()
 		navigation.show()
 		navigation.modulate.a = 1.0
 
 func _play_opening_animation() -> void:
+	if DisplayServer.get_name()=="headless": return
 	# The encoded stream contains only the newly authored sound design.
 	intro_background = ColorRect.new()
 	intro_background.color = Color.WHITE
@@ -201,24 +206,12 @@ func _layout_opening_animation() -> void:
 
 func _show_chapters() -> void:
 	_prepare_modal()
-	modal_panel.size.y = 610
-	_make_label(modal_panel,"章节",Vector2(34,24),Vector2(522,42),27,INK)
-	_make_label(modal_panel,"从已保存的章节继续",Vector2(34,72),Vector2(522,30),16,MUTED)
-	var saved_days: Dictionary = {}
-	for slot in range(1,SaveManager.SLOT_COUNT+1):
-		var summary := SaveManager.slot_summary(slot)
-		if not summary.get("exists",false): continue
-		var key := "%s_%d" % [str(summary.get("role","A")),int(summary.day)]
-		if not saved_days.has(key) or int(summary.modified)>int(saved_days[key].modified): saved_days[key]=summary
-	for day in range(1,8):
-		for role in ["A","B"]:
-			var key := "%s_%d" % [role,day]
-			var available := saved_days.has(key)
-			var button := _make_button(modal_panel,"%s · 第 %d 天%s" % [role,day,"" if available else " · —"],Vector2(44 if role=="A" else 304,115+(day-1)*53),Vector2(244,44),"regular")
-			button.disabled = not available
-			if available: button.pressed.connect(_resume_chapter.bind(int(saved_days[key].slot)))
-	var close := _make_button(modal_panel,"返回",Vector2(200,530),Vector2(190,46),"primary")
-	close.pressed.connect(_hide_modal)
+	modal_panel.position=Vector2(260,122); modal_panel.size=Vector2(1080,656)
+	_make_label(modal_panel,"章节与存档",Vector2(30,25),Vector2(920,60),31,INK)
+	var slots := preload("res://scripts/ui/components/save_slots.gd").new()
+	slots.position=Vector2(30,113); slots.loaded.connect(_resume_chapter); slots.changed.connect(_show_chapters); modal_panel.add_child(slots)
+	var back := _make_button(modal_panel,"返回",Vector2(438,578),Vector2(200,48),"regular"); back.pressed.connect(_hide_modal)
+
 
 func _resume_chapter(slot: int) -> void:
 	if SaveManager.load_slot(slot): SceneRouter.town_day()
@@ -234,12 +227,12 @@ func _build_modal_shell() -> void:
 	modal_panel.position = Vector2(505, 210)
 	modal_panel.size = Vector2(590, 480)
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(PAPER, 0.96)
+	style.bg_color = Color("edf3f4",.98)
 	style.border_color = Color(LINE, 0.92)
-	style.set_border_width_all(2)
+	style.set_border_width_all(0)
 	style.set_corner_radius_all(22)
 	style.shadow_color = Color(INK, 0.30)
-	style.shadow_size = 18
+	style.shadow_size = 0
 	style.shadow_offset = Vector2(0, 8)
 	modal_panel.add_theme_stylebox_override("panel", style)
 	modal_overlay.add_child(modal_panel)
@@ -267,6 +260,7 @@ func _show_settings() -> void:
 	language_picker.add_item(LocalizationSystem.text("简体中文"))
 	language_picker.set_item_metadata(0, "zh_CN")
 	language_picker.add_item("English")
+	language_picker.set_item_disabled(1,not FileAccess.file_exists("res://localization/en.json"))
 	language_picker.set_item_metadata(1, "en")
 	language_picker.select(0 if SettingsSystem.language() == "zh_CN" else 1)
 	language_picker.add_theme_font_size_override("font_size", 17)
@@ -405,57 +399,9 @@ func _make_label(parent: Node, text_value: String, at: Vector2, label_size: Vect
 
 
 func _make_button(parent: Node, text_value: String, at: Vector2, button_size: Vector2, kind: String) -> Button:
-	var button := Button.new()
-	button.text = LocalizationSystem.text(text_value)
-	button.position = at
-	button.size = button_size
-	button.focus_mode = Control.FOCUS_ALL
-	button.add_theme_font_size_override("font_size", 17)
-
-	var base := Color(PAPER, 0.78)
-	var edge := Color(LINE, 0.74)
-	var font_color := INK
-	match kind:
-		"primary":
-			base = Color(TERRACOTTA, 0.92)
-			edge = TERRACOTTA.darkened(0.12)
-			font_color = PAPER
-		"teal":
-			base = Color(TEAL, 0.90)
-			edge = TEAL.darkened(0.12)
-			font_color = PAPER
-		"danger":
-			base = Color("e9b6a4", 0.96)
-			edge = TERRACOTTA
-
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = base
-	normal.border_color = edge
-	normal.set_border_width_all(2)
-	normal.set_corner_radius_all(13)
-	normal.shadow_color = Color(INK, 0.20)
-	normal.shadow_size = 6
-	normal.shadow_offset = Vector2(0, 4)
-	var hover := normal.duplicate()
-	hover.bg_color = base.lightened(0.10)
-	hover.border_color = edge.lightened(0.10)
-	var pressed := normal.duplicate()
-	pressed.bg_color = base.darkened(0.08)
-	pressed.shadow_size = 2
-	var disabled := normal.duplicate()
-	disabled.bg_color = Color(PAPER_SOFT, 0.58)
-	disabled.border_color = Color(LINE, 0.35)
-
-	button.add_theme_stylebox_override("normal", normal)
-	button.add_theme_stylebox_override("hover", hover)
-	button.add_theme_stylebox_override("pressed", pressed)
-	button.add_theme_stylebox_override("focus", hover)
-	button.add_theme_stylebox_override("disabled", disabled)
-	button.add_theme_color_override("font_color", font_color)
-	button.add_theme_color_override("font_hover_color", font_color)
-	button.add_theme_color_override("font_pressed_color", font_color)
-	button.add_theme_color_override("font_disabled_color", Color(MUTED, 0.55))
-	parent.add_child(button)
+	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
+	button.variant="outlined"; button.selected=kind in ["primary","teal"]
+	button.text=LocalizationSystem.text(text_value); button.position=at; button.size=button_size; parent.add_child(button)
 	return button
 
 

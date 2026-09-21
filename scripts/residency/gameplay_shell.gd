@@ -40,8 +40,8 @@ func _ready() -> void:
 	folder = Button.new()
 	folder.position = Vector2(25,25)
 	folder.size = Vector2(109,61)
-	folder.text = "RP-07"
-	folder.tooltip_text = LocalizationSystem.text("F · 居住档案")
+	folder.text = "档案"
+	folder.tooltip_text = SettingsSystem.binding_text("open_archive")+" · 居住档案"
 	folder.add_theme_font_size_override("font_size",22)
 	folder.add_theme_color_override("font_color",Color("495955"))
 	var paper := StyleBoxFlat.new()
@@ -51,11 +51,11 @@ func _ready() -> void:
 	folder.pressed.connect(func() -> void: open_paper("dossier"))
 	add_child(folder)
 	clock_label = Label.new()
-	clock_label.position = Vector2(1240,27)
-	clock_label.size = Vector2(330,50)
-	clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	clock_label.position = Vector2(42,30)
+	clock_label.size = Vector2(330,32)
+	clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	clock_label.add_theme_font_override("font",hud_font)
-	clock_label.add_theme_font_size_override("font_size",25)
+	clock_label.add_theme_font_size_override("font_size",18)
 	clock_label.add_theme_color_override("font_color",Color("fff6df"))
 	clock_label.add_theme_color_override("font_outline_color",PROMPT_OUTLINE)
 	clock_label.add_theme_constant_override("outline_size",3)
@@ -64,14 +64,15 @@ func _ready() -> void:
 	clock_label.add_theme_constant_override("shadow_offset_y",2)
 	clock_label.mouse_filter = MOUSE_FILTER_IGNORE
 	add_child(clock_label)
-	next_button = Button.new()
-	next_button.position = Vector2(1120,78)
-	next_button.size = Vector2(450,80)
+	next_button = preload("res://scripts/ui/components/solmere_button.gd").new()
+	next_button.variant = "camera"
+	next_button.position = Vector2(31,78)
+	next_button.size = Vector2(335,67)
 	next_button.flat = true
 	next_button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	next_button.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	next_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	next_button.add_theme_font_override("font",hud_font)
-	next_button.add_theme_font_size_override("font_size",18)
+	next_button.add_theme_font_size_override("font_size",16)
 	next_button.add_theme_color_override("font_color",Color("fff6df"))
 	next_button.add_theme_color_override("font_outline_color",PROMPT_OUTLINE)
 	next_button.add_theme_constant_override("outline_size",3)
@@ -79,6 +80,7 @@ func _ready() -> void:
 	next_button.add_theme_constant_override("shadow_offset_y",2)
 	next_button.pressed.connect(func() -> void: open_paper("today"))
 	add_child(next_button)
+	var lead_rule := ColorRect.new(); lead_rule.color=PaperLanguage.YELLOW; lead_rule.position=Vector2(-6,13); lead_rule.size=Vector2(2,41); lead_rule.mouse_filter=MOUSE_FILTER_IGNORE; next_button.add_child(lead_rule)
 	# Contextual controls float directly over the world. Keeping this as a plain
 	# Control (rather than a Panel) prevents the hint area from masking scenery.
 	hints = Control.new()
@@ -142,15 +144,19 @@ func _process(delta: float) -> void:
 	var period_key := str(GameState.current_day)+period
 	if last_time_period != period_key:
 		last_time_period=period_key; time_notice_age=0
-		clock_label.text="DAY %02d — %s" % [GameState.current_day,period]
+		clock_label.text="DAY %02d   %s" % [GameState.current_day,GameState.clock_text()]
 	time_notice_age+=delta
-	clock_label.visible=time_notice_age<4 and not is_instance_valid(overlay) and not is_instance_valid(tool) and not MetaExperience.modal_open()
-	clock_label.modulate.a=clampf(4-time_notice_age,0,1)
+	var clear_view := not is_instance_valid(overlay) and not is_instance_valid(tool) and not _blocked()
+	clock_label.visible=clear_view
+	clock_label.modulate.a=.85
 	guidance_tick -= delta
 	if guidance_tick <= 0:
 		guidance_tick = 1.0
-		next_button.text = LocalizationSystem.text("NEXT  "+str(GuidanceSystem.next_step().text)+"\nT · 今日")
-	next_button.visible = false
+		clock_label.text="DAY %02d   %s" % [GameState.current_day,GameState.clock_text()]
+		var tracked := GuidanceSystem.tracked_lead()
+		next_button.text = str(tracked.get("text",GuidanceSystem.next_step().text))
+		next_button.tooltip_text = SettingsSystem.binding_text("open_notebook")+" · 打开随身本"
+	next_button.visible = clear_view and not next_button.text.is_empty()
 	if last_location != GameState.current_location:
 		last_location = GameState.current_location
 		ResidencySystem.visit(last_location)
@@ -177,8 +183,11 @@ func _process(delta: float) -> void:
 		hint_debug.context = id
 		hint_debug.actions = str(context.text).split("\n")
 	hint_age += delta
-	hints.visible = not _blocked() and not is_instance_valid(tool)
-	hints.modulate.a = minf(hint_age/0.2,1.0) if hint_age < 2.7 else clampf(1.0-(hint_age-2.7)/0.35,0,1)
+	hints.visible = clear_view and not id.is_empty()
+	var near := stage.nearest() as Dictionary
+	hints.position = PaperLanguage.near_actor(stage,hints.size,float(near.get("x",stage.player_x)))
+	hints.position.y += 35
+	hints.modulate.a = minf(hint_age/0.16,1.0)
 	hint_debug.fade = "in" if hint_age < .2 else "hold" if hint_age < 2.7 else "out" if hint_age < 3.05 else "hidden"
 
 func _context() -> Dictionary:
@@ -199,7 +208,7 @@ func _context() -> Dictionary:
 	if not near.is_empty():
 		var text := SettingsSystem.binding_text("interact")+"  "+str(near.get("label","互动"))
 		return {"id":str(near),"text":text}
-	return {"id":"walk_"+last_location,"text":SettingsSystem.binding_text("move_left")+" / "+SettingsSystem.binding_text("move_right")+" 走走\n"+SettingsSystem.binding_text("open_notebook")+" 今日计划"}
+	return {"id":"","text":""}
 
 func _special() -> String:
 	if not stage.indoor: return ""
@@ -274,6 +283,7 @@ func open_tool(mode: String) -> void:
 		return
 	if not FilmSystem.camera_available(): return
 	tool = load("res://scripts/town_sound/PocketCamera.gd").new()
+	tool.gallery_requested.connect(func() -> void: call_deferred("open_paper","gallery"))
 	tool.source_provider = _camera_source
 	tool.context = {"location":GameState.current_location,"title":TravelSystem.location_name(GameState.current_location),"day":GameState.current_day,"role":GameState.current_role,"game_minute":GameState.current_minute}
 	add_child(tool)

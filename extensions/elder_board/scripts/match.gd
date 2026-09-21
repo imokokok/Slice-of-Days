@@ -18,6 +18,7 @@ var scoring := false
 var generation := 0
 var last_move := -1
 var selected := -1
+var hovered_cell := -1
 var passes := 0
 var history: Dictionary = {}
 var dead: Dictionary = {}
@@ -45,6 +46,7 @@ func _ready() -> void:
 	piece_font.font_names = PackedStringArray(["Segoe UI Symbol", "DejaVu Sans", "Arial Unicode MS"])
 	_build_ui()
 	restart()
+	mouse_exited.connect(func() -> void: hovered_cell=-1; queue_redraw())
 
 func label_at(text: String, p: Vector2, width: float, font_size: int) -> Label:
 	var label := Label.new()
@@ -59,7 +61,8 @@ func label_at(text: String, p: Vector2, width: float, font_size: int) -> Label:
 	return label
 
 func button_at(text: String, p: Vector2, action: Callable) -> Button:
-	var button := Button.new()
+	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
+	button.variant="choice"
 	button.text = LocalizationSystem.text(text)
 	button.position = p
 	button.size = Vector2(420, 62)
@@ -71,7 +74,7 @@ func button_at(text: String, p: Vector2, action: Callable) -> Button:
 func _build_ui() -> void:
 	var titles := {&"go": "围棋 · %d 路" % go_size, &"gomoku": "五子棋 · 15 路", &"chess": "国际象棋"}
 	label_at(titles[game_id], Vector2(110, 60), 750, 42)
-	label_at("老棋友 · 本地 AI", Vector2(1000, 95), 470, 32)
+	label_at("闹闹", Vector2(1000, 95), 470, 32)
 	status = label_at("", Vector2(1000, 160), 450, 30)
 	detail = label_at("", Vector2(1000, 250), 440, 23)
 	pass_button = button_at("停一手", Vector2(1000, 460), human_pass)
@@ -126,7 +129,7 @@ func restart() -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, size), Color(0.10, 0.11, 0.11, 0.97))
+	draw_rect(Rect2(Vector2.ZERO, size), Color("183b53",.98))
 	if game_id == &"chess":
 		for i in range(64):
 			var p := origin + Vector2(i % 8, i / 8) * cell
@@ -165,8 +168,27 @@ func _draw() -> void:
 				draw_line(p - Vector2(10, 10), p + Vector2(10, 10), Color("b55252"), 3)
 				draw_line(p - Vector2(10, -10), p + Vector2(10, -10), Color("b55252"), 3)
 
+	if hovered_cell>=0 and _can_preview(hovered_cell):
+		var at := origin+Vector2(hovered_cell%n,hovered_cell/n)*cell
+		if game_id==&"chess":
+			draw_rect(Rect2(at+Vector2.ONE*4,Vector2.ONE*(cell-8)),Color("eed577"),false,3)
+		else: draw_circle(at,cell*.35,Color("31658b",.45))
+
+func _can_preview(index: int) -> bool:
+	if ended or busy or turn!=1 or scoring or is_instance_valid(rules_view): return false
+	if index<0 or index>=board.size(): return false
+	if game_id==&"chess": return selected>=0 and legal_moves.any(func(move: Dictionary) -> bool: return move.from==selected and move.to==index)
+	if game_id==&"go": return not Grid.go_move(board,index,1,n,history).is_empty()
+	return board[index]==0
+
 func _gui_input(event: InputEvent) -> void:
 	if is_instance_valid(rules_view): return
+	if event is InputEventMouseMotion:
+		var point: Vector2=(event.position-origin)/cell
+		var cell_x := floori(point.x) if game_id==&"chess" else roundi(point.x)
+		var cell_y := floori(point.y) if game_id==&"chess" else roundi(point.y)
+		hovered_cell=cell_y*n+cell_x if cell_x>=0 and cell_x<n and cell_y>=0 and cell_y<n else -1
+		queue_redraw(); return
 	if not event is InputEventMouseButton or event.button_index != MOUSE_BUTTON_LEFT or not event.pressed: return
 	if ended or busy: return
 	var p: Vector2 = (event.position - origin) / cell

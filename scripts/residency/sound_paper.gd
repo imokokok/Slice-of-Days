@@ -18,12 +18,12 @@ func _ready() -> void:
 		peaks.append(peak)
 	queue_redraw()
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO,size),Color("e5e9dd"))
+	draw_rect(Rect2(Vector2.ZERO,size),Color.TRANSPARENT)
 	draw_line(Vector2(0,size.y*.5),Vector2(size.x,size.y*.5),Color("9fae9c"),1)
 	for i in peaks.size():
 		var x := (i+.5)*size.x/maxi(1,peaks.size())
 		var height := maxf(1,peaks[i]*size.y*.45)
-		draw_line(Vector2(x,size.y*.5-height),Vector2(x,size.y*.5+height),Color("688d95"),2)
+		draw_line(Vector2(x,size.y*.5-height),Vector2(x,size.y*.5+height),Color("3976a1"),2)
 	if wav != null and wav.get_length()>0:
 		for time in markers:
 			var x := float(time)/wav.get_length()*size.x

@@ -32,6 +32,8 @@ const DEFAULT_INPUT_ACTIONS := {
 	"move_fast": [KEY_SHIFT],
 	"talk": [KEY_W],
 	"interact": [KEY_E],
+	"move_forward": [KEY_W,KEY_UP],
+	"move_backward": [KEY_S,KEY_DOWN],
 	"ask_directly": [KEY_1],
 	"dialogue_advance": [KEY_SPACE, KEY_ENTER],
 	"open_journal": [KEY_J],
@@ -121,7 +123,7 @@ func apply_settings() -> void:
 	TranslationServer.set_locale(language())
 	apply_audio_settings()
 	if not DisplayServer.get_name().contains("headless"):
-		DisplayServer.window_set_title(LocalizationSystem.text("Solmere · 七日档案 · 走动修复"))
+		DisplayServer.window_set_title(LocalizationSystem.text("Solmere"))
 		var target_mode := DisplayServer.WINDOW_MODE_FULLSCREEN if bool(values.get("fullscreen", false)) else DisplayServer.WINDOW_MODE_WINDOWED
 		DisplayServer.window_set_mode(target_mode)
 
@@ -223,7 +225,7 @@ func set_language(locale: String) -> void:
 	values["language"] = locale
 	TranslationServer.set_locale(locale)
 	if not DisplayServer.get_name().contains("headless"):
-		DisplayServer.window_set_title(LocalizationSystem.text("Solmere · 七日档案 · 走动修复"))
+		DisplayServer.window_set_title(LocalizationSystem.text("Solmere"))
 	save_settings()
 	language_changed.emit(locale)
 	settings_changed.emit()

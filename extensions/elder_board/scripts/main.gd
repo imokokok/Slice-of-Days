@@ -71,24 +71,14 @@ func _panel_style(color: Color, border: Color = Color.TRANSPARENT) -> StyleBoxFl
 	return style
 
 func _button(text_value: String) -> Button:
-	var button := Button.new()
-	button.text = LocalizationSystem.text(text_value)
-	button.custom_minimum_size = Vector2(220, 65)
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	button.add_theme_color_override("font_color", Color("eeeeee"))
-	button.add_theme_color_override("font_hover_color", Color.WHITE)
-	button.add_theme_color_override("font_focus_color", Color.WHITE)
-	button.add_theme_stylebox_override("normal", _panel_style(Color("424242"), Color("a3a3a3")))
-	button.add_theme_stylebox_override("hover", _panel_style(Color("5b5b5b"), Color("eeeeee")))
-	button.add_theme_stylebox_override("pressed", _panel_style(Color("282828"), Color.WHITE))
-	button.add_theme_stylebox_override("focus", _panel_style(Color.TRANSPARENT, Color.WHITE))
+	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
+	button.variant="outlined"; button.text=LocalizationSystem.text(text_value); button.custom_minimum_size=Vector2(220,65); button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	return button
 
 func _build_dialogue() -> void:
 	var panel := PanelContainer.new()
 	panel.name = "DialogueOverlay"
-	panel.position = Vector2(455, 115)
+	panel.position = Vector2(455, 582)
 	panel.size = Vector2(870, 260)
 	panel.add_theme_stylebox_override("panel", _panel_style(Color(0.18, 0.18, 0.18, 0.96)))
 	stage.add_child(panel)

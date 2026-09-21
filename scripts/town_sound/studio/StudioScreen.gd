@@ -21,8 +21,16 @@ var gain_controls: Array[HSlider] = []
 var mixing := false
 
 var monitor_locked := false
+var edit_history: Array=[]
+var redo_history: Array=[]
+var previous_edit: Dictionary={}
+var restoring_history := false
+var undo_button: Button
+var redo_button: Button
 
 func _ready() -> void:
+	add_to_group("meta_modal")
+	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	if has_node("/root/WorldSound"):
 		get_node("/root/WorldSound").lock_monitor(true)
 		monitor_locked = true
@@ -31,6 +39,8 @@ func _ready() -> void:
 		queue_free()
 		return
 	_configure_role_project()
+	previous_edit=_edit_snapshot()
+	var backdrop := ColorRect.new(); backdrop.color=Color("edf3f4"); backdrop.set_anchors_and_offsets_preset(PRESET_FULL_RECT); backdrop.mouse_filter=MOUSE_FILTER_IGNORE; add_child(backdrop)
 	player = AudioStreamPlayer.new()
 	player.bus = "Music"
 	add_child(player)
@@ -48,8 +58,8 @@ func _ready() -> void:
 	margin.add_child(root_column)
 	var header := HBoxContainer.new()
 	root_column.add_child(header)
-	var role_label := " · %s PROJECT" % GameState.current_role if has_node("/root/GameState") else ""
-	header.add_child(label("TOWN SOUND / STUDIO%s" % role_label, 26))
+	var role_label := " · %s" % GameState.current_role if has_node("/root/GameState") else ""
+	header.add_child(label("唱片店 · 声音工作台%s" % role_label, 26))
 	header.add_child(button("♪ 声音设置", func() -> void: get_node("/root/SoundSettings").show_dialog()))
 	header.add_child(button("返回录音", func() -> void:
 		if model.save_project():
@@ -72,9 +82,11 @@ func _ready() -> void:
 			status.text = LocalizationSystem.text("工程已恢复。")
 		else:
 			status.text = LocalizationSystem.text(model.error)))
-	transport.add_child(button("Visual / 唱片店", open_visual))
+	transport.add_child(button("制作唱片", open_visual))
 	clock_label = label("00:00 / 00:00")
 	transport.add_child(clock_label)
+	undo_button=button("撤销",_undo_edit); redo_button=button("重做",_redo_edit); undo_button.disabled=true; redo_button.disabled=true
+	transport.add_child(undo_button); transport.add_child(redo_button)
 	var edit_tools := HBoxContainer.new()
 	root_column.add_child(edit_tools)
 	var mode_group := ButtonGroup.new()
@@ -128,7 +140,7 @@ func _ready() -> void:
 	var track_controls := VBoxContainer.new()
 	track_controls.custom_minimum_size.x = 115
 	track_row.add_child(track_controls)
-	track_controls.add_child(label("TRACKS", 13))
+	track_controls.add_child(label("声音轨道", 13))
 	for i in 4:
 		var control := VBoxContainer.new()
 		control.custom_minimum_size.y = 66
@@ -212,7 +224,8 @@ func label(text: String, font_size: int = 16) -> Label:
 	return node
 
 func button(text: String, action: Callable) -> Button:
-	var node := Button.new()
+	var node := preload("res://scripts/ui/components/solmere_button.gd").new()
+	node.variant="outlined"; node.add_theme_font_size_override("font_size",16)
 	node.text = LocalizationSystem.text(text)
 	node.pressed.connect(action)
 	return node
@@ -229,6 +242,7 @@ func field(row: HBoxContainer, title: String, key: String, low: float, high: flo
 		if selected < 0:
 			return
 		model.clips[selected][key] = value
+		_remember_edit()
 		dirty = true
 		stop()
 		if not model.save_project(): status.text = LocalizationSystem.text(model.error))
@@ -299,6 +313,7 @@ func build_inspector() -> void:
 		changed()))
 
 func changed() -> void:
+	if not restoring_history: _remember_edit()
 	for i in mute_controls.size():
 		mute_controls[i].set_pressed_no_signal(bool(model.muted[i]))
 		gain_controls[i].set_value_no_signal(float(model.gains[i]))
@@ -408,3 +423,23 @@ func open_visual() -> void:
 
 func _exit_tree() -> void:
 	if monitor_locked: get_node("/root/WorldSound").lock_monitor(false)
+
+func _edit_snapshot() -> Dictionary:
+	return {"clips":model.clips.duplicate(true),"muted":model.muted.duplicate(),"gains":model.gains.duplicate()}
+func _remember_edit() -> void:
+	var current := _edit_snapshot()
+	if current==previous_edit: return
+	edit_history.append(previous_edit.duplicate(true))
+	if edit_history.size()>40: edit_history.pop_front()
+	previous_edit=current; redo_history.clear()
+	undo_button.disabled=false; redo_button.disabled=true
+func _restore_edit(snapshot: Dictionary) -> void:
+	restoring_history=true; model.clips.assign(snapshot.clips); model.muted=snapshot.muted.duplicate(); model.gains=snapshot.gains.duplicate()
+	selected=-1; timeline.selected=-1; previous_edit=_edit_snapshot(); changed(); restoring_history=false
+	undo_button.disabled=edit_history.is_empty(); redo_button.disabled=redo_history.is_empty()
+func _undo_edit() -> void:
+	if edit_history.is_empty(): return
+	redo_history.append(_edit_snapshot()); _restore_edit(edit_history.pop_back())
+func _redo_edit() -> void:
+	if redo_history.is_empty(): return
+	edit_history.append(_edit_snapshot()); _restore_edit(redo_history.pop_back())

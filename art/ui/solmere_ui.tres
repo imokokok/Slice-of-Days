@@ -1,6 +1,9 @@
-[gd_resource type="Theme" load_steps=8 format=3]
+[gd_resource type="Theme" load_steps=10 format=3]
 
 [ext_resource type="Texture2D" path="res://art/ui/paper-slider.svg" id="1"]
+
+[ext_resource type="Texture2D" path="res://art/ui/check-on.svg" id="2"]
+[ext_resource type="Texture2D" path="res://art/ui/check-off.svg" id="3"]
 
 [sub_resource type="SystemFont" id="Font"]
 font_names = PackedStringArray("Microsoft YaHei", "Noto Sans CJK SC")
@@ -82,3 +85,16 @@ CheckBox/colors/font_focus_color = Color(0.19, 0.40, 0.55, 1)
 LineEdit/colors/font_color = Color(0.19, 0.40, 0.55, 1)
 LineEdit/colors/caret_color = Color(0.19, 0.40, 0.55, 1)
 LineEdit/colors/font_placeholder_color = Color(0.4, 0.52, 0.59, 1)
+
+CheckBox/icons/checked = ExtResource("2")
+CheckBox/icons/unchecked = ExtResource("3")
+CheckBox/icons/checked_disabled = ExtResource("2")
+CheckBox/icons/unchecked_disabled = ExtResource("3")
+CheckBox/colors/font_pressed_color = Color(0.19, 0.40, 0.55, 1)
+CheckBox/colors/font_hover_pressed_color = Color(0.19, 0.40, 0.55, 1)
+CheckButton/icons/on = ExtResource("2")
+CheckButton/icons/off = ExtResource("3")
+CheckButton/icons/on_disabled = ExtResource("2")
+CheckButton/icons/off_disabled = ExtResource("3")
+CheckButton/colors/font_color = Color(0.19, 0.40, 0.55, 1)
+CheckButton/colors/font_pressed_color = Color(0.19, 0.40, 0.55, 1)

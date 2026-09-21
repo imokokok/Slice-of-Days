@@ -11,6 +11,8 @@ var look_offset := Vector2.ZERO
 var solution := Vector2i.ZERO
 var reveal_tween: Tween
 var is_capturing := false
+var guidance_age := 0.0
+var idle_age := 0.0
 @onready var camera := $Camera3D
 @onready var field := $StarField
 @onready var checker := $ProjectionChecker
@@ -29,6 +31,9 @@ func _ready() -> void:
  build_controls()
  select_constellation(WHALE if ObservatoryState.discovered.bird and not ObservatoryState.discovered.whale else BIRD)
 func build_controls() -> void:
+ for child in $UI.get_children():
+  if child is Button: PaperLanguage.button_style(child,true)
+  elif child is Label: child.add_theme_color_override("font_color",Color("faf7ee"))
  var surface := Control.new()
  surface.name = "SkyDrag"
  $UI.add_child(surface)
@@ -36,10 +41,11 @@ func build_controls() -> void:
  surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  surface.mouse_default_cursor_shape = Control.CURSOR_DRAG
  surface.gui_input.connect(_sky_input)
- $UI/Instructions.text = LocalizationSystem.text("按住鼠标左键拖动，转动望远镜 · 方向键微调 · 对准后停留片刻 · ESC 返回")
+ $UI/Instructions.text = LocalizationSystem.text("拖动转动望远镜 · 方向键微调 · "+SettingsSystem.binding_text("ui_cancel")+" 返回")
 func _sky_input(event: InputEvent) -> void:
  if is_capturing: return
  if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
+  idle_age=0.0
   look_offset = (look_offset + event.relative * Vector2(-0.003, -0.003)).clamp(Vector2(-0.6, -0.6), Vector2(0.6, 0.6))
   checker.elapsed = 0.0
   update_layout()
@@ -54,6 +60,7 @@ func select_constellation(value: ConstellationData) -> void:
  look_offset = Vector2.ZERO
  camera.transform = Transform3D.IDENTITY
  camera.fov = 55.0
+ guidance_age=0.0; idle_age=0.0
  checker.configure(data)
  update_layout()
  field.show_constellation(data)
@@ -66,6 +73,7 @@ func adjust(change: Vector2i) -> void:
  if is_capturing: return
  var updated := (adjustment + change).clamp(Vector2i(-STEP_LIMIT, -STEP_LIMIT), Vector2i(STEP_LIMIT, STEP_LIMIT))
  if updated == adjustment: return
+ idle_age=0.0
  adjustment = updated
  checker.elapsed = 0.0
  update_layout()
@@ -84,17 +92,19 @@ func refresh_buttons() -> void:
  capture.text = LocalizationSystem.text("已收入观测册 · 再拍一张" if ObservatoryState.collected[data.id] else "拍下这片星光")
  next.visible = ObservatoryState.discovered.bird
  next.text = LocalizationSystem.text("寻找鲸鱼 →" if data.id == "bird" else "重访飞鸟 →")
- $UI/Album.text = LocalizationSystem.text("观测册 · %d / 2" % (int(ObservatoryState.collected.bird) + int(ObservatoryState.collected.whale)))
+ $UI/Album.text = LocalizationSystem.text("观测册")
 func _unhandled_input(event: InputEvent) -> void:
- if event is InputEventKey and event.pressed and not event.echo:
-  match event.keycode:
-   KEY_ESCAPE: return_requested.emit()
-   KEY_LEFT: adjust(Vector2i(-1, 0))
-   KEY_RIGHT: adjust(Vector2i(1, 0))
-   KEY_UP: adjust(Vector2i(0, -1))
-   KEY_DOWN: adjust(Vector2i(0, 1))
+ if not event.is_pressed() or event.is_echo(): return
+ if event.is_action_pressed("ui_cancel"): return_requested.emit()
+ elif event.is_action_pressed("ui_left"): adjust(Vector2i(-1,0))
+ elif event.is_action_pressed("ui_right"): adjust(Vector2i(1,0))
+ elif event.is_action_pressed("ui_up"): adjust(Vector2i(0,-1))
+ elif event.is_action_pressed("ui_down"): adjust(Vector2i(0,1))
 func _process(delta: float) -> void:
  if not data: return
+ guidance_age+=delta; idle_age+=delta
+ $UI/Instructions.modulate.a=clampf(7-guidance_age,0,1)
+ hint.modulate.a=1.0 if checker.completed or idle_age>25 else clampf(6-guidance_age,0,1)
  checker.step(camera,data,delta)
  var aligned: bool = checker.completed and checker.error < data.error_threshold * 3.0
  lines.strength = move_toward(lines.strength,1.0 if aligned else 0.0,delta*1.8)

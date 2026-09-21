@@ -164,7 +164,9 @@ func _process(_delta: float) -> void:
 		_pending_clock = 0
 		_drain_important()
 	if not is_instance_valid(voice_layer): return
-	var clear := not modal_open() and not SceneRouter.transitioning and get_tree().get_nodes_in_group("world_tool").is_empty()
+	var scene := get_tree().current_scene
+	var in_world: bool = is_instance_valid(scene) and scene.has_node("GameplayShell") and scene.is_visible_in_tree()
+	var clear: bool = in_world and not modal_open() and not SceneRouter.transitioning and get_tree().get_nodes_in_group("world_tool").is_empty()
 	voice_layer.visible = clear
 	if not clear and voice_label.modulate.a > 0:
 		if voice_tween: voice_tween.kill()

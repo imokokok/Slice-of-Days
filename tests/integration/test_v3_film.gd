@@ -40,7 +40,7 @@ func run()->void:
 	camera.context={"location":"cafe","title":"杂货店窗边"}
 	current_scene.add_child(camera)
 	await process_frame
-	check(not camera.focus_active and camera.hold_layer.visible and not camera.finder_layer.visible,"C tool initially holds camera without taking over the world")
+	check(camera.focus_active and camera.finder_layer.visible,"Camera opens directly in the full-screen viewfinder")
 	var click:=InputEventMouseButton.new()
 	click.button_index=MOUSE_BUTTON_LEFT
 	click.pressed=true
@@ -48,7 +48,7 @@ func run()->void:
 	await process_frame
 	check(camera.focus_active and camera.finder_layer.visible,"LMB raises the real viewfinder")
 	var crop: Image=camera.cropped_image()
-	check(crop.get_width()*2==crop.get_height()*3,"Captured film frame is exactly 3:2")
+	check(crop.get_width()*9==crop.get_height()*16,"Saved frame matches the full-screen 16:9 viewfinder")
 	camera._scroll(1)
 	check(is_equal_approx(camera.zoom_value,1.3),"Scroll advances to 1.3x")
 	camera._scroll(1)
@@ -132,12 +132,15 @@ func run()->void:
 		if str(letter.materials[i].get("photo_id",""))==str(photo.id): index=i;break
 	check(index>=0,"Real collage workbench reads developed photos as printable sources")
 	if index>=0:
-		letter.tool="rect"
-		letter.cutting_source=index
-		letter.start=letter.sources[index].position+Vector2(20,20)
-		letter.finish_cut(letter.start+Vector2(140,100))
-		letter.save_game(true)
-		check(str(letter.selected.photo_id)==str(photo.id),"Existing craft knife cuts the player's photo")
+		letter.browser_category="全部"; letter.browser_index=index; letter.take_material()
+		var original = letter.active
+		original.position=Vector2(205,685)
+		letter.use_tool("mat"); letter.take_knife()
+		letter._split_focused(PackedVector2Array([Vector2(20,20),Vector2(160,20),Vector2(160,120),Vector2(20,120)]),"knife")
+		letter.save_game()
+		check(str(letter.active.photo_id)==str(photo.id) and not letter.active.cut_history.is_empty(),"Existing craft knife cuts the player's photo")
+		var snapshot: Dictionary=letter.snapshot(); letter.restore_snapshot(snapshot)
+		check(letter.papers.get_children().any(func(piece: Node) -> bool: return str(piece.photo_id)==str(photo.id)),"Photo source IDs survive workshop restore")
 		check(film.photo(str(photo.id)).used_in_collage,"Saving collage writes real photo usage metadata")
 		check(film.library.load_photo(str(photo.id))!=null,"Cutting a paper copy preserves the Gallery original")
 	letter.queue_free()

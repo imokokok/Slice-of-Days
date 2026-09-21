@@ -193,6 +193,7 @@ func _ready() -> void:
 		material_images.append(viewport.get_texture().get_image())
 		viewport.queue_free()
 	material_viewports.clear()
+	_append_developed_photos()
 	ready_done = true
 	if not smoke and not OS.get_cmdline_user_args().has("--fresh"): load_game()
 	build_ui()
@@ -291,19 +292,9 @@ func _label(text: String, rect: Rect2, size: int = 18) -> Label:
 	return label
 
 func _button(text: String, rect: Rect2, callback: Callable) -> Button:
-	var button := Button.new()
-	button.text = text
-	button.position = rect.position
-	button.size = rect.size
-	button.focus_mode = Control.FOCUS_NONE
-	button.add_theme_font_override("font",font)
-	button.add_theme_font_size_override("font_size",17)
-	button.add_theme_color_override("font_color",INK)
-	button.add_theme_color_override("font_hover_color",Color("87533b"))
-	button.add_theme_stylebox_override("normal",_paper_style())
-	button.add_theme_stylebox_override("hover",_paper_style())
-	button.pressed.connect(callback)
-	ui.add_child(button)
+	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
+	button.variant="paper"; button.text=text; button.position=rect.position; button.size=rect.size
+	button.pressed.connect(callback); ui.add_child(button); button.add_theme_font_size_override("font_size",17)
 	return button
 
 func build_ui() -> void:
@@ -408,6 +399,7 @@ func take_material() -> void:
 	var at: Vector2 = main_paper.position + Vector2(100,50) if decoration else Vector2(660,590)
 	var paper = create_paper(material_images[id],at,materials[id].title,"decoration" if decoration else "paper")
 	paper.source_id = id
+	paper.photo_id = str(materials[id].get("photo_id",""))
 	paper.scale = Vector2.ONE * 1.0
 	return_desk()
 	select_paper(paper)
@@ -763,6 +755,7 @@ func _split_focused(polygon: PackedVector2Array, kind: String) -> void:
 	if halves.is_empty(): say("这一刀没有分开纸面，换一条经过纸张的线试试。") ;return
 	var title: String=focused.title
 	var source_id: int=focused.source_id
+	var photo_id: String=focused.photo_id
 	var history: Array=focused.cut_history.duplicate(true)
 	_return_focus()
 	var original=active
@@ -773,6 +766,7 @@ func _split_focused(polygon: PackedVector2Array, kind: String) -> void:
 	for i in halves.size():
 		var piece=create_paper(halves[i],at+Vector2((i*2-1)*28,0),title+" · 裁片")
 		piece.scale=scale_before;piece.rotation=rotation_before
+		piece.photo_id=photo_id
 		piece.source_id=source_id;piece.cut_history=history.duplicate(true)
 		select_paper(piece)
 	cutting=false
@@ -1255,7 +1249,10 @@ func save_game() -> void:
 	if not file: return
 	file.store_string(JSON.stringify(snapshot()))
 	file.close()
-	DirAccess.rename_absolute(save_path+".tmp",save_path)
+	if DirAccess.rename_absolute(save_path+".tmp",save_path)!=OK: return
+	if has_node("/root/FilmSystem"):
+		for paper in papers.get_children():
+			if not str(paper.photo_id).is_empty() and not bool(FilmSystem.photo(paper.photo_id).get("used_in_collage",false)): FilmSystem.mark_photo_use(paper.photo_id,"collage")
 
 func load_game() -> void:
 	if not FileAccess.file_exists(save_path): return
@@ -1291,3 +1288,18 @@ func _build_note_panel() -> void:
 
 func _notification(what: int) -> void:
 	if what==NOTIFICATION_WM_CLOSE_REQUEST: save_game()
+
+func _append_developed_photos() -> void:
+	if not has_node("/root/FilmSystem"): return
+	for photo in FilmSystem.developed_photos():
+		var library := PhotoLibrary.new(); library.root_path=str(photo.get("library_root","user://photos"))
+		var id := str(photo.get("id",photo.get("photo_id","")))
+		var image := library.load_photo(id)
+		if image==null: continue
+		var copy := image.duplicate() as Image
+		var fit := minf(280.0/copy.get_width(),190.0/copy.get_height())
+		copy.resize(roundi(copy.get_width()*fit),roundi(copy.get_height()*fit),Image.INTERPOLATE_LANCZOS)
+		var print_image := Image.create(300,240,false,Image.FORMAT_RGBA8); print_image.fill(Color("faf7ee"))
+		print_image.blit_rect(copy,Rect2i(Vector2i.ZERO,copy.get_size()),Vector2i((300-copy.get_width())/2,12))
+		materials.append({"id":"photo_"+id,"photo_id":id,"title":str(photo.get("title","自己的照片")),"category":"影像","paper_type":"影像","kind":"photo"})
+		material_images.append(print_image)

@@ -1,5 +1,6 @@
 extends Control
-## A light held-camera state, followed by a fixed 3:2 optical viewfinder.
+## Full-screen viewfinder; the saved photo and preview use the same optical crop.
+signal gallery_requested
 var source: Image
 var source_provider: Callable
 var context: Dictionary = {}
@@ -44,16 +45,9 @@ func _ready() -> void:
 	finder_layer.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	finder_layer.mouse_filter=MOUSE_FILTER_STOP
 	add_child(finder_layer)
-	for rect in [Rect2(0,0,1600,105),Rect2(0,795,1600,105),Rect2(0,105,282.5,690),Rect2(1317.5,105,282.5,690)]:
-		var dim:=ColorRect.new()
-		dim.position=rect.position
-		dim.size=rect.size
-		dim.color=Color(0.04,.06,.07,.54)
-		dim.mouse_filter=MOUSE_FILTER_IGNORE
-		finder_layer.add_child(dim)
 	preview_frame=Control.new()
-	preview_frame.position=Vector2(282.5,105)
-	preview_frame.size=Vector2(1035,690)
+	preview_frame.position=Vector2.ZERO
+	preview_frame.size=Vector2(1600,900)
 	preview_frame.gui_input.connect(_viewfinder_input)
 	finder_layer.add_child(preview_frame)
 	preview=TextureRect.new()
@@ -71,14 +65,14 @@ func _ready() -> void:
 	outline.size=preview_frame.size
 	outline.mouse_filter=MOUSE_FILTER_IGNORE
 	preview_frame.add_child(outline)
-	focus_label=_label(finder_layer,"",Vector2(290,807),Vector2(620,40),19)
-	count_label=_label(finder_layer,"",Vector2(1140,807),Vector2(180,40),21)
+	focus_label=_label(finder_layer,"",Vector2(127,53),Vector2(620,35),18)
+	count_label=_label(finder_layer,"",Vector2(1325,56),Vector2(190,40),24)
 	count_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
-	zoom_label=_label(finder_layer,"",Vector2(1190,67),Vector2(130,32),17)
+	zoom_label=_label(finder_layer,"",Vector2(92,377),Vector2(130,32),17)
 	hint=_label(finder_layer,SettingsSystem.binding_text("camera_shutter")+" 拍摄  /  Scroll 缩放  /  "+SettingsSystem.binding_text("ui_cancel")+" 放下",Vector2(490,844),Vector2(740,34),18)
 	hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	shutter=preload("res://scripts/ui/components/solmere_button.gd").new()
-	shutter.name="Shutter"; shutter.text="拍摄"; shutter.position=Vector2(715,802); shutter.size=Vector2(170,52)
+	shutter=preload("res://scripts/ui/components/shutter_button.gd").new()
+	shutter.name="Shutter"; shutter.position=Vector2(1375,752); shutter.size=Vector2(106,106)
 	shutter.pressed.connect(take_photo)
 	finder_layer.add_child(shutter)
 	capture_card=Panel.new()
@@ -94,8 +88,16 @@ func _ready() -> void:
 	finder_layer.hide()
 	_refresh_count()
 	for parent in [hold_layer,finder_layer]:
-		var back := preload("res://scripts/ui/components/solmere_button.gd").new(); back.text="收起相机"; back.position=Vector2(1380,330); back.size=Vector2(170,42); parent.add_child(back); back.pressed.connect(queue_free)
+		var back := preload("res://scripts/ui/components/solmere_button.gd").new(); back.variant="camera"; back.text="×"; back.position=Vector2(48,43); back.size=Vector2(52,52); parent.add_child(back); back.pressed.connect(queue_free)
 	var focus := preload("res://scripts/ui/components/solmere_button.gd").new(); focus.text="查看取景框"; focus.position=Vector2(1210,250); focus.size=Vector2(355,48); hold_layer.add_child(focus); focus.pressed.connect(enter_viewfinder)
+	var gallery := preload("res://scripts/ui/components/solmere_button.gd").new(); gallery.variant="camera"; gallery.text="照片"; gallery.position=Vector2(80,770); gallery.size=Vector2(128,70); finder_layer.add_child(gallery)
+	gallery.pressed.connect(func() -> void: gallery_requested.emit(); queue_free())
+	var photos := library.list_photos()
+	if not photos.is_empty():
+		var data := library.load_photo(str(photos.back().photo_id))
+		if data!=null:
+			gallery.text=""; var thumb := TextureRect.new(); thumb.position=Vector2(5,5); thumb.size=Vector2(118,60); thumb.texture=ImageTexture.create_from_image(data); thumb.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; thumb.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED; thumb.mouse_filter=MOUSE_FILTER_IGNORE; gallery.add_child(thumb)
+	enter_viewfinder.call_deferred()
 
 func _label(parent: Node, text: String, at: Vector2, dimensions: Vector2, font_size: int) -> Label:
 	var label:=Label.new()
@@ -137,9 +139,9 @@ func leave_viewfinder() -> void:
 
 func cropped_image() -> Image:
 	if source==null or source.is_empty(): return Image.new()
-	var height:=maxi(2,int(minf(source.get_height(),source.get_width()/1.5)/zoom_value))
-	height-=height%2
-	var width:=height*3/2
+	var height:=maxi(9,int(minf(source.get_height(),source.get_width()*9.0/16.0)/zoom_value))
+	height-=height%9
+	var width:=height*16/9
 	var x:=clampi(int((source.get_width()-width)*pan.x),0,source.get_width()-width)
 	var y:=clampi(int((source.get_height()-height)*pan.y),0,source.get_height()-height)
 	return source.get_region(Rect2i(x,y,width,height))
@@ -211,9 +213,7 @@ func _viewfinder_input(event: InputEvent) -> void:
 func _input(event: InputEvent) -> void:
 	if event.is_pressed() and not event.is_echo() and not event is InputEventMouseButton:
 		if event.is_action_pressed("open_camera"): queue_free()
-		elif event.is_action_pressed("ui_cancel"):
-			if focus_active: leave_viewfinder()
-			else: queue_free()
+		elif event.is_action_pressed("ui_cancel"): queue_free()
 		elif event.is_action_pressed("camera_shutter") and focus_active: take_photo()
 		else: return
 		get_viewport().set_input_as_handled()

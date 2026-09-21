@@ -5,7 +5,7 @@ static func panel(parent: Node, rect: Rect2) -> Panel:
 	item.position = rect.position
 	item.size = rect.size
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("303530")
+	style.bg_color = Color("edf3f4")
 	style.set_corner_radius_all(12)
 	item.add_theme_stylebox_override("panel", style)
 	parent.add_child(item)
@@ -23,7 +23,8 @@ static func label(parent: Node, text: String, rect: Rect2, font_size: int = 26) 
 	return item
 
 static func button(parent: Node, text: String, rect: Rect2, action: Callable) -> Button:
-	var item := Button.new()
+	var item := preload("res://scripts/ui/components/solmere_button.gd").new()
+	item.variant="outlined"
 	item.text = LocalizationSystem.text(text)
 	item.position = rect.position
 	item.size = rect.size

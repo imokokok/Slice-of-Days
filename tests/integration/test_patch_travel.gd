@@ -24,6 +24,12 @@ func key(code: int) -> void:
 	Input.parse_input_event(event)
 	Input.flush_buffered_events()
 	await process_frame
+func confirm_trip() -> void:
+	await process_frame
+	var sheets := get_nodes_in_group("native_confirmation")
+	check(sheets.size()==1,"Travel asks before changing money or time")
+	if not sheets.is_empty(): sheets[0].find_children("*","Button",true,false).back().pressed.emit()
+	await process_frame
 func paper_to(location: String) -> Control:
 	await key(KEY_TAB)
 	var shell = current_scene.get_node("GameplayShell")
@@ -57,19 +63,21 @@ func run() -> void:
 	if not current_scene.scene_file_path.ends_with("town_day.tscn"): quit(1); return
 	var map = await paper_to("residence")
 	map.body.get_node("MapDetails/TravelWalk").pressed.emit()
+	await confirm_trip()
 	await settle()
 	check(gs.current_location == "residence" and current_scene.segment_id == "residential","Map reaches residential area")
 	map = await paper_to("handcraft_shop")
 	var minute: int = gs.current_minute
 	var money: int = gs.money
 	var walking: Dictionary = travel.route(gs.current_location,"handcraft_shop","walk",gs.current_role,minute)
-	check(map.body.get_node("MapDetails/TravelWalk").text.contains(str(walking.minutes)),"Walk preview uses live route minutes")
+	check(map.body.get_node("MapDetails/TravelWalk").find_children("*","Label",true,false).any(func(node: Label) -> bool: return node.text.contains(str(walking.minutes))),"Walk preview uses live route minutes")
 	await create_timer(1.1).timeout
 	check(gs.current_minute == minute and not current_scene.street.enabled,"Map pauses world time and movement")
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://docs/patch_map_route.png")
 	map.body.get_node("MapDetails/TravelWalk").pressed.emit()
+	await confirm_trip()
 	check(gs.current_minute == minute+int(walking.minutes) and gs.money == money,"Walk applies exact time and no charge")
 	check(not router.travel_to("residence","taxi").ok,"Double request blocked during transition")
 	await settle()
@@ -81,6 +89,7 @@ func run() -> void:
 	minute = gs.current_minute
 	money = gs.money
 	map.body.get_node("MapDetails/TravelTaxi").pressed.emit()
+	await confirm_trip()
 	check(gs.current_minute == minute+int(taxi.minutes) and gs.money == money-int(taxi.cost),"Taxi applies time and fare exactly once")
 	check(not router.travel_to("residence","taxi").ok,"Repeated taxi cannot charge twice")
 	await settle()

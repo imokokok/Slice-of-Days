@@ -17,7 +17,7 @@ var range_begin := -1.0
 var range_end := -1.0
 var range_track := 0
 var pixels_per_second := 30.0
-const COLORS := [Color("bfc9a1"), Color("9dbbb8"), Color("d8aa87"), Color("c7b7ca")]
+const COLORS := [Color("b6cfcb"), Color("b4cedd"), Color("eed577"), Color("d0d8c2")]
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(1800, 310)
@@ -43,9 +43,9 @@ func _draw() -> void:
 			color.a = 0.3
 		draw_rect(rect, color)
 		if i == selected:
-			draw_rect(rect, Color("aa613d"), false, 2)
-			draw_rect(Rect2(rect.position, Vector2(minf(12, rect.size.x / 3), rect.size.y)), Color("aa613d"))
-			draw_rect(Rect2(rect.end.x - minf(12, rect.size.x / 3), rect.position.y, minf(12, rect.size.x / 3), rect.size.y), Color("aa613d"))
+			draw_rect(rect, Color("31658b"), false, 2)
+			draw_rect(Rect2(rect.position, Vector2(minf(12, rect.size.x / 3), rect.size.y)), Color("31658b"))
+			draw_rect(Rect2(rect.end.x - minf(12, rect.size.x / 3), rect.position.y, minf(12, rect.size.x / 3), rect.size.y), Color("31658b"))
 		var source := arrangement.load_pcm(clip.sample_id)
 		if not source.is_empty():
 			var key := str(clip.sample_id)
@@ -74,9 +74,9 @@ func _draw() -> void:
 		var end := maxf(range_begin, range_end)
 		var region := Rect2(begin / 60.0 * size.x, 32 + range_track * 66, (end - begin) / 60.0 * size.x, 62)
 		draw_rect(region, Color(0.95, 0.67, 0.22, 0.32))
-		draw_rect(region, Color("a6602a"), false, 2)
+		draw_rect(region, Color("31658b"), false, 2)
 	var cursor := playhead / 60.0 * size.x
-	draw_line(Vector2(cursor, 22), Vector2(cursor, 302), Color("af5333"), 2)
+	draw_line(Vector2(cursor, 22), Vector2(cursor, 302), Color("31658b"), 2)
 
 func _get_drag_data(_at: Vector2) -> Variant:
 	return null

@@ -147,6 +147,8 @@ func slot_summary(slot: int) -> Dictionary:
 		"role": current_role,
 		"day": int(active_state.get("day", parsed.get("current_day", 1))),
 		"minute": int(active_state.get("minute", parsed.get("current_minute", 540))),
+		"location": str(active_state.get("location",parsed.get("current_location","bus_stop"))),
+		"thumbnail": path+".png" if FileAccess.file_exists(path+".png") else "",
 		"a_confirmed": (a_state.get("confirmed_residents", []) as Array).size(),
 		"b_confirmed": (b_state.get("confirmed_residents", []) as Array).size(),
 		"modified": int(FileAccess.get_modified_time(path)),
@@ -178,6 +180,9 @@ func prepare_new_journey() -> bool:
 	if DirAccess.copy_absolute(ProjectSettings.globalize_path(source), ProjectSettings.globalize_path(archive)) != OK:
 		push_error("Could not archive the previous journey")
 		return false
+	if FileAccess.file_exists(source+".png"):
+		if DirAccess.copy_absolute(ProjectSettings.globalize_path(source+".png"),ProjectSettings.globalize_path(archive+".png"))!=OK: return false
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(source+".png"))
 	set_active_slot(oldest)
 	return true
 
@@ -188,3 +193,18 @@ func load_latest() -> bool:
 	for slot in slots:
 		if has_slot(slot) and load_slot(slot): return true
 	return false
+
+func save_thumbnail(image: Image) -> bool:
+	if image==null or image.is_empty(): return false
+	var copy := image.duplicate() as Image
+	copy.resize(480,270,Image.INTERPOLATE_LANCZOS)
+	return copy.save_png(path_for_slot(active_slot)+".png")==OK
+
+func delete_slot(slot: int) -> bool:
+	if slot<1 or slot>SLOT_COUNT: return false
+	var path := path_for_slot(slot)
+	if not FileAccess.file_exists(path): return false
+	var result := DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	if result!=OK: return _save_error("无法删除这份存档。")
+	if FileAccess.file_exists(path+".png"): DirAccess.remove_absolute(ProjectSettings.globalize_path(path+".png"))
+	return true

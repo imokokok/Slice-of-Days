@@ -12,12 +12,12 @@ func _ready() -> void:
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(dim)
 	var paper := PanelContainer.new()
-	paper.position = Vector2(285,75)
-	paper.size = Vector2(1030,750)
+	paper.position = Vector2(132,104)
+	paper.size = Vector2(1336,690)
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("f4ead5")
+	style.bg_color = Color("eef3f4")
 	style.set_content_margin_all(32)
-	style.set_corner_radius_all(4)
+	style.set_corner_radius_all(12)
 	paper.add_theme_stylebox_override("panel",style)
 	add_child(paper)
 	var scroll := ScrollContainer.new()
@@ -28,7 +28,7 @@ func _ready() -> void:
 	scroll.add_child(body)
 	build()
 
-func label(text: String, size := 21, color := Color("39483f")) -> Label:
+func label(text: String, size := 21, color := Color("31658b")) -> Label:
 	var item := Label.new()
 	item.text = LocalizationSystem.text(text)
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -38,7 +38,8 @@ func label(text: String, size := 21, color := Color("39483f")) -> Label:
 	return item
 
 func button(text: String, action: Callable, disabled := false) -> Button:
-	var item := Button.new()
+	var item := preload("res://scripts/ui/components/solmere_button.gd").new()
+	item.variant="outlined"; item.alignment=HORIZONTAL_ALIGNMENT_LEFT
 	item.text = LocalizationSystem.text(text)
 	item.custom_minimum_size.y = 48
 	item.add_theme_font_size_override("font_size",20)
@@ -56,12 +57,19 @@ func build() -> void:
 		"restaurant": restaurant()
 		"collections": collections()
 		"grocery": grocery()
-	button("收起  ·  Esc",queue_free)
+	button("收起  ·  "+SettingsSystem.binding_text("ui_cancel"),queue_free)
 
 func restaurant() -> void:
+	var outer := body
+	var columns := HBoxContainer.new(); columns.add_theme_constant_override("separation",48); outer.add_child(columns)
+	var actions := VBoxContainer.new(); actions.custom_minimum_size.x=605; actions.add_theme_constant_override("separation",19); columns.add_child(actions)
+	var receipts := PanelContainer.new(); receipts.size_flags_horizontal=SIZE_EXPAND_FILL; columns.add_child(receipts)
+	var paper := StyleBoxFlat.new(); paper.bg_color=Color("faf7ee"); paper.set_content_margin_all(24); receipts.add_theme_stylebox_override("panel",paper)
+	var receipt_rows := VBoxContainer.new(); receipt_rows.add_theme_constant_override("separation",15); receipts.add_child(receipt_rows)
+	body=actions
 	var order := EconomySystem.active_order()
 	var work: Dictionary = EconomySystem.config.work.restaurant
-	label("史勇奇把一张小清单推到出餐口。番茄、香草，再挑一样奇怪的食材。买齐后带上小票回来。")
+	label("石泳琪把一张小清单推到出餐口。番茄、香草，再挑一样奇怪的食材。买齐后带上小票回来。")
 	label("菜摊 10:30—18:30 · 便宜\n杂货店 08:00—22:00 · 有替代食材\n先垫采购费，交材料时凭小票报销。",19)
 	label("料理班次 %d 分钟 · 工资 %d 元\n交材料 → 实际做菜出餐 → 工资到账 → 向店主领取收入证明" % [work.minutes,work.pay],19)
 	if order.is_empty():
@@ -77,15 +85,24 @@ func restaurant() -> void:
 			var end := GameState.current_minute+int(work.minutes)
 			button("上料理台 · %d 分钟 · 预计 %02d:%02d 下班" % [work.minutes,end/60,end%60],_start_shift,not GameState.can_fit_now(int(work.minutes)))
 		else: label("这一班已结算。原小票、工资记录和作品都已收好。",19)
+	body=receipt_rows
+	label("今天的小票",26)
+	var receipt_count := 0
 	for receipt in EconomySystem.state().receipts.values():
 		if str(receipt.get("procurement_id","")) != str(order.get("id","pending")): continue
 		var description := str(receipt.title)+"\n"
 		for line in receipt.line_items: description += "%s ×%d   %d元\n" % [line.name,line.quantity,line.total]
 		description += "合计 %d 元  %s" % [receipt.total,str(receipt.stamp)]
-		label(description,18,Color("6b634f"))
+		label(description,18,Color("31658b")); receipt_count+=1
+	if receipt_count==0: label("还没有这次采购的小票。\n\n买到食材后，小票会留在这里。",19)
+	body=outer
 
 func _start_shift() -> void:
-	if SceneRouter.gameplay_module("cooking","restaurant_procurement:"+str(EconomySystem.active_order().id)): queue_free()
+	var minutes := int(EconomySystem.config.work.restaurant.minutes)
+	var sheet := preload("res://scripts/ui/components/confirm_sheet.gd").new(); sheet.heading="开始料理班次？"; sheet.description="本次班次预计 %d 分钟。进入料理台后可查看采购要求和真实食材库存。" % minutes; sheet.confirm_text="上料理台"; add_child(sheet)
+	sheet.accepted.connect(func() -> void:
+		if SceneRouter.gameplay_module("cooking","restaurant_procurement:"+str(EconomySystem.active_order().id)): queue_free()
+		else: sheet.queue_free())
 
 func grocery() -> void:
 	label("日用品、餐厅备料和每天新摆出来的旧物都在柜台旁。摄影货架负责胶卷、冲洗和取照片。",21)
@@ -128,6 +145,7 @@ func collections() -> void:
 			GameState.message_posted.emit("已摆好，回到房间就能看见。"))
 
 func _input(event: InputEvent) -> void:
+	if not get_tree().get_nodes_in_group("native_confirmation").is_empty(): return
 	if event.is_action_pressed("ui_cancel"):
 		queue_free()
 		get_viewport().set_input_as_handled()

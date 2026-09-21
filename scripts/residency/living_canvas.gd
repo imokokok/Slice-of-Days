@@ -43,7 +43,7 @@ func piece_rect(p: Dictionary) -> Rect2:
 	return Rect2(-Vector2(float(p.get("w",180)),float(p.get("h",130)))*0.5,Vector2(float(p.get("w",180)),float(p.get("h",130))))
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO,size),Color.WHITE)
+	draw_rect(Rect2(Vector2.ZERO,size),Color("fffdf7",.17))
 
 	if stroke.size()>1:
 		var line := PackedVector2Array()

@@ -6,8 +6,8 @@ const Sound = preload("res://extensions/myriorama_tarot/scripts/sound.gd")
 const Questions = preload("res://extensions/myriorama_tarot/scripts/question_engine.gd")
 const Guidance = preload("res://extensions/myriorama_tarot/scripts/card_guidance.gd")
 const Truth = preload("res://extensions/myriorama_tarot/scripts/truth_engine.gd")
-const GOLD := Color("d9bd7d")
-const CREAM := Color("f3e8cb")
+const GOLD := Color("eed577")
+const CREAM := Color("faf7ee")
 const MUTED := Color("adbaaf")
 const INK := Color("101d23")
 const SAVE_PATH := "user://table-session-v1.json"
@@ -133,12 +133,12 @@ func box(parent: Node, rect: Rect2, opacity: float = 0.92) -> Panel:
 	p.position = rect.position
 	p.size = rect.size
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.032, 0.065, 0.08, opacity)
+	style.bg_color = Color("214860", opacity)
 	style.border_color = Color(0.65, 0.54, 0.33, 0.7)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(8)
 	style.shadow_color = Color(0, 0, 0, 0.3)
-	style.shadow_size = 12
+	style.shadow_size = 0
 	p.add_theme_stylebox_override("panel", style)
 	parent.add_child(p)
 	return p
@@ -160,24 +160,12 @@ func label(parent: Node, text: String, rect: Rect2, font_size: int = 20, color: 
 	return l
 
 func button(parent: Node, title: String, rect: Rect2, action: Callable, accent: bool = false) -> Button:
-	var b := Button.new()
+	var b := preload("res://scripts/ui/components/solmere_button.gd").new()
+	b.variant="choice"; b.selected=accent
 	b.text = LocalizationSystem.text(title)
 	b.position = rect.position
 	b.size = rect.size
-	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	b.add_theme_font_size_override("font_size", 19)
-	b.add_theme_color_override("font_color", INK if accent else CREAM)
-	for state in ["normal", "hover", "pressed", "disabled"]:
-		var s := StyleBoxFlat.new()
-		s.bg_color = GOLD if accent else Color("14282f")
-		if state == "hover":
-			s.bg_color = Color("efdaa1") if accent else Color("284249")
-		if state == "disabled":
-			s.bg_color = Color("253136")
-		s.border_color = Color("917e56")
-		s.set_border_width_all(1)
-		s.set_corner_radius_all(5)
-		b.add_theme_stylebox_override(state, s)
+	b.add_theme_font_size_override("font_size",19)
 	b.pressed.connect(func():
 		if busy:
 			return
@@ -955,7 +943,7 @@ func show_myriorama_help(page: int = 0) -> void:
 	var root := open_modal()
 	box(root, Rect2(245, 65, 1110, 790), 1.0)
 	var titles := ["万景图：把几张小景，接成一幅长景", "选主线：不是看着顺眼就选", "排出故事后，还要讲清真相"]
-	label(root, "初次上桌  /  %d · 3" % (tutorial_step + 1), Rect2(280, 91, 1000, 35), 20, GOLD)
+	label(root, "初次上桌", Rect2(280, 91, 1000, 35), 20, GOLD)
 	label(root, titles[tutorial_step], Rect2(280, 143, 1030, 52), 31, CREAM, true)
 	if tutorial_step == 0:
 		var samples := ["01", "03", "08"] if not tutorial_swapped else ["08", "03", "01"]

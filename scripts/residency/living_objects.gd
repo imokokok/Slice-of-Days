@@ -22,9 +22,10 @@ func _ready() -> void:
 func _layout_frame() -> void:
 	if not is_instance_valid(body): return
 	body.pivot_offset=DOSSIER_SIZE*.5
-	body.scale=Vector2.ONE*minf(1.0,minf(size.x*.78/DOSSIER_SIZE.x,size.y*.82/DOSSIER_SIZE.y))
+	body.scale=Vector2.ONE*minf(1.0,minf(size.x*.90/DOSSIER_SIZE.x,size.y*.84/DOSSIER_SIZE.y))
 
 func _input(event: InputEvent) -> void:
+	if not get_tree().get_nodes_in_group("native_confirmation").is_empty(): return
 	if event.is_action_pressed("ui_cancel"):
 		if mode=="settings": mode="pause"; build()
 		elif is_instance_valid(detail): detail.queue_free(); detail=null
@@ -48,7 +49,11 @@ func build() -> void:
 	if mode in ["pause","settings"]: pause_owned=true
 	elif pause_owned: get_tree().paused=false; pause_owned=false
 	var dim := ColorRect.new()
-	dim.color=Color("233f50",.22)
+	dim.color=Color("172f45",.34)
+	if mode in ["pause","settings"]:
+		var shader := Shader.new()
+		shader.code="shader_type canvas_item; uniform sampler2D screen_texture : hint_screen_texture, filter_linear_mipmap; void fragment(){ vec3 scene=textureLod(screen_texture,SCREEN_UV,2.2).rgb; COLOR=vec4(scene*vec3(.46,.53,.61),1.); }"
+		var blur := ShaderMaterial.new(); blur.shader=shader; dim.material=blur
 	dim.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(dim)
 	body=panel(self,Vector2.ZERO,DOSSIER_SIZE,Color("faf7ee"))
@@ -64,25 +69,29 @@ func build() -> void:
 	_layout_frame()
 	var paper_mode := mode in ["notebook","today","dossier","knowledge","fieldbook"]
 	if paper_mode:
-		var paper := preload("res://scripts/ui/components/paper_page.gd").new()
-		paper.position=Vector2(0,32); paper.size=Vector2(1340,718); paper.mouse_filter=MOUSE_FILTER_IGNORE; body.add_child(paper)
-	else:
-		var clean := StyleBoxFlat.new(); clean.bg_color=Color("edf2f3"); clean.set_corner_radius_all(10)
+		var paper := preload("res://scripts/ui/components/book_surface.gd").new()
+		paper.spread=mode in ["notebook","today"] or (mode=="dossier" and archive_tab=="days")
+		paper.ruled=mode in ["notebook","today"]
+		paper.size=DOSSIER_SIZE; body.add_child(paper)
+	elif mode not in ["pause","settings","map","sound_library"]:
+		var clean := StyleBoxFlat.new(); clean.bg_color=Color("eff3f3"); clean.set_corner_radius_all(12)
 		body.add_theme_stylebox_override("panel",clean)
-	feedback=label(body,"",Vector2(32,712),Vector2(1250,30),17,BLUE)
+	feedback=label(body,"",Vector2(80,702),Vector2(1170,30),16,BLUE)
 	if mode in ["pause","settings"]:
-		if mode=="pause": body.add_theme_stylebox_override("panel",StyleBoxEmpty.new())
 		var menu := preload("res://scripts/ui/components/runtime_menu.gd").new()
 		menu.owner_ui=self; menu.settings=mode=="settings"; body.add_child(menu)
 		return
-	var names := ["随身本","档案","相机","录音机"]
-	var english := ["Notebook","Archive","Camera","Recorder"]
+	var names := ["随身本  Notebook","档案  Archive","相机  Camera","录音机  Recorder"]
 	var targets := ["notebook","dossier","gallery","sound_library"]
 	for i in 4:
-		var chosen: bool = mode==targets[i] or (i==0 and mode in ["home","map","today","knowledge","fieldbook","bag"])
-		var b := _tab(names[i],english[i],Vector2(90+i*270,-38 if chosen else -30),Vector2(263,78 if chosen else 70),i,chosen,_switch_object.bind(targets[i]))
-		b.name="ObjectTab_"+targets[i]
-	button(body,"收起 · "+SettingsSystem.binding_text("ui_cancel"),Vector2(1190,-20),Vector2(138,40),close)
+		var chosen: bool=mode==targets[i] or (i==0 and mode in ["home","map","today","knowledge","fieldbook","bag"])
+		var b := button(body,names[i],Vector2(212+i*222,-42),Vector2(214,39),_switch_object.bind(targets[i]))
+		b.name="ObjectTab_"+targets[i]; b.selected=chosen
+		b.add_theme_font_size_override("font_size",17)
+		if not chosen: b.add_theme_color_override("font_color",Color("faf8ef",.82))
+	var back := button(body,"×",Vector2(1290,-42),Vector2(42,38),close)
+	back.tooltip_text=SettingsSystem.binding_text("ui_cancel")+" 收起"
+	back.add_theme_color_override("font_color",Color.WHITE)
 	match mode:
 		"bag": _inventory()
 		"counter": _counter()
@@ -90,10 +99,9 @@ func build() -> void:
 		"controls": _home()
 		"dossier": _archive()
 		"gallery":
-			button(body,"拿起相机",Vector2(40,84),Vector2(220,42),_home_action.bind("camera"))
+			button(body,"＋ 拍一张照片",Vector2(1015,34),Vector2(260,48),_home_action.bind("camera"))
 			_browser("photo")
 		"sound_library":
-			button(body,"拿起录音机",Vector2(40,84),Vector2(220,42),_home_action.bind("recorder"))
 			_browser("sound")
 		"map": _map()
 		"today": _notebook_page()
@@ -101,9 +109,6 @@ func build() -> void:
 		"fieldbook": _materials()
 		_:
 			mode="notebook"
-			for i in 4:
-				var targets2 := ["map","today","knowledge","bag"]
-				button(body,["随身地图","计划与时间","认识的人与地方","打开随身包"][i],Vector2(105+i*282,82),Vector2(268,38),_switch_object.bind(targets2[i]))
 			_notebook_page()
 
 func edit(parent: Node, value: String, at: Vector2, dimensions: Vector2, action: Callable, placeholder := "") -> TextEdit:
@@ -128,12 +133,20 @@ func _switch_object(target: String) -> void:
 
 func _archive() -> void:
 	if archive_tab=="overview":
-		label(body,"Solmere / 永居申请",Vector2(100,90),Vector2(1050,65),38,BLUE)
-		var names := ["申请要求","个人信息","生活记录","居民认可","七天作品集","最终文件"]
+		_hand("Solmere",Vector2(95,52),Vector2(540,98),70)
+		_hand("For dreams,
+and the life after.",Vector2(980,66),Vector2(280,70),23)
+		var titles := ["申请要求","个人信息","生活记录","居民认可","七天作品集","最终文件"]
+		var translations := ["REQUIREMENTS","PERSONAL","LIFE LOG","RECOGNITION","SEVEN DAYS","FINAL PAPER"]
 		var keys := ["requirements","personal","life","recognition","days","final"]
+		var icons := ["requirements","personal","life","star","book","mail"]
 		for i in 6:
-			var b := button(body,names[i],Vector2(100+(i%3)*385,205+(i/3)*205),Vector2(350,175),func() -> void: archive_tab=keys[i]; build())
-			b.name="ArchiveSection_"+keys[i]
+			var target: String=keys[i]
+			var card := button(body,"",Vector2(92+(i%3)*390,194+(i/3)*233),Vector2(360,212),func() -> void: archive_tab=target; build())
+			card.variant="archive"; card.refresh(); card.name="ArchiveSection_"+target
+			_icon(card,icons[i],Vector2(142,27),Vector2(76,76))
+			var title := label(card,titles[i],Vector2(12,117),Vector2(336,36),25,BLUE); title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+			var subtitle := label(card,translations[i],Vector2(12,158),Vector2(336,27),14,BLUE); subtitle.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 		return
 	var keys := ["requirements","personal","life","recognition","days","final"]
 	var titles := ["申请要求","个人信息","生活记录","居民认可","七天作品集","最终文件"]
@@ -141,7 +154,7 @@ func _archive() -> void:
 	for i in keys.size():
 		var target: String = keys[i]
 		var chosen := target==archive_tab
-		var b := _tab(titles[i],translations[i],Vector2(98+i*201,62 if chosen else 70),Vector2(198,72 if chosen else 64),i,chosen,func() -> void: archive_tab=target; WorldSound.play_ui("paper"); build())
+		var b := _tab(titles[i],translations[i],Vector2(70+i*201,42),Vector2(198,58),i,chosen,func() -> void: archive_tab=target; WorldSound.play_ui("paper"); build())
 		b.name="ArchiveTab_"+target
 	match archive_tab:
 		"requirements":
@@ -150,9 +163,10 @@ func _archive() -> void:
 		"days":
 			for i in 7:
 				var d := i+1
-				var b := button(body,"%02d" % d,Vector2(290+i*105,138),Vector2(85,35),func() -> void: day=d; build())
+				var b := button(body,"%02d" % d,Vector2(35,166+i*70),Vector2(66,62),func() -> void: day=d; build())
 				b.name="PortfolioDay_%02d" % d
 				b.selected=day==d
+			_hand("Day %02d" % day,Vector2(139,114),Vector2(510,64),42)
 			_free_page("day_%d" % day)
 		_: _free_page(archive_tab)
 
@@ -171,7 +185,7 @@ func _free_page(key: String) -> void:
 				var i: int = pages[key].size()
 				pages[key].append({"material":id,"kind":"recognition","text":str(ScheduleSystem.residents.get(resident,{}).get("display_name",resident)),"x":150+(i%4)*270,"y":75+(i/4)*130,"w":240,"h":100,"scale":1.0,"rotation":float(i%3-1)*.07})
 	canvas=CANVAS.new(); canvas.name="FreePaper"
-	canvas.position=Vector2(103,177); canvas.size=Vector2(1200,460)
+	canvas.position=Vector2(116,198); canvas.size=Vector2(1200,460); canvas.scale=Vector2(.905,1.0)
 	canvas.pieces=pages[key]
 	canvas.page_id=key
 	canvas.read_only=not ResidencySystem.state().submitted.is_empty() and key!="notebook"
@@ -181,14 +195,18 @@ func _free_page(key: String) -> void:
 		ResidencySystem.persist())
 	canvas.selection_changed.connect(_selection_toolbar)
 	if not canvas.read_only:
-		button(body,"＋ 素材",Vector2(105,654),Vector2(110,36),_material_tray)
-		button(body,"＋ 文字",Vector2(225,654),Vector2(110,36),_write_piece)
-		button(body,"画笔",Vector2(345,654),Vector2(110,36),func() -> void: canvas.drawing=not canvas.drawing; feedback.text="画笔已拿起 · 再按画笔收起" if canvas.drawing else "")
+		var tools := [["add","素材","Add"],["text","文字","Text"],["photo","照片","Photo"],["draw","画笔","Draw"]]
+		for i in tools.size():
+			var action: Callable=[_material_tray,_write_piece,_photo_material_tray,_toggle_drawing][i]
+			var tool_button := button(body,"",Vector2(1220,172+i*111),Vector2(82,101),action)
+			tool_button.variant="outlined"; tool_button.refresh()
+			_icon(tool_button,str(tools[i][0]),Vector2(25,12),Vector2(32,32))
+			var words := label(tool_button,str(tools[i][1])+"\n"+str(tools[i][2]),Vector2(2,48),Vector2(78,44),14,BLUE); words.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 
 func _selection_toolbar() -> void:
 	if is_instance_valid(selection_tools): selection_tools.queue_free()
 	if not is_instance_valid(canvas) or canvas.selected<0: return
-	selection_tools=Control.new(); selection_tools.position=Vector2(465,650); body.add_child(selection_tools)
+	selection_tools=Control.new(); selection_tools.position=Vector2(198,659); body.add_child(selection_tools)
 	var actions := ["rotate_left","rotate_right","smaller","larger","back","front","remove"]
 	var labels := ["↶","↷","缩小","放大","下层","上层","移除"]
 	for i in actions.size(): button(selection_tools,labels[i],Vector2(i*112,0),Vector2(105,40),canvas.transform_selected.bind(actions[i]))
@@ -254,8 +272,12 @@ func _final_paper() -> void:
 	signature.editable=s.submitted.is_empty()
 	label(body,"日期  Day %02d" % GameState.current_day,Vector2(490,624),Vector2(300,35),20,BLUE)
 	button(body,"提交申请",Vector2(970,622),Vector2(260,40),func() -> void:
-		var result := ResidencySystem.submit_free_application()
-		build(); feedback.text=str(result.message))
+		var confirm := preload("res://scripts/ui/components/confirm_sheet.gd").new()
+		confirm.heading="提交居住申请？"; confirm.description="提交后，这七天的作品与最终文件将被收存。\n\n准备好把它交给 Solmere 了吗？"; confirm.confirm_text="提交申请"
+		confirm.accepted.connect(func() -> void:
+			var result := ResidencySystem.submit_free_application()
+			confirm.queue_free(); build(); feedback.text=str(result.message))
+		add_child(confirm))
 
 func _counter() -> void:
 	_official("Solmere · 居住申请",Vector2(110,145),Vector2(1100,60),35)
@@ -327,15 +349,10 @@ func _show_detail(id: String) -> void:
 				else: audio_player.play())
 	else: label(detail,str(item.get("text",item.get("title",""))),Vector2(50,90),Vector2(1160,430),24,BLUE)
 
-func _tab(cn: String, en: String, at: Vector2, dimensions: Vector2, palette: int, chosen: bool, action: Callable) -> Button:
-	if mode not in ["notebook","today","dossier","knowledge","fieldbook"]:
-		var clean := button(body,cn+" / "+en,at,dimensions,action)
-		clean.selected=chosen
-		return clean
-	var tab_button := TAB.new()
-	tab_button.chinese=cn; tab_button.english=en; tab_button.position=at; tab_button.size=dimensions
-	tab_button.tint=[Color("a4c6df"),Color("f3eee1"),LEMON][palette%3]
-	tab_button.chosen=chosen; tab_button.pressed.connect(action); body.add_child(tab_button)
+func _tab(cn: String, en: String, at: Vector2, dimensions: Vector2, _palette: int, chosen: bool, action: Callable) -> Button:
+	var tab_button := button(body,cn+"\n"+en,at,dimensions,action)
+	tab_button.selected=chosen
+	tab_button.add_theme_font_size_override("font_size",15)
 	return tab_button
 
 func _official(text: String, at: Vector2, dimensions: Vector2, point: int) -> Label:
@@ -372,38 +389,71 @@ func _requirements_sheet() -> void:
 
 func _browser(kind: String) -> void:
 	var browser := preload("res://scripts/ui/components/media_browser.gd").new()
-	browser.kind=kind; browser.owner_ui=self; browser.position=Vector2(85,142); body.add_child(browser)
+	browser.kind=kind; browser.owner_ui=self; browser.position=Vector2(65,50); body.add_child(browser)
 
 func _notebook_page() -> void:
-	for i in 3:
-		var key: String=["today","heard","personal"][i]
-		var b := button(body,["TODAY · 今天","HEARD · 听说了","PERSONAL · 私人"][i],Vector2(85+i*390,160),Vector2(365,48),func() -> void: notebook_section=key; build())
-		b.selected=notebook_section==key
+	var categories := [["today","今天","TODAY"],["heard","听说了","HEARD"],["people","人物","PEOPLE"],["places","地点","PLACES"],["personal","私人","PERSONAL"],["materials","收藏","MATERIALS"]]
+	for i in categories.size():
+		var key: String=categories[i][0]
+		var b := button(body,str(categories[i][1])+"\n"+str(categories[i][2]),Vector2(40,102+i*78),Vector2(162,70),func() -> void: notebook_section=key; build())
+		b.selected=notebook_section==key; b.add_theme_font_size_override("font_size",16); b.alignment=HORIZONTAL_ALIGNMENT_LEFT
+	_hand("Day %02d" % GameState.current_day,Vector2(242,90),Vector2(370,54),34)
+	if notebook_section in ["people","places","materials"]:
+		_notebook_collection(notebook_section)
+		return
 	if notebook_section=="today":
-		label(body,"Day %02d · 今天从这里开始" % GameState.current_day,Vector2(100,245),Vector2(1100,55),29,BLUE)
 		var tasks := GuidanceSystem.must_objectives()
 		for i in tasks.size():
 			var row: Dictionary=tasks[i]
 			var check := CheckBox.new(); check.text=str(row.text); check.button_pressed=bool(row.done)
-			check.position=Vector2(100,320+i*82); check.size=Vector2(1090,62); check.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+			check.position=Vector2(232,163+i*83); check.size=Vector2(378,68); check.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+			check.add_theme_font_override("font",PaperLanguage.handwriting); check.add_theme_font_size_override("font_size",23)
+			for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_focus_color"]: check.add_theme_color_override(state,BLUE)
+			for state in ["normal","hover","pressed","focus","disabled","hover_pressed"]: check.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+			check.add_theme_stylebox_override("focus",get_theme_stylebox("focus","Button"))
 			check.name="TaskCheck_"+str(i); body.add_child(check); task_checks.append(check)
 			check.pressed.connect(func() -> void: _refresh_checks(); _guidance_action(row))
-		label(body,"完成行动后会自动记下。选择一项，看看下一步去哪。",Vector2(100,620),Vector2(1090,40),20,BLUE)
+		_hand("听说了",Vector2(242,435),Vector2(370,44),25)
+		var heard := GuidanceSystem.leads()
+		for i in mini(2,heard.size()):
+			var lead: Dictionary=heard[i]
+			var b := button(body,"◇ "+str(lead.text)+"\n   — "+GuidanceSystem.source_name(str(lead.source)),Vector2(232,483+i*81),Vector2(380,76),func() -> void: GuidanceSystem.track(str(lead.id)); notebook_section="heard"; build())
+			b.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; b.clip_text=true
+			b.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; b.alignment=HORIZONTAL_ALIGNMENT_LEFT; b.add_theme_font_size_override("font_size",17)
+		if heard.is_empty(): _hand("沿街走走，听听人们的故事。",Vector2(242,502),Vector2(348,95),23)
 	elif notebook_section=="heard":
-		var rows := scroll_area(body,Vector2(90,245),Vector2(1150,440))
+		var rows := scroll_area(body,Vector2(232,169),Vector2(393,475))
 		var leads := GuidanceSystem.leads()
-		if leads.is_empty(): label(body,"还没听到新的线索。沿街和遇见的人说说话吧。",Vector2(100,300),Vector2(1050,60),24,BLUE)
+		if leads.is_empty(): _hand("还没听到新的线索。\n沿街和遇见的人说说话吧。",Vector2(242,215),Vector2(370,140),27)
 		for lead in leads:
-			var row := HBoxContainer.new(); rows.add_child(row)
-			var words := Label.new(); words.text=str(lead.text)+"\n— "+GuidanceSystem.source_name(str(lead.source)); words.custom_minimum_size=Vector2(800,85); words.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; row.add_child(words)
-			var follow := preload("res://scripts/ui/components/solmere_button.gd").new(); follow.text="取消追踪" if str(GuidanceSystem.state().tracked_lead)==str(lead.id) else "追踪"; follow.disabled=not bool(lead.available); row.add_child(follow)
+			var row := VBoxContainer.new(); rows.add_child(row)
+			var words := Label.new(); words.text=str(lead.text)+"\n— "+GuidanceSystem.source_name(str(lead.source)); words.custom_minimum_size=Vector2(361,130); words.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; row.add_child(words)
+			var actions := HBoxContainer.new(); row.add_child(actions)
+			var follow := preload("res://scripts/ui/components/solmere_button.gd").new(); follow.text="取消追踪" if str(GuidanceSystem.state().tracked_lead)==str(lead.id) else "追踪"; follow.disabled=not bool(lead.available); actions.add_child(follow)
 			follow.pressed.connect(func() -> void: GuidanceSystem.track("" if str(GuidanceSystem.state().tracked_lead)==str(lead.id) else str(lead.id)); build())
-			var map := preload("res://scripts/ui/components/solmere_button.gd").new(); map.text="看地图"; row.add_child(map); map.pressed.connect(func() -> void: _guidance_action({"action":"map","location":str(lead.location)}))
+			var map := preload("res://scripts/ui/components/solmere_button.gd").new(); map.text="看地图"; actions.add_child(map); map.pressed.connect(func() -> void: _guidance_action({"action":"map","location":str(lead.location)}))
 	else:
-		label(body,"留给自己的话",Vector2(100,245),Vector2(1050,55),29,BLUE)
 		var s := ResidencySystem.state()
-		var note := edit(body,str(s.get("private_note","")),Vector2(100,315),Vector2(1110,345),func(value: String) -> void: s.private_note=value; ResidencySystem.persist(),"写下临时想法，或自己想继续的事……")
-		note.name="PrivateNotebookText"
+		var note := edit(body,str(s.get("private_note","")),Vector2(242,176),Vector2(370,470),func(value: String) -> void: s.private_note=value; ResidencySystem.persist(),"留给自己的话……")
+		note.name="PrivateNotebookText"; note.add_theme_font_override("font",PaperLanguage.handwriting); note.add_theme_font_size_override("font_size",25)
+	# Only the player's actual photograph can appear on the private page.
+	var library := PhotoLibrary.new()
+	var photos := library.list_photos().filter(func(photo: Dictionary) -> bool: return str(photo.get("role",GameState.current_role))==GameState.current_role)
+	if not photos.is_empty():
+		var photo: Dictionary=photos.back()
+		var data := library.load_photo(str(photo.photo_id))
+		if data!=null:
+			var card := button(body,"",Vector2(753,160),Vector2(425,352),_switch_object.bind("gallery")); card.rotation=-.045
+			var white := StyleBoxFlat.new(); white.bg_color=Color("fffcf2"); white.set_content_margin_all(8); card.add_theme_stylebox_override("normal",white)
+			for state in ["hover","pressed"]: card.add_theme_stylebox_override(state,white)
+			var image := TextureRect.new(); image.position=Vector2(15,15); image.size=Vector2(395,284); image.texture=ImageTexture.create_from_image(data); image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED; image.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(image)
+			_hand(TravelSystem.location_name(str(photo.get("location",""))),Vector2(805,541),Vector2(390,45),27)
+	else:
+		_hand("这页，留给路上的片刻。",Vector2(755,288),Vector2(452,64),28)
+		button(body,"拿起相机 →",Vector2(835,385),Vector2(245,44),_home_action.bind("camera"))
+	for i in 3:
+		var targets := ["map","knowledge","bag"]
+		var b := button(body,["地图","人和地方","随身包"][i],Vector2(737+i*169,638),Vector2(157,40),_switch_object.bind(targets[i])); b.add_theme_font_size_override("font_size",17)
 
 func _refresh_checks() -> void:
 	var rows := GuidanceSystem.must_objectives()
@@ -417,3 +467,104 @@ func _guidance_action(action: Dictionary) -> void:
 	if kind in ["exploration","requirements","recognition","receipts","personal"]:
 		mode="dossier"; archive_tab={"exploration":"life","requirements":"requirements","recognition":"recognition","receipts":"life","personal":"personal"}[kind]; build(); return
 	super._guidance_action(action)
+
+func _hand(value: String, at: Vector2, dimensions: Vector2, point: int) -> Label:
+	var words := label(body,value,at,dimensions,point,BLUE)
+	var font := SystemFont.new(); font.font_names=PackedStringArray(["Segoe Script","KaiTi","Microsoft YaHei"])
+	words.add_theme_font_override("font",font)
+	return words
+func _icon(parent: Node, kind: String, at: Vector2, dimensions: Vector2) -> Control:
+	var icon := preload("res://scripts/ui/components/ink_icon.gd").new(); icon.kind=kind; icon.position=at; icon.size=dimensions; parent.add_child(icon); return icon
+func _toggle_drawing() -> void:
+	canvas.drawing=not canvas.drawing
+	feedback.text="画笔已拿起 · 再按画笔收起" if canvas.drawing else ""
+func _photo_material_tray() -> void:
+	_material_tray()
+	var spread := detail.find_child("LooseMaterials",true,false)
+	for piece in spread.get_children():
+		if piece.get("item") is Dictionary and str(piece.item.get("kind",""))!="photo": piece.hide()
+
+func _map() -> void:
+	var viewport := panel(body,Vector2(28,26),Vector2(1284,646),Color("f1ead8"))
+	viewport.name="MapViewport"; viewport.clip_contents=true
+	map_board=load("res://scripts/residency/map_paper.gd").new()
+	map_board.position=Vector2(130,0); map_board.scale=Vector2.ONE*.90
+	map_board.selected.connect(_map_select); viewport.add_child(map_board)
+	var filters: Array=[]
+	for i in 4:
+		var b := button(viewport,["全部地点","去过的地方","听说的地方","当前线索"][i],Vector2(10,158+i*56),Vector2(115,46),func() -> void:
+			map_board.filter_locations(i)
+			for index in filters.size(): filters[index].selected=index==i)
+		b.name="MapFilter_"+str(i); b.add_theme_font_size_override("font_size",15); b.clip_text=true; b.selected=i==0; filters.append(b)
+	var lead := GuidanceSystem.tracked_lead()
+	if not lead.is_empty():
+		label(body,"听说："+str(lead.get("text","")),Vector2(74,681),Vector2(1120,31),17,Color("fff9e9"))
+	_map_select(GameState.current_location if map_selected.is_empty() else map_selected)
+
+func _notebook_collection(section: String) -> void:
+	var rows := scroll_area(body,Vector2(235,173),Vector2(1025,474))
+	if section=="people":
+		var seen := {}
+		for fact in KnowledgeSystem.facts():
+			var id := str(fact.get("source_npc_id",fact.get("subject_id","")))
+			if not id.is_empty() and ScheduleSystem.residents.has(id): seen[id]=true
+		for id in GameState.shared_state.get("linear_talk_counts_"+GameState.current_role,{}): seen[id]=true
+		for id in seen:
+			var entry := VBoxContainer.new(); rows.add_child(entry)
+			var title := Label.new(); title.text=GuidanceSystem.source_name(str(id)); title.add_theme_font_size_override("font_size",26); entry.add_child(title)
+			var words := Label.new(); words.custom_minimum_size=Vector2(935,52); words.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+			var facts: Array=KnowledgeSystem.facts().filter(func(fact: Dictionary) -> bool: return str(fact.get("source_npc_id",""))==str(id) or str(fact.get("subject_id",""))==str(id))
+			words.text="\n".join(facts.map(func(fact: Dictionary) -> String: return str(fact.get("text","")))) if not facts.is_empty() else "在小镇遇见过。下一次，听听对方的故事。"
+			entry.add_child(words)
+	elif section=="places":
+		for id in ResidencySystem.state().visits:
+			var b := preload("res://scripts/ui/components/solmere_button.gd").new(); b.text=TravelSystem.location_name(str(id))+"   →"; b.alignment=HORIZONTAL_ALIGNMENT_LEFT; b.custom_minimum_size=Vector2(965,62); rows.add_child(b)
+			b.pressed.connect(func() -> void: map_selected=str(id); mode="map"; build())
+	else:
+		for id in ResidencySystem.state().materials:
+			var item: Dictionary=ResidencySystem.state().materials[id]
+			if str(item.get("kind",""))=="official": continue
+			var b := preload("res://scripts/ui/components/solmere_button.gd").new(); b.text=str(item.get("title",id)); b.alignment=HORIZONTAL_ALIGNMENT_LEFT; b.custom_minimum_size=Vector2(965,60); rows.add_child(b); b.pressed.connect(_show_detail.bind(str(id)))
+	if rows.get_child_count()==0: _hand("这一页还空着。\n新的相遇会慢慢留在这里。",Vector2(275,235),Vector2(700,125),28)
+
+func _map_select(location: String) -> void:
+	map_selected=location
+	var old := body.get_node_or_null("MapDetails")
+	if old != null: body.remove_child(old); old.queue_free()
+	if location==GameState.current_location: return
+	var side := panel(body,Vector2(814,104),Vector2(455,510),Color("f1f5f4",.98))
+	side.name="MapDetails"
+	label(side,TravelSystem.location_name(location),Vector2(27,21),Vector2(363,45),28,BLUE)
+	label(side,"从 "+TravelSystem.location_name(GameState.current_location)+" 出发",Vector2(27,76),Vector2(393,35),18,Color("6a8598"))
+	var methods := [["walk","步行","沿路慢慢看"],["bus","公交","在站点间来往"],["friend","找人借车","省下走路的时间"],["taxi","出租车","尽快抵达"]]
+	for i in methods.size():
+		var method := str(methods[i][0])
+		var route := TravelSystem.route(GameState.current_location,location,method,GameState.current_role,GameState.current_minute)
+		var available := bool(route.get("available",false))
+		var reason := str(route.get("reason",""))
+		if available and int(route.cost)>GameState.money: available=false; reason="钱包余额不足"
+		var b := button(side,"",Vector2(22,129+i*78),Vector2(411,69),_travel_selected.bind(method))
+		b.variant="outlined"; b.refresh(); b.disabled=not available
+		b.name="Travel"+method.capitalize(); b.tooltip_text=reason
+		label(b,str(methods[i][1]),Vector2(15,7),Vector2(160,31),21,BLUE if available else Color("83919a"))
+		var secondary := "%d 分钟 · %d 元" % [int(route.minutes),int(route.cost)] if bool(route.get("available",false)) else "暂不可用"
+		var amount := label(b,secondary,Vector2(166,9),Vector2(225,27),18,BLUE if available else Color("83919a")); amount.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
+		var why := label(b,str(methods[i][2]) if available else reason,Vector2(15,41),Vector2(380,23),14,Color("72889a")); why.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	label(side,"钱包  %d 元" % GameState.money,Vector2(29,463),Vector2(280,29),18,BLUE)
+	var cancel := button(side,"×",Vector2(403,20),Vector2(32,32),func() -> void: _map_select(GameState.current_location))
+	cancel.name="TravelCancel"; cancel.tooltip_text="收起地点"
+
+func _travel_selected(method: String) -> void:
+	if travel_pending or SceneRouter.transitioning: return
+	var route := TravelSystem.route(GameState.current_location,map_selected,method,GameState.current_role,GameState.current_minute)
+	if not bool(route.get("available",false)): feedback.text=str(route.get("reason","无法出发")); return
+	var confirmation := preload("res://scripts/ui/components/confirm_sheet.gd").new()
+	confirmation.heading=str(route.label)+"前往"+TravelSystem.location_name(map_selected)
+	confirmation.description="所需时间    %d 分钟\n花费            %s\n抵达时间    %s" % [int(route.minutes),"免费" if int(route.cost)==0 else "%d 元" % int(route.cost),GuidanceSystem.time_text(int(route.arrival))]
+	if not route.get("conflicts",[]).is_empty(): confirmation.description+="\n可能错过："+"、".join(route.conflicts)
+	confirmation.confirm_text="出发"; add_child(confirmation)
+	confirmation.accepted.connect(func() -> void:
+		travel_pending=true
+		var result := SceneRouter.travel_to(map_selected,method)
+		if bool(result.get("ok",false)): close()
+		else: travel_pending=false; confirmation.queue_free(); feedback.text=str(result.message))

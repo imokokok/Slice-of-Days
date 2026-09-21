@@ -95,6 +95,7 @@ func route(from_id: String, to_id: String, method: String, role: String, minute:
 			duration = maxi(int(transport.taxi_minimum), int(ceil(walking * float(transport.taxi_factor)))) + wait
 			label = "出租车"
 		"friend":
+			if ride_friend().is_empty(): return {"available":false,"reason":"和居民熟悉后，才方便开口借车。"}
 			wait = int(transport.get("friend_wait", 8))
 			cost = _distance_fare(walking, transport.get("friend_fares", {}), 10, 20, 35)
 			duration = maxi(int(transport.get("friend_minimum", 8)), int(ceil(walking * float(transport.get("friend_factor", 0.45))))) + wait
@@ -140,6 +141,15 @@ func travel(to_id: String, method: String) -> Dictionary:
 		GameState.add_journal_entry({"kind":"ticket", "text":"一张公交票 · " + location_name(to_id)})
 	GameState.current_location = to_id
 	if method == "walk": _walk_keepsake(from_id,to_id)
+	elif method == "bus":
+		_journey_fact("bus_park_notice","公交线路图上，观景台站被圈了出来。晚上九点后可以去看星星。","车上的线路图","park")
+	elif method == "taxi" and to_id in ["night_market","produce_stall"]:
+		_journey_fact("beetman_shopping","司机指了指菜摊旁的小路：从这里到饭店，可以少绕一个弯。","出租车司机","produce_stall")
+	elif method == "friend":
+		var resident := ride_friend()
+		if not resident.is_empty():
+			RelationshipSystem.record_encounter(resident,"shared_ride_d%d_%s" % [GameState.current_day,to_id],["shared_a_ride"])
+			_journey_fact("ride_"+resident+"_"+to_id,"和"+GuidanceSystem.source_name(resident)+"一起前往"+location_name(to_id)+"，记下了这段同行的路。",resident,to_id)
 	GameState.commit_active_role_state()
 	GameState.state_changed.emit()
 	travel_in_progress = false
@@ -148,6 +158,22 @@ func travel(to_id: String, method: String) -> Dictionary:
 		"message": "%s用了%d分钟，花费%d元。" % [str(option.get("label", "移动")), duration, cost],
 		"path_minutes": duration,
 	}
+
+func ride_friend() -> String:
+	for id in GameState.relationships:
+		var relationship: Dictionary=GameState.relationships[id]
+		if str(relationship.get("confirmation",""))=="granted" or relationship.get("flags",[]).has("ride_offered"): return str(id)
+		var meaningful: Array=relationship.get("encounter_events",[]).filter(func(event: Variant) -> bool: return not str(event).begins_with("visit_") and not str(event).begins_with("chat_"))
+		if meaningful.size()>=2: return str(id)
+	return ""
+
+func _journey_fact(id: String, words: String, source: String, location: String) -> void:
+	# Join the same transaction as the fare/time. SceneRouter saves or restores all of it.
+	var key := "knowledge_"+GameState.current_role
+	var facts: Array=GameState.shared_state.get(key,[])
+	if facts.any(func(fact: Dictionary) -> bool: return str(fact.get("id",""))==id): return
+	facts.append({"id":id,"text":words,"source_npc_id":source,"subject_id":location,"predicate":"lead","confidence":1.0,"learned_day":GameState.current_day,"learned_time":GameState.current_minute})
+	GameState.shared_state[key]=facts
 
 
 func _distance_fare(walking: int, fares: Dictionary, short_fare: int, medium_fare: int, long_fare: int) -> int:

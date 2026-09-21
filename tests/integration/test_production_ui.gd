@@ -34,6 +34,12 @@ func run() -> void:
 	state.shared_state.typewriter=false
 	await snap("exploration")
 	var shell = current_scene.get_node("GameplayShell")
+	state.shared_state["knowledge_A"]=[{"id":"long_notebook_lead","text":"杂货店 08:00—22:00；番茄12元、青草10元、星形盐片22元。日用品、酱料和摄影柜台都在这里。","source_npc_id":"grocery","subject_id":"cafe","predicate":"lead","confidence":1.0}]
+	shell.open_paper("notebook"); await settle()
+	var preview= shell.overlay.find_child("HeardPreview_0",true,false)
+	check(is_instance_valid(preview) and preview.size.x<=380,"Long real leads stay inside the left notebook page")
+	await snap("notebook_long_lead"); shell.overlay.close(); await settle()
+	state.shared_state["knowledge_A"]=[]
 	var dialogue = load("res://scripts/ui/conversation_panel.gd").new(); dialogue.npc="wu_wu"; current_scene.add_child(dialogue); await settle(); dialogue._advance()
 	await snap("dialogue_choices")
 	check(dialogue.vendor_choices.get_child_count()>=3,"Dialogue choices remain native branches")

@@ -417,9 +417,11 @@ func _notebook_page() -> void:
 		var heard := GuidanceSystem.leads()
 		for i in mini(2,heard.size()):
 			var lead: Dictionary=heard[i]
-			var b := button(body,"◇ "+str(lead.text)+"\n   — "+GuidanceSystem.source_name(str(lead.source)),Vector2(232,483+i*81),Vector2(380,76),func() -> void: GuidanceSystem.track(str(lead.id)); notebook_section="heard"; build())
-			b.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; b.clip_text=true
-			b.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; b.alignment=HORIZONTAL_ALIGNMENT_LEFT; b.add_theme_font_size_override("font_size",17)
+			var text := "◇ "+str(lead.text)+"\n   — "+GuidanceSystem.source_name(str(lead.source))
+			var b := button(body,"",Vector2(232,483+i*81),Vector2(380,76),func() -> void: GuidanceSystem.track(str(lead.id)); notebook_section="heard"; build())
+			b.name="HeardPreview_"+str(i); b.tooltip_text=text; b.clip_contents=true
+			var preview := label(b,text,Vector2(10,5),Vector2(360,66),17,BLUE)
+			preview.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; preview.max_lines_visible=3; preview.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 		if heard.is_empty(): _hand("沿街走走，听听人们的故事。",Vector2(242,502),Vector2(348,95),23)
 	elif notebook_section=="heard":
 		var rows := scroll_area(body,Vector2(232,169),Vector2(393,475))

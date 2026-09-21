@@ -153,6 +153,7 @@ func track(id: String) -> void:
 	updated.emit()
 
 func source_name(id: String) -> String:
+	if id=="grocery": return "杂货店老板"
 	return str(ScheduleSystem.residents.get(id,{}).get("display_name",id if not id.is_empty() else "沿途发现"))
 
 func hear(id: String, text: String, source: String, location: String) -> void:

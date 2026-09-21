@@ -36,7 +36,7 @@ Made with the built-in ImageGen tool for this project. These are decorative asse
 
 Godot 4.7.2, Windows, compatibility renderer. Tests use isolated AppData and `--isolated-save`; actual player saves are not used as fixtures. Renderer-dependent capture/workshop tests must run with `--rendering-method gl_compatibility`, not headless.
 
-- `test_production_ui.gd`: PASS, 27 captured game screens/states; dialogue and follow-up topic choices, actual purchases, insufficient funds, film capture/develop, recorder capture, studio undo/redo, travel confirmation/charge/time/arrival, real save thumbnail and five minigame screens.
+- `test_production_ui.gd`: PASS, 28 captured game screens/states; long real notebook entries, dialogue and follow-up topic choices, actual purchases, insufficient funds, film capture/develop, recorder capture, studio undo/redo, travel confirmation/charge/time/arrival, real save thumbnail and five minigame screens.
 - `test_native_guidance_ui.gd`: PASS; native notebook/archive/map/dialogue/media/settings, seven-page transforms, live objectives; a separate `--load-only` process also PASS for save/quit/load persistence.
 - `test_v3_film.gd`: PASS, 78 checks, including capture to developed photo to collage source metadata.
 - `test_v3_economy.gd`: PASS, 51 checks.

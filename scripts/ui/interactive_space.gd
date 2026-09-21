@@ -97,14 +97,14 @@ func _build_ui() -> void:
 	var home_button := _button(self, "回到主页", Vector2(1445, 15), Vector2(123, 40), "secondary")
 	home_button.pressed.connect(_return_home)
 	_label(self, str(space.get("name", "")), Vector2(42, 18), Vector2(1000, 42), 25, Color("eadac1"))
-	var dialogue := _panel(self, Vector2(390, 305), Vector2(540, 255), Color("17232b", 0.94), Color("566566"), 2)
-	room_dialogue = dialogue
-	room_dialogue.add_to_group("scene_speech")
+	room_dialogue=preload("res://scripts/ui/components/dialogue_card.gd").new()
+	add_child(room_dialogue)
+	room_dialogue.configure(stage)
 	room_dialogue.hide()
-	name_label = _label(dialogue, "", Vector2(20, 10), Vector2(500, 28), 16, Color("d0b28a"))
-	cue_label = _label(dialogue, "", Vector2(20, 35), Vector2(500, 136), 20, Color("ebdfc7"))
-	detail_label = _label(dialogue, "", Vector2(20, 188), Vector2(500, 38), 15, Color("aab7b1"))
-	cue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_label=room_dialogue.speaker_label
+	cue_label=room_dialogue.text_label
+	detail_label=room_dialogue.hint_label
+
 
 
 func _resident_names() -> String:
@@ -343,12 +343,12 @@ func _conversation_event_id(resident_id: String) -> String:
 
 func _process(_delta: float) -> void:
 	if is_instance_valid(cue_label) and room_dialogue.visible:
-		room_dialogue.position=PaperLanguage.near_actor(stage,room_dialogue.size)
 		if speech_text != cue_label.text:
 			speech_text = cue_label.text
 			speech_progress = 0.0
+			room_dialogue.layout(true)
 		speech_progress += _delta * 28.0
-		cue_label.visible_characters = int(speech_progress)
+		cue_label.visible_characters = -1 if SettingsSystem.reduced_motion() else int(speech_progress)
 	if not is_instance_valid(stage): return
 	stage.enabled = not MetaExperience.modal_open() and not is_instance_valid(conversation) and not is_instance_valid(pocket_panel) and not is_instance_valid(notes_overlay) and not SceneRouter.transitioning and not room_dialogue.visible and not (has_node("GameplayShell") and get_node("GameplayShell").blocks_walking())
 	if stage.enabled and DisplayServer.window_is_focused():

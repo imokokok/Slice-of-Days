@@ -43,6 +43,7 @@ var room_kind := ""
 var walk_limit := INF
 var visual_phase := -1
 var lookout_was_open := false
+var dialogue_scenery: Array[Rect2] = []
 
 func _ready() -> void:
 	original_resident = preload("res://scripts/ui/original_resident.gd").new()
@@ -124,6 +125,7 @@ func nearest_of(kinds: Array) -> Dictionary:
 	return result
 
 func _draw() -> void:
+	dialogue_scenery.clear()
 	var night := GameState.current_minute >= 1080
 	draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
 	# The lighthouse panorama is a rear layer.  Buildings and trees draw above
@@ -335,6 +337,7 @@ func _draw_authored_building(texture: Texture2D, center_x: float, maximum_size: 
 	var scale_value := minf(maximum_size.x / source_size.x, maximum_size.y / source_size.y)
 	var size := source_size * scale_value
 	var rect := Rect2(Vector2(center_x - size.x * 0.5, CURB_Y - source_ground_y * scale_value), size)
+	dialogue_scenery.append(rect.grow(12))
 	draw_texture_rect(texture, rect, false, _scene_art_tint())
 
 func _draw_street_foreground() -> void:
@@ -380,6 +383,7 @@ func _draw_facade(x: float, kind: String, title: String) -> void:
 	elif kind in ["bookstore", "tarot"]: wall = Color("82bdb1")
 	var height := 333.0 if kind in ["home_a", "home_b", "community"] else 288.0
 	var roof := 718 - height
+	dialogue_scenery.append(Rect2(x-322,roof-47,644,height+59))
 	draw_rect(Rect2(x - 290, roof, 580, height), wall)
 	draw_rect(Rect2(x + 251, roof, 39, height), wall.darkened(0.13))
 	draw_colored_polygon(PackedVector2Array([Vector2(x - 310, roof), Vector2(x - 270, roof - 35), Vector2(x + 266, roof - 35), Vector2(x + 308, roof)]), Color("526360"))
@@ -450,6 +454,7 @@ func _draw_outdoor(x: float, kind: String) -> void:
 			_draw_user_scene(BUS_ART, Rect2(447, 501, 835, 419), x, 650.0)
 			# The Solmere direction sign belongs beside the station, on its right.
 			var sign_post_x := x + 380.0
+			dialogue_scenery.append(Rect2(x+328,488,214,242))
 			draw_rect(Rect2(sign_post_x, 500, 9, 218), wood)
 			draw_rect(Rect2(x + 340, 516, 190, 55), Color("b5a27a"))
 			draw_string(ThemeDB.fallback_font, Vector2(x + 362, 553), "SOLMERE   →", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("3e5350"))
@@ -481,6 +486,7 @@ func _draw_outdoor(x: float, kind: String) -> void:
 func _draw_user_scene(texture: Texture2D, source: Rect2, x: float, width: float) -> void:
 	var height := width * source.size.y / source.size.x
 	var destination := Rect2(x - width * 0.5, 718.0 - height, width, height)
+	dialogue_scenery.append(destination.grow(12))
 	draw_texture_rect_region(texture, destination, source, _scene_art_tint())
 
 func _draw_room_details() -> void:
@@ -533,6 +539,34 @@ func _actor_height() -> float:
 	# beside the authored chairs and tables, while streets keep their wide-shot
 	# proportions.
 	return INDOOR_ACTOR_HEIGHT if indoor else OUTDOOR_ACTOR_HEIGHT
+
+func dialogue_obstacles(npc_id := "") -> Dictionary:
+	# Positions come from the same stage/camera that renders the characters.
+	# Conservatively include hair, bags, both disputants and the player's boots.
+	var actors: Array[Rect2]=[]
+	var height := _actor_height()*1.18
+	var anchor := Vector2(player_x-camera_x,_actor_ground_at(player_x)-height*.7)
+	actors.append(Rect2(player_x-camera_x-height*.32,_actor_ground_at(player_x)-height,height*.64,height+12).grow(18))
+	for item in hotspots:
+		var kind := str(item.get("kind",""))
+		if kind not in ["person","event","shopkeeper","argument"]: continue
+		var x := float(item.get("x",0))-camera_x
+		var ground := _actor_ground_at(float(item.get("x",0)))
+		var half_width := height*.32+(56 if kind=="argument" else 0)
+		actors.append(Rect2(x-half_width,ground-height,half_width*2,height+12).grow(18))
+		if str(item.get("id",""))==npc_id: anchor=Vector2(x,ground-height*.7)
+	var scenery: Array=dialogue_scenery.duplicate()
+	if indoor:
+		# Authored room plates have a central work counter and side windows.
+		# Preserve that focal area; the upper wall and foreground are reading space.
+		scenery.append(Rect2(540,350,500,350))
+		for item in hotspots:
+			if str(item.get("kind",""))=="object":
+				scenery.append(Rect2(float(item.x)-camera_x-85,540,170,178))
+	var transform := get_global_transform_with_canvas()
+	for i in actors.size(): actors[i]=transform*actors[i]
+	for i in scenery.size(): scenery[i]=transform*scenery[i]
+	return {"actors":actors,"scenery":scenery,"anchor":transform*anchor}
 
 func _draw_protagonist(at: Vector2, gait_phase: float, gait_strength: float, direction: float) -> void:
 	# The protagonist uses the supplied character design instead of the generic

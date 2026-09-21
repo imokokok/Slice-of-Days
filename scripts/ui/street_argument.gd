@@ -6,6 +6,40 @@ signal cancel_requested
 var street: Control
 var world_x := 0.0
 var save_message := ""
+var dialogue_card: Panel
+var displayed_words := ""
+
+func _ready() -> void:
+	super._ready()
+	dialogue_card=preload("res://scripts/ui/components/dialogue_card.gd").new()
+	add_child(dialogue_card)
+	dialogue_card.configure(street,"translation")
+	dialogue_card.minimum_body_height=96
+
+func _process(delta: float) -> void:
+	super._process(delta)
+	if not is_instance_valid(dialogue_card): return
+	var words := ""
+	var speaker := ""
+	if not save_message.is_empty(): words=save_message
+	elif finished: words="他们提起菜篮，准备接着往前走。"
+	elif waiting: words="两个人都停了一下。也许先让对方看见自己想到的画面。"
+	elif not current_line.is_empty():
+		speaker=NAMES[int(current_line[0])]
+		words=LocalizationSystem.text(str(current_line[1]))
+	dialogue_card.speaker_label.text=speaker
+	dialogue_card.text_label.text=words
+	dialogue_card.text_label.visible_characters=-1 if waiting or finished or SettingsSystem.reduced_motion() else int(typed)
+	dialogue_card.hint_label.text=("拖动记忆到对方身上" if waiting else SettingsSystem.binding_text("dialogue_advance")+" 继续")+" · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
+	dialogue_card.additional_obstacles.clear()
+	for side in 2:
+		var memory_index: int=PAIRS[chapter][side]
+		if waiting or decoded[memory_index]: dialogue_card.additional_obstacles.append(_thought_rect(memory_index))
+	if words!=displayed_words:
+		displayed_words=words
+		dialogue_card.layout(true)
+	var hand := _speech_rect().has_point(get_local_mouse_position()) or hovering>=0
+	Input.set_default_cursor_shape(Input.CURSOR_DRAG if drag_index>=0 else Input.CURSOR_POINTING_HAND if hand else Input.CURSOR_ARROW)
 
 func _head(side: int) -> Vector2:
 	var x := world_x + (-46 if side == 0 else 46)
@@ -36,19 +70,6 @@ func _draw() -> void:
 		_text(NAMES[side]+"想到的",rect.position+Vector2(14,24),15,MUTED)
 		_text(str(MEMORIES[index].title),rect.position+Vector2(76,54),18,INK)
 		_text("对方听见了" if decoded[index] else "拖给对方看看",rect.position+Vector2(76,82),14,MUTED)
-	var words_rect := _speech_rect()
-	_box(words_rect,Color("39463e",.92),Color.TRANSPARENT,5,0)
-	var speaker := ""
-	var words := ""
-	if not save_message.is_empty(): words = save_message
-	elif finished: words = "他们提起菜篮，准备接着往前走。"
-	elif waiting: words = "两个人都停了一下。也许先让对方看见自己想到的画面。"
-	elif not current_line.is_empty():
-		speaker = NAMES[int(current_line[0])]
-		words = LocalizationSystem.text(str(current_line[1])).substr(0,int(typed))
-	_text(speaker,words_rect.position+Vector2(26,29),18,Color("f0e2c5"))
-	_wrapped_text(words,words_rect.position+Vector2(26,64),22,Color("f0e2c5"),480,30)
-	_text("拖动记忆到对方身上" if waiting else "点击 / 空格继续 · Esc 离开",words_rect.position+Vector2(26,124),14,Color("a8bbb7"))
 	if drag_index >= 0: _draw_token(drag_index,drag_position)
 	if return_index >= 0: _draw_token(return_index,return_position)
 
@@ -79,15 +100,17 @@ func _input(event: InputEvent) -> void:
 				return_position = point
 				return_time = 0
 		get_viewport().set_input_as_handled()
-	elif event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_ESCAPE:
+	elif event.is_pressed() and not event.is_echo():
+		if event.is_action_pressed("ui_cancel"):
 			if drag_index >= 0: _cancel_drag()
+			dialogue_card.dismiss()
 			cancel_requested.emit()
-		elif event.keycode in [KEY_SPACE,KEY_ENTER]: _advance_street()
+		elif event.is_action_pressed("dialogue_advance") or event.is_action_pressed("ui_accept"): _advance_street()
+		else: return
 		get_viewport().set_input_as_handled()
 
 func _speech_rect() -> Rect2:
-	return Rect2(Vector2(535,712),Vector2(530,160))
+	return dialogue_card.get_rect() if is_instance_valid(dialogue_card) else Rect2()
 
 func _text(value: String, baseline: Vector2, font_size: int, color: Color, font: Font = null) -> void:
 	var used: Font = PaperLanguage.handwriting if font==null else font

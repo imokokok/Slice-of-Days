@@ -349,7 +349,9 @@ func _build_event_modal() -> void:
 	event_overlay.color = Color(0, 0, 0, 0.12)
 	event_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(event_overlay)
-	event_panel = _panel(event_overlay, Vector2(810, 260), Vector2(540, 360), Color("16232b", 0.98), Color("647676"))
+	event_panel = preload("res://scripts/ui/components/dialogue_card.gd").new()
+	event_overlay.add_child(event_panel)
+	event_panel.configure(street)
 	event_overlay.visible = false
 
 
@@ -719,26 +721,25 @@ func _clear_dialogue() -> void:
 	if speech_tween: speech_tween.kill()
 	spoken_line = null
 	dialogue_choices.clear()
-	for child in event_panel.get_children():
-		event_panel.remove_child(child)
-		child.queue_free()
-	event_panel.add_to_group("scene_speech")
-	event_panel.position = PaperLanguage.near_actor(street,event_panel.size)
-	PaperLanguage._style(event_panel)
+	event_panel.clear_choices()
 	event_overlay.visible = true
-	# _process recomputes the movement gate every frame.  Do not write a second
-	# permanent value here while an event panel is opening.
 
 func _show_line(speaker: String, text: String) -> void:
 	_clear_dialogue()
-	_label(event_panel, speaker, Vector2(32, 18), Vector2(475, 28), 19, Color("d6b58d"))
-	var line := _label(event_panel, text, Vector2(32, 61), Vector2(475, 180), 23, Color("ede3ce"))
-	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	event_panel.speaker_label.text=LocalizationSystem.text(speaker)
+	var line: Label=event_panel.text_label
+	line.text=LocalizationSystem.text(text)
 	spoken_line = line
-	line.visible_characters = 0
-	speech_tween = create_tween()
-	speech_tween.tween_property(line, "visible_characters", line.text.length(), maxf(0.3, line.text.length() / 28.0))
-	var next := _button(event_panel, "继续  Space", Vector2(230, 288), Vector2(265, 43), "dialogue")
+	line.visible_characters = -1 if SettingsSystem.reduced_motion() else 0
+	if not SettingsSystem.reduced_motion():
+		speech_tween = create_tween()
+		speech_tween.tween_property(line, "visible_characters", line.text.length(), maxf(0.3, line.text.length() / 28.0))
+	var box := VBoxContainer.new()
+	var next := preload("res://scripts/ui/components/dialogue_choice.gd").new()
+	next.text="继续"; next.custom_minimum_size.y=46
+	box.add_child(next)
+	event_panel.hint_label.text=SettingsSystem.binding_text("dialogue_advance")+" 继续 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
+	event_panel.attach_choices(box)
 	next.pressed.connect(func() -> void: event_overlay.hide())
 	dialogue_choices.append(next)
 
@@ -750,20 +751,19 @@ func _show_dialogue_beat() -> void:
 			_resolve_event(staged_event_id)
 			return
 		_clear_dialogue()
-		_label(event_panel, "你说……    W / S 或 ↑ / ↓ 选择 · Enter 回应", Vector2(32, 16), Vector2(475, 35), 18, Color("ede3ce"))
-		var scroll := ScrollContainer.new()
-		scroll.position = Vector2(30, 62)
-		scroll.size = Vector2(480, 265)
-		event_panel.add_child(scroll)
+		event_panel.speaker_label.text="你说"
+		event_panel.text_label.text=""
+		event_panel.hint_label.text=SettingsSystem.binding_text("ui_accept")+" 回应 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
 		var box := VBoxContainer.new()
-		box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		scroll.add_child(box)
 		for i in choices.size():
 			var choice: Dictionary = choices[i]
-			var button := _button(box, "你：%s" % str(choice.get("label", "")), Vector2.ZERO, Vector2(450, 56), "dialogue")
-			button.custom_minimum_size = Vector2(450, 56)
+			var button := preload("res://scripts/ui/components/dialogue_choice.gd").new()
+			button.text=LocalizationSystem.text(str(choice.get("label","")))
+			button.custom_minimum_size.y=46
+			box.add_child(button)
 			button.pressed.connect(_resolve_event.bind(staged_event_id, str(choice.id)))
 			dialogue_choices.append(button)
+		event_panel.attach_choices(box)
 		if not dialogue_choices.is_empty(): dialogue_choices[0].grab_focus()
 		return
 	var raw = beats[staged_event_index]

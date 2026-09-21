@@ -1,5 +1,5 @@
 extends Control
-## Forward-moving speech with the vendor's optional, same-card counter choices.
+## Real story and transaction flow; DialogueCard owns only its presentation.
 signal closed
 signal purchase_requested
 var shop_id := ""
@@ -18,7 +18,7 @@ var closing := false
 var commit_retry := false
 var records_story := false
 var speech_card: Panel
-var speech_tail: Polygon2D
+var punctuation_delay := 0.0
 var line_ids: Array[String] = []
 var dialogue_id := ""
 var hint_label: Label
@@ -35,22 +35,17 @@ func _ready() -> void:
 	add_to_group("meta_dialogue")
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var panel := Panel.new()
-	panel.position = Vector2(600,380)
-	panel.size = Vector2(430,184)
-	speech_card = panel
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("faf9f2",0.97)
-	style.set_corner_radius_all(18)
-	panel.add_theme_stylebox_override("panel",style)
-	add_child(panel)
-	speech_tail=Polygon2D.new(); speech_tail.color=style.bg_color; speech_tail.polygon=PackedVector2Array([Vector2(-10,0),Vector2(12,0),Vector2(0,18)]); panel.add_child(speech_tail)
-	speaker_label = _label(panel,Vector2(18,12),Vector2(394,26),17,Color("31658b"))
-	text_label = _label(panel,Vector2(18,47),Vector2(394,93),22,Color("315c7c"))
-	hint_label = _label(panel,Vector2(18,149),Vector2(394,25),13,Color("617480"))
+	speech_card = preload("res://scripts/ui/components/dialogue_card.gd").new()
+	add_child(speech_card)
+	var scene := get_tree().current_scene
+	var stage: Control = scene.get("street") if scene.get("street")!=null else scene.get("stage")
+	speech_card.configure(stage,npc)
+	speech_card.minimum_body_height=96
+	speaker_label = speech_card.speaker_label
+	text_label = speech_card.text_label
+	hint_label = speech_card.hint_label
 	hint_label.text = SettingsSystem.binding_text("dialogue_advance")+" 继续 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
-	typewriter = bool(GameState.shared_state.get("typewriter",true))
+	typewriter = bool(GameState.shared_state.get("typewriter",true)) and not SettingsSystem.reduced_motion()
 	if shop_id.is_empty() or npc in ["beetman", "grocery"]:
 		_build_conversation()
 	else:
@@ -61,17 +56,6 @@ func _ready() -> void:
 				_append("npc",str(shop.get("greeting","今天想买点什么？")))
 	if lines.is_empty(): _append("npc","今天也出来走走？")
 	_show_line()
-
-func _label(parent: Control, at: Vector2, dimensions: Vector2, font_size: int, color: Color) -> Label:
-	var label := Label.new()
-	label.position = at
-	label.size = dimensions
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_font_size_override("font_size",font_size)
-	label.add_theme_color_override("font_color",color)
-	parent.add_child(label)
-	return label
 
 func _append(speaker: String, text: String) -> void:
 	var remaining := text
@@ -108,13 +92,12 @@ func _build_conversation() -> void:
 
 func _show_line() -> void:
 	var speaker := speakers[index]
-	var line_height := float(maxi(1,ceili(lines[index].length()/18.0))*29)
-	text_label.size.y=line_height; hint_label.position.y=58+line_height; speech_card.size.y=92+line_height
-	_position_card(speaker)
 	speaker_label.text = LocalizationSystem.text("你" if speaker == "player" else "" if speaker == "narrator" else shop_name if not shop_name.is_empty() else str(ScheduleSystem.residents.get(npc,{}).get("display_name",npc)))
 	text_label.text = LocalizationSystem.text(lines[index])
+	speech_card.layout(true)
 	DialogueSystem.present_line({"npc":npc,"speaker":speaker,"text":lines[index],"index":index,"total":lines.size(),"location":GameState.current_location,"owner":self,"conversation_id":get_instance_id(),"dialogue_id":dialogue_id,"line_id":line_ids[index],"topic":starting_topic})
 	progress = 0
+	punctuation_delay = .16
 	text_label.visible_characters = 0 if typewriter else -1
 
 func _advance() -> void:
@@ -185,6 +168,7 @@ func _finish() -> void:
 func _close() -> void:
 	if closing: return
 	closing = true
+	speech_card.dismiss()
 	closed.emit()
 	queue_free()
 
@@ -196,25 +180,11 @@ func _share_loop_material(id: String) -> void:
 
 func _show_vendor_choices() -> void:
 	if is_instance_valid(vendor_choices): return
-	speech_card.size.y = 163
-	_position_card("npc")
 	speaker_label.text = LocalizationSystem.text("BEETMAN" if npc == "beetman" else "杂货店老板")
 	text_label.text = LocalizationSystem.text("我就在摊边。你想接着聊，还是看看今天的罐头？" if npc == "beetman" else "你慢慢看。想买什么、冲照片，或者再说几句都可以。")
 	text_label.visible_characters = -1
-	text_label.size.y = 58
-	hint_label.hide()
-	vendor_choices = VBoxContainer.new()
-	vendor_choices.position = _choice_position(5)
-	vendor_choices.size = Vector2(365, 290)
-	vendor_choices.add_theme_constant_override("separation", 10)
-	add_child(vendor_choices)
 	var options := [["再聊一会儿 · 15分钟", "chat"], ["看看今天的罐头" if npc == "beetman" else "看看货架", "shop"], ["问点事 · 5分钟", "ask"], ["约个时间挑旧标签" if npc == "beetman" else "摄影与冲洗", "appointment" if npc == "beetman" else "film"], ["先走了", "leave"]]
-	for option in options:
-		var button := preload("res://scripts/ui/components/solmere_button.gd").new()
-		button.variant="choice"; button.text=LocalizationSystem.text(str(option[0])); button.custom_minimum_size=Vector2(365,52); button.alignment=HORIZONTAL_ALIGNMENT_LEFT
-		button.add_theme_font_size_override("font_size",17); vendor_choices.add_child(button)
-		button.pressed.connect(_vendor_action.bind(str(option[1])))
-	vendor_choices.get_child(0).grab_focus()
+	_choice_box(options,_vendor_action)
 
 func _vendor_action(action: String) -> void:
 	if closing or shopping or not is_instance_valid(vendor_choices): return
@@ -252,10 +222,7 @@ func resume_from_shop() -> void:
 func _restart_vendor(topic: String) -> void:
 	if not MetaExperience.pay_conversation(topic): return
 	if is_instance_valid(vendor_choices):
-		vendor_choices.queue_free()
-		vendor_choices = null
-	speech_card.size.y = 184
-	text_label.size.y = 93
+		_clear_choices()
 	hint_label.show()
 	lines.clear()
 	speakers.clear()
@@ -269,7 +236,13 @@ func _restart_vendor(topic: String) -> void:
 
 func _process(delta: float) -> void:
 	if is_instance_valid(text_label) and typewriter and text_label.visible_characters >= 0:
-		progress += delta*28
+		punctuation_delay -= delta
+		if punctuation_delay>0: return
+		var before := int(progress)
+		progress = minf(progress+delta*32,text_label.text.length())
+		for i in range(before,int(progress)):
+			if text_label.text[i] in ["，","、",",","。","！","？","…","!","?"]:
+				progress=i+1; punctuation_delay=.16 if text_label.text[i] in ["，","、",","] else .3; break
 		text_label.visible_characters = int(progress)
 
 func _gui_input(event: InputEvent) -> void:
@@ -285,7 +258,7 @@ func _input(event: InputEvent) -> void:
 	elif is_instance_valid(vendor_choices):
 		if event.is_action_pressed("ui_accept") or event.is_action_pressed("dialogue_advance"):
 			var focused := get_viewport().gui_get_focus_owner()
-			if focused is Button and vendor_choices.is_ancestor_of(focused): focused.pressed.emit()
+			if focused is Button and not focused.disabled and vendor_choices.is_ancestor_of(focused): focused.pressed.emit()
 		else: return
 	elif event.is_action_pressed("toggle_typewriter"):
 		typewriter = not typewriter
@@ -295,32 +268,22 @@ func _input(event: InputEvent) -> void:
 	else: return
 	get_viewport().set_input_as_handled()
 
-func _position_card(speaker: String) -> void:
-	var scene := get_tree().current_scene
-	var stage: Node
-	if is_instance_valid(scene): stage=scene.get("street") if scene.get("street")!=null else scene.get("stage")
-	var x := -1.0
-	if is_instance_valid(stage):
-		x=float(stage.get("player_x"))
-		if speaker!="player":
-			for target in stage.get("hotspots"):
-				if str(target.get("id",""))==npc: x=float(target.x); break
-	speech_card.position=PaperLanguage.near_actor(stage,speech_card.size,x)
-	if is_instance_valid(speech_tail): speech_tail.position=Vector2(speech_card.size.x*.5,speech_card.size.y-1)
-
-
 func _choice_box(options: Array, action: Callable) -> void:
 	if is_instance_valid(vendor_choices): return
-	speech_card.size.y=164; text_label.size.y=65; hint_label.hide()
-	_position_card("npc")
-	vendor_choices=VBoxContainer.new(); vendor_choices.position=_choice_position(options.size()); vendor_choices.size.x=365; vendor_choices.add_theme_constant_override("separation",10); add_child(vendor_choices)
+	hint_label.text=SettingsSystem.binding_text("ui_accept")+" 回应 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
+	vendor_choices=VBoxContainer.new()
 	for option in options:
-		var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.variant="choice"; button.text=str(option[0]); button.alignment=HORIZONTAL_ALIGNMENT_LEFT; button.custom_minimum_size=Vector2(365,58); vendor_choices.add_child(button); button.pressed.connect(action.bind(str(option[1])))
+		var button := preload("res://scripts/ui/components/dialogue_choice.gd").new()
+		button.text=LocalizationSystem.text(str(option[0])); button.custom_minimum_size=Vector2(0,46)
+		vendor_choices.add_child(button); button.pressed.connect(action.bind(str(option[1])))
+	speech_card.attach_choices(vendor_choices)
 	vendor_choices.get_child(0).grab_focus()
 
 func _clear_choices() -> void:
-	vendor_choices.queue_free(); vendor_choices=null
-	speech_card.size.y=184; text_label.size.y=93; hint_label.show()
+	vendor_choices.get_parent().remove_child(vendor_choices)
+	vendor_choices.queue_free(); vendor_choices=null; speech_card.choices=null
+	hint_label.text=SettingsSystem.binding_text("dialogue_advance")+" 继续 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
+	hint_label.show()
 
 func _show_invitation_choices() -> void:
 	_choice_box([[str(offer.accept),"accept"],["我先走走，之后再说。","later"]],_choose_invitation)
@@ -347,10 +310,3 @@ func _choose_encounter(choice: String) -> void:
 	_append("npc","Xanni 也爱收集路上的声音。上次我在唱片店听了半天，才发现那段是雨落在狗碗里。")
 	_append("npc","你要是录到什么，带去给她听听。她的制作台常空着一边。")
 	index=start; _show_line()
-
-func _choice_position(count: int) -> Vector2:
-	var at := speech_card.position+Vector2(speech_card.size.x+30,45)
-	if at.x+365>1560: at.x=speech_card.position.x-395
-	at.x=clampf(at.x,32,1200)
-	at.y=clampf(at.y,100,820-count*68)
-	return at

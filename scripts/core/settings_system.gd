@@ -34,6 +34,7 @@ const DEFAULT_INPUT_ACTIONS := {
 	"nebula_down": [KEY_S,KEY_DOWN],
 	"nebula_near": [KEY_Q],
 	"nebula_far": [KEY_E],
+	"nebula_interface": [KEY_H],
 	"move_left": [KEY_A, KEY_LEFT],
 	"move_right": [KEY_D, KEY_RIGHT],
 	"move_fast": [KEY_SHIFT],
@@ -91,6 +92,8 @@ func _ensure_input_actions() -> void:
 		var motion := InputEventJoypadMotion.new()
 		motion.axis=int(binding[1]); motion.axis_value=float(binding[2])
 		if not InputMap.action_has_event(binding[0],motion): InputMap.action_add_event(binding[0],motion)
+	var observation_toggle := InputEventJoypadButton.new(); observation_toggle.button_index=JOY_BUTTON_BACK
+	if not InputMap.action_has_event("nebula_interface",observation_toggle): InputMap.action_add_event("nebula_interface",observation_toggle)
 
 
 func _ensure_audio_buses() -> void:

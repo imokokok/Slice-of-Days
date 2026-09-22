@@ -79,6 +79,13 @@ func run() -> void:
 	panel._select("residence"); panel._choose_method("bus")
 	check(panel.choices.size()==4 and panel.destinations.size()==root.get_node("WorldGraph").street_locations.size(),"All destinations and four real methods are native controls")
 	check(not panel.depart.disabled and panel._quote("bus").cost>0,"Bus route is an actual available paid journey")
+	check(panel.route_map.markers.size()==panel.destinations.size(),"Every map point is a native destination control")
+	panel.route_map.markers["library"].pressed.emit(); await settle()
+	check(panel.selected=="library" and panel.depart.disabled,"Map destination updates quote and blocks unsupported bus route")
+	check(panel.notice.text.contains("公交站"),"Unavailable route explains its station restriction")
+	panel.choices["walk"].pressed.emit(); await settle()
+	check(panel.method=="walk" and not panel.depart.disabled,"Native method selection restores an available journey")
+	panel._select("residence"); panel._choose_method("bus"); await settle()
 	await snap("04-transport")
 	var before_money: int = gs.money
 	var old_script=save.get_script()

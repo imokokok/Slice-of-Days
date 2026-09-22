@@ -630,7 +630,7 @@ func _rebuild_hotspots() -> void:
 		var place := street_order[i]
 		# The lookout's public path ends at the telescope gate before 21:00.
 		var sign_x := _world_x(i,980 if place == "park" else 1440)
-		street.hotspots.append({"x":sign_x,"kind":"transport","id":place,"label":"SOMEWHERE → · 查看路线与出行方式"})
+		street.hotspots.append({"x":sign_x,"kind":"transport","id":place,"label":"小镇站牌 · 查看路线与出行方式"})
 		# Adjacent blocks are already visible before the player crosses a boundary.
 		if place != GameState.current_location:
 			var neighbors := DialogueSystem.people_at(place)

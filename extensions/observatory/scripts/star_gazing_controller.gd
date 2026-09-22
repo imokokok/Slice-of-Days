@@ -34,6 +34,10 @@ var captured_session_ids: Array[String] = []
 var pending_image: Image
 var pending_context: Dictionary
 var science_panel: PanelContainer
+var interface_age := 0.0
+var drag_origin := Vector2.ZERO
+var dragging_view := false
+var pointer_down := false
 
 func _ready() -> void:
 	camera = $Camera3D
@@ -41,7 +45,7 @@ func _ready() -> void:
 	add_child(volume)
 	original_views = GameState.artifacts.get("telescope_views", {}).duplicate(true)
 	_build_ui()
-	var previous := str(GameState.artifacts.get("telescope_selected", "orion"))
+	var previous := str(GameState.artifacts.get("telescope_selected", "pillars"))
 	for i in entries.size():
 		if entries[i].id == previous: selected_index=i
 	select_nebula(selected_index)
@@ -53,8 +57,10 @@ func _button(parent: Node, text: String, callback: Callable) -> Button:
 	b.custom_minimum_size=Vector2(96,48)
 	parent.add_child(b)
 	b.pressed.connect(callback)
+	b.mouse_entered.connect(func(): interface_age=0)
+	b.focus_entered.connect(func(): interface_age=0)
 	b.pressed.connect(func():
-		if is_instance_valid(sky_drag) and not is_instance_valid(gallery) and not is_instance_valid(legacy):
+		if is_instance_valid(sky_drag) and not is_instance_valid(gallery) and not is_instance_valid(legacy) and not is_instance_valid(science_panel):
 			sky_drag.grab_focus())
 	return b
 
@@ -70,60 +76,64 @@ func _label(parent: Node, text: String, font_size := 20) -> Label:
 
 func _build_ui() -> void:
 	ui=CanvasLayer.new(); ui.name="UI"; ui.layer=30; add_child(ui)
-	chrome=Control.new(); chrome.name="Chrome"; ui.add_child(chrome)
-	chrome.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	chrome.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	sky_drag=Control.new(); sky_drag.name="SkyDrag"; chrome.add_child(sky_drag)
+	# Keep the viewport input plane outside hideable chrome. Clean view must
+	# still rotate, zoom, capture and bring its controls back.
+	sky_drag=Control.new(); sky_drag.name="SkyDrag"; ui.add_child(sky_drag)
 	sky_drag.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	sky_drag.focus_mode=Control.FOCUS_ALL
 	sky_drag.mouse_default_cursor_shape=Control.CURSOR_DRAG
 	sky_drag.gui_input.connect(_sky_input)
+	chrome=Control.new(); chrome.name="Chrome"; ui.add_child(chrome)
+	chrome.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	chrome.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	var top := HBoxContainer.new(); top.name="Navigation"; chrome.add_child(top)
 	top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	top.offset_left=32; top.offset_right=-32; top.offset_top=24
 	top.add_theme_constant_override("separation",12)
 	_button(top,"← 海边",_return)
 	var space := Control.new(); space.size_flags_horizontal=Control.SIZE_EXPAND_FILL; top.add_child(space)
-	for i in entries.size():
-		tabs.append(_button(top,entries[i].title,select_nebula.bind(i)))
+	for i in entries.size(): tabs.append(_button(top,entries[i].title,select_nebula.bind(i)))
 	space=Control.new(); space.size_flags_horizontal=Control.SIZE_EXPAND_FILL; top.add_child(space)
 	_button(top,"连星",open_constellations)
 	_button(top,"观测册",open_gallery)
-	_button(top,"关于这片星云",_toggle_science)
-	var footer := Panel.new(); footer.name="ReadableObservation"; chrome.add_child(footer)
-	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	footer.offset_top=-254
-	footer.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	footer.add_theme_stylebox_override("panel",preload("res://scripts/ui/components/interface_palette.gd").face(Color("192c3c"),0,0))
-	var bottom := HBoxContainer.new(); bottom.name="Observation"; chrome.add_child(bottom)
-	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_left=40; bottom.offset_right=-40; bottom.offset_top=-237; bottom.offset_bottom=-82
-	bottom.alignment=BoxContainer.ALIGNMENT_BEGIN
-	bottom.add_theme_constant_override("separation",14)
-	var info := VBoxContainer.new(); info.size_flags_horizontal=Control.SIZE_EXPAND_FILL; bottom.add_child(info)
-	heading=_label(info,"",30)
-	description=_label(info,"",22)
-	description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	description.add_theme_color_override("font_color",Color("c6d3df"))
-	hint=_label(info,"",26)
+	_button(top,"收起界面 · "+SettingsSystem.binding_text("nebula_interface"),_toggle_interface)
+	var reading := PanelContainer.new(); reading.name="ObservationCaption"; chrome.add_child(reading)
+	reading.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	reading.offset_left=32; reading.offset_top=-173; reading.offset_right=766; reading.offset_bottom=-24
+	reading.add_theme_stylebox_override("panel",preload("res://scripts/ui/components/interface_palette.gd").face(Color("192e3d"),6,20))
+	reading.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	var info := VBoxContainer.new(); info.mouse_filter=Control.MOUSE_FILTER_IGNORE; info.add_theme_constant_override("separation",8); reading.add_child(info)
+	heading=_label(info,"",26)
+	hint=_label(info,"左键拖动环绕 · 滚轮缩放 · 单击画面收起 / 显示",24)
 	hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	var actions := VBoxContainer.new(); actions.size_flags_vertical=Control.SIZE_SHRINK_END; bottom.add_child(actions)
-	var zooms := HBoxContainer.new(); actions.add_child(zooms)
-	_button(zooms,"－ 远",zoom.bind(1.15))
-	_button(zooms,"＋ 近",zoom.bind(.87))
-	_button(zooms,"复位",reset_view)
+	# Extended interpretation is available on demand, never across the scene.
+	description=_label(info,"",22); description.hide()
+	var actions := VBoxContainer.new(); actions.name="ObservationActions"; chrome.add_child(actions)
+	actions.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	actions.offset_left=-400; actions.offset_right=-32; actions.offset_top=-191; actions.offset_bottom=-24
+	actions.add_theme_constant_override("separation",8)
+	var tools := HBoxContainer.new(); actions.add_child(tools)
+	_button(tools,"复位视角",reset_view)
+	_button(tools,"星云介绍",_toggle_science).size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	capture_button=_button(actions,"留下这片星光",collect)
-	finish_button=_button(actions,"带着观测回去",func():finish_requested.emit())
-	finish_button.hide()
-	credits=RichTextLabel.new(); credits.name="Credits"; ui.add_child(credits)
-	credits.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	credits.offset_left=40; credits.offset_right=-40; credits.offset_top=-62; credits.offset_bottom=-8
-	credits.add_theme_font_override("normal_font",PaperLanguage.body_font)
-	credits.add_theme_font_size_override("normal_font_size",17)
-	credits.add_theme_color_override("default_color",Color("c6d3df"))
-	credits.bbcode_enabled=true; credits.scroll_active=false
-	credits.meta_clicked.connect(func(url: Variant): OS.shell_open(str(url)))
+	finish_button=_button(actions,"带着观测回去",func():finish_requested.emit()); finish_button.hide()
+	credits=RichTextLabel.new(); credits.name="Credits"; chrome.add_child(credits); credits.hide()
+	credits.bbcode_enabled=true
 	sky_drag.grab_focus()
+
+func _toggle_interface() -> void:
+	_set_interface_visible(not chrome.visible)
+
+func _set_interface_visible(value: bool) -> void:
+	if not value: _close_science()
+	chrome.visible=value
+	interface_age=0
+	sky_drag.grab_focus()
+
+func _close_science() -> void:
+	if is_instance_valid(science_panel):
+		science_panel.queue_free(); science_panel=null
+	if is_instance_valid(sky_drag): sky_drag.grab_focus()
 
 func _remember_view() -> void:
 	var views: Dictionary = GameState.artifacts.get("telescope_views",{})
@@ -150,7 +160,8 @@ func select_nebula(index: int) -> void:
 	credits.text="[url="+entry.source+"]"+entry.credit+"[/url]\n"+("照片 [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url] · " if not str(entry.image).is_empty() else "")+"Solmere：空间呈现与着色；非机构背书"
 	for i in tabs.size(): tabs[i].selected=i==selected_index
 	view_age=0
-	hint.text="拖动环绕 · 滚轮拉近 · "+SettingsSystem.binding_text("nebula_left")+"/"+SettingsSystem.binding_text("nebula_right")+" 转动 · "+SettingsSystem.binding_text("ui_cancel")+" 返回"
+	hint.text="左键拖动环绕 · 滚轮缩放 · 单击显示 / 收起工具"
+	interface_age=0
 	update_camera()
 
 func update_camera() -> void:
@@ -160,16 +171,26 @@ func update_camera() -> void:
 	camera.transform=Transform3D(basis,pan+basis*Vector3(0,-5.5,distance))
 
 func _sky_input(event: InputEvent) -> void:
-	if is_capturing or is_instance_valid(gallery): return
-	if event is InputEventMouseButton and event.pressed:
-		sky_drag.grab_focus()
-		if event.button_index==MOUSE_BUTTON_WHEEL_UP: zoom(.9)
-		elif event.button_index==MOUSE_BUTTON_WHEEL_DOWN: zoom(1.1)
+	if is_capturing or is_instance_valid(gallery) or is_instance_valid(legacy): return
+	if event is InputEventMouseButton:
+		if event.button_index==MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				drag_origin=event.position; dragging_view=false; pointer_down=true; sky_drag.grab_focus()
+			else:
+				if pointer_down and not dragging_view: _toggle_interface()
+				pointer_down=false
+		elif event.pressed:
+			sky_drag.grab_focus()
+			if event.button_index==MOUSE_BUTTON_WHEEL_UP: zoom(.9)
+			elif event.button_index==MOUSE_BUTTON_WHEEL_DOWN: zoom(1.1)
 		sky_drag.accept_event()
 	elif event is InputEventMouseMotion:
 		if event.button_mask & MOUSE_BUTTON_MASK_LEFT:
-			angles-=event.relative*.004
-			update_camera(); sky_drag.accept_event()
+			if event.position.distance_to(drag_origin)>5: dragging_view=true
+			if dragging_view:
+				angles-=event.relative*.0018
+				update_camera(); _set_interface_visible(false)
+			sky_drag.accept_event()
 		elif event.button_mask & MOUSE_BUTTON_MASK_RIGHT:
 			pan += camera.basis * Vector3(-event.relative.x,event.relative.y,0)*distance*.0007
 			pan=pan.clamp(Vector3(-12,-12,-8),Vector3(12,12,8))
@@ -187,7 +208,9 @@ func reset_view() -> void:
 func _process(delta: float) -> void:
 	if is_capturing or is_instance_valid(legacy) or is_instance_valid(gallery): return
 	view_age+=delta
-	hint.modulate.a=1.0
+	interface_age+=delta
+	if chrome.visible and interface_age>14 and not is_instance_valid(science_panel) and get_viewport().gui_get_focus_owner()==sky_drag:
+		_set_interface_visible(false)
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused != null and focused != sky_drag: return
 	var direction := Input.get_vector("nebula_left","nebula_right","nebula_up","nebula_down")
@@ -199,9 +222,11 @@ func _process(delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if is_instance_valid(legacy) or is_capturing: return
-	if event.is_action_pressed("ui_cancel"):
+	if event.is_action_pressed("nebula_interface") and not is_instance_valid(gallery):
+		_toggle_interface(); get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
-		if is_instance_valid(science_panel): science_panel.queue_free(); science_panel=null
+		if is_instance_valid(science_panel): _close_science()
 		elif is_instance_valid(gallery): close_gallery()
 		else: _return()
 	elif event.is_action_pressed("camera_shutter") and not is_instance_valid(gallery):
@@ -209,20 +234,31 @@ func _unhandled_input(event: InputEvent) -> void:
 		collect()
 
 func _toggle_science() -> void:
-	if is_instance_valid(science_panel): science_panel.queue_free(); science_panel=null; return
+	if is_instance_valid(science_panel): _close_science(); return
+	_set_interface_visible(true)
 	var entry: Dictionary=entries[selected_index]
 	science_panel=PanelContainer.new(); science_panel.name="NebulaScience"; chrome.add_child(science_panel)
 	science_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	science_panel.offset_left=-612; science_panel.offset_right=-32; science_panel.offset_top=96; science_panel.offset_bottom=624
-	science_panel.add_theme_stylebox_override("panel",preload("res://scripts/ui/components/interface_palette.gd").face(Color("203a4c"),6,24))
-	var scroll := ScrollContainer.new(); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; science_panel.add_child(scroll)
-	var rows := VBoxContainer.new(); rows.size_flags_horizontal=Control.SIZE_EXPAND_FILL; rows.add_theme_constant_override("separation",19); scroll.add_child(rows)
-	_label(rows,str(entry.title)+" · 观测笔记",29)
+	science_panel.offset_left=-544; science_panel.offset_right=-32; science_panel.offset_top=100; science_panel.offset_bottom=646
+	# Flat, opaque ink surface, no decorative frame, bevel or paper border.
+	science_panel.add_theme_stylebox_override("panel",preload("res://scripts/ui/components/interface_palette.gd").face(Color("192e3d"),6,24))
+	var layout := VBoxContainer.new(); layout.add_theme_constant_override("separation",18); science_panel.add_child(layout)
+	var header := HBoxContainer.new(); layout.add_child(header)
+	_label(header,str(entry.title),28).size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	var close := _button(header,"收起 ×",_close_science); close.name="CloseIntroduction"
+	var scroll := ScrollContainer.new(); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL; layout.add_child(scroll)
+	var rows := VBoxContainer.new(); rows.size_flags_horizontal=Control.SIZE_EXPAND_FILL; rows.add_theme_constant_override("separation",22); scroll.add_child(rows)
+	var intro := _label(rows,str(entry.get("introduction","")),24); intro.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	for paragraph in entry.get("science",[]):
 		var line := _label(rows,str(paragraph),23); line.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; line.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	var treatment := _label(rows,"这里的空间呈现\n"+str(entry.treatment),21); treatment.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	var source := LinkButton.new(); source.text="阅读 NASA / ESA 原始资料"; source.add_theme_font_size_override("font_size",22); source.pressed.connect(func():OS.shell_open(str(entry.get("science_source",entry.source)))); rows.add_child(source)
-	_button(rows,"收起介绍",_toggle_science).grab_focus()
+	var treatment := _label(rows,"空间呈现说明\n"+str(entry.treatment),21); treatment.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	var attribution := RichTextLabel.new(); attribution.bbcode_enabled=true; attribution.fit_content=true; attribution.scroll_active=false
+	attribution.add_theme_font_override("normal_font",PaperLanguage.body_font); attribution.add_theme_font_size_override("normal_font_size",18)
+	attribution.text=credits.text; attribution.meta_clicked.connect(func(url): OS.shell_open(str(url))); rows.add_child(attribution)
+	var source := LinkButton.new(); source.text="阅读 NASA / ESA 原始资料 ↗"; source.add_theme_font_size_override("font_size",21)
+	source.pressed.connect(func():OS.shell_open(str(entry.get("science_source",entry.source)))); rows.add_child(source)
+	close.grab_focus()
 
 func _return() -> void:
 	if is_capturing: return
@@ -271,6 +307,7 @@ func collect() -> void:
 				finish_button.show()
 				ObservatoryAudio.feedback(true)
 				hint.text="已收入相册，也可以放进七天作品集。"
+				_set_interface_visible(true)
 				view_age=0
 			else:
 				GameState.load_save_data(snapshot)
@@ -280,6 +317,7 @@ func collect() -> void:
 	capture_button.text="重试保存星光" if pending_image!=null else "再留一张"
 	capture_button.disabled=false
 	is_capturing=false
+	_set_interface_visible(true)
 
 func open_constellations() -> void:
 	if is_capturing or is_instance_valid(legacy): return
@@ -293,7 +331,7 @@ func open_constellations() -> void:
 	legacy.return_requested.connect(func():
 		solmere_completed=solmere_completed or bool(legacy.solmere_completed)
 		remove_child(legacy); legacy.queue_free(); legacy=null
-		camera.make_current(); chrome.show(); credits.show(); volume.show()
+		camera.make_current(); chrome.show(); credits.hide(); volume.show(); interface_age=0
 		finish_button.visible=solmere_completed
 		sky_drag.grab_focus())
 

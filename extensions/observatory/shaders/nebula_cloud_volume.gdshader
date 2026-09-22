@@ -25,7 +25,7 @@ void fragment() {
 		alpha+=(1.0-alpha)*density;
 		if(alpha>.98) break;
 	}
-	float face=smoothstep(.60,.97,abs(normalize(CAMERA_POSITION_WORLD).z));
+	float face=smoothstep(.08,.32,abs(normalize(CAMERA_POSITION_WORLD).z));
 	ALBEDO=result/max(alpha,.001);
 	ALPHA=alpha*mix(1.0,.10,face);
 }

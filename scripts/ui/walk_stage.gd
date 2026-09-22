@@ -339,12 +339,14 @@ func _sync_original_resident() -> void:
 		original_resident.visible = at.x > -120 and at.x < 1720
 		break
 
-func _draw_transport_sign(x: float, id: String) -> void:
-	var art: Texture2D = preload("res://art/ui/handmade/wayfinding_sign.png")
-	var ground := 790.0
-	var extent := Vector2(210,269)
-	draw_texture_rect(art,Rect2(Vector2(x-105,ground-extent.y),extent),false)
-	_world_label("transport_"+id,Rect2(x-88,ground-232,158,33),"SOMEWHERE",Color("315e79"),17)
+func _draw_transport_sign(x: float, _id: String) -> void:
+	# Reuse the exact authored sign beside the bus shelter. Two atlas regions
+	# exclude the neighbouring bin without repainting or changing the original.
+	var scale_factor := .66
+	var top := Vector2(x-65*scale_factor,790-411*scale_factor)
+	var tint := _scene_art_tint()
+	draw_texture_rect_region(BUS_ART,Rect2(top,Vector2(136,282)*scale_factor),Rect2(443,497,136,282),tint)
+	draw_texture_rect_region(BUS_ART,Rect2(top+Vector2(55,282)*scale_factor,Vector2(19,133)*scale_factor),Rect2(498,779,19,133),tint)
 
 func _draw_bus_stop(left: float, width: float) -> void:
 	var tint := _scene_art_tint()

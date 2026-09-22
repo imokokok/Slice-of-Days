@@ -15,27 +15,46 @@ func run() -> void:
 	var host = current_scene
 	var sky = host.experience
 	check(sky is Node3D and sky.camera is Camera3D,"Real 3D telescope scene")
-	check(sky.entries.size()==3,"Three nebula sources")
+	check(sky.entries.size()==5,"Five observation sources with published/observed 3D structures")
 	check(not sky.solmere_completed,"Old discoveries cannot complete a new session")
-	check(sky.volume.sample_count>30000 and sky.volume.depth_range.y-sky.volume.depth_range.x>3,"Image reconstruction has real 3D depth")
+	check(sky.volume.sample_count>30000 and sky.volume.depth_range.y-sky.volume.depth_range.x>3,"Published model has real 3D depth")
 	var before: Transform3D=sky.camera.transform
 	var press := InputEventMouseButton.new()
 	press.position=Vector2(750,380); press.button_index=MOUSE_BUTTON_LEFT; press.pressed=true
 	root.push_input(press,true)
 	var motion := InputEventMouseMotion.new()
-	motion.position=press.position; motion.relative=Vector2(90,30); motion.button_mask=MOUSE_BUTTON_MASK_LEFT
+	motion.relative=Vector2(90,30); motion.position=press.position+motion.relative; motion.button_mask=MOUSE_BUTTON_MASK_LEFT
 	root.push_input(motion,true)
 	press.pressed=false; root.push_input(press,true)
 	await process_frame
 	check(not sky.camera.transform.is_equal_approx(before),"Viewport mouse input rotates camera")
+	check(not sky.chrome.visible and sky.sky_drag.is_visible_in_tree(),"Dragging removes all chrome without disabling the 3D viewport")
+	var before_zoom: float=sky.distance
+	var wheel := InputEventMouseButton.new(); wheel.position=Vector2(750,380); wheel.button_index=MOUSE_BUTTON_WHEEL_UP; wheel.pressed=true
+	root.push_input(wheel,true); await process_frame
+	check(sky.distance<before_zoom,"Mouse wheel zooms while the entire interface is hidden")
+	var reveal := InputEventAction.new(); reveal.action="nebula_interface"; reveal.pressed=true
+	root.push_input(reveal,true); await process_frame
+	check(sky.chrome.visible,"Input Map action restores hidden observation controls")
+	reveal.pressed=false; root.push_input(reveal,true)
 	var saved: Vector2=sky.angles
-	sky.select_nebula(1)
-	check(sky.volume.sample_count==120000,"Official Pillars model imported at increased surface density")
+	sky.select_nebula(0)
+	check(sky.volume.sample_count>300000,"Official Pillars model imported at increased surface density")
+	sky.select_nebula(2)
+	check(sky.entries[2].model.ends_with("crab_observed.tscn") and sky.volume.components.size()>0,"Crab uses the published NASA geometry")
+	sky.select_nebula(3)
+	check(sky.entries[3].model.ends_with("cygnus_observed.tscn") and sky.volume.components.size()>0,"Cygnus Loop uses the published NASA geometry")
+	sky.select_nebula(4)
+	check(sky.entries[4].model.ends_with("casa_observed.tscn") and sky.volume.components.size()>=7,"Cassiopeia A retains independently coloured observed layers")
+	sky.select_nebula(0)
 	check(sky.get_node_or_null("StarField")==null,"Nebula inspection has no decorative starfield")
 	check(sky.hint.get_theme_font_size("font_size")>=23,"Observation input remains readable")
 	sky._toggle_science(); await process_frame
-	check(is_instance_valid(sky.science_panel) and sky.entries[1].science.size()>=4,"A real scrollable science panel explains the selected nebula")
-	sky._toggle_science()
+	check(is_instance_valid(sky.science_panel) and sky.entries[0].science.size()>=4,"A real scrollable science panel explains the selected nebula")
+	var close_intro=sky.science_panel.find_child("CloseIntroduction",true,false)
+	check(close_intro is Button,"Introduction has a close button outside its scrolling text")
+	close_intro.pressed.emit(); await process_frame
+	check(not is_instance_valid(sky.science_panel),"Introduction can be closed without exiting observation")
 	sky.select_nebula(2)
 	check(sky.volume.depth_range.y-sky.volume.depth_range.x>5,"Official Eta Carinae model retains its depth")
 	sky.select_nebula(0)
@@ -89,7 +108,7 @@ func run() -> void:
 	await process_frame
 	check(current_scene==host and not is_instance_valid(sky.legacy),"One Escape returns from constellation to nebula, not out of the telescope")
 	check(sky.camera.current,"Returning from constellation restores nebula camera")
-	sky.select_nebula(1)
+	sky.select_nebula(0)
 	if DisplayServer.get_name()!="headless":
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://.runtime/nebula-pillars.png")

@@ -55,8 +55,8 @@ func _refresh() -> void:
 		var b := ITEM.new(); b.name="Select_"+str(item.id); b.item_id=item.id
 		b.caption={"hotel_307_tag":"307 房牌","misprint_postcard":"海湾明信片","crooked_cup":"缺口杯"}.get(str(item.id),str(item.name)); b.size=Vector2(175,150)
 		if shop_id=="produce_stall":
-			b.position=Vector2(30+(i%3)*260,110) if i<3 else Vector2(343,295)
-			b.size=Vector2(225,185)
+			b.position=Vector2(49+(i%3)*261,48) if i<3 else Vector2(343,334)
+			b.size=Vector2(210,220) if i<3 else Vector2(210,175)
 		else: b.position=Vector2(48+(i%4)*190+(22 if i%4==0 else 0),[55,205,330][i/4])
 		b.selected=selected_item.get("id","")==item.id
 		b.disabled=int(item.remaining)<=0
@@ -182,8 +182,11 @@ func _history() -> void:
 		var empty := Label.new(); empty.text="还没有在这里买过东西。"; rows.add_child(empty)
 func _buy(item: Dictionary) -> void:
 	# Existing callers keep the real one-item checkout path.
+	if buying or Time.get_ticks_msec()-last_purchase_msec<350: return
+	buying=true
 	var result := EconomySystem.purchase(shop_id,str(item.id))
-	if result.ok: receipt=result.receipt; mode="receipt"; WorldSound.play_ui("coin")
+	buying=false
+	if result.ok: receipt=result.receipt; mode="receipt"; last_purchase_msec=Time.get_ticks_msec(); WorldSound.play_ui("coin")
 	_refresh(); status_label.text=str(result.message)
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):

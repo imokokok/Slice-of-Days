@@ -24,6 +24,7 @@ var anim: Tween
 var ui: Control
 var meter: Control
 var sea_view: TextureRect
+var journal: Control
 func _ready() -> void:
 	add_to_group("meta_modal"); theme=P.theme_for_tools()
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -58,6 +59,7 @@ func _ready() -> void:
 	meter=Control.new(); meter.mouse_filter=MOUSE_FILTER_IGNORE; meter.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(meter); meter.draw.connect(_draw_meter)
 	if not FISH.state().pending.is_empty(): fish=FISH.state().pending.duplicate(true); phase=Phase.LANDED; _show_fish()
 	_refresh(); cast_button.grab_focus()
+	_button("鱼获与海边笔记",Vector2(76,140),Vector2(310,48),_open_journal).name="OpenFishJournal"
 func _button(text: String, at: Vector2, extent: Vector2, action: Callable) -> Button:
 	var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.text=text; button.position=at; button.size=extent; button.pressed.connect(action); ui.add_child(button); return button
 func _act() -> void:
@@ -84,6 +86,7 @@ func _act() -> void:
 			if progress>=1: _land()
 	_refresh()
 func _process(delta: float) -> void:
+	if is_instance_valid(journal): return
 	sea_clock+=delta
 	if is_instance_valid(bobber):
 		var y := 538.0 if phase==Phase.BITE else 510.0+sin(sea_clock*2.4)*3.0
@@ -114,8 +117,9 @@ func _land() -> void:
 func _show_fish() -> void:
 	if is_instance_valid(catch_art): catch_art.queue_free()
 	catch_art=ART.picture(self,str(fish.id),Vector2(850,295),Vector2(450,220))
-	status.text="%s · %.1f cm" % [fish.name,float(fish.length_cm)]
-	guide.text="收下可以做料理；放生也会留下一笔海边记录。"
+	var row := FISH.species(str(fish.id))
+	status.text="%s · %.1f 厘米 · %s" % [row.get("name",fish.name),float(fish.length_cm),FISH.size_description(fish)]
+	guide.text="常见 %.0f–%.0f 厘米。收下可做料理；放生同样留下观察记录。" % [float(row.get("common_min_cm",0)),float(row.get("common_max_cm",0))]
 	keep_button.call_deferred("grab_focus")
 func _resolve(keep: bool) -> void:
 	if FISH.state().pending.is_empty():
@@ -167,7 +171,13 @@ func _leave() -> void:
 		status.text="魚获还没能存好，请稍后收竿。"; return
 	queue_free()
 func _unhandled_input(event: InputEvent) -> void:
+	if is_instance_valid(journal): return
 	if event.is_action_pressed("ui_cancel"): _leave(); get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("fishing_action"):
 		if phase!=Phase.LANDED: _act()
 		get_viewport().set_input_as_handled()
+
+func _open_journal() -> void:
+	if is_instance_valid(journal): return
+	journal=preload("res://scripts/ui/fish_journal.gd").new(); add_child(journal)
+	journal.tree_exited.connect(func(): cast_button.grab_focus())

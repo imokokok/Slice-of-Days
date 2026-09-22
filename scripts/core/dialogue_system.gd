@@ -87,6 +87,7 @@ func _ready() -> void:
 	if relationship_data is Dictionary:
 		relationship_notes = relationship_data.get("relationships", [])
 func reply(npc: String, topic: String) -> Array[String]:
+	if not ResidentProfileSystem.is_core(npc): return []
 	var row: Dictionary = content.get(npc,{})
 	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
 	if npc in ARGUMENT_PEOPLE and argument_lingering():
@@ -98,16 +99,13 @@ func reply(npc: String, topic: String) -> Array[String]:
 	match topic:
 		"greeting": lines = [str(row.get("greeting","你好，今天的风有点大。")), "又见面了。刚才那件事后来怎样了？" if repeated else "你也在附近走走吗？"]
 		"daily_state": lines = ["我正忙着%s。" % str(activity.get("activity","手边的事")), "等我忙完这一阵，再好好聊。" if mood == "busy" else "今天有点累，想慢一点。" if mood == "tired" else "现在倒是不赶时间。"]
-		"small_talk": lines = ["你听，街角又有人在试那段旋律。", "有时候只听到几个音，也会跟着哼一整天。"]
+		"small_talk": lines = [ResidentProfileSystem.ambient_line(npc, GameState.current_role)]
 		"personal_topic": lines = [str(row.get("personal","我今天想把手边这件事做完。")), "你呢？最近有没有什么一直惦记的事？"]
 		"town_info", "location_info":
 			lines = ["沿着这条街一直往右，走过公交站和停车的地方，就能看见海了。", "观景台晚上九点开门。我喜欢早一点过去，坐在门边听听浪声。"]
 			KnowledgeSystem.learn({"id":"lookout_hours","subject_id":"park","predicate":"opens_at","value":1260,"source_npc_id":npc,"confidence":1.0,"text":"观景台 · 21:00 开放 · 沿街一直往右走"})
 		"schedule_info":
-			if npc == "grocery":
-				lines = ["每天早上八点到晚上十点，我都在柜台。", "餐厅采购要留小票。摄影柜台的接件时间写在旁边。"]
-				KnowledgeSystem.learn({"id":"grocery_hours","subject_id":"cafe","predicate":"hours","value":[480,1320],"source_npc_id":npc,"confidence":1.0,"status":"Confirmed","text":"杂货店 · 08:00—22:00 · 日用品、采购、旧物、摄影"})
-			elif npc in ["zhou_xiaoliu","xanni"]:
+			if npc == "xanni":
 				lines.assign(["我一般十一点半过来，七点半左右收店。", "要去排练的话，我会早一点收设备。你要是看见我还在绕线，进来打个招呼就好。"] if npc == "xanni" else ["你想找 Xanni？她一般十一点半到唱片店，晚上七点半左右收店。", "我有时赶上她收线，就站门口等她一会儿。她一边绕线，还能一边跟你聊。"])
 				KnowledgeSystem.learn({"id":"xanni_hours","subject_id":"xanni","predicate":"schedule","value":[690,1170],"source_npc_id":npc,"confidence":0.95,"text":"Xanni · 唱片店 · 11:30—19:30，偶有排练调整"})
 			elif not activity.is_empty():
@@ -115,7 +113,7 @@ func reply(npc: String, topic: String) -> Array[String]:
 				KnowledgeSystem.learn({"id":npc+"_schedule","subject_id":npc,"predicate":"schedule","value":activity,"source_npc_id":npc,"confidence":0.9,"text":"%s · %s · 今天到%02d:%02d" % [str(ScheduleSystem.residents[npc].display_name),TravelSystem.location_name(str(activity.location)),int(activity.end)/60,int(activity.end)%60]})
 			else: lines = ["我今天还没有想好下一站。", "等确定了再告诉你。"]
 		"npc_info", "rumor":
-			lines = [str(row.get("rumor","我好像在公共区域见过尘缘，记不清是今天还是昨天。")), "你碰见他的时候，还是自己问问吧。"]
+			lines = _relationship_lines(npc)
 		"minigame_hook":
 			var offer := invitation_for(npc)
 			if offer.is_empty(): lines = ["眼下没有什么要麻烦你的。你可以先在附近转转。"]
@@ -125,6 +123,8 @@ func reply(npc: String, topic: String) -> Array[String]:
 			var result := RelationshipSystem.request_confirmation_action(npc)
 			lines = [str(result.get("message","我想再考虑一下。"))]
 		_: lines = ["那你先走，回头见。"]
+	if topic.begins_with("interest:"):
+		lines.assign(ResidentProfileSystem.topic_lines(npc, topic.trim_prefix("interest:")))
 	var variants: Array = row.get("authored",{}).get(topic,[])
 	if not variants.is_empty():
 		var count := history.filter(func(h: Dictionary) -> bool: return str(h.get("npc","")) == npc and str(h.get("topic","")) == topic).size()
@@ -144,17 +144,16 @@ func reply(npc: String, topic: String) -> Array[String]:
 	return lines
 
 func _relationship_lines(npc: String) -> Array[String]:
-	for note in relationship_notes:
-		var people: Array = note.get("people", [])
-		if people.has(npc):
-			var others: Array[String] = []
-			for person in people:
-				if str(person) != npc:
-					others.append(str(ScheduleSystem.residents.get(str(person), {}).get("display_name", person)))
-			return ["我和%s是%s。" % ["、".join(others), str(note.get("kind", "熟人"))], str(note.get("summary", "我们偶尔会聊起共同经历的事。"))]
-	return ["我记得我们聊过。", "不用每次都带一个结果来，路过打声招呼也好。"]
+	var notes: Array = relationship_notes.filter(func(note: Dictionary) -> bool: return note.get("people", []).has(npc))
+	if notes.is_empty(): return []
+	var history: Array = GameState.shared_state.get("dialogue_history_" + GameState.current_role, [])
+	var count := history.filter(func(row: Dictionary) -> bool: return str(row.get("npc", "")) == npc and str(row.get("topic", "")) in ["rumor", "npc_info", "relationship_followup"]).size()
+	var result: Array[String] = []
+	result.assign(notes[count % notes.size()].get("lines_by_npc", {}).get(npc, []))
+	return result
 
 func linear_conversation(npc: String) -> Array:
+	if not ResidentProfileSystem.is_core(npc): return []
 	var counts: Dictionary = GameState.shared_state.get("linear_talk_counts_"+GameState.current_role,{})
 	var count := int(counts.get(npc,0))
 	var row: Dictionary = linear_stories.get(npc,{})
@@ -163,16 +162,15 @@ func linear_conversation(npc: String) -> Array:
 		if not post.is_empty(): return post[count % post.size()].duplicate(true)
 	var episodes: Array = row.get("episodes",[])
 	if not episodes.is_empty():
-		var beats: Array = (episodes[count % episodes.size()] if bool(row.get("rotate", false)) else episodes[count] if count < episodes.size() else row.get("after",episodes.back())).duplicate(true)
+		# First meetings remain in order; familiar visits rotate through authored
+		# topics without pretending that the first introduction happened again.
+		var repeat_from := clampi(int(row.get("rotate_from", 0)), 0, episodes.size() - 1)
+		var episode := count if count < episodes.size() else repeat_from + (count - repeat_from) % (episodes.size() - repeat_from)
+		var beats: Array = episodes[episode].duplicate(true)
 		var remembered := EconomySystem.remembered_line(npc)
 		if npc=="wu_wu" and ResidencySystem.state().visits.has("record_store") and KnowledgeSystem.facts().any(func(f: Dictionary) -> bool: return str(f.get("id",""))=="cici_record_store"):
 			remembered="你去过唱片店了？我就知道，你们能聊到一块儿。下回路过，可以把新录的声音带上。"
 		if not remembered.is_empty(): beats.push_front(["npc", remembered])
-		if npc == "zhou_xiaoliu" and count == 0:
-			if GameState.current_role == "A":
-				beats[3][1] = "你不能先给自己放个假吗？"
-				beats[4][1] = "能。我休一天，房租可不会休。等钱到账吧。"
-			else: beats[3][1] = "一单后面还有一单，什么时候算忙完？"
 		return beats
 	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
 	var authored: Array = activity.get("dialogue",{}).get("greeting",[])
@@ -184,6 +182,7 @@ func linear_conversation(npc: String) -> Array:
 	return result
 
 func complete_linear_conversation(npc: String) -> void:
+	if not ResidentProfileSystem.is_core(npc): return
 	CoreLoopSystem.encounter(npc)
 	EconomySystem.chat_completed(npc)
 	var key := "linear_talk_counts_"+GameState.current_role
@@ -238,7 +237,7 @@ func accept_invitation(npc: String, persist := true) -> Dictionary:
 
 func notebook_leads() -> Array:
 	var notes: Array = []
-	var prompts := {"cooking":"想听听厨房里的声音，去饭店找史勇奇聊聊今天的菜。", "ghostwriting":"去书信事务所见见 Mossner，问问桌上那封没写完的信。", "sound_sampling":"带着路上听到的声音，去唱片店跟 Xanni 聊聊。", "tarot":"去塔罗店找夏透明，听听那副旧牌的故事。", "chess":"傍晚去棋摊找闹闹，问问对面的位子有没有人。", "translation":"买菜时和 BEETMAN 聊聊，听说摊边有人把话说岔了。", "contemplation":"晚上九点以后去观景台，遇见余星晴就问问他在看哪片天空。"}
+	var prompts := {"cooking":"想听听厨房里的声音，去饭店找石泳琪聊聊今天的菜。", "ghostwriting":"去书信事务所见见 Mossner，问问桌上那封没写完的信。", "sound_sampling":"带着路上听到的声音，去唱片店跟 Xanni 聊聊。", "tarot":"去塔罗店找夏透明，听听那副旧牌的故事。", "chess":"傍晚去棋摊找闹闹，问问对面的位子有没有人。", "translation":"买菜时和 BEETMAN 聊聊，听说摊边有人把话说岔了。", "contemplation":"晚上九点以后去观景台，遇见宇星晴就问问他在看哪片天空。"}
 	for offer in invitations:
 		var accepted := invitation_accepted(str(offer.module))
 		if bool(offer.get("encounter",false)):

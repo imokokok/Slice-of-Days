@@ -33,7 +33,7 @@ func build() -> void:
 		var rng := RandomNumberGenerator.new()
 		rng.seed = 98271
 		var points := PackedVector3Array()
-		for i in 44000:
+		for i in 120000:
 			var triangle: PackedVector3Array = triangles[mini(areas.bsearch(rng.randf()*area),triangles.size()-1)]
 			var u := sqrt(rng.randf())
 			var v := rng.randf()
@@ -45,5 +45,16 @@ func build() -> void:
 		var mesh := ArrayMesh.new()
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_POINTS, arrays)
 		assert(ResourceSaver.save(mesh,folder+id+".res",ResourceSaver.FLAG_COMPRESS)==OK)
+		# Continuous geometry retains fine contours without particle speckle.
+		var surface := SurfaceTool.new()
+		surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for face in triangles:
+			for point in face:
+				var p := (point-bounds.get_center()) * (34.0 / bounds.size[bounds.get_longest_axis_index()])
+				surface.set_uv(Vector2(p.x/34.0+.5,.5-p.y/34.0))
+				surface.add_vertex(p)
+		surface.index()
+		surface.generate_normals()
+		assert(ResourceSaver.save(surface.commit(),folder+id+"_surface.res",ResourceSaver.FLAG_COMPRESS)==OK)
 		print("IMPORTED ",id," source triangles=",count," sampled=",points.size()," dimensions=",bounds.size)
 	quit()

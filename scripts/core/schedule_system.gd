@@ -24,30 +24,12 @@ func load_schedule_data(path: String) -> void:
 
 
 func expand_resident_rows(data: Dictionary) -> Array:
-	var result: Array = data.get("residents", []).duplicate(true)
-	var generated: Dictionary = data.get("generated_roster", {})
-	var names: Array = generated.get("display_names", [])
-	var patterns: Array = generated.get("schedule_patterns", [])
-	if names.is_empty() or patterns.is_empty():
-		return result
-	var start_index := int(generated.get("start_index", result.size() + 1))
-	var id_prefix := str(generated.get("id_prefix", "town_resident"))
-	for name_index in names.size():
-		var resident_number := start_index + name_index
-		var resident_id := "%s_%03d" % [id_prefix, resident_number]
-		var pattern: Array = patterns[name_index % patterns.size()]
-		var schedule: Array = []
-		for activity_index in pattern.size():
-			var activity: Dictionary = pattern[activity_index].duplicate(true)
-			activity["id"] = "%s_slot_%d" % [resident_id, activity_index + 1]
-			schedule.append(activity)
-		result.append({
-			"id": resident_id,
-			"display_name": str(names[name_index]),
-			"draft": true,
-			"generated": true,
-			"schedule": schedule,
-		})
+	# Read the same authored roster without relying on later autoload readiness.
+	var cast: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs/core_residents.json"))
+	var allowed: Array = cast.get("profiles", []).map(func(row: Dictionary) -> String: return str(row.id))
+	var result: Array = []
+	for row: Dictionary in data.get("residents", []):
+		if allowed.has(str(row.get("id", ""))): result.append(row.duplicate(true))
 	return result
 
 

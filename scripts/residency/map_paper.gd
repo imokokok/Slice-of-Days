@@ -13,6 +13,7 @@ var points: Dictionary = {
 }
 var dragging := false
 var map_font := SystemFont.new()
+const FRAME := 12.0
 
 func _ready() -> void:
 	size=Vector2(1284,646)
@@ -30,7 +31,7 @@ func _ready() -> void:
 		marker.text=TravelSystem.location_name(str(id))
 		marker.tooltip_text=("已经到访" if discovered else "尚未到访")+"\n"+str(route.get("reason",""))
 		marker.position=Vector2(points[id])-Vector2(16,22); marker.size=Vector2(174,44)
-		marker.add_theme_font_size_override("font_size",16); add_child(marker)
+		marker.add_theme_font_size_override("font_size",20); add_child(marker)
 		marker.selected=str(lead.get("location",""))==str(id)
 		marker.pressed.connect(func() -> void: selected.emit(str(id)))
 	queue_redraw()
@@ -48,7 +49,10 @@ func filter_locations(filter_index: int) -> void:
 		marker.visible=filter_index==0 or (filter_index==1 and (ResidencySystem.state().visits.has(id) or id==GameState.current_location)) or (filter_index==2 and heard.has(id)) or (filter_index==3 and (id==tracked or id==GameState.current_location))
 
 func _draw() -> void:
-	draw_texture_rect(painting,Rect2(Vector2.ZERO,size),false,Color(1,1,1,.93))
+	# Opaque, square-edged map mount. Markers remain independent Controls.
+	draw_rect(Rect2(Vector2.ZERO,size),PaperLanguage.BLUE)
+	draw_rect(Rect2(Vector2(4,4),size-Vector2(8,8)),Color("faf7ee"))
+	draw_texture_rect(painting,Rect2(Vector2.ONE*FRAME,size-Vector2.ONE*FRAME*2),false)
 	draw_string(map_font,Vector2(47,92),"Solmere",HORIZONTAL_ALIGNMENT_LEFT,-1,54,PaperLanguage.BLUE)
 	var c := Vector2(1195,78)
 	draw_circle(c,32,Color("fff8e4",.85)); draw_arc(c,32,0,TAU,64,PaperLanguage.BLUE,1,true)

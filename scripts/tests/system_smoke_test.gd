@@ -54,8 +54,8 @@ func _test_calendar_and_role_isolation() -> void:
 
 func _test_schedule_and_route() -> void:
 	ChapterSystem.start_new_game("A")
-	_check(ScheduleSystem.residents.size() == 102, "The 100-resident graybox roster also includes the two existing market shoppers")
-	_check(not ScheduleSystem.activity_at("town_resident_033", 1, 780).is_empty(), "A generated resident should expose a real schedule")
+	_check(ScheduleSystem.residents.size() == 12, "Only the twelve authored residents may be scheduled")
+	_check(ScheduleSystem.activity_at("town_resident_033", 1, 780).is_empty(), "Removed generated residents have no schedule")
 	var found_day_lead := false
 	for lead in EventSystem.day_leads():
 		if str(lead.get("id", "")) == "a_d1_print_help":
@@ -104,7 +104,7 @@ func _test_fragmented_time_and_module_rollback() -> void:
 	var rollback_id := "smoke_module_rollback"
 	EventSystem.events[rollback_id] = {
 		"id": rollback_id,
-		"conditions": {"roles": ["B"], "days": [2], "locations": ["residence"], "start": 660, "end": 720},
+		"conditions": {"roles": ["B"], "days": [1], "locations": ["residence"], "start": 660, "end": 720},
 		"cost": {"money": 7, "minutes": 10},
 		"results": {"facts": ["provisional module fact"], "unlock_modules": ["cooking"]},
 		"launch_module": "cooking",
@@ -122,13 +122,13 @@ func _test_fragmented_time_and_module_rollback() -> void:
 func _test_core_resident_profiles() -> void:
 	_check(ResidentProfileSystem.profiles.size() == 12, "The core resident layer should load exactly 12 profiles")
 	_check(ResidentProfileSystem.town_role("mossner") == "邮局 / 书信事务所老板", "A core resident profile should expose its current town role")
-	var a_line := ResidentProfileSystem.ambient_line("jiu", "A", 0)
-	var b_line := ResidentProfileSystem.ambient_line("jiu", "B", 0)
+	var a_line := ResidentProfileSystem.ambient_line("maya", "A", 0)
+	var b_line := ResidentProfileSystem.ambient_line("maya", "B", 0)
 	_check(not a_line.is_empty() and not b_line.is_empty() and a_line != b_line, "A and B should receive distinct ambient lines from a core resident")
 	var generated_a := ResidentProfileSystem.ambient_line("town_resident_033", "A", 0)
 	var generated_b := ResidentProfileSystem.ambient_line("town_resident_033", "B", 0)
-	_check(not generated_a.is_empty() and not generated_b.is_empty(), "Generated residents should have contextual dialogue instead of empty placeholder text")
-	_check(ResidentProfileSystem.role_lens("town_resident_033", "A") != ResidentProfileSystem.role_lens("town_resident_033", "B"), "Generated residents should react differently to A and B")
+	_check(generated_a.is_empty() and generated_b.is_empty(), "Retired residents never synthesize fallback dialogue")
+	_check(ResidentProfileSystem.role_lens("town_resident_033", "A").is_empty(), "Retired residents have no role lens")
 
 
 func _test_ui_scenes_load() -> void:
@@ -200,19 +200,11 @@ func _test_event_and_relationship() -> void:
 
 func _test_draft_confirmation_request() -> void:
 	ChapterSystem.start_new_game("A")
-	RelationshipSystem.record_encounter("recordist", "smoke_first")
 	var before_minute := GameState.current_minute
-	var early := RelationshipSystem.request_confirmation_action("recordist")
-	_check(str(early.get("status", "")) == "refused", "Asking a draft resident after one encounter should be refused")
-	_check(GameState.current_minute == before_minute + 10, "A conversation confirmation request should charge its authored time cost")
-	_check(GameState.has_event("confirmation_request_d1_a_recordist"), "A conversation confirmation request should leave a daily event marker")
-	for index in 3:
-		RelationshipSystem.record_encounter("recordist", "smoke_more_%d" % index)
-	var repaired := RelationshipSystem.request_confirmation("recordist")
-	_check(str(repaired.get("status", "")) == "granted", "A refused draft resident should allow repair after enough real encounters")
-	_check(GameState.confirmed_residents.has("recordist"), "A repaired draft relationship should grant confirmation")
-	RelationshipSystem.set_confirmation("recordist", "pending")
-	_check(not GameState.confirmed_residents.has("recordist"), "Any non-granted confirmation status should remove the resident from the confirmed list")
+	RelationshipSystem.record_encounter("town_resident_033", "retired")
+	var result := RelationshipSystem.request_confirmation_action("town_resident_033")
+	_check(not result.ok and GameState.current_minute == before_minute, "Retired residents cannot grant recognition or charge time")
+	_check(not GameState.relationships.has("town_resident_033"), "Retired residents cannot create new relationship records")
 
 
 func _test_choice_history() -> void:
@@ -270,10 +262,10 @@ func _test_chapter_progression() -> void:
 	_check(ChapterSystem.has_seen_opening(), "The current chapter opening should persist as seen")
 	var next := ChapterSystem.advance_chapter()
 	_check(bool(next.get("ok", false)), "Advancing the first chapter should succeed")
-	_check(GameState.current_role == "B" and GameState.current_day == 2, "The second chapter should switch to B on day 2")
+	_check(GameState.current_role == "B" and GameState.current_day == 1, "The second chapter shows B's perspective of the same day")
 	_check(not ChapterSystem.has_seen_opening(), "The next role should have its own unseen opening")
 	ChapterSystem.advance_chapter()
-	_check(GameState.current_role == "B" and GameState.current_day == 3, "The third chapter should continue with B on day 3")
+	_check(GameState.current_role == "B" and GameState.current_day == 2, "The third chapter starts day two with its authored lead role")
 
 
 func _test_gameplay_module_state() -> void:
@@ -290,6 +282,7 @@ func _test_gameplay_module_state() -> void:
 	)
 	_check(GameplayModuleSystem.unlock("cooking"), "Cooking should unlock for its workbench test")
 	_check(GameplayModuleSystem.begin_session("cooking", "smoke"), "Cooking session should begin")
+	GameState.inventory["tomato"]=1
 	var cooking_result := GameplayModuleSystem.complete_choice(
 		"improvise",
 		{"mode": "ordered", "selected_tokens": ["lemon", "bread", "tomato"]}

@@ -43,11 +43,11 @@ func run() -> void:
 	var saved: Dictionary = state.to_save_data().duplicate(true)
 	state.begin_new_game("A")
 	state.load_save_data(saved)
-	check(dialogue.linear_conversation("zhou_xiaoliu")[0][1].contains("两个饭盒"),"A save reload remembers which conversation comes next")
+	check(dialogue.linear_conversation("zhou_xiaoliu")[0][1].contains("这个娃娃"),"A save reload remembers which conversation comes next")
 	current_scene._talk_nearby("zhou_xiaoliu")
 	current_scene.conversation._close()
 	await process_frame
-	check(dialogue.linear_conversation("zhou_xiaoliu")[0][1].contains("两个饭盒"),"Leaving early does not skip an unread story")
+	check(dialogue.linear_conversation("zhou_xiaoliu")[0][1].contains("这个娃娃"),"Leaving early does not skip an unread story")
 	current_scene.queue_free()
 	await create_timer(0.4).timeout
 	print("LINEAR DIALOGUE PASS" if failures == 0 else "LINEAR DIALOGUE FAIL")

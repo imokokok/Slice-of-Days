@@ -112,13 +112,7 @@ func grocery() -> void:
 		get_parent().add_child(shop)
 		queue_free())
 	button("摄影与冲洗",func() -> void: FilmSystem.open_counter(get_parent()); queue_free())
-	button("聊一会儿 · 15 分钟",func() -> void: _grocery_chat("greeting"))
-	button("问营业时间 · 5 分钟",func() -> void: _grocery_chat("schedule_info"))
-
-func _grocery_chat(topic: String) -> void:
-	var parent := get_parent()
-	queue_free()
-	parent.call_deferred("_start_conversation","grocery",topic)
+	label("柜台告示 · 每日 08:00—22:00。采购后请收好小票，冲洗后的照片凭取件条领取。",18)
 
 func collections() -> void:
 	var entries: Dictionary = EconomySystem.state().collections

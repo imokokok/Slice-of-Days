@@ -30,7 +30,12 @@ func run() -> void:
 	check(not sky.camera.transform.is_equal_approx(before),"Viewport mouse input rotates camera")
 	var saved: Vector2=sky.angles
 	sky.select_nebula(1)
-	check(sky.volume.sample_count==44000,"Official Pillars model imported")
+	check(sky.volume.sample_count==120000,"Official Pillars model imported at increased surface density")
+	check(sky.get_node_or_null("StarField")==null,"Nebula inspection has no decorative starfield")
+	check(sky.hint.get_theme_font_size("font_size")>=23,"Observation input remains readable")
+	sky._toggle_science(); await process_frame
+	check(is_instance_valid(sky.science_panel) and sky.entries[1].science.size()>=4,"A real scrollable science panel explains the selected nebula")
+	sky._toggle_science()
 	sky.select_nebula(2)
 	check(sky.volume.depth_range.y-sky.volume.depth_range.x>5,"Official Eta Carinae model retains its depth")
 	sky.select_nebula(0)

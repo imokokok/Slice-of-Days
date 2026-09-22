@@ -172,16 +172,6 @@
         "note"
       ],
       "share_reply": "这段风声像我们那天等车的时候。居然被你留下了。"
-    },
-    "grocery": {
-      "place": "cafe",
-      "module": "photography",
-      "lead": "相机就在摄影柜台，可以先问问胶卷和冲洗的事。",
-      "likes": [
-        "photo",
-        "receipt"
-      ],
-      "share_reply": "这束光拍得真像今天。等下张洗出来，也拿来看看。"
     }
   },
   "modules": {
@@ -272,7 +262,7 @@
       "return": "previous world location",
       "persistence": "GameState artifacts and core_loop role state",
       "relationship": "夏透明与尘缘从小相识；两人总为同一张牌的意思争个不停。",
-      "share_reply": "我还是不同意他的解释，但你问的那句话有道理。我把反驳写在这儿，你带回去，别让他只笑不答。",
+      "share_reply": "我还是不同意她的解释，但你问的那句话有道理。我把反驳写在这儿，你带回去，别让她只笑不答。",
       "return_reply": "这口气，一看就是尘缘。我们小时候也这样，争完一件事，还要约着明天接着说。"
     },
     "contemplation": {
@@ -291,12 +281,12 @@
       "persistence": "GameState artifacts and core_loop role state",
       "relationship": "宇星晴在山野取材时受过周晓六照应；他们会交换夜里的观察。",
       "share_reply": "宇星晴总记得光，我更记得那晚的风。我把风向记在旁边了，给他看看，你们看到的是同一片天。",
-      "return_reply": "这阵风我记得。他总能记住我没拍到的东西。下次我也把声音一起带回来。"
+      "return_reply": "这阵风我记得。她总能记住我没拍到的东西。下次我也把声音一起带回来。"
     },
     "optical_illusion": {
       "npc": "mingming",
-      "callback_npc": "xia_touming",
-      "callback_place": "tarot_stall",
+      "callback_npc": "zhou_xiaoliu",
+      "callback_place": "print_shop",
       "callback": "冥冥说你在那两条线前站了好久。换个方向就不像刚才了，对吧。",
       "next_place": "park",
       "next_module": "contemplation",
@@ -307,14 +297,14 @@
       "output": "canonical source material and existing module results",
       "return": "previous world location",
       "persistence": "GameState artifacts and core_loop role state",
-      "relationship": "冥冥与夏透明会交换各自看见的细节，不急着替它们定下答案。",
-      "share_reply": "冥冥说你肯换个角度再看一次。我写了另一个观察位置，你带给她，看看她是不是也发现了。",
+      "relationship": "冥冥与周晓六常在社区中心碰面，交换当天看到的小事。",
+      "share_reply": "冥冥也站在那儿看过？我从走廊另一头看，形状也不一样。我把位置写给她，下次再一起试。",
       "return_reply": "原来从那一边看也不一样。下次我们可以各站一边，说说自己看到的。"
     },
     "photography": {
       "npc": "yuxingqing",
-      "callback_npc": "grocery",
-      "callback_place": "cafe",
+      "callback_npc": "zhou_xiaoliu",
+      "callback_place": "print_shop",
       "callback": "昨天那张照片里的光，我今天经过时又找了一次。",
       "next_place": "library",
       "next_module": "archives",
@@ -325,8 +315,8 @@
       "output": "canonical source material and existing module results",
       "return": "previous world location",
       "persistence": "GameState artifacts and core_loop role state",
-      "relationship": "摄影柜台把拍下的片刻留在小镇；宇星晴关心每张照片里的光。",
-      "share_reply": "我在小票背面记下了冲洗时的颜色。给宇星晴看看，问问这是不是你们当时看到的光。",
+      "relationship": "宇星晴拍山野光影，周晓六记得路上的风和怎样躲开蚊虫。",
+      "share_reply": "这张照片让我想起那次上山。我给宇星晴记下了那条蚊子少的小路，你也带给他看看。",
       "return_reply": "颜色留住了，不过当时的风只有我们记得。谢谢你又把这个片刻带回来。"
     },
     "archives": {
@@ -367,8 +357,8 @@
     },
     "memory": {
       "npc": "mingming",
-      "callback_npc": "maya",
-      "callback_place": "library",
+      "callback_npc": "shi_yongqi",
+      "callback_place": "night_market",
       "callback": "冥冥说你记住了房间里很小的东西，连她自己差点都忘了。",
       "next_place": "handcraft_shop",
       "next_module": "ghostwriting",
@@ -379,8 +369,8 @@
       "output": "canonical source material and existing module results",
       "return": "previous world location",
       "persistence": "GameState artifacts and core_loop role state",
-      "relationship": "冥冥说过的细小往事，会被 Maya 仔细地留在纸上。",
-      "share_reply": "那个细节，我怕自己忘了，就写在这张纸上。你再碰见冥冥时，给她看看；不愿意说的部分可以继续空着。",
+      "relationship": "冥冥曾耐心听石泳琪讲开店的艰难，她们也会记住对方的小事。",
+      "share_reply": "冥冥以前听我反复讲开店的事，我也想记住她讲过的这一点。你带给她，愿不愿意说更多都没关系。",
       "return_reply": "这段话被人认真留着，我忽然没那么着急解释了。谢谢你带回来。"
     }
   },

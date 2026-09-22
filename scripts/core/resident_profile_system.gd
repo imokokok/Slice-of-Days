@@ -18,6 +18,7 @@ const GENERIC_AMBIENT := {
 }
 
 var profiles: Dictionary = {}
+var legacy_aliases: Dictionary = {}
 
 
 func _ready() -> void:
@@ -34,6 +35,7 @@ func load_profile_data(path: String) -> bool:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		push_error("Invalid resident profile data: %s" % path)
 		return false
+	legacy_aliases = parsed.get("legacy_aliases", {})
 	for row in parsed.get("profiles", []):
 		var resident_id := str(row.get("id", ""))
 		if not resident_id.is_empty():
@@ -47,6 +49,23 @@ func profile_for(resident_id: String) -> Dictionary:
 
 func is_core(resident_id: String) -> bool:
 	return profiles.has(resident_id)
+
+
+func canonical_id(resident_id: String) -> String:
+	var value := str(legacy_aliases.get(resident_id, resident_id))
+	return value if profiles.has(value) else ""
+
+
+func topics_for(resident_id: String) -> Array:
+	var choices: Array = profiles.get(resident_id, {}).get("topics", []).duplicate(true)
+	if GameState.current_role == "B": choices.reverse()
+	return choices
+
+
+func topic_lines(resident_id: String, topic_id: String) -> Array:
+	for topic: Dictionary in topics_for(resident_id):
+		if str(topic.id) == topic_id: return topic.lines.duplicate()
+	return []
 
 
 func town_role(resident_id: String) -> String:

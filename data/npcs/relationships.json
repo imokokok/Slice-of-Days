@@ -1,15 +1,354 @@
 {
   "relationships": [
-    {"people":["xia_touming","chenyuan"],"kind":"世交","summary":"两人的爷爷早年相识交好；夏透明喜欢用塔罗牌打趣尘缘，两人常为单张牌的释义争辩。","topics":["塔罗牌释义","旧日传闻"]},
-    {"people":["wu_wu","naonao"],"kind":"好朋友","summary":"CICI 遛狗经过闹闹的棋局时，狗狗的一声提醒让闹闹避开败着；两人因此熟识。","topics":["下棋","遛狗","聪明的小狗"]},
-    {"people":["mingming","shi_yongqi"],"kind":"梦想的倾听者","summary":"冥冥在石泳琪筹备饭店受挫时耐心陪伴，听见她藏在疲惫里的热忱。","topics":["开店梦想","饭店菜单"]},
-    {"people":["yuxingqing","zhou_xiaoliu"],"kind":"好友","summary":"宇星晴去山野取材时被蚊虫困住，周晓六用熟悉山林的生存小技巧帮他脱困。","topics":["山野取材","山间光影","野外技巧"]},
-    {"people":["mossner","maya"],"kind":"共同坚守的同行者","summary":"两人通过邮政公益包裹把旧书寄往乡村学校，共同做了许多公益项目。","topics":["纸质书","书信","公益捐书"]},
-    {"people":["xanni","maya"],"kind":"生意往来","summary":"Maya 在唱片店买唱片并在书店播放；两人都喜欢月牙、花瓣等特殊造型唱片。","topics":["异形唱片","书店播放列表"]},
-    {"people":["beetman","shi_yongqi"],"kind":"知己","summary":"石泳琪是 BEETMAN 的重要客人；两人共同度过开店最艰难的阶段，也热爱奇异食材。","topics":["奇异食材","隐藏菜单"]},
-    {"people":["mingming","zhou_xiaoliu"],"kind":"初识的朋友","summary":"两人在社区中心认识，周一到周四夜里常聊附近发生的事和昨天的睡眠。","topics":["社区近况","睡眠"]},
-    {"people":["naonao","yuxingqing","xia_touming"],"kind":"表兄妹","summary":"宇星晴最大、闹闹最小；三人喜欢在观景台共处，享受平和轻松的氛围。","topics":["观星","吹风","旧电影录像"]},
-    {"people":["chenyuan","wu_wu"],"kind":"朋友","summary":"两人在公交站附近的一次事件中共同帮忙，后来偶尔约着遛狗。","topics":["公交站日常","宠物","遛狗"]},
-    {"people":["mossner","beetman"],"kind":"未相认的笔友","summary":"两人通过书信往来却不知道彼此真实身份；Mossner 常接不住 BEETMAN 的冷笑话。","topics":["书信","冷笑话","罐头标签"]}
+    {
+      "people": [
+        "xia_touming",
+        "chenyuan"
+      ],
+      "kind": "世交",
+      "summary": "两人的爷爷早年相识交好；夏透明喜欢用塔罗牌打趣尘缘，两人常为单张牌的释义争辩。",
+      "topics": [
+        "塔罗牌释义",
+        "旧日传闻"
+      ],
+      "lines_by_npc": {
+        "xia_touming": [
+          "我们两家的爷爷早就认识。我和尘缘从小认识，他现在还会为一张牌追着我问。"
+        ],
+        "chenyuan": [
+          "我跟夏透明是从小认识的。她偏爱拿牌逗我，我就偏要把那张牌的意思问清楚。"
+        ]
+      },
+      "id": "relation_xia_touming_chenyuan"
+    },
+    {
+      "people": [
+        "wu_wu",
+        "naonao"
+      ],
+      "kind": "好朋友",
+      "summary": "CICI 遛狗经过闹闹的棋局时，狗狗的一声提醒让闹闹避开败着；两人因此熟识。",
+      "topics": [
+        "下棋",
+        "遛狗",
+        "聪明的小狗"
+      ],
+      "lines_by_npc": {
+        "wu_wu": [
+          "我遛狗路过闹闹的棋局，它叫了一声，闹闹及时收手了。她说它替她保住了一局。"
+        ],
+        "naonao": [
+          "CICI的狗叫那一下，让我没落下败着。后来她遛狗路过，我都会留意一下。"
+        ]
+      },
+      "id": "relation_wu_wu_naonao"
+    },
+    {
+      "people": [
+        "mingming",
+        "shi_yongqi"
+      ],
+      "kind": "梦想的倾听者",
+      "summary": "冥冥在石泳琪筹备饭店受挫时耐心陪伴，听见她藏在疲惫里的热忱。",
+      "topics": [
+        "开店梦想",
+        "饭店菜单"
+      ],
+      "lines_by_npc": {
+        "mingming": [
+          "石泳琪筹备饭店那阵子常很沮丧。我听她说，越听越知道她是真的想把店开起来。"
+        ],
+        "shi_yongqi": [
+          "开店最难的时候，冥冥肯听我慢慢说。她没嫌我总讲同一件事，我一直记得。"
+        ]
+      },
+      "id": "relation_mingming_shi_yongqi"
+    },
+    {
+      "people": [
+        "yuxingqing",
+        "zhou_xiaoliu"
+      ],
+      "kind": "好友",
+      "summary": "宇星晴去山野取材时被蚊虫困住，周晓六用熟悉山林的生存小技巧帮他脱困。",
+      "topics": [
+        "山野取材",
+        "山间光影",
+        "野外技巧"
+      ],
+      "lines_by_npc": {
+        "yuxingqing": [
+          "我去山上拍光影，光顾着照片，被蚊子咬得不行。周晓六知道怎么避开它们。"
+        ],
+        "zhou_xiaoliu": [
+          "宇星晴拍照时很认真，连蚊子都忘了。我那次带他换了条路，就这么认识了。"
+        ]
+      },
+      "id": "relation_yuxingqing_zhou_xiaoliu"
+    },
+    {
+      "people": [
+        "mossner",
+        "maya"
+      ],
+      "kind": "共同坚守的同行者",
+      "summary": "两人通过邮政公益包裹把旧书寄往乡村学校，共同做了许多公益项目。",
+      "topics": [
+        "纸质书",
+        "书信",
+        "公益捐书"
+      ],
+      "lines_by_npc": {
+        "mossner": [
+          "Maya把捐出的旧书理好，我帮她走公益包裹寄到乡村学校。纸箱沉，收到的回信也很有分量。"
+        ],
+        "maya": [
+          "旧书要寄远一点时，我会找Mossner。我们一起做过几次公益捐书，后来也常聊纸张和信。"
+        ]
+      },
+      "id": "relation_mossner_maya"
+    },
+    {
+      "people": [
+        "xanni",
+        "maya"
+      ],
+      "kind": "生意往来",
+      "summary": "Maya 在唱片店买唱片并在书店播放；两人都喜欢月牙、花瓣等特殊造型唱片。",
+      "topics": [
+        "异形唱片",
+        "书店播放列表"
+      ],
+      "lines_by_npc": {
+        "xanni": [
+          "Maya会买唱片放在书店。我见到月牙或花瓣形状的唱片，就想留给她看看。"
+        ],
+        "maya": [
+          "Xanni常给我推荐异形唱片。像月牙、花瓣那样的，有时看着就舍不得收进封套。"
+        ]
+      },
+      "id": "relation_xanni_maya"
+    },
+    {
+      "people": [
+        "beetman",
+        "shi_yongqi"
+      ],
+      "kind": "知己",
+      "summary": "石泳琪是 BEETMAN 的重要客人；两人共同度过开店最艰难的阶段，也热爱奇异食材。",
+      "topics": [
+        "奇异食材",
+        "隐藏菜单"
+      ],
+      "lines_by_npc": {
+        "beetman": [
+          "石泳琪是我的大客户。我们一起熬过开店最难的时候，她也肯试我那些怪食材。"
+        ],
+        "shi_yongqi": [
+          "蔬菜展上，我被BEETMAN的人形胡萝卜吸引了。后来才发现，她的奇怪罐头更有意思。"
+        ]
+      },
+      "id": "relation_beetman_shi_yongqi"
+    },
+    {
+      "people": [
+        "mingming",
+        "zhou_xiaoliu"
+      ],
+      "kind": "初识的朋友",
+      "summary": "两人在社区中心认识，周一到周四夜里常聊附近发生的事和昨天的睡眠。",
+      "topics": [
+        "社区近况",
+        "睡眠"
+      ],
+      "lines_by_npc": {
+        "mingming": [
+          "我跟周晓六在社区中心认识。周一到周四晚上碰见，会聊附近的事，或者昨晚睡没睡好。"
+        ],
+        "zhou_xiaoliu": [
+          "和冥冥熟起来，就是因为在社区中心附近反复碰见。有时没什么大事，也能聊一段。"
+        ]
+      },
+      "id": "relation_mingming_zhou_xiaoliu"
+    },
+    {
+      "people": [
+        "naonao",
+        "yuxingqing",
+        "xia_touming"
+      ],
+      "kind": "表兄妹",
+      "summary": "宇星晴最大、闹闹最小；三人喜欢在观景台共处，享受平和轻松的氛围。",
+      "topics": [
+        "观星",
+        "吹风",
+        "旧电影录像"
+      ],
+      "lines_by_npc": {
+        "naonao": [
+          "宇星晴、夏透明和我是表兄妹。宇星晴最大，我最小。一起在观景台待着很轻松。"
+        ],
+        "yuxingqing": [
+          "我和夏透明、闹闹是表兄妹，我最大，闹闹最小。有时我们只是一起吹风、看旧电影。"
+        ],
+        "xia_touming": [
+          "宇星晴是最大的表哥，闹闹最小。有时三个人在观景台看旧电影，不用安排很多话。"
+        ]
+      },
+      "id": "relation_naonao_yuxingqing"
+    },
+    {
+      "people": [
+        "chenyuan",
+        "wu_wu"
+      ],
+      "kind": "朋友",
+      "summary": "两人在公交站附近的一次事件中共同帮忙，后来偶尔约着遛狗。",
+      "topics": [
+        "公交站日常",
+        "宠物",
+        "遛狗"
+      ],
+      "lines_by_npc": {
+        "chenyuan": [
+          "我和CICI在公交站附近一起帮过忙，后来会约着遛狗。熟了也会拌嘴，不过不是非要吵赢。"
+        ],
+        "wu_wu": [
+          "尘缘有时会一起遛狗。我们是公交站附近那件事之后熟起来的，吃什么还是各自决定。"
+        ]
+      },
+      "id": "relation_chenyuan_wu_wu"
+    },
+    {
+      "people": [
+        "mossner",
+        "beetman"
+      ],
+      "kind": "未相认的笔友",
+      "summary": "两人通过书信往来却不知道彼此真实身份；Mossner 常接不住 BEETMAN 的冷笑话。",
+      "topics": [
+        "书信",
+        "冷笑话",
+        "罐头标签"
+      ],
+      "lines_by_npc": {
+        "mossner": [
+          "我有位笔友，冷笑话写得特别认真。有时我回完信，过了两天才明白笑点。还没见过面。"
+        ],
+        "beetman": [
+          "有位笔友会很认真地解释我的冷笑话。我倒想看看他读到下一封信的表情，不过我们还没见过。"
+        ]
+      },
+      "id": "relation_mossner_beetman",
+      "identity_known": false
+    },
+    {
+      "id": "relation_xanni_naonao",
+      "people": [
+        "xanni",
+        "naonao"
+      ],
+      "kind": "熟客和乐友",
+      "summary": "有共同喜好的歌手，会讨论听歌风格。",
+      "topics": [],
+      "lines_by_npc": {
+        "xanni": [
+          "闹闹来店里会认真听歌，我们喜欢同一个歌手。你带作品来，她也会仔细听。"
+        ],
+        "naonao": [
+          "我和Xanni喜欢同一个歌手，不过对同一首歌也会有不同想法。"
+        ]
+      }
+    },
+    {
+      "id": "relation_xia_touming_yuxingqing",
+      "people": [
+        "xia_touming",
+        "yuxingqing"
+      ],
+      "kind": "天文同好",
+      "summary": "在气象爱好者交流会上认识，独处时会聊星空和塔罗。",
+      "topics": [],
+      "lines_by_npc": {
+        "xia_touming": [
+          "宇星晴会给我的牌面补些星象的说法。我也会拿牌打趣他，他常常只是笑。"
+        ],
+        "yuxingqing": [
+          "我不太明白星象和塔罗有什么必然联系，不过我喜欢听夏透明用星星讲故事。"
+        ]
+      }
+    },
+    {
+      "id": "relation_xia_touming_wu_wu",
+      "people": [
+        "xia_touming",
+        "wu_wu"
+      ],
+      "kind": "遛狗认识的朋友",
+      "summary": "夏透明看狗时被注意到，CICI主动让她摸狗。",
+      "topics": [],
+      "lines_by_npc": {
+        "xia_touming": [
+          "最初我只敢远远看CICI的狗。她发现了，主动问我要不要摸摸，故事就从那里开始。"
+        ],
+        "wu_wu": [
+          "夏透明第一次看它时很犹豫，我就把狗绳放长一点。她点头以后，才让它走过去。"
+        ]
+      }
+    },
+    {
+      "id": "relation_naonao_wu_wu",
+      "people": [
+        "naonao",
+        "wu_wu"
+      ],
+      "kind": "大学室友和好朋友",
+      "summary": "大学时是室友，兴趣不同但都保持晚睡作息。",
+      "topics": [],
+      "lines_by_npc": {
+        "naonao": [
+          "我和CICI大学时住一个宿舍。晚上各玩各的，谁也不好意思催谁睡。"
+        ],
+        "wu_wu": [
+          "闹闹以前跟我是室友。我们兴趣不全一样，只是常常一起熬到很晚。"
+        ]
+      }
+    },
+    {
+      "id": "relation_wu_wu_zhou_xiaoliu",
+      "people": [
+        "wu_wu",
+        "zhou_xiaoliu"
+      ],
+      "kind": "网友与饭友",
+      "summary": "因为回转寿司话题认识，一次见面聊得忘了时间。",
+      "topics": [],
+      "lines_by_npc": {
+        "wu_wu": [
+          "我和周晓六最开始在网上聊寿司。后来真的碰上了，就一起吃，聊着又加了几碟。"
+        ],
+        "zhou_xiaoliu": [
+          "和CICI吃寿司那次，我吃得比她多。后来她反而说饿了，大概是聊得太久。"
+        ]
+      }
+    },
+    {
+      "id": "relation_xanni_mingming",
+      "people": [
+        "xanni",
+        "mingming"
+      ],
+      "kind": "朋友",
+      "summary": "会互相聊歌单，冥冥也会分享失眠时听的音乐。",
+      "topics": [],
+      "lines_by_npc": {
+        "xanni": [
+          "冥冥偶尔会拿失眠时听的歌来。我们不急着选最合适的，先听她今天想听哪首。"
+        ],
+        "mingming": [
+          "Xanni不会因为我循环同一段就催我换歌。我有时只是需要那个熟悉的开头。"
+        ]
+      }
+    }
   ]
 }

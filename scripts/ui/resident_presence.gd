@@ -8,6 +8,7 @@ func reconcile(hotspots: Array, camera_x: float, width := 1600.0) -> Array[Dicti
 	var desired: Dictionary = {}
 	for item: Dictionary in hotspots:
 		if str(item.get("kind", "")) in ["person", "shopkeeper", "npc", "resident"]:
+			if not ResidentProfileSystem.is_core(str(item.get("id", ""))): continue
 			desired[str(item.id)] = item.duplicate(true)
 			desired[str(item.id)].kind="shopkeeper" if item.kind=="shopkeeper" else "person"
 	# The authored pair takes precedence over its scheduled solo appearances.

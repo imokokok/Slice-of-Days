@@ -316,7 +316,7 @@ func proof_candidates(location: String) -> Array:
 	return result
 
 func issuer_at(location: String) -> String:
-	var candidates: Dictionary = {"night_market":["restaurant_owner","shi_yongqi"],"handcraft_shop":["mossner"],"record_store":["xanni","recordist"],"print_shop":["print_apprentice","mingming","stagehand","camera_keeper"]}
+	var candidates: Dictionary = {"night_market":["shi_yongqi"],"handcraft_shop":["mossner"],"record_store":["xanni"],"print_shop":["mingming","zhou_xiaoliu"]}
 	for resident in candidates.get(location,[]):
 		if str(ScheduleSystem.activity_at(str(resident),GameState.current_day,GameState.current_minute).get("location","")) == location: return str(resident)
 	return ""

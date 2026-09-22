@@ -1,0 +1,25 @@
+{
+  "species": [
+    {
+      "id": "sardine", "name": "欧洲沙丁鱼", "scientific_name": "Sardina pilchardus",
+      "min_cm": 12.0, "max_cm": 25.0, "common_min_cm": 15.0, "common_max_cm": 20.0,
+      "speed": 0.42, "window": 0.28,
+      "habitat": "生活在近岸海域，常聚成大群，也见于地中海。",
+      "diet": "主要摄食浮游甲壳动物等浮游生物。",
+      "story": "我们把许多近缘小鱼都叫作沙丁鱼；这份海边笔记记录的是欧洲沙丁鱼。它们的鱼群会随环境与季节迁移。",
+      "size_note": "常见长度约 15–20 厘米，资料记载可达 25 厘米。23.1 厘米属于较大的个体，并不是常见大小。",
+      "source": "https://www.fao.org/fishery/docs/CDrom/ARTFIMED/ArtFiWeb/descript/Species/CLUSAPIL.HTML"
+    },
+    {
+      "id": "sea_bream", "name": "金头鲷", "scientific_name": "Sparus aurata",
+      "min_cm": 15.0, "max_cm": 70.0, "common_min_cm": 20.0, "common_max_cm": 50.0,
+      "speed": 0.57, "window": 0.23,
+      "habitat": "见于地中海与东大西洋沿岸，活动在海草床、沙底，也能进入半咸水潟湖。",
+      "diet": "以贝类等软体动物和甲壳动物为食，有力的牙齿能压碎贝壳。",
+      "story": "两眼之间的金色带纹是辨认线索之一。它的生命周期很特别：不少个体先成熟为雄性，之后转变为雌性。",
+      "size_note": "常见长度约 20–50 厘米，资料记载最大可达 70 厘米；最大记录不等于日常体型。",
+      "source": "https://www.fao.org/fishery/docs/CDrom/ARTFIMED/ArtFiWeb/descript/Species/SPASPAUR.HTML"
+    }
+  ],
+  "sampling_note": "以各鱼种资料范围为界；游戏让常见体型更常出现，出现概率不是生态调查数据。体长不直接推算体重或年龄。"
+}

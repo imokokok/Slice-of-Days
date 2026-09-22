@@ -28,8 +28,8 @@ func _ready() -> void:
 	var module_ids := _unique_ids(modules.get("modules", []), "module")
 	_validate_schedules(resident_rows, location_ids)
 	_validate_core_residents(core_residents.get("profiles", []), resident_ids)
-	if resident_rows.size() != 102:
-		failures.append("the 100-resident roster plus two existing market shoppers should contain 102 entries, got %d" % resident_rows.size())
+	if resident_rows.size() != 12:
+		failures.append("the authored resident roster must contain exactly 12 entries, got %d" % resident_rows.size())
 	_validate_routes(routes.get("edges", []), location_ids)
 	_validate_events(events.get("events", []), location_ids, resident_ids, resident_rows, event_ids, module_ids)
 	_validate_chapter_reachability(events.get("events", []), calendar.get("day_roles", []))
@@ -355,7 +355,7 @@ func _validate_interactive_spaces(rows: Array, location_ids: Array[String], modu
 			else:
 				object_ids.append(object_id)
 			var kind := str(item.get("kind", "module"))
-			if not ["module", "tarot", "record_shop", "observe", "journal", "sleep", "book_notes", "shop", "work", "clock_repair"].has(kind):
+			if not ["module", "tarot", "record_shop", "observe", "journal", "sleep", "book_notes", "shop", "work", "clock_repair", "restaurant_counter", "grocery_counter", "memory", "newspaper", "zines", "collections"].has(kind):
 				failures.append("interactive object %s/%s uses unsupported kind %s" % [space_id, object_id, kind])
 			var module_id := str(item.get("module_id", ""))
 			if kind == "module" and not module_ids.has(module_id):
@@ -382,8 +382,8 @@ func _validate_shops(rows: Array, location_ids: Array[String]) -> void:
 				failures.append("shop %s has an empty or duplicated item id" % shop_id)
 			else:
 				item_ids.append(item_id)
-			if int(item.get("price", 0)) <= 0 or int(item.get("minutes", 0)) <= 0:
-				failures.append("shop %s item %s needs positive price and time" % [shop_id, item_id])
+			if int(item.get("price", 0)) <= 0 or int(item.get("minutes", -1)) < 0:
+				failures.append("shop %s item %s needs a positive price and nonnegative checkout time" % [shop_id, item_id])
 			if str(item.get("name", "")).is_empty() or str(item.get("description", "")).is_empty():
 				failures.append("shop %s item %s needs readable copy" % [shop_id, item_id])
 

@@ -1,10 +1,13 @@
 extends "res://scripts/ui/components/solmere_button.gd"
 func refresh() -> void:
 	super.refresh()
-	var face := StyleBoxFlat.new(); face.bg_color=Color("fcf7e8",.93); face.set_corner_radius_all(6); face.content_margin_left=31; face.content_margin_right=9
+	var face := StyleBoxFlat.new(); face.bg_color=Color("fcf7e8"); face.set_corner_radius_all(6); face.content_margin_left=31; face.content_margin_right=9
 	if selected: face.bg_color=Color("f1d880"); face.border_width_bottom=2; face.border_color=PaperLanguage.BLUE
-	if str(get_meta("state",""))=="unavailable": face.bg_color=Color("e3e5df",.88); add_theme_color_override("font_color",Color("7b8589"))
+	if str(get_meta("state",""))=="unavailable": face.bg_color=Color("e3e5df"); add_theme_color_override("font_color",Color("52636c"))
 	add_theme_stylebox_override("normal",face)
+	for state in ["hover","pressed"]:
+		var active: StyleBoxFlat=face.duplicate(); active.bg_color=Color("f1d880") if state=="pressed" else Color("f7e9b4")
+		add_theme_stylebox_override(state,active)
 	alignment=HORIZONTAL_ALIGNMENT_LEFT; queue_redraw()
 func _draw() -> void:
 	var center := Vector2(15,size.y*.5)

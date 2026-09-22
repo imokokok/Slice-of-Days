@@ -32,6 +32,9 @@ var encounter_finished := false
 var shared_choice_offered := false
 
 func _ready() -> void:
+	if not ResidentProfileSystem.is_core(npc):
+		queue_free()
+		return
 	add_to_group("meta_dialogue")
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -45,7 +48,7 @@ func _ready() -> void:
 	hint_label = speech_card.hint_label
 	hint_label.text = SettingsSystem.binding_text("dialogue_advance")+" 继续 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
 	typewriter = bool(GameState.shared_state.get("typewriter",true)) and not SettingsSystem.reduced_motion()
-	if shop_id.is_empty() or npc in ["beetman", "grocery"]:
+	if shop_id.is_empty() or npc == "beetman":
 		_build_conversation()
 	else:
 		var catalog = JSON.parse_string(FileAccess.get_file_as_string("res://data/economy/shops.json"))
@@ -123,7 +126,7 @@ func _finish() -> void:
 		if not materials.is_empty():
 			_choice_box([["给你看看《"+str(materials[0].title)+"》",str(materials[0].id)],["下次再带给你看。",""]],_share_loop_material)
 			return
-	if npc in ["beetman", "grocery"] and not shop_id.is_empty():
+	if npc == "beetman" and not shop_id.is_empty():
 		if not vendor_committed:
 			var before := GameState.to_save_data().duplicate(true)
 			if records_story: DialogueSystem.complete_linear_conversation(npc)
@@ -179,10 +182,10 @@ func _share_loop_material(id: String) -> void:
 
 func _show_vendor_choices() -> void:
 	if is_instance_valid(vendor_choices): return
-	speaker_label.text = LocalizationSystem.text("BEETMAN" if npc == "beetman" else "杂货店老板")
-	text_label.text = LocalizationSystem.text("我就在摊边。你想接着聊，还是看看今天的罐头？" if npc == "beetman" else "你慢慢看。想买什么、冲照片，或者再说几句都可以。")
+	speaker_label.text = LocalizationSystem.text("BEETMAN")
+	text_label.text = LocalizationSystem.text("我就在摊边。你想接着聊，还是看看今天的罐头？")
 	text_label.visible_characters = -1
-	var options := [["再聊一会儿 · 15分钟", "chat"], ["看看今天的罐头" if npc == "beetman" else "看看货架", "shop"], ["问点事 · 5分钟", "ask"], ["约个时间挑旧标签" if npc == "beetman" else "摄影与冲洗", "appointment" if npc == "beetman" else "film"], ["先走了", "leave"]]
+	var options := [["再聊一会儿 · 15分钟", "chat"], ["看看今天的罐头", "shop"], ["问点事 · 5分钟", "ask"], ["约个时间挑旧标签", "appointment"], ["先走了", "leave"]]
 	_choice_box(options,_vendor_action)
 
 func _vendor_action(action: String) -> void:

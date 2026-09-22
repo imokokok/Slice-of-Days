@@ -4,7 +4,7 @@ signal relationship_changed(role: String, resident_id: String)
 
 
 func ensure_resident(resident_id: String) -> Dictionary:
-	if resident_id.is_empty():
+	if not ResidentProfileSystem.is_core(resident_id):
 		return {}
 	if not GameState.relationships.has(resident_id):
 		GameState.relationships[resident_id] = {

@@ -884,9 +884,13 @@ func _draw_typewriter() -> void:
 	# The paper is a real separate layer. Keeping its original aspect ratio
 	# makes seven lines legible instead of squeezing the ink into a photo plane.
 	var paper_at := Vector2(570,185)+Vector2(carriage,0)
-	draw_style_box(_paper_style(),Rect2(paper_at,TypeLayout.PAGE_SIZE))
+	# Align the sheet and all typed glyphs with the diagonal platen. The
+	# exported sheet keeps its original unrotated, editable pixel layout.
+	draw_set_transform(paper_at,deg_to_rad(3.0))
+	draw_style_box(_paper_style(),Rect2(Vector2.ZERO,TypeLayout.PAGE_SIZE))
 	if is_instance_valid(type_viewport):
-		draw_texture_rect(type_viewport.get_texture(),Rect2(paper_at,TypeLayout.PAGE_SIZE),false)
+		draw_texture_rect(type_viewport.get_texture(),Rect2(Vector2.ZERO,TypeLayout.PAGE_SIZE),false)
+	draw_set_transform(Vector2.ZERO)
 	var machine: AtlasTexture=sprites.typewriter
 	var source := machine.region
 	source.position.y += source.size.y*.32

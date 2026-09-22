@@ -33,6 +33,7 @@ var legacy_ui: CanvasLayer
 var captured_session_ids: Array[String] = []
 var pending_image: Image
 var pending_context: Dictionary
+var science_panel: PanelContainer
 
 func _ready() -> void:
 	camera = $Camera3D
@@ -48,8 +49,8 @@ func _ready() -> void:
 func _button(parent: Node, text: String, callback: Callable) -> Button:
 	var b := ButtonComponent.new()
 	b.variant="camera"; b.text=text
-	b.add_theme_font_size_override("font_size",18)
-	b.custom_minimum_size=Vector2(90,44)
+	b.add_theme_font_size_override("font_size",22)
+	b.custom_minimum_size=Vector2(96,48)
 	parent.add_child(b)
 	b.pressed.connect(callback)
 	b.pressed.connect(func():
@@ -88,16 +89,23 @@ func _build_ui() -> void:
 	space=Control.new(); space.size_flags_horizontal=Control.SIZE_EXPAND_FILL; top.add_child(space)
 	_button(top,"连星",open_constellations)
 	_button(top,"观测册",open_gallery)
+	_button(top,"关于这片星云",_toggle_science)
+	var footer := Panel.new(); footer.name="ReadableObservation"; chrome.add_child(footer)
+	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	footer.offset_top=-254
+	footer.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	footer.add_theme_stylebox_override("panel",preload("res://scripts/ui/components/interface_palette.gd").face(Color("192c3c"),0,0))
 	var bottom := HBoxContainer.new(); bottom.name="Observation"; chrome.add_child(bottom)
 	bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bottom.offset_left=40; bottom.offset_right=-40; bottom.offset_top=-205; bottom.offset_bottom=-76
+	bottom.offset_left=40; bottom.offset_right=-40; bottom.offset_top=-237; bottom.offset_bottom=-82
 	bottom.alignment=BoxContainer.ALIGNMENT_BEGIN
 	bottom.add_theme_constant_override("separation",14)
 	var info := VBoxContainer.new(); info.size_flags_horizontal=Control.SIZE_EXPAND_FILL; bottom.add_child(info)
 	heading=_label(info,"",30)
-	description=_label(info,"",17)
+	description=_label(info,"",22)
+	description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	description.add_theme_color_override("font_color",Color("c6d3df"))
-	hint=_label(info,"",16)
+	hint=_label(info,"",26)
 	hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	var actions := VBoxContainer.new(); actions.size_flags_vertical=Control.SIZE_SHRINK_END; bottom.add_child(actions)
 	var zooms := HBoxContainer.new(); actions.add_child(zooms)
@@ -111,7 +119,7 @@ func _build_ui() -> void:
 	credits.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	credits.offset_left=40; credits.offset_right=-40; credits.offset_top=-62; credits.offset_bottom=-8
 	credits.add_theme_font_override("normal_font",PaperLanguage.body_font)
-	credits.add_theme_font_size_override("normal_font_size",14)
+	credits.add_theme_font_size_override("normal_font_size",17)
 	credits.add_theme_color_override("default_color",Color("c6d3df"))
 	credits.bbcode_enabled=true; credits.scroll_active=false
 	credits.meta_clicked.connect(func(url: Variant): OS.shell_open(str(url)))
@@ -132,12 +140,13 @@ func select_nebula(index: int) -> void:
 	var view: Dictionary=GameState.artifacts.get("telescope_views",{}).get(entry.id,{})
 	var a: Array=view.get("angles",[0.0,0.0])
 	angles=Vector2(float(a[0]),float(a[1]))
-	distance=clampf(float(view.get("distance",52.0)),24,85)
+	distance=clampf(float(view.get("distance",40.0 if not entry.has("model") else 36.0)),18,85)
 	var p: Array=view.get("pan",[0.0,0.0,0.0])
 	pan=Vector3(float(p[0]),float(p[1]),float(p[2]))
 	volume.build(entry)
 	heading.text=entry.title+"  /  "+entry.subtitle
-	description.text=entry.treatment
+	description.text=str(entry.get("introduction",entry.treatment))
+	if is_instance_valid(science_panel): science_panel.queue_free(); science_panel=null
 	credits.text="[url="+entry.source+"]"+entry.credit+"[/url]\n"+("照片 [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url] · " if not str(entry.image).is_empty() else "")+"Solmere：空间呈现与着色；非机构背书"
 	for i in tabs.size(): tabs[i].selected=i==selected_index
 	view_age=0
@@ -146,9 +155,9 @@ func select_nebula(index: int) -> void:
 
 func update_camera() -> void:
 	angles.y=clampf(angles.y,-1.15,1.15)
-	if not entries[selected_index].has("model"): angles.x=clampf(angles.x,-1.20,1.20)
+	angles.x=wrapf(angles.x,-PI,PI)
 	var basis := Basis.from_euler(Vector3(angles.y,angles.x,0))
-	camera.transform=Transform3D(basis,pan+basis*Vector3(0,0,distance))
+	camera.transform=Transform3D(basis,pan+basis*Vector3(0,-5.5,distance))
 
 func _sky_input(event: InputEvent) -> void:
 	if is_capturing or is_instance_valid(gallery): return
@@ -168,17 +177,17 @@ func _sky_input(event: InputEvent) -> void:
 
 func zoom(factor: float) -> void:
 	if is_capturing: return
-	distance=clampf(distance*factor,24,85)
+	distance=clampf(distance*factor,18,85)
 	update_camera()
 
 func reset_view() -> void:
-	angles=Vector2.ZERO; pan=Vector3.ZERO; distance=52.0
+	angles=Vector2.ZERO; pan=Vector3.ZERO; distance=40.0 if not entries[selected_index].has("model") else 36.0
 	update_camera()
 
 func _process(delta: float) -> void:
 	if is_capturing or is_instance_valid(legacy) or is_instance_valid(gallery): return
 	view_age+=delta
-	hint.modulate.a=clampf(10-view_age,0,1) if pending_image==null else 1.0
+	hint.modulate.a=1.0
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused != null and focused != sky_drag: return
 	var direction := Input.get_vector("nebula_left","nebula_right","nebula_up","nebula_down")
@@ -192,11 +201,28 @@ func _unhandled_input(event: InputEvent) -> void:
 	if is_instance_valid(legacy) or is_capturing: return
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
-		if is_instance_valid(gallery): close_gallery()
+		if is_instance_valid(science_panel): science_panel.queue_free(); science_panel=null
+		elif is_instance_valid(gallery): close_gallery()
 		else: _return()
 	elif event.is_action_pressed("camera_shutter") and not is_instance_valid(gallery):
 		get_viewport().set_input_as_handled()
 		collect()
+
+func _toggle_science() -> void:
+	if is_instance_valid(science_panel): science_panel.queue_free(); science_panel=null; return
+	var entry: Dictionary=entries[selected_index]
+	science_panel=PanelContainer.new(); science_panel.name="NebulaScience"; chrome.add_child(science_panel)
+	science_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	science_panel.offset_left=-612; science_panel.offset_right=-32; science_panel.offset_top=96; science_panel.offset_bottom=624
+	science_panel.add_theme_stylebox_override("panel",preload("res://scripts/ui/components/interface_palette.gd").face(Color("203a4c"),6,24))
+	var scroll := ScrollContainer.new(); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; science_panel.add_child(scroll)
+	var rows := VBoxContainer.new(); rows.size_flags_horizontal=Control.SIZE_EXPAND_FILL; rows.add_theme_constant_override("separation",19); scroll.add_child(rows)
+	_label(rows,str(entry.title)+" · 观测笔记",29)
+	for paragraph in entry.get("science",[]):
+		var line := _label(rows,str(paragraph),23); line.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; line.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	var treatment := _label(rows,"这里的空间呈现\n"+str(entry.treatment),21); treatment.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	var source := LinkButton.new(); source.text="阅读 NASA / ESA 原始资料"; source.add_theme_font_size_override("font_size",22); source.pressed.connect(func():OS.shell_open(str(entry.get("science_source",entry.source)))); rows.add_child(source)
+	_button(rows,"收起介绍",_toggle_science).grab_focus()
 
 func _return() -> void:
 	if is_capturing: return
@@ -258,7 +284,7 @@ func collect() -> void:
 func open_constellations() -> void:
 	if is_capturing or is_instance_valid(legacy): return
 	_remember_view()
-	chrome.hide(); credits.hide(); volume.hide(); $StarField.hide()
+	chrome.hide(); credits.hide(); volume.hide()
 	legacy=load("res://extensions/observatory/scenes/Constellations3D.tscn").instantiate()
 	add_child(legacy)
 	# Nested legacy layer must sit above the telescope's retained UI layer.
@@ -267,7 +293,7 @@ func open_constellations() -> void:
 	legacy.return_requested.connect(func():
 		solmere_completed=solmere_completed or bool(legacy.solmere_completed)
 		remove_child(legacy); legacy.queue_free(); legacy=null
-		camera.make_current(); chrome.show(); credits.show(); volume.show(); $StarField.show()
+		camera.make_current(); chrome.show(); credits.show(); volume.show()
 		finish_button.visible=solmere_completed
 		sky_drag.grab_focus())
 

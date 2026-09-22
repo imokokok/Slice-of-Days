@@ -1,9 +1,25 @@
 extends RefCounted
 ## Coastal activity backed by the same role save, inventory and material archive.
 const LOCATIONS := ["port","park"]
-const SPECIES := [
-	{"id":"sardine","name":"沙丁鱼","min_cm":12,"max_cm":24,"speed":0.42,"window":0.28},
-	{"id":"sea_bream","name":"金鳍海鲷","min_cm":21,"max_cm":42,"speed":0.57,"window":0.23}]
+static var catalog: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/world/coastal_fish.json"))
+static var SPECIES: Array = catalog.species
+static func species(id: String) -> Dictionary:
+	for row: Dictionary in SPECIES:
+		if row.id==id: return row.duplicate(true)
+	return {}
+static func sample_length(row: Dictionary, rng: RandomNumberGenerator) -> float:
+	var bucket := rng.randf()
+	var lower := float(row.common_min_cm)
+	var upper := float(row.common_max_cm)
+	if bucket < .10: lower=float(row.min_cm); upper=float(row.common_min_cm)
+	elif bucket > .95: lower=float(row.common_max_cm); upper=float(row.max_cm)
+	return snappedf(rng.randf_range(lower,upper),.1)
+static func size_description(fish: Dictionary) -> String:
+	var row := species(str(fish.get("id","")))
+	if row.is_empty(): return "历史鱼获"
+	var length := float(fish.get("length_cm",0))
+	if length>float(row.max_cm): return "旧版尺寸记录"
+	return "较小个体" if length<float(row.common_min_cm) else "较大个体" if length>float(row.common_max_cm) else "常见体型"
 static func state() -> Dictionary:
 	if not GameState.artifacts.has("fishing"): GameState.artifacts.fishing={"catches":[],"pending":{},"relaxed":false}
 	return GameState.artifacts.fishing
@@ -17,7 +33,8 @@ static func begin_cast() -> Dictionary:
 		GameState.load_save_data(before); return {"ok":false,"message":"没能保存，时间已恢复。"}
 	var fish: Dictionary=SPECIES[1 if randf()<.3 else 0].duplicate()
 	fish["catch_id"]="catch_"+Crypto.new().generate_random_bytes(12).hex_encode()
-	fish["length_cm"]=randf_range(float(fish.min_cm),float(fish.max_cm))
+	var rng := RandomNumberGenerator.new(); rng.randomize()
+	fish["length_cm"]=sample_length(fish,rng)
 	fish["day"]=GameState.current_day; fish["minute"]=GameState.current_minute
 	fish["location"]=GameState.current_location; fish["role"]=GameState.current_role
 	return {"ok":true,"fish":fish}
@@ -38,7 +55,7 @@ static func resolve(keep: bool) -> Dictionary:
 	if keep: GameState.inventory[fish.id]=int(GameState.inventory.get(fish.id,0))+1
 	var title := "%s · %.1f cm" % [fish.name,float(fish.length_cm)]
 	GameState.add_artifact("fishing_journal",fish)
-	ResidencySystem._add(str(fish.catch_id),"object",title,{"asset_id":fish.id,"source":fish.catch_id,"text":"带回厨房" if keep else "放回海里","length_cm":fish.length_cm})
+	ResidencySystem._add(str(fish.catch_id),"object",title,{"asset_id":fish.id,"source":fish.catch_id,"text":("带回厨房" if keep else "放回海里")+" · "+size_description(fish),"length_cm":fish.length_cm,"species_id":fish.id,"scientific_name":species(str(fish.id)).get("scientific_name",""),"day":fish.day,"minute":fish.minute,"location":fish.location})
 	GameState.add_journal_entry({"id":fish.catch_id,"kind":"fishing","text":title+("，收进随身包，可以入菜。" if keep else "，又回到了海里。")})
 	GameState.commit_active_role_state()
 	if not SaveManager.save_or_report("鱼获保存失败"):

@@ -637,7 +637,6 @@ func _rebuild_hotspots() -> void:
 			var at := _world_x(i,Composition.center_local(place))
 			for n in mini(neighbors.size(),3):
 				street.neighboring_residents.append({"kind":"person","id":neighbors[n],"x":at+Composition.npc_offset(place,neighbors[n],n)})
-			if place == "cafe": street.neighboring_residents.append({"kind":"shopkeeper","id":"grocery","x":at+Composition.entry_offset(place)-125})
 			if place == "produce_stall" and not bool(DialogueSystem.argument_state().get("finished",false)):
 				street.neighboring_residents.append({"kind":"argument","id":"translation","x":at+Composition.argument_offset()})
 	if preload("res://scripts/core/coastal_fishing.gd").LOCATIONS.has(GameState.current_location):
@@ -655,8 +654,6 @@ func _rebuild_hotspots() -> void:
 		var own_home := "residence" if GameState.current_role == "A" else "dorm"
 		if GameState.current_location == own_home:
 			street.hotspots.append({"x":center, "kind":"home", "reach":street.DOOR_REACH, "label":"回家"})
-	elif GameState.current_location == "cafe":
-		street.hotspots.append({"x":center-125.0, "kind":"shopkeeper", "id":"grocery", "label":"和杂货店老板说话"})
 	else:
 		var rooms := _spaces_at(GameState.current_location)
 		for i in rooms.size():
@@ -717,6 +714,7 @@ func _talk_to_nearest() -> void:
 		"invitation": _talk_nearby(str(item.id), "minigame_hook")
 
 func _talk_nearby(resident_id: String, topic := "greeting") -> void:
+	if not ResidentProfileSystem.is_core(resident_id): return
 	if is_instance_valid(conversation): return
 	if not MetaExperience.pay_conversation(topic): return
 	conversation = preload("res://scripts/ui/conversation_panel.gd").new()
@@ -725,10 +723,6 @@ func _talk_nearby(resident_id: String, topic := "greeting") -> void:
 	if resident_id == "beetman" and GameState.current_location == "produce_stall":
 		conversation.shop_id = "produce_stall"
 		conversation.purchase_requested.connect(_open_shop.bind("produce_stall"))
-	if resident_id == "grocery":
-		conversation.shop_id = "grocery"
-		conversation.shop_name = "杂货店老板"
-		conversation.purchase_requested.connect(_open_shop.bind("grocery"))
 	for item in street.hotspots:
 		if str(item.get("id","")) == resident_id and absf(float(item.x)-street.player_x) > 1.0: street.facing = signf(float(item.x)-street.player_x)
 	street.velocity = 0.0

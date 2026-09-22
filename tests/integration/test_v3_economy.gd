@@ -26,7 +26,8 @@ func run() -> void:
 	var residency = root.get_node("ResidencySystem")
 	var modules = root.get_node("GameplayModuleSystem")
 	var save = root.get_node("SaveManager")
-	state.begin_new_game("B")
+	root.get_node("ChapterSystem").start_new_game()
+	state.switch_to_role("B", 2, true) # Focused economy fixture: B's actual day.
 	check(state.money == 1600, "B starts with the configured 1600, without charging prepaid rent")
 	state.current_minute = 1080
 	state.current_location = "night_market"
@@ -148,7 +149,7 @@ func run() -> void:
 	var loaded_receipt_ids: Array = economy.state().receipts.keys().duplicate()
 	loaded_receipt_ids.sort()
 	check(bool(economy.active_order().get("paid",false)) and loaded_receipt_ids == receipt_ids, "Paid order and original receipt identity survive reload")
-	state.begin_new_game("A")
+	root.get_node("ChapterSystem").start_new_game()
 	state.current_minute = 600
 	state.current_location = "cafe"
 	var odd_stock: Array = economy.stock("grocery").filter(func(item: Dictionary) -> bool: return item.category == "collection")

@@ -58,7 +58,8 @@
 1. `tests/integration/test_five_day_flow.gd`：134 项通过，0 项失败。连续新游戏至第五天；真实录音、压片生成 WAV、采购报销及烹饪、折信火漆交付、实际棋局、痕迹交互和约定/见面对话。各晚经真实休息入口推进；只跳过交通卡片过场动画，不写主线完成标志。
 2. 关闭测试进程后重新启动同一脚本 `--reload-only`：4 项通过。第五天角色、切换状态、四条公共痕迹、A 私人信件未复制给 B 均正确。
 3. `tests/integration/test_nebula_telescope.gd`：通过。实际图片尺寸、打开关闭、缩放、介绍显隐和原可选星座流程。故意向不可写路径保存产生的报错属于回滚用例。
-4. Godot 无界面启动退出码 0；新可玩窗口实际观察到 Day 1、实色引导、真实地图地点/交通选择与可开关的暂停菜单。
+4. 合入 `origin/main` 的协作者更新后，`test_transaction_boundaries.gd` 18 项、`test_v3_economy.gd` 51 项全部通过。交易测试的 B 视角调整为真实 Day 2，午间时间边界断言更新为五日连续日程；保留余额、物品、报销、工资、存读档和角色隔离检查。
+5. Godot 无界面启动退出码 0；新可玩窗口实际观察到 Day 1、实色引导、真实地图地点/交通选择、随身本当天待办、六个可选档案栏目和可开关的暂停菜单。档案不再显示七日分页。
 
 在项目目录分别启动进程，`godot` 替换为 Godot 4.7.2 可执行文件：
 
@@ -66,6 +67,8 @@
 godot --path . --script tests/integration/test_five_day_flow.gd -- --isolated-save --fresh
 godot --path . --script tests/integration/test_five_day_flow.gd -- --isolated-save --reload-only
 godot --path . --script tests/integration/test_nebula_telescope.gd -- --isolated-save
+godot --headless --path . --script tests/integration/test_transaction_boundaries.gd -- --isolated-save
+godot --path . --script tests/integration/test_v3_economy.gd -- --isolated-save
 ```
 
 测试媒体和存档不提交 Git；不能在正式存档上跑测试。

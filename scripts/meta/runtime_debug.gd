@@ -25,13 +25,6 @@ func _ready() -> void:
 	fixed.button_pressed = MetaExperience.deterministic_test_mode
 	fixed.toggled.connect(func(value: bool) -> void: MetaExperience.deterministic_test_mode = value)
 	stack.add_child(fixed)
-	var burst:=Button.new()
-	burst.text=LocalizationSystem.text("Force Marginalia Burst（仍检查占用）")
-	burst.pressed.connect(func()->void:
-		for layer in get_tree().get_nodes_in_group("marginalia_layers"):
-			var stage=layer.stage_node()
-			if is_instance_valid(stage) and layer.evaluate(stage).eligible:layer.begin_burst())
-	stack.add_child(burst)
 	var close:=Button.new()
 	close.text=LocalizationSystem.text("关闭 · F8")
 	close.pressed.connect(queue_free)
@@ -44,7 +37,7 @@ func _process(_delta: float) -> void:
 	var voice_state := MetaExperience._voice_state()
 	for faculty in voice_state.faculties:
 		info.faculty_remaining[faculty]=maxf(0,float(MetaExperience.catalog.timing.voice_faculty_seconds)-(now-float(voice_state.faculties[faculty])))
-	report.text=LocalizationSystem.text("心声\n"+JSON.stringify(info,"  ")+"\n\n地点留言\n"+JSON.stringify(MetaExperience.marginalia_debug,"  "))
+	report.text=LocalizationSystem.text("心声\n"+JSON.stringify(info,"  "))
 	var scene := get_tree().current_scene
 	if scene != null and scene.has_node("GameplayShell"):
 		report.text += LocalizationSystem.text("\n\n场景提示\n")+JSON.stringify(scene.get_node("GameplayShell").hint_debug,"  ")

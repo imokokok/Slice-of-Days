@@ -1,6 +1,6 @@
 extends RefCounted
 ## Coastal activity backed by the same role save, inventory and material archive.
-const LOCATIONS := ["bus_stop","cafe","park"]
+const LOCATIONS := ["port","park"]
 const SPECIES := [
 	{"id":"sardine","name":"沙丁鱼","min_cm":12,"max_cm":24,"speed":0.42,"window":0.28},
 	{"id":"sea_bream","name":"金鳍海鲷","min_cm":21,"max_cm":42,"speed":0.57,"window":0.23}]

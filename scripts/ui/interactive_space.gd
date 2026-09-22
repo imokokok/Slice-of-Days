@@ -32,7 +32,6 @@ var roster_minute := -1
 
 func _ready() -> void:
 	_load_active_space()
-	add_child(preload("res://scripts/meta/place_layer.gd").new())
 	if space.is_empty():
 		SceneRouter.leave_space()
 		return

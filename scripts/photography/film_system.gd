@@ -67,6 +67,11 @@ func _pay(amount: int, title: String, category := "photography") -> bool:
 	if service != null: service.record_service_receipt("grocery",[{"item_id":title,"name":title,"quantity":1,"unit_price":amount,"total":amount}],category,tx,false)
 	return true
 
+func _payment_receipt() -> Dictionary:
+	if GameState.money_ledger.is_empty(): return {}
+	var id := "receipt_"+str(GameState.money_ledger.back().get("transaction_id",""))
+	return EconomySystem.state().receipts.get(id,{}).duplicate(true)
+
 func buy_roll(kind: String) -> Dictionary:
 	if busy or not at_counter(): return _fail("到杂货店营业时再来看看。")
 	if not config.types.has(kind): return _fail("这卷胶片暂时没有货。")
@@ -78,7 +83,7 @@ func buy_roll(kind: String) -> Dictionary:
 	var roll := _new_roll(kind,active_roll().is_empty() and camera_available(false))
 	if not persist(): GameState.load_save_data(before); busy=false; return _fail("这笔购买暂时没有保存，请重试。")
 	busy=false
-	return _result("收好一卷"+str(config.types[kind].name)+" · 24张",{"roll_id":roll.id})
+	return _result("收好一卷"+str(config.types[kind].name)+" · 24张，小票一起收好了。",{"roll_id":roll.id,"receipt":_payment_receipt()})
 
 func notice_camera() -> void:
 	state().camera_seen = true
@@ -99,10 +104,16 @@ func acquire_camera(help := true) -> Dictionary:
 	s.camera_owned = true
 	s.helped = help
 	_new_roll("expired" if help else "normal",true)
+	var receipt: Dictionary = _payment_receipt() if not help else {}
+	if help:
+		# This is an exchange record, never a fabricated cash transaction.
+		receipt={"id":"camera_handover_"+GameState.current_role,"kind":"handover","title":"相机交接凭条","day":GameState.current_day,"minute":GameState.current_minute,"total":0,"balance":GameState.money,"help_minutes":int(config.help_minutes),"line_items":[{"name":"二手胶片相机与一卷旧库存","quantity":1,"total":0}],"source":"grocery_camera_exchange","valid_for_living_record":false}
+		s.camera_handover=receipt
+		ResidencySystem._add(str(receipt.id),"ticket",str(receipt.title),receipt)
 	GameState.add_artifact("objects",{"id":"film_camera_"+GameState.current_role,"kind":"object","title":"二手胶片相机","day":GameState.current_day,"source":"杂货店 · 整理旧货" if help else "杂货店购买"})
 	if not persist(): GameState.load_save_data(before); busy=false; return _fail("相机交接暂时没有保存，请重试。")
 	busy=false
-	return _result("那台你刚才一直看的，拿去吧。再带一卷旧库存。" if help else "相机和一卷胶片一起装好了。")
+	return _result("那台你刚才一直看的，拿去吧。再带一卷旧库存，交接凭条一起收好。" if help else "相机和一卷胶片一起装好了，小票收好。",{"receipt":receipt})
 
 func equip_roll(id: String) -> Dictionary:
 	var s := state()
@@ -176,7 +187,8 @@ func dropoff(id: String, mode: String) -> Dictionary:
 	GameState.add_artifact("film_tickets",ticket)
 	ResidencySystem.state().materials[ticket.id]=ticket
 	if not persist(): GameState.load_save_data(before); busy=false; return _fail("送洗记录暂时没有保存，请重试。")
-	return _finish_result("凭条收好。"+str(ticket.text))
+	busy=false
+	return _result("凭条收好。"+str(ticket.text),{"receipt":_payment_receipt(),"ticket":ticket})
 
 func _finish_result(message: String) -> Dictionary:
 	busy=false

@@ -1306,6 +1306,7 @@ func _append_developed_photos() -> void:
 		var image := library.load_photo(id)
 		if image==null: continue
 		var copy := image.duplicate() as Image
+		copy.convert(Image.FORMAT_RGBA8)
 		var fit := minf(280.0/copy.get_width(),190.0/copy.get_height())
 		copy.resize(roundi(copy.get_width()*fit),roundi(copy.get_height()*fit),Image.INTERPOLATE_LANCZOS)
 		var print_image := Image.create(300,240,false,Image.FORMAT_RGBA8); print_image.fill(Color("faf7ee"))

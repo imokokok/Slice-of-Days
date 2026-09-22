@@ -132,6 +132,7 @@ func run()->void:
 		if str(letter.materials[i].get("photo_id",""))==str(photo.id): index=i;break
 	check(index>=0,"Real collage workbench reads developed photos as printable sources")
 	if index>=0:
+		check(letter.material_images[index].get_pixel(150,60)!=Color("faf7ee"),"RGB camera image is printed into the RGBA paper copy")
 		letter.browser_category="全部"; letter.browser_index=index; letter.take_material()
 		var original = letter.active
 		original.position=Vector2(205,685)
@@ -152,7 +153,9 @@ func run()->void:
 	check(not film.camera_available(false),"B's fresh game starts without the camera")
 	film.notice_camera()
 	var before_time:=int(gs.current_minute)
-	check(film.acquire_camera(true).ok,"B can help label real old stock to receive the used camera")
+	var exchange: Dictionary=film.acquire_camera(true)
+	check(exchange.ok,"B can help label real old stock to receive the used camera")
+	check(exchange.receipt.kind=="handover" and exchange.receipt.total==0 and exchange.receipt.help_minutes==25,"Camera exchange hands over a real non-cash receipt")
 	check(gs.current_minute==before_time+25 and film.active_roll().film_type=="expired","B help consumes 25 minutes and gives one expired-stock roll")
 	check(not film.acquire_camera(true).ok and gs.current_minute==before_time+25,"Repeated help cannot repeat time or camera rewards")
 	film.capture(small,{"title":"旧库存试拍"},film.library)

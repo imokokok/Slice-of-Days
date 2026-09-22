@@ -75,7 +75,7 @@ func run() -> void:
 	book.queue_free(); await settle()
 	check(save.save_game() and save.load_game(),"Recipes reload from normal save")
 	check(recipes.entries("mine")[0].strokes.size()==1 and recipes.entries("shared").size()==1,"Drawings and imported recipes survive reload")
-	gs.current_location="bus_stop"; gs.current_minute=700
+	gs.current_location="port"; gs.current_minute=700
 	var panel=load("res://scripts/ui/coastal_fishing_panel.gd").new(); root.add_child(panel); await settle()
 	panel._act(); check(panel.phase==panel.Phase.WAITING and gs.current_minute==710,"Casting uses actual time once")
 	panel.timer=0; panel._process(.1); check(panel.phase==panel.Phase.BITE,"Float bite follows waiting")

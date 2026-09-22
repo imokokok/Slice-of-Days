@@ -11,10 +11,10 @@ var displayed_words := ""
 
 func _ready() -> void:
 	super._ready()
+	add_to_group("meta_dialogue")
 	dialogue_card=preload("res://scripts/ui/components/dialogue_card.gd").new()
 	add_child(dialogue_card)
 	dialogue_card.configure(street,"translation")
-	dialogue_card.minimum_body_height=96
 
 func _process(delta: float) -> void:
 	super._process(delta)
@@ -42,13 +42,14 @@ func _process(delta: float) -> void:
 	Input.set_default_cursor_shape(Input.CURSOR_DRAG if drag_index>=0 else Input.CURSOR_POINTING_HAND if hand else Input.CURSOR_ARROW)
 
 func _head(side: int) -> Vector2:
-	var x := world_x + (-70 if side == 0 else 70)
+	# Story index 0 is CICI, drawn on the RIGHT of the pair by WalkStage.
+	var x := world_x + (70 if side == 0 else -70)
 	return Vector2(x-street.camera_x,street._actor_ground_at(x)-street._actor_height())
 
 func _thought_rect(index: int) -> Rect2:
 	var side := int(MEMORIES[index].side)
 	var head := _head(side)
-	return Rect2(clampf(head.x+(-246 if side == 0 else 30),20,1342),maxf(80,head.y-220),238,112)
+	return Rect2(clampf(head.x+(30 if side == 0 else -246),20,1342),maxf(80,head.y-220),238,112)
 
 func _recipient_at(point: Vector2) -> int:
 	for side in range(2):

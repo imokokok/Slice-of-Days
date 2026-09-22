@@ -32,7 +32,8 @@ func _process(delta: float) -> void:
 	if is_instance_valid(direction) and direction.visible: bottom=direction.position.y+direction.size.y+12
 	card.position=Vector2(get_parent().size.x-card.size.x-36,bottom)
 	age+=delta
-	card.modulate.a=1 if SettingsSystem.reduced_motion() else minf(1,age/.16)*clampf((lifetime-age)/.2,0,1)
+	card.modulate.a=1
+	card.position.y+=0 if SettingsSystem.reduced_motion() else 3*(1-minf(1,age/.16))
 	if age>=lifetime: current={}; card.hide()
 func _exit_tree() -> void:
 	if not current.is_empty() and age<lifetime-.4:

@@ -110,15 +110,17 @@ func run() -> void:
 	guide.queue_feedback("HEARD","带给夏透明看看"); guide.feedback_age=1
 	shell.open_paper("notebook"); check(guide.take_feedback().is_empty(),"A modal does not consume waiting feedback")
 	shell.overlay.close(); await settle(); guide.feedback_age=1
-	# Purchase through native selection and confirmation controls.
+	# Purchase through the current native item, basket and checkout controls.
 	gs.money=200; gs.current_location="produce_stall"; gs.current_minute=700
 	var shop: Control=load("res://scripts/ui/shop_panel.gd").new(); shop.shop_id="produce_stall"; current_scene.add_child(shop); await settle()
 	var can: Button=shop.item_list.get_node("Select_sea_beans"); can.pressed.emit(); await settle(); await capture("04_shop")
 	check(shop.selected_item.id=="sea_beans" and not shop.purchase_button.disabled,"The illustrated can is a real purchasable catalog item")
 	var before_money: int=gs.money; var before_quantity: int=gs.inventory.get("sea_beans",0)
 	shop.purchase_button.pressed.emit(); await settle()
-	get_nodes_in_group("native_confirmation").back().accepted.emit(); await settle()
-	check(gs.money==before_money-15 and int(gs.inventory.sea_beans)==before_quantity+1,"Confirming pays exactly once and adds the actual item")
+	check(gs.money==before_money,"Adding to the basket does not charge money")
+	shop.mode="basket"; shop._refresh_right(); await settle()
+	shop.purchase_button.pressed.emit(); await settle()
+	check(gs.money==before_money-15 and int(gs.inventory.sea_beans)==before_quantity+1,"Checkout pays exactly once and adds the actual item")
 	shop.queue_free(); await settle(); shell.open_paper("bag"); await settle(); await capture("05_pocket")
 	check(shell.overlay.body.find_child("PocketItem_sea_beans",true,false)!=null,"The purchased item appears dynamically in the bag")
 	shell.overlay.close(); await settle()

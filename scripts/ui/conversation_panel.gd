@@ -40,7 +40,6 @@ func _ready() -> void:
 	var scene := get_tree().current_scene
 	var stage: Control = scene.get("street") if scene.get("street")!=null else scene.get("stage")
 	speech_card.configure(stage,npc)
-	speech_card.minimum_body_height=96
 	speaker_label = speech_card.speaker_label
 	text_label = speech_card.text_label
 	hint_label = speech_card.hint_label

@@ -611,6 +611,10 @@ func dialogue_obstacles(npc_id := "") -> Dictionary:
 		var half_width := height*.32+(70 if kind=="argument" else 0)
 		actors.append(Rect2(x-half_width,ground-height,half_width*2,height+12).grow(18))
 		if str(item.get("id",""))==npc_id: anchor=Vector2(x,ground-height*.7)
+		# The market pair shares one interaction hotspot, but each supplied
+		# portrait still has its own speaking position within that pair.
+		if kind=="argument" and npc_id in ["chenyuan","wu_wu"]:
+			anchor=Vector2(x+(-70 if npc_id=="chenyuan" else 70),ground-height*.7)
 	var scenery: Array=dialogue_scenery.duplicate()
 	if indoor:
 		# Authored room plates have a central work counter and side windows.

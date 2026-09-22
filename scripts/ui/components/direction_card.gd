@@ -47,8 +47,7 @@ func present(value: Dictionary) -> void:
 	if key!=signature:
 		signature=key
 		if transition: transition.kill()
-		modulate.a=1 if SettingsSystem.reduced_motion() else .65
-		transition=create_tween(); transition.tween_property(self,"modulate:a",1.0,.16)
+		modulate.a=1
 	queue_redraw()
 
 func _draw() -> void:

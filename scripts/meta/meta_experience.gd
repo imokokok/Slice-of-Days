@@ -307,9 +307,9 @@ func request_thought(context: Dictionary, deterministic := false, now: float = -
 func _voice_safe_zone() -> Rect2:
 	var viewport_size := get_viewport().get_visible_rect().size
 	var blocked: Array[Rect2] = [Rect2(viewport_size.x-460,0,460,270),Rect2(0,0,170,100)]
-	for dialogue in get_tree().get_nodes_in_group("meta_dialogue"):
-		var card = dialogue.get("speech_card")
-		if card is Control: blocked.append(card.get_global_rect().grow(22))
+	for card in get_tree().get_nodes_in_group("scene_speech"):
+		if card is Control and card.is_visible_in_tree() and card.has_method("reading_rects"):
+			for rect: Rect2 in card.reading_rects(): blocked.append(rect.grow(22))
 	var scene := get_tree().current_scene
 	if scene != null:
 		var stage = scene.get("street") if scene.get("street") != null else scene.get("stage")

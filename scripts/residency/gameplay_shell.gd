@@ -191,7 +191,7 @@ func _process(delta: float) -> void:
 	hint_label.size.y=hints.size.y-18
 	hints.position = Vector2((size.x-hints.size.x)*.5,size.y-hints.size.y-26)
 	next_button.position=Vector2(size.x-next_button.size.x-36,35)
-	hints.modulate.a = minf(hint_age/0.16,1.0)
+	hints.modulate.a = 1.0
 	hint_debug.fade = "in" if hint_age < .2 else "hold" if hints.visible else "hidden"
 	hints.tooltip_text = hint_label.get_parsed_text()
 	hint_label.add_theme_color_override("default_color",Color("254b66") if hints.is_hovered() or hints.button_pressed else Color("fff6df"))

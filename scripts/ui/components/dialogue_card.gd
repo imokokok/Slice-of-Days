@@ -1,6 +1,8 @@
 extends Panel
-## Shared native dialogue presentation. Story ownership remains with its caller.
+## A compact speech surface and independently placed native responses.
+## The panel bounds describe the speech only: choices never inflate the bubble.
 const Layout = preload("res://scripts/ui/components/dialogue_layout.gd")
+const Palette = preload("res://scripts/ui/components/interface_palette.gd")
 var speaker_label: Label
 var text_label: Label
 var hint_label: Label
@@ -8,28 +10,28 @@ var choices: VBoxContainer
 var stage: Control
 var target_id := ""
 var previous := Rect2()
+var previous_choices := Rect2()
 var transition: Tween
 var content: Control
 var settled := false
 var layout_elapsed := 0.0
-var body_width := 430.0
+var body_width := 350.0
 var minimum_body_height := 0.0
-var side_by_side := false
 var additional_obstacles: Array[Rect2]=[]
 var layout_signature := 0
 
 func _ready() -> void:
 	add_to_group("scene_speech")
 	mouse_filter=MOUSE_FILTER_IGNORE
-	var face := StyleBoxFlat.new()
-	face.bg_color=Color("faf9f2")
-	face.set_corner_radius_all(6)
-	face.border_width_top=2; face.border_color=Color("eed577")
+	var face := Palette.face(Palette.SPEECH,12,0)
+	face.set_border_width_all(1)
+	face.border_color=Color("91a7ad")
 	add_theme_stylebox_override("panel",face)
 	content=Control.new(); content.mouse_filter=MOUSE_FILTER_IGNORE; add_child(content)
-	speaker_label=_label(17,Color("31658b"))
-	text_label=_label(23,Color("283b43"))
-	hint_label=_label(13,Color("657981"))
+	speaker_label=_label(17,Palette.SEA)
+	speaker_label.add_theme_font_override("font",PaperLanguage.handwriting)
+	text_label=_label(22,Palette.SPEECH_INK)
+	hint_label=_label(14,Palette.SPEECH_MUTED)
 	set_process(true)
 
 func _label(font_size: int, color: Color) -> Label:
@@ -41,7 +43,8 @@ func _label(font_size: int, color: Color) -> Label:
 	label.add_theme_font_override("font",PaperLanguage.body_font)
 	label.add_theme_font_size_override("font_size",font_size)
 	label.add_theme_color_override("font_color",color)
-	label.add_theme_constant_override("line_spacing",5)
+	label.add_theme_constant_override("outline_size",0)
+	label.add_theme_constant_override("line_spacing",4)
 	content.add_child(label)
 	return label
 
@@ -50,46 +53,30 @@ func configure(world: Control, npc_id := "") -> void:
 
 func _height(label: Label, width: float) -> float:
 	if label.text.is_empty(): return 0
-	# Godot 4.7 wraps against custom_maximum_size. Measure the actual shaped
-	# Label instead of carrying a one-character-wide initial minimum height.
 	label.custom_maximum_size.x=width
 	label.size.x=width
 	var fs := label.get_theme_font_size("font_size")
-	return maxf(fs+8,label.get_line_count()*(label.get_line_height()+5))
+	return maxf(fs+6,label.get_line_count()*(label.get_line_height()+4))
 
-func _measure(column: float, split: bool) -> Vector2:
-	var y := 22.0
-	speaker_label.custom_maximum_size.x=column
-	speaker_label.position=Vector2(26,y); speaker_label.size=Vector2(column,25)
-	if not speaker_label.text.is_empty(): y+=33
-	text_label.position=Vector2(26,y)
-	text_label.size=Vector2(column,maxf(minimum_body_height,_height(text_label,column)))
-	y+=text_label.size.y
-	var choices_bottom := 0.0
-	var total_width := column+52
-	if is_instance_valid(choices):
-		var choice_width := 340.0 if split else column+16
-		var choice_height := 0.0
-		for button: Button in choices.get_children():
-			button.custom_maximum_size.x=choice_width
-			var font := button.get_theme_font("font")
-			var fs := button.get_theme_font_size("font_size")
-			var measured := font.get_multiline_string_size(button.text,HORIZONTAL_ALIGNMENT_LEFT,choice_width-40,fs,-1,TextServer.BREAK_MANDATORY|TextServer.BREAK_WORD_BOUND)
-			button.custom_minimum_size=Vector2(0,maxf(46,measured.y+24))
-			choice_height+=button.custom_minimum_size.y+3
-		if split:
-			choices.position=Vector2(column+58,22)
-			total_width=column+58+choice_width+18
-		else:
-			y+=18
-			choices.position=Vector2(18,y)
-		choices.size=Vector2(choice_width,maxf(0,choice_height-3))
-		choices_bottom=choices.position.y+choices.size.y
-		if not split: y=choices_bottom
-	if hint_label.visible and not hint_label.text.is_empty():
-		y+=18; hint_label.position=Vector2(26,y)
-		hint_label.size=Vector2(column,_height(hint_label,column)); y+=hint_label.size.y
-	return Vector2(total_width,maxf(y,choices_bottom)+20)
+func _measure(column: float) -> Vector2:
+	var y := 17.0
+	for label in [speaker_label,text_label,hint_label]:
+		var height := _height(label,column) if label.visible else 0.0
+		if label==text_label and not label.text.is_empty(): height=maxf(height,minimum_body_height)
+		label.position=Vector2(22,y); label.size=Vector2(column,height)
+		if height>0: y+=height+(11 if label==text_label else 6)
+	return Vector2(column+44,y+11)
+
+func _choice_extent(width: float) -> Vector2:
+	var height := 0.0
+	for button: Button in choices.get_children():
+		button.custom_maximum_size.x=width
+		var font := button.get_theme_font("font")
+		var fs := button.get_theme_font_size("font_size")
+		var measured := font.get_multiline_string_size(button.text,HORIZONTAL_ALIGNMENT_LEFT,width-42,fs,-1,TextServer.BREAK_MANDATORY|TextServer.BREAK_WORD_BOUND)
+		button.custom_minimum_size=Vector2(0,maxf(44,measured.y+20))
+		height+=button.custom_minimum_size.y+8
+	return Vector2(width,maxf(0,height-8))
 
 func layout(animate := false) -> void:
 	if not is_instance_valid(content): return
@@ -99,87 +86,72 @@ func layout(animate := false) -> void:
 	if is_instance_valid(stage) and stage.has_method("dialogue_obstacles"):
 		var context: Dictionary=stage.dialogue_obstacles(target_id)
 		actors=context.actors; scenery=context.scenery; anchor=context.anchor
-	scenery+=additional_obstacles
+	# Draggable memories and faces are hard exclusions, not aesthetic suggestions.
+	actors+=additional_obstacles
 	var option_texts: Array=[]
 	if is_instance_valid(choices):
 		for button: Button in choices.get_children(): option_texts.append(button.text)
 	var signature := hash([available,text_label.text,speaker_label.text,hint_label.text,hint_label.visible,option_texts,actors,scenery,body_width,minimum_body_height])
 	if settled and signature==layout_signature and not animate: return
 	layout_signature=signature
-	var best_score := INF
-	var result := Rect2()
-	var best_column := body_width
-	var best_split := false
-	for split in [false,true]:
-		if split and not is_instance_valid(choices): continue
-		for width in [body_width,380.0,330.0]:
-			var column := minf(width,maxf(240,available.size.x-112))
-			var extent := _measure(column,split)
-			if extent.x>available.size.x-64 or extent.y>available.size.y-64: continue
-			var candidate := Layout.place(available,extent,actors,scenery,anchor,previous)
-			var score := Layout.occlusion_cost(candidate,actors,scenery)
-			score+=candidate.get_center().distance_to(anchor)
-			score+=(body_width-column)*2+ (200 if split else 0)
-			if previous.has_area(): score+=candidate.position.distance_to(previous.position)*2
-			if score<best_score:
-				best_score=score; result=candidate; best_column=column; best_split=split
-	# The supported dialogue catalog fits within these measured layouts.
-	if not result.has_area():
-		var extent := _measure(330,false)
-		result=Layout.place(available,extent,actors,scenery,anchor,previous)
-		best_column=330
-	size=_measure(best_column,best_split)
-	side_by_side=best_split
+	var column := minf(body_width,maxf(220,available.size.x-96))
+	size=_measure(column)
 	content.size=size
-	var moving := previous.has_area() and previous.position.distance_to(result.position)>24
-	previous=result
-	position=result.position
-	if animate or moving or not settled: reveal()
+	var result := Layout.place(available,size,actors,scenery,anchor,previous)
+	if is_instance_valid(choices):
+		var extent := _choice_extent(minf(326,available.size.x-64))
+		# Reflow the two distinct surfaces together when a free side column
+		# exists, so choices cannot silently jump ABOVE the line they answer.
+		var combined := Vector2(maxf(size.x,extent.x),size.y+16+extent.y)
+		var prior_stack := Rect2()
+		if previous_choices.has_area() and absf(previous_choices.position.y-previous.end.y-16)<1:
+			prior_stack=Rect2(previous.position,combined)
+		var stacked := Layout.place(available,combined,actors,scenery,anchor,prior_stack)
+		var use_stack := Layout.occlusion_cost(stacked,actors,scenery)==0 and stacked.position.y>=available.size.y*.28
+		if use_stack: result.position=stacked.position
+		var preferred := Vector2(result.position.x,result.end.y+16)
+		var exclusions := actors.duplicate()
+		exclusions.append(result.grow(12))
+		var placed := Rect2(preferred,extent) if use_stack else Layout.place(available,extent,exclusions,scenery,anchor,previous_choices,preferred)
+		previous_choices=placed
+		choices.position=placed.position-result.position; choices.size=extent
+	else: previous_choices=Rect2()
+	previous=result; position=result.position
+	if animate or not settled: reveal()
 	settled=true
-	queue_redraw()
 
-func _draw() -> void:
-	if side_by_side and is_instance_valid(choices):
-		var x := choices.position.x-16
-		draw_line(Vector2(x,24),Vector2(x,size.y-24),Color("31658b",.16),1,true)
+func reading_rects() -> Array[Rect2]:
+	var result: Array[Rect2]=[get_global_rect()]
+	if is_instance_valid(choices):
+		for button: Button in choices.get_children(): result.append(button.get_global_rect())
+	return result
 
 func reveal() -> void:
 	if transition: transition.kill()
-	if SettingsSystem.reduced_motion(): modulate.a=1; content.position=Vector2.ZERO; return
-	modulate.a=0; content.position=Vector2(0,4)
-	transition=create_tween().set_parallel(true)
-	transition.tween_property(self,"modulate:a",1.0,.16)
-	transition.tween_property(content,"position",Vector2.ZERO,.18).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# The backing and ink stay opaque even during the restrained entrance.
+	modulate=Color.WHITE; content.modulate=Color.WHITE
+	content.position=Vector2.ZERO
+	if SettingsSystem.reduced_motion(): return
+	content.position.y=2
+	transition=create_tween()
+	transition.tween_property(content,"position:y",0.0,.14).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func dismiss() -> void:
-	# A detached, input-transparent copy carries only the outgoing visual.
-	# The actual conversation can free immediately, restoring walking on Esc.
-	if SettingsSystem.reduced_motion() or not visible: return
-	var ghost := duplicate(0) as Panel
-	ghost.set_script(null)
-	ghost.add_to_group("scene_speech")
-	ghost.mouse_filter=MOUSE_FILTER_IGNORE
-	for node in ghost.find_children("*","Control",true,false):
-		node.set_script(null)
-		node.mouse_filter=MOUSE_FILTER_IGNORE; node.focus_mode=Control.FOCUS_NONE
-	get_tree().current_scene.add_child(ghost)
-	ghost.global_position=global_position
-	var tween := ghost.create_tween()
-	tween.tween_property(ghost,"modulate:a",0.0,.12)
-	tween.tween_callback(ghost.queue_free)
+	# No translucent outgoing copy over the next line or the newly freed scene.
+	if transition: transition.kill()
+	hide()
 
 func attach_choices(box: VBoxContainer) -> void:
-	choices=box; content.add_child(box)
-	box.add_theme_constant_override("separation",3)
+	choices=box; add_child(box)
+	box.add_theme_constant_override("separation",8)
 	layout(true)
-	# Native containers finish wrapping before the second placement pass.
 	layout.call_deferred()
 
 func clear_choices() -> void:
 	if is_instance_valid(choices):
 		choices.get_parent().remove_child(choices)
 		choices.queue_free()
-	choices=null
+	choices=null; previous_choices=Rect2()
 
 func _process(delta: float) -> void:
 	if not is_visible_in_tree(): return

@@ -1,10 +1,20 @@
 extends SceneTree
 const Layout=preload("res://scripts/ui/components/dialogue_layout.gd")
 var failures := 0
+var checks := 0
 var state: Node
 func _initialize() -> void: call_deferred("run")
 func check(ok: bool, message: String) -> void:
+	checks+=1
 	if not ok: failures+=1; push_error(message)
+func capture(caption: String) -> void:
+	if DisplayServer.get_name()=="headless": return
+	await process_frame
+	await RenderingServer.frame_post_draw
+	DirAccess.make_dir_recursive_absolute("res://.runtime/dialogue-captures")
+	root.get_texture().get_image().save_png("res://.runtime/dialogue-captures/"+caption+".png")
+func contrast(ink: Color, background: Color) -> float:
+	return (background.srgb_to_linear().get_luminance()+.05)/(ink.srgb_to_linear().get_luminance()+.05)
 func key(action: String) -> void:
 	var event := InputEventAction.new(); event.action=action; event.pressed=true
 	root.push_input(event)
@@ -18,13 +28,24 @@ func click(button: Button) -> void:
 	event=event.duplicate(); event.pressed=false; root.push_input(event,true)
 func verify_card(card: Panel, stage: Control, caption: String, scenery := true) -> void:
 	var obstacles: Dictionary=stage.dialogue_obstacles()
-	check(root.get_visible_rect().encloses(card.get_global_rect()),caption+": whole card stays on screen")
+	var face: Color=card.get_theme_stylebox("panel").bg_color
+	check(face.a==1 and card.modulate.a==1 and card.content.modulate.a==1,caption+": solid surface throughout the transition")
+	check(contrast(card.text_label.get_theme_color("font_color"),face)>=7,caption+":正文 contrast at least 7:1")
+	check(contrast(card.hint_label.get_theme_color("font_color"),face)>=4.5,caption+": hint contrast at least 4.5:1")
+	check(card.size.x<=420 and card.size.y<=300,caption+": compact measured speech, no menu-sized balloon")
 	check(card.text_label.get_visible_line_count()==card.text_label.get_line_count(),caption+": every wrapped line is visible")
-	check(Layout.overlap(card.get_global_rect(),obstacles.actors)==0,caption+": faces and bodies remain uncovered")
-	if scenery: check(Layout.overlap(card.get_global_rect(),obstacles.scenery)==0,caption+": building silhouette stays uncovered")
+	for rect: Rect2 in card.reading_rects():
+		check(root.get_visible_rect().grow(-24).encloses(rect),caption+": every reading surface stays in safe area")
+		check(Layout.overlap(rect,obstacles.actors)==0,caption+": faces and bodies remain uncovered")
+		if scenery: check(Layout.overlap(rect,obstacles.scenery)==0,caption+": building silhouette stays uncovered")
 	if is_instance_valid(card.choices):
+		check(not card.get_global_rect().intersects(card.choices.get_global_rect()),caption+": responses sit outside the compact speech surface")
 		for button in card.choices.get_children():
-			check(card.get_global_rect().encloses(button.get_global_rect()),caption+": native choice remains inside card")
+			for state_name in ["normal","hover","pressed","disabled"]:
+				var color: Color=button.get_theme_stylebox(state_name).bg_color
+				check(color.a==1,caption+": response state has its own solid backing")
+				var ink: Color=button.get_theme_color("font_color" if state_name=="normal" else "font_"+state_name+"_color")
+				check(contrast(ink,color)>=4.5,caption+": every response state has readable contrast")
 func town(location: String) -> void:
 	state.begin_new_game("A"); state.current_location=location
 	state.current_minute=600; state.shared_state.typewriter=false
@@ -53,7 +74,13 @@ func run() -> void:
 	current_scene._talk_nearby("grocery")
 	await create_timer(.3).timeout
 	var panel=current_scene.conversation
+	panel.speech_card.reveal()
+	for frame in 8:
+		check(panel.speech_card.modulate.a==1 and panel.speech_card.content.modulate.a==1,"Entrance frame remains opaque with readable ink")
+		await create_timer(.02).timeout
 	verify_card(panel.speech_card,current_scene.street,"Grocery line")
+	check(panel.speech_card.get_global_rect().get_center().y>root.get_visible_rect().size.y*.48,"Grocery reading area uses the side of the street, not the roof")
+	await capture("01-grocery-line")
 	var position: Vector2=panel.speech_card.position
 	panel._advance()
 	check(panel.speaker_label.text==root.get_node("LocalizationSystem").text("你"),"Real speaker changes")
@@ -69,6 +96,8 @@ func run() -> void:
 	await create_timer(.25).timeout
 	check(is_instance_valid(panel.vendor_choices) and panel.vendor_choices.get_child_count()==5,"All five real counter actions appear")
 	verify_card(panel.speech_card,current_scene.street,"Grocery choices")
+	check(panel.vendor_choices.get_global_rect().position.y>panel.speech_card.get_global_rect().end.y,"Counter reads line first, then responses below")
+	await capture("02-grocery-choices")
 	panel.vendor_choices.get_child(1).grab_focus()
 	key("ui_accept"); await process_frame
 	check(is_instance_valid(current_scene.pocket_panel),"Keyboard-selected shelf opens the actual shop")
@@ -84,6 +113,7 @@ func run() -> void:
 	if is_instance_valid(ask):
 		await create_timer(.2).timeout
 		verify_card(ask.card,current_scene.street,"Question choices")
+		await capture("03-questions")
 		click(ask.card.choices.get_child(0)); await process_frame; await process_frame
 		check(panel.starting_topic=="schedule_info" and not is_instance_valid(panel.vendor_choices),"Topic selection enters its actual reply")
 	key("ui_cancel"); await process_frame; await process_frame
@@ -99,6 +129,7 @@ func run() -> void:
 	check(is_instance_valid(panel.vendor_choices),"Cici encounter presents native branch choices")
 	if is_instance_valid(panel.vendor_choices):
 		verify_card(panel.speech_card,current_scene.street,"Cici choices")
+		await capture("04-cici-choices")
 		var disabled: Button=panel.vendor_choices.get_child(2)
 		disabled.disabled=true
 		click(disabled); await process_frame
@@ -110,6 +141,7 @@ func run() -> void:
 	current_scene._start_market_encounter()
 	await create_timer(.25).timeout
 	var argument=current_scene.conversation.get_child(0)
+	check(argument._head(0).x>argument._head(1).x,"CICI speech and memory point to the pink character on the right")
 	verify_card(argument.dialogue_card,current_scene.street,"Street argument")
 	for i in 20:
 		if argument.waiting: break
@@ -118,6 +150,8 @@ func run() -> void:
 	await create_timer(.25).timeout
 	check(argument.waiting,"Argument still reaches its interactive memory beat")
 	verify_card(argument.dialogue_card,current_scene.street,"Memory beat")
+	check(root.get_node("UIStateSystem").current()=="DIALOGUE" and not root.get_node("UIStateSystem").policy().notify,"Street argument holds unrelated feedback until the conversation ends")
+	await capture("05-street-memory")
 	for obstacle: Rect2 in argument.dialogue_card.additional_obstacles:
 		check(not argument.dialogue_card.get_rect().intersects(obstacle),"Dialogue does not cover the draggable memories")
 	key("ui_cancel"); await process_frame; await process_frame
@@ -136,6 +170,7 @@ func run() -> void:
 	panel.speech_card.layout()
 	await process_frame
 	verify_card(panel.speech_card,current_scene.stage,"Long interior line")
+	await capture("06-interior-long-line")
 	key("ui_cancel"); await process_frame; await process_frame
 	check(not is_instance_valid(current_scene.conversation) and current_scene.stage.enabled,"Indoor Esc restores walking")
 	var settings=root.get_node("SettingsSystem")
@@ -146,6 +181,12 @@ func run() -> void:
 	check(current_scene.conversation.text_label.visible_characters==-1 and current_scene.conversation.speech_card.modulate.a==1,"Reduced motion shows the complete line without animation")
 	current_scene.conversation._close()
 	settings.values.reduced_motion=motion_before
+	await town("cafe")
+	state.current_minute=1260; current_scene._refresh()
+	current_scene._talk_nearby("grocery")
+	await create_timer(.3).timeout
+	verify_card(current_scene.conversation.speech_card,current_scene.street,"Night dialogue")
+	await capture("07-night-line")
 	current_scene.queue_free(); await process_frame
-	print("DIALOGUE PRESENTATION PASS" if failures==0 else "DIALOGUE PRESENTATION FAIL: "+str(failures))
+	print("DIALOGUE PRESENTATION checks=",checks," failures=",failures)
 	quit(failures)

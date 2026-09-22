@@ -32,4 +32,4 @@ func run() -> void:
 	await process_frame
 	if mode=="argument": current_scene._start_market_encounter()
 	else: current_scene._talk_nearby("wu_wu" if mode=="cici" else "grocery")
-	DisplayServer.window_set_title("Solmere · 对话设计（试玩）")
+	DisplayServer.window_set_title("Solmere · 清晰对话（最新试玩）")

@@ -74,14 +74,13 @@ func _style(node: Control) -> void:
 		paper.shadow_size=0; paper.shadow_offset=Vector2.ZERO
 		paper.set_corner_radius_all(10); paper.set_border_width_all(0)
 		paper.border_color=Color(BLUE,.32)
-		paper.bg_color=WHITE if _context(node,["journal.gd","economy_paper.gd"]) else Color("edf3f4",.97)
-		if speech(node): paper.bg_color=Color.TRANSPARENT; paper.set_border_width_all(0)
+		paper.bg_color=WHITE if _context(node,["journal.gd","economy_paper.gd"]) else Color("edf3f4")
 		node.add_theme_stylebox_override("panel",paper)
 
 	elif node is LineEdit or node is TextEdit:
 		for state in ["normal","focus","read_only"]:
 			var sheet := StyleBoxFlat.new()
-			sheet.bg_color=Color(WHITE,.7); sheet.border_width_bottom=1; sheet.border_color=Color(BLUE,.35)
+			sheet.bg_color=WHITE; sheet.border_width_bottom=1; sheet.border_color=Color(BLUE,.35)
 			node.add_theme_stylebox_override(state,sheet)
 		node.add_theme_color_override("font_color",BLUE)
 		node.add_theme_color_override("font_placeholder_color",MUTED)

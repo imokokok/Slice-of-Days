@@ -139,8 +139,8 @@ func _archive() -> void:
 		_hand("Solmere",Vector2(95,52),Vector2(540,98),70)
 		_hand("For dreams,
 and the life after.",Vector2(980,66),Vector2(280,70),23)
-		var titles := ["申请要求","个人信息","生活记录","居民认可","七天作品集","最终文件"]
-		var translations := ["REQUIREMENTS","PERSONAL","LIFE LOG","RECOGNITION","SEVEN DAYS","FINAL PAPER"]
+		var titles := ["旅居说明","关于自己","生活记录","居民留字","自由拼贴","写给小镇"]
+		var translations := ["WELCOME","PERSONAL","LIFE LOG","RECOGNITION","COLLAGE","LETTER"]
 		var keys := ["requirements","personal","life","recognition","days","final"]
 		var icons := ["requirements","personal","life","star","book","mail"]
 		for i in 6:
@@ -152,8 +152,8 @@ and the life after.",Vector2(980,66),Vector2(280,70),23)
 			var subtitle := label(card,translations[i],Vector2(12,158),Vector2(336,27),14,BLUE); subtitle.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 		return
 	var keys := ["requirements","personal","life","recognition","days","final"]
-	var titles := ["申请要求","个人信息","生活记录","居民认可","七天作品集","最终文件"]
-	var translations := ["Requirements","Personal","Life Log","Recognition","Seven Days Portfolio","Final Paper"]
+	var titles := ["旅居说明","关于自己","生活记录","居民留字","自由拼贴","写给小镇"]
+	var translations := ["Welcome","Personal","Life Log","Recognition","Collage","Letter"]
 	for i in keys.size():
 		var target: String = keys[i]
 		var chosen := target==archive_tab
@@ -164,13 +164,8 @@ and the life after.",Vector2(980,66),Vector2(280,70),23)
 			_requirements_sheet()
 		"final": _final_paper()
 		"days":
-			for i in 7:
-				var d := i+1
-				var b := button(body,"%02d" % d,Vector2(35,166+i*70),Vector2(66,62),func() -> void: day=d; build())
-				b.name="PortfolioDay_%02d" % d
-				b.selected=day==d
-			_hand("Day %02d" % day,Vector2(139,114),Vector2(510,64),42)
-			_free_page("day_%d" % day)
+			_hand("自由拼贴",Vector2(139,114),Vector2(510,64),42)
+			_free_page("collage")
 		_: _free_page(archive_tab)
 
 func _pages() -> Dictionary:
@@ -191,7 +186,7 @@ func _free_page(key: String) -> void:
 	canvas.position=Vector2(116,198); canvas.size=Vector2(1200,460); canvas.scale=Vector2(.905,1.0)
 	canvas.pieces=pages[key]
 	canvas.page_id=key
-	canvas.read_only=not ResidencySystem.state().submitted.is_empty() and key!="notebook"
+	canvas.read_only=false
 	body.add_child(canvas)
 	canvas.changed.connect(func() -> void:
 		if key=="day_%d" % GameState.current_day: ResidencySystem._record_organize()
@@ -263,37 +258,15 @@ func _media_library(kind: String) -> void:
 
 func _final_paper() -> void:
 	var s := ResidencySystem.state()
-	if not s.has("final_answers"): s.final_answers={}
-	var questions := ["最初是什么让你来到 Solmere？","真正生活在这里之后，什么最吸引你？","什么经历改变了你对 Solmere 最初的理解？","如果只能留下这七天中的一个瞬间，你会选择什么？为什么？","如果 Solmere 成为你的家，你希望自己成为这里怎样的一部分？"]
-	for i in 5:
-		var key := str(i)
-		_official(questions[i],Vector2(110,148+i*91),Vector2(965,30),21)
-		var reference := button(body,"引用经历",Vector2(1110,143+i*91),Vector2(140,34),_reference_picker.bind(key))
-		reference.name="Reference_"+key; reference.disabled=not s.submitted.is_empty(); reference.add_theme_font_size_override("font_size",16)
-		var answer := edit(body,str(s.final_answers.get(key,"")),Vector2(110,181+i*91),Vector2(1140,50),func(value: String) -> void: s.final_answers[key]=value,"")
-		answer.editable=s.submitted.is_empty()
-	label(body,"签名",Vector2(110,624),Vector2(80,35),20,BLUE)
-	var signature := edit(body,str(s.final_answers.get("signature","")),Vector2(195,620),Vector2(250,40),func(value: String) -> void: s.final_answers.signature=value,"")
-	signature.editable=s.submitted.is_empty()
-	label(body,"日期  Day %02d" % GameState.current_day,Vector2(490,624),Vector2(300,35),20,BLUE)
-	button(body,"提交申请",Vector2(970,622),Vector2(260,40),func() -> void:
-		var confirm := preload("res://scripts/ui/components/confirm_sheet.gd").new()
-		confirm.heading="提交居住申请？"; confirm.description="提交后，这七天的作品与最终文件将被收存。\n\n准备好把它交给 Solmere 了吗？"; confirm.confirm_text="提交申请"
-		confirm.accepted.connect(func() -> void:
-			var result := ResidencySystem.submit_free_application()
-			confirm.queue_free(); build(); feedback.text=str(result.message))
-		add_child(confirm))
+	_hand("写给 Solmere",Vector2(120,135),Vector2(950,60),38)
+	label(body,"想留下什么，就写在这里。",Vector2(120,210),Vector2(1050,42),23,BLUE)
+	edit(body,str(s.get("town_letter","")),Vector2(120,278),Vector2(1080,310),func(value: String) -> void: s["town_letter"]=value)
+	button(body,"保存这封信",Vector2(930,620),Vector2(270,48),ResidencySystem.persist)
 
 func _counter() -> void:
-	_official("Solmere · 居住申请",Vector2(110,145),Vector2(1100,60),35)
-	label(body,"把这七天的生活留在纸上。准备好后，来交给我们。",Vector2(110,227),Vector2(1100,65),24,BLUE)
-	var collect := button(body,"展开档案" if ResidencySystem.state().packet else "领取申请档案",Vector2(110,330),Vector2(1090,55),func() -> void:
-		var message := ResidencySystem.collect_packet()
-		if ResidencySystem.state().packet: mode="dossier"; archive_tab="requirements"; build()
-		feedback.text=message)
-	collect.name="CollectStarterPacket"
-	button(body,"填写与提交最终文件",Vector2(110,425),Vector2(1090,55),func() -> void: mode="dossier"; archive_tab="final"; build())
-	button(body,"领取作品与贡献证明",Vector2(110,520),Vector2(1090,55),func() -> void: mode="proofs"; build()).name="CommunityProofCounter"
+	_hand("社区资料柜台",Vector2(110,140),Vector2(1100,65),38)
+	label(body,"照片、信件和日常留下的纸片，都可以留在自己的档案里。",Vector2(110,250),Vector2(1100,80),24,BLUE)
+	button(body,"翻开生活记录",Vector2(110,400),Vector2(1090,60),func() -> void: mode="dossier"; archive_tab="life"; build())
 
 func _today() -> void:
 	label(body,"Day %02d · 留给今天的几笔" % GameState.current_day,Vector2(110,100),Vector2(1090,48),29,BLUE)
@@ -368,30 +341,10 @@ func _official(text: String, at: Vector2, dimensions: Vector2, point: int) -> La
 	return words
 
 func _requirements_sheet() -> void:
-	var marks := preload("res://scripts/residency/requirements_ink.gd").new()
-	marks.position.x=24; marks.size=DOSSIER_SIZE; body.add_child(marks)
-	_official("S O L M E R E\n永 居 申 请 计 划",Vector2(110,153),Vector2(650,46),15)
-	_official("为有梦的人而生",Vector2(110,206),Vector2(680,61),46)
-	_official("感谢你对 Solmere 的关注。\n这是一个为期七天的社区驻留计划，\n面向希望在这里体验、创造、交流，\n并与小镇共同成长的人。",Vector2(110,285),Vector2(645,117),23)
-	var postcard := TextureRect.new()
-	postcard.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; postcard.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	postcard.texture=load("res://art/ui/living-postcard.png")
-	postcard.position=Vector2(740,145); postcard.size=Vector2(270,267)
-	postcard.mouse_filter=MOUSE_FILTER_IGNORE; body.add_child(postcard)
-	var logo := label(body,"Solmere",Vector2(1030,175),Vector2(260,70),48,BLUE)
-	var script_font := SystemFont.new(); script_font.font_names=PackedStringArray(["Segoe Script","KaiTi"])
-	logo.add_theme_font_override("font",script_font)
-	label(body,"人与人，\n地方，故事，\n让明天更好。",Vector2(1060,285),Vector2(190,105),23,BLUE)
-	_official("申 请 要 求",Vector2(110,403),Vector2(170,34),22)
-	var titles := ["展示自己","生活与记录","获得认可","完成七天作品集","最终记录"]
-	var descriptions := ["用你喜欢的方式\n让我们认识你。","在 Solmere 生活七天，\n记录你遇见的人、\n地方与事情。","获得 12 位居民认可。","七天每天完成一页\n属于自己的作品。","第七天结束后\n完成最终文件\n并提交申请。"]
-	for i in 5:
-		var x := 110+i*234
-		_official("%02d" % (i+1),Vector2(x,445),Vector2(80,37),27)
-		var title := _official(titles[i],Vector2(x,533),Vector2(212,35),23); title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-		var words := _official(descriptions[i],Vector2(x,576),Vector2(212,73),20); words.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	label(body,"这里没有唯一的答案，\n但我们始终欢迎认真生活的人。",Vector2(110,673),Vector2(680,55),22,BLUE)
-	_official("S O L M E R E\n一 座 更 温 柔 的 明 天",Vector2(1030,681),Vector2(260,45),15)
+	_hand("Solmere · 为有梦的人而生",Vector2(110,155),Vector2(1130,75),42)
+	_official("在海边走走，认识居民，做一点喜欢的事。\n留下的声音、料理、信和对局，会成为小镇生活的一部分。",Vector2(110,280),Vector2(1070,115),27)
+	_official("记录由你决定。照片、纸片和随笔可以慢慢收集，\n不需要填满页面，也不需要集齐居民的认可。",Vector2(110,445),Vector2(1070,115),25)
+	button(body,"查看今天想做的事",Vector2(110,600),Vector2(470,56),_switch_object.bind("today"))
 
 func _browser(kind: String) -> void:
 	var browser := preload("res://scripts/ui/components/media_browser.gd").new()

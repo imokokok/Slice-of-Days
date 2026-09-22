@@ -1,5 +1,8 @@
 extends Node3D
-## Display published spatial geometry. A photograph is never promoted to depth.
+## Image-space observation stage. A nebula is one real telescope photograph
+## viewed inside a lightweight 3D camera. Dragging changes the camera angle and
+## the wheel changes distance, but the image is never blurred into fake volume
+## geometry or replaced with a generated nebula model.
 var sample_count := 0
 var depth_range := Vector2.ZERO
 var source_bounds := AABB()
@@ -9,8 +12,14 @@ const GAS = preload("res://extensions/observatory/shaders/observed_structure.gds
 
 func build(entry: Dictionary) -> void:
 	for child in get_children(): remove_child(child); child.queue_free()
-	components.clear(); sample_count=0
-	assert(entry.has("model"),"Only traceable 3D sources may enter the orbit viewer")
+	components.clear(); sample_count=0; source_bounds=AABB()
+	var image_path := str(entry.get("image", ""))
+	if not image_path.is_empty() and ResourceLoader.exists(image_path):
+		_build_image_depth(entry,load(image_path))
+		return
+	# Keep the published model as a data fallback for old saves whose catalog
+	# predates image sources. New catalog entries always take the image path.
+	if not entry.has("model"): return
 	var path := str(entry.model)
 	var asset=load(path)
 	if path.ends_with(".glb"):
@@ -41,8 +50,8 @@ func build(entry: Dictionary) -> void:
 	group.scale=Vector3.ONE*factor; group.position=-center*factor
 	depth_range=Vector2((source_bounds.position.z-center.z)*factor,(source_bounds.end.z-center.z)*factor)
 	var observed_texture: Texture2D
-	var image_path := str(entry.get("image", ""))
-	if not image_path.is_empty() and ResourceLoader.exists(image_path): observed_texture=load(image_path)
+	var observed_path := str(entry.get("image", ""))
+	if not observed_path.is_empty() and ResourceLoader.exists(observed_path): observed_texture=load(observed_path)
 	for mesh in components:
 		mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		for i in mesh.mesh.get_surface_count():
@@ -65,6 +74,26 @@ func build(entry: Dictionary) -> void:
 			material.set_shader_parameter("use_observed_image",observed_texture!=null)
 			if observed_texture!=null: material.set_shader_parameter("observed_image",observed_texture)
 			mesh.set_surface_override_material(i,material)
+
+func _build_image_depth(entry: Dictionary, texture: Texture2D) -> void:
+	if texture == null: return
+	var source_size := texture.get_size()
+	var aspect := source_size.y / maxf(source_size.x, 1.0)
+	var width := 30.0
+	var height := width * aspect
+	var mesh_instance := MeshInstance3D.new()
+	mesh_instance.name="ObservedImageSurface"
+	var quad := QuadMesh.new(); quad.size=Vector2(width,height)
+	mesh_instance.mesh=quad
+	var material := StandardMaterial3D.new()
+	material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.cull_mode=BaseMaterial3D.CULL_DISABLED
+	material.albedo_texture=texture
+	mesh_instance.material_override=material
+	add_child(mesh_instance); components.append(mesh_instance)
+	source_bounds=mesh_instance.get_aabb()
+	depth_range=Vector2.ZERO
+	sample_count=quad.get_faces().size()
 
 func _collect_meshes(node: Node) -> void:
 	if node is MeshInstance3D: components.append(node)

@@ -19,9 +19,8 @@ func day_state() -> Dictionary:
 	if not days.has(key): days[key]={"connected":[],"participated":[],"reviewed":false,"reflection":"","brief_seen":false}
 	return days[key]
 func home() -> String: return "residence" if GameState.current_role=="A" else "dorm"
-func day_stamp() -> String:
-	var extra := int(state().get("extra_nights",0)) if GameState.current_day==7 else 0
-	return "DAY %02d"%GameState.current_day+(" +%d"%extra if extra>0 else "")
+func day_stamp() -> String: return "DAY %02d"%GameState.current_day
+
 func contract(module: String) -> Dictionary: return catalog.get("modules",{}).get(module,{})
 func _learn(id: String, text: String, npc: String, location: String, module := "", window: Dictionary={}) -> void:
 	var key := "knowledge_"+GameState.current_role
@@ -88,7 +87,7 @@ func _module_completed(role: String, module: String, _outcome: Dictionary) -> vo
 	RelationshipSystem.record_encounter(npc,"made_"+material_id,["participated_"+module])
 	var id := GameState.current_role+"_"+material_id
 	if not state().callbacks.has(id):
-		state().callbacks[id]={"id":id,"npc":str(c.callback_npc),"origin_npc":npc,"module":module,"material_id":material_id,"day":mini(7,GameState.current_day+1),"acknowledged":false,"shared":false,"returned":false}
+		state().callbacks[id]={"id":id,"npc":str(c.callback_npc),"origin_npc":npc,"module":module,"material_id":material_id,"day":mini(5,GameState.current_day+1),"acknowledged":false,"shared":false,"returned":false}
 		GameEvents.publish("WorldCallbackScheduled",state().callbacks[id])
 	_learn("return_"+id,"把《"+str(material.get("title","这次的作品"))+"》带给"+GuidanceSystem.source_name(str(c.callback_npc))+"看看。",npc,str(c.callback_place),"",{"callback_id":id,"callback_stage":"share"})
 	GameState.shared_state.get_or_add("world_artifacts",{}).get_or_add("loop_contributions",{})[id]={"source_material":material_id,"location":GameState.current_location,"created_by":role,"day":GameState.current_day,"module":module}
@@ -99,7 +98,7 @@ func participated(material_id: String) -> void:
 func memory_return(material_id: String) -> void:
 	var id := GameState.current_role+"_"+material_id
 	if state().callbacks.has(id): return
-	state().callbacks[id]={"id":id,"npc":"maya","module":"memory","material_id":material_id,"day":mini(7,GameState.current_day+1),"acknowledged":false}
+	state().callbacks[id]={"id":id,"npc":"maya","module":"memory","material_id":material_id,"day":mini(5,GameState.current_day+1),"acknowledged":false}
 	GameEvents.publish("WorldCallbackScheduled",state().callbacks[id])
 func open_evening() -> void:
 	if not get_tree().get_nodes_in_group("evening_review").is_empty(): return
@@ -160,10 +159,9 @@ func _exchange_callback(c: Dictionary, npc: String) -> String:
 
 func npc_place(npc: String, fallback := "") -> String:
 	if not ResidentProfileSystem.is_core(npc): return fallback
-	# The street's real population includes post-argument lingering overrides.
+	# Ask the actual population, including today's activity collaborator.
 	for location in ResidencySystem.locations:
 		if DialogueSystem.people_at(str(location)).has(npc): return str(location)
-	if npc in DialogueSystem.ARGUMENT_PEOPLE and not bool(DialogueSystem.argument_state().get("finished",false)): return "produce_stall"
 	return fallback
 
 func next_meeting(npc: String) -> Dictionary:
@@ -194,9 +192,7 @@ func connection_steps() -> Array:
 		var title := str(item.get("title","这次留下的东西"))
 		var context := str(detail.get("relationship","你们做过的事，在另一个人那里有了下文。"))
 		var text := "把《"+title+"》带给"+GuidanceSystem.source_name(npc)
-		if npc in DialogueSystem.ARGUMENT_PEOPLE and not bool(DialogueSystem.argument_state().get("finished",false)):
-			text="去菜摊，先听听CICI和尘缘的事"; context="他们正在交谈。你可以主动加入，之后再把作品给对方看。"
-		elif not available:
+		if not available:
 			context=("Day %02d · %s 后可以再去。"%[int(meeting.day),GuidanceSystem.time_text(int(meeting.minute))]) if not meeting.is_empty() else "现在没碰见对方。先把材料留好，之后再来看看。"
 		result.append({"id":"exchange_"+str(c.id)+( "_return" if returning else "_share"),"text":text,"context":context,"source":str(c.npc) if returning else origin,"npc":npc,"location":location,"action":"map","priority":"connection","material_id":material_id,"returning":returning,"available":available})
 	result.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return str(a.location)==GameState.current_location and str(b.location)!=GameState.current_location)
@@ -210,6 +206,7 @@ func lead_available(fact: Dictionary) -> bool:
 		if int(c.day)>GameState.current_day: return false
 		return not bool(c.get("returned",false)) if str(fact.get("callback_stage","share"))=="return" else not bool(c.get("shared",false))
 	var module := str(fact.get("module",""))
+	if not module.is_empty() and not ChapterSystem.module_available(module): return false
 	if not module.is_empty() and not GameplayModuleSystem.state_for(module).get("outcomes",[]).is_empty(): return false
 	return true
 func _check_recognition(npc: String) -> void:
@@ -235,17 +232,8 @@ func opportunities() -> Array:
 		row["expires_in"]=end-absolute
 		result.append(row)
 	return result
-func objectives() -> Array:
-	var ds := day_state(); var day := GameState.current_day
-	var participation: bool = not ds.participated.is_empty()
-	var connected: bool = not ds.connected.is_empty()
-	var titles: Array=catalog.days[str(day)]
-	var rows: Array=[{"id":"must_%d_0"%day,"text":str(titles[0]),"done":connected and (day!=1 or bool(ResidencySystem.state().packet)),"action":"map","location":"print_shop" if day==1 and not ResidencySystem.state().packet else _contact_place()}, {"id":"must_%d_1"%day,"text":str(titles[1]),"done":participation,"action":"map","location":_action_place()}, {"id":"must_%d_2"%day,"text":str(titles[2]),"done":bool(ds.reviewed),"action":"evening","location":home()}]
-	if day==7:
-		rows[0].done=range(1,8).all(func(d: int) -> bool: return not ResidencySystem.state().get("free_pages",{}).get("day_%d"%d,[]).is_empty()); rows[0].action="portfolio"
-		rows[1].done=not ResidencySystem.state().submitted.is_empty(); rows[1].action="final"; rows[1].location="print_shop"
-	for row in rows: row["type"]="MustObjective"; row["fallback"]="回住处写下今天的经历，未完的事情明天仍可继续。"
-	return rows
+func objectives() -> Array: return ChapterSystem.objectives()
+
 func _source() -> String:
 	var fallback: Array=catalog.get("daily_contacts",["wu_wu"])
 	return str(state().get("active_source",fallback[(GameState.current_day-1)%fallback.size()]))
@@ -254,41 +242,13 @@ func _contact_place() -> String:
 	return str(ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute).get("location","cafe"))
 func _action_place() -> String: return str(catalog.people.get(_source(),{}).get("place","record_store"))
 func active_guidance() -> Dictionary:
-	for o in opportunities():
-		if str(o.status)=="available" and int(o.expires_in)<=30: return {"id":o.id,"text":str(o.text),"context":"还有约%d分钟；错过后也可以再问问。"%int(o.expires_in),"action":"map","location":o.location,"priority":"critical"}
-	var commitment := GameState.next_commitment()
-	if not commitment.is_empty():
-		var due := int(commitment.get("return_by",commitment.get("start",1440)))
-		if due>=GameState.current_minute and due-GameState.current_minute<=30: return {"text":"记得回到"+TravelSystem.location_name(str(commitment.location)),"context":GuidanceSystem.time_text(due)+"的约定","location":commitment.location,"action":"map","priority":"critical"}
-	if GameState.current_minute>=1260 and not bool(day_state().reviewed): return {"id":"evening","text":"回住处，把今天慢慢收好","context":"没有完成的事情可以留到明天。","location":home(),"action":"evening"}
-	# The player's choice outranks the suggested daily sequence, except deadlines.
-	var pinned := GuidanceSystem.tracked_lead()
-	if not pinned.is_empty(): return pinned.merged({"action":"map","priority":"personal"})
-	var connections := connection_steps()
-	for connection in connections:
-		if bool(connection.available): return connection
-	var rows := objectives()
-	for i in rows.size():
-		if bool(rows[i].done): continue
-		var row: Dictionary=rows[i].duplicate(true)
-		if i==0 and GameState.current_day!=7:
-			if GameState.current_day==1 and not ResidencySystem.state().packet: row.text="去社区中心领取资料袋"; row.context="然后找一位镇上的人聊聊。"
-			else: row.text="问问"+GuidanceSystem.source_name(str(catalog.daily_contacts[GameState.current_day-1]))+"今天的事"; row.context="也可以和路上遇见的其他居民聊聊。"
-		elif i==1 and GameState.current_day!=7:
-			var source := _source(); var lead: Dictionary=catalog.people.get(source,{})
-			row.context=str(lead.get("lead","跟着听来的消息，或者记录自己的发现。"))
-			row.text=(str(contract(str(lead.get("module",""))).get("action","看看这里能做什么")) if GameState.current_location==row.location else "去"+TravelSystem.location_name(str(row.location))+"看看")
-			row.source=source
-		else: row.context="整理今日材料，也可以明天再补作品页。"
-		row["priority"]="must"; return row
-	for personal in state().personal:
-		if not bool(personal.done): return personal.merged({"action":"personal","priority":"personal"})
-	for o in opportunities():
-		if str(o.status)=="available" and str(o.location)==GameState.current_location: return o.merged({"action":"map","priority":"opportunity"})
+	for row in objectives():
+		if not bool(row.done): return row.merged({"context":"按自己的节奏来，支线和记录都可以自由选择。","priority":"must"})
 	return {}
+
 func review_day(reflection: String) -> Dictionary:
 	if GameState.current_location!=home(): return {"ok":false,"message":"先回自己的住处，材料可以留到晚上整理。"}
-	if reflection.strip_edges().is_empty() and day_state().participated.is_empty(): return {"ok":false,"message":"今天还没留下东西。写下一件真正见到的小事，也可以去录一段声音。"}
+	if reflection.strip_edges().is_empty() and not bool(ChapterSystem.day_state().main_completed): return {"ok":false,"message":"今天还没留下东西。写下一件真正见到的小事，也可以去录一段声音。"}
 	var snapshot := GameState.to_save_data().duplicate(true)
 	if not reflection.strip_edges().is_empty():
 		var id := "reflection_%s_%d" % [GameState.current_role,GameState.current_day]
@@ -307,18 +267,8 @@ func reference_entries() -> Array:
 		result.append({"id":item.id,"text":"Day %02d · %s · %s"%[int(item.day),TravelSystem.location_name(str(item.get("location",""))),str(item.title)]})
 	return result
 
-func extend_application() -> Dictionary:
-	if GameState.current_day!=7 or GameState.current_minute<1260 or GameState.current_location!=home() or not ResidencySystem.state().submitted.is_empty(): return {"ok":false,"message":"晚上回住处后，可以选择再留一晚补齐申请。"}
-	var snapshot := GameState.to_save_data().duplicate(true)
-	state()["extra_nights"]=int(state().get("extra_nights",0))+1
-	var blocks: Array=GameState.schedule_for(GameState.current_role,7).get("blocks",[[480,1320]])
-	GameState.current_minute=int(blocks[0][0]); GameState.clock_remainder=0
-	day_state().reviewed=false
-	GameState.commit_active_role_state()
-	if not SaveManager.save_or_report("续住安排未保存，可以重试"):
-		GameState.load_save_data(snapshot); return {"ok":false,"message":"续住安排没有保存，请重试。"}
-	GuidanceSystem.notification.emit("HEARD","又留了一晚。七张作品页仍在，未完成的申请可以继续。")
-	return {"ok":true,"message":"今天可以继续补齐申请。"}
+func extend_application() -> Dictionary: return {"ok":false,"message":"五日旅程没有申请延期条件。"}
+
 func _process(delta: float) -> void:
 	_elapsed+=delta
 	if _elapsed<.5: return

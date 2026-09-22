@@ -19,20 +19,7 @@ func _ready() -> void:
 	words.add_theme_font_size_override("font_size", 29)
 	words.add_theme_color_override("font_color", Color("ddd0b8"))
 	var next := ChapterSystem.next_chapter()
-	if str(next.get("role", "")) == "choice":
-		words.text = LocalizationSystem.text("最后一天，先从哪一扇窗醒来？\n随后，另一位也将度过她的第七天。")
-		add_child(words)
-		for index in 2:
-			var role := "A" if index == 0 else "B"
-			var choice := Button.new()
-			choice.text = LocalizationSystem.text("进入 " + role + " 的最后一天")
-			choice.position = Vector2(470 + index * 360, 570)
-			choice.size = Vector2(300, 60)
-			choice.pressed.connect(func() -> void:
-				if ChapterSystem.choose_final_role(role): _continue_journey())
-			add_child(choice)
-		return
-	words.text = LocalizationSystem.text("灯熄了。海还醒着。" if next.is_empty() else "灯熄了。\n另一扇窗，正透进清晨。")
+	words.text = LocalizationSystem.text("灯熄了。海还醒着。" if next.is_empty() else "灯熄了。\n醒来时，又是新的一天。")
 	if bool(GameState.shared_state.get("midnight_rest", false)):
 		words.text = LocalizationSystem.text("夜深了，小镇渐渐安静下来。" if next.is_empty() else "夜深了，小镇渐渐安静下来。\n醒来时，又是新的一天。")
 	add_child(words)
@@ -51,6 +38,11 @@ func _continue_journey() -> void:
 	GameState.shared_state.erase("midnight_rest")
 	ChapterSystem.mark_transition_complete(str(ChapterSystem.transition_context().get("transition_id", "")))
 	var result := ChapterSystem.advance_chapter()
+	if not bool(result.get("ok",false)):
+		GameState.load_save_data(rollback_snapshot)
+		GameState.shared_state.erase("sleep_pending")
+		SceneRouter.town_day()
+		return
 	if not SaveManager.save_or_report("章节切换保存失败"):
 		GameState.load_save_data(rollback_snapshot)
 		continuing = false

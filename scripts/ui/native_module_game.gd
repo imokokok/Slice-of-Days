@@ -13,6 +13,7 @@ const BOARD := Rect2(42, 122, 920, 610)
 var cooking_pan: Texture2D=preload("res://art/ui/enamel-cooking-pan.png")
 var ingredient_art: Control
 var module_id := ""
+var session_context: Dictionary = {}
 var prototype: Dictionary = {}
 var interaction: Dictionary = {}
 var selected_tokens: Array[String] = []
@@ -34,7 +35,8 @@ var playback_cursor := 0.0
 
 func _ready() -> void:
 	module_id = GameplayModuleSystem.pending_module_id()
-	if not SUPPORTED.has(module_id):
+	session_context=GameplayModuleSystem.session_context()
+	if not SUPPORTED.has(module_id) or str(session_context.get("current_character",""))!=GameState.current_role:
 		call_deferred("_fail")
 		return
 	prototype = GameplayModuleSystem.prototype_for(module_id)
@@ -334,6 +336,7 @@ func _complete_choice(choice_id: String) -> void:
 
 func _interaction_record() -> Dictionary:
 	return {
+		"context":session_context.duplicate(true),
 		"mode": str(interaction.get("mode", "toggle")),
 		"selected_tokens": selected_tokens.duplicate(),
 		"selected_labels": selected_tokens.map(func(token_id: String) -> String: return _token_label(token_id)),

@@ -9,6 +9,7 @@ var prompt := "温暖，圆，细线，慢慢漂浮"
 var seed_value := 23817
 var cache: Dictionary = {}
 var error := ""
+var hosted_role := ""
 var project_path := "user://projects/current.json"
 
 func length() -> float:
@@ -178,6 +179,12 @@ func mix_async():
 	return result
 
 func save_project() -> bool:
+	if not hosted_role.is_empty():
+		var root=Engine.get_main_loop().root
+		var state=root.get_node("GameState")
+		if state.current_role!=hosted_role: return false
+		state.artifacts.get_or_add("minigame_drafts",{})["sound_sampling"]={"version":1,"clips":clips.duplicate(true),"muted":muted.duplicate(),"gains":gains.duplicate(),"prompt":prompt,"seed":seed_value}
+		return root.get_node("SaveManager").save_or_report("声音工程未能保存")
 	DirAccess.make_dir_recursive_absolute(project_path.get_base_dir())
 	var file := FileAccess.open(project_path + ".tmp", FileAccess.WRITE)
 	if file == null:
@@ -197,13 +204,15 @@ func save_project() -> bool:
 	return result == OK
 
 func load_project() -> bool:
-	if not FileAccess.file_exists(project_path):
-		return false
-	var parser := JSON.new()
-	if parser.parse(FileAccess.get_file_as_string(project_path)) != OK or not parser.data is Dictionary:
-		error = "工程损坏，保留原文件。"
-		return false
-	var value: Dictionary = parser.data
+	var value: Dictionary
+	if not hosted_role.is_empty():
+		value=Engine.get_main_loop().root.get_node("GameState").artifacts.get("minigame_drafts",{}).get("sound_sampling",{}).duplicate(true)
+		if value.is_empty(): return false
+	else:
+		if not FileAccess.file_exists(project_path): return false
+		var parsed=JSON.parse_string(FileAccess.get_file_as_string(project_path))
+		if not parsed is Dictionary: error="工程损坏，保留原文件。"; return false
+		value=parsed
 	if not value.get("clips") is Array or not value.get("muted") is Array or not value.get("gains") is Array:
 		error = "工程结构无效。"
 		return false

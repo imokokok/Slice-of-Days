@@ -87,7 +87,7 @@ func role_lens(resident_id: String, role := "") -> String:
 		return ""
 	if target_role == "A":
 		return "对方会留意A是否愿意参与眼前的小事，而不是只带走一段素材。"
-	return "对方会留意B的记录是否给临时变化和拒绝留下位置。"
+	return "对方会留意你的记录是否给临时变化和拒绝留下位置。"
 
 
 func ambient_line(resident_id: String, role := "", salt := 0) -> String:

@@ -104,7 +104,7 @@ func _build_ui() -> void:
 	reading.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	var info := VBoxContainer.new(); info.mouse_filter=Control.MOUSE_FILTER_IGNORE; info.add_theme_constant_override("separation",8); reading.add_child(info)
 	heading=_label(info,"",26)
-	hint=_label(info,"左键拖动环绕 · 滚轮缩放 · 单击画面收起 / 显示",24)
+	hint=_label(info,"左键拖动查看照片视角 · 滚轮缩放 · 单击画面收起 / 显示",24)
 	hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	# Extended interpretation is available on demand, never across the scene.
 	description=_label(info,"",22); description.hide()
@@ -160,7 +160,7 @@ func select_nebula(index: int) -> void:
 	credits.text="[url="+entry.source+"]"+entry.credit+"[/url]\n"+("照片 [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url] · " if not str(entry.image).is_empty() else "")+"Solmere：空间呈现与着色；非机构背书"
 	for i in tabs.size(): tabs[i].selected=i==selected_index
 	view_age=0
-	hint.text="左键拖动环绕 · 滚轮缩放 · 单击显示 / 收起工具"
+	hint.text="左键拖动查看照片视角 · 滚轮缩放 · 单击显示 / 收起工具"
 	interface_age=0
 	update_camera()
 

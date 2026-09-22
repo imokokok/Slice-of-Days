@@ -182,7 +182,7 @@
     {
       "id": "home_a",
       "location_id": "residence",
-      "name": "A的家",
+      "name": "海边住处",
       "objects": [
         {
           "id": "memory_entry",
@@ -213,13 +213,13 @@
         }
       ],
       "sign": "HOME_A",
-      "tagline": "A的家",
+      "tagline": "海边住处",
       "interior_note": "便签和照片散落在桌面。 关灯，让今天结束。"
     },
     {
       "id": "home_b",
       "location_id": "dorm",
-      "name": "B的家",
+      "name": "街角住处",
       "objects": [
         {
           "id": "memory_entry",
@@ -248,7 +248,7 @@
         }
       ],
       "sign": "HOME_B",
-      "tagline": "B的家",
+      "tagline": "街角住处",
       "interior_note": "笔记本整齐地放在地图旁。 关灯，让今天结束。"
     }
   ]

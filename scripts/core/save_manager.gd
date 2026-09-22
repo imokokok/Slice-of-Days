@@ -2,7 +2,7 @@ extends Node
 
 signal save_failed(message: String)
 
-const SAVE_PATH := "user://solmere_save.json"
+const SAVE_PATH := "user://solmere_five_day.json"
 const LEGACY_SAVE_PATH := "user://vertical_slice_save.json"
 const PREVIOUS_PROJECT_DIR := "100game"
 const SLOT_COUNT := 3
@@ -15,7 +15,7 @@ func path_for_slot(slot: int) -> String:
 	var safe_slot := clampi(slot, 1, SLOT_COUNT)
 	if OS.get_cmdline_user_args().has("--isolated-save"):
 		return "user://walking_test_%d.json" % safe_slot
-	return SAVE_PATH if safe_slot == 1 else "user://solmere_save_%d.json" % safe_slot
+	return SAVE_PATH if safe_slot == 1 else "user://solmere_five_day_%d.json" % safe_slot
 
 
 func set_active_slot(slot: int) -> void:
@@ -104,6 +104,8 @@ func load_game(path := "") -> bool:
 	file.close()
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return false
+	if not GameState.compatible_save(parsed):
+		return _save_error("此存档属于旧七日流程或数据不完整，不能继续五日旅程。请从主菜单开始新游戏；旧存档会保留。")
 	GameState.load_save_data(parsed)
 	if EchoSystem.resume_ambient():
 		if not save_game(target_path):
@@ -144,6 +146,7 @@ func slot_summary(slot: int) -> Dictionary:
 	return {
 		"slot": slot,
 		"exists": true,
+		"compatible": GameState.compatible_save(parsed),
 		"role": current_role,
 		"day": int(active_state.get("day", parsed.get("current_day", 1))),
 		"minute": int(active_state.get("minute", parsed.get("current_minute", 540))),
@@ -160,6 +163,7 @@ func _legacy_candidates() -> Array[String]:
 	var app_userdata_dir := current_user_dir.get_base_dir()
 	var previous_dir := app_userdata_dir.path_join(PREVIOUS_PROJECT_DIR)
 	return [
+		"user://solmere_save.json",
 		LEGACY_SAVE_PATH,
 		previous_dir.path_join("solmere_save.json"),
 		previous_dir.path_join("vertical_slice_save.json"),
@@ -167,7 +171,7 @@ func _legacy_candidates() -> Array[String]:
 
 func prepare_new_journey() -> bool:
 	for slot in range(1, SLOT_COUNT + 1):
-		if not has_slot(slot):
+		if not FileAccess.file_exists(path_for_slot(slot)):
 			set_active_slot(slot)
 			return true
 	# All three legacy slots occupied: archive the oldest before reusing it.

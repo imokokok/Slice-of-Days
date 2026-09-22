@@ -58,7 +58,7 @@ func _ready() -> void:
 	margin.add_child(root_column)
 	var header := HBoxContainer.new()
 	root_column.add_child(header)
-	var role_label := " · %s" % GameState.current_role if has_node("/root/GameState") else ""
+	var role_label := " · %s" % GameState.current_role if has_node("/root/CharacterSystem") and CharacterSystem.switch_unlocked() else ""
 	header.add_child(label("唱片店 · 声音工作台%s" % role_label, 26))
 	header.add_child(button("♪ 声音设置", func() -> void: get_node("/root/SoundSettings").show_dialog()))
 	header.add_child(button("返回录音", func() -> void:
@@ -200,22 +200,10 @@ func _ready() -> void:
 
 
 func _configure_role_project() -> void:
-	if not has_node("/root/GameState"):
-		model.load_project()
-		return
-	var role := str(get_node("/root/GameState").current_role).to_lower()
-	var target_path := "user://projects/%s_current.json" % role
-	var legacy_path := model.project_path
-	if FileAccess.file_exists(target_path):
-		model.project_path = target_path
-		model.load_project()
-		return
-	# Import the former shared project once without deleting it.
-	if FileAccess.file_exists(legacy_path) and model.load_project():
-		model.project_path = target_path
-		model.save_project()
-	else:
-		model.project_path = target_path
+	if has_node("/root/GameState"):
+		model.hosted_role=GameState.current_role
+		model.project_path="user://projects/"+str(GameState.shared_state.get("journey_id","journey"))+"_"+GameState.current_role+".json"
+	model.load_project()
 
 func label(text: String, font_size: int = 16) -> Label:
 	var node := Label.new()

@@ -30,6 +30,8 @@ var offer_accepted := false
 var encounter_choice := false
 var encounter_finished := false
 var shared_choice_offered := false
+var narrative_heard := false
+var meeting_decision := false
 
 func _ready() -> void:
 	if not ResidentProfileSystem.is_core(npc):
@@ -77,6 +79,12 @@ func _build_conversation() -> void:
 	dialogue_id = DialogueSystem.conversation_id(npc, starting_topic)
 	records_story = starting_topic == "greeting"
 	if records_story:
+		var beats := ChapterSystem.narrative_lines(npc)
+		if not beats.is_empty():
+			narrative_heard=true
+			for beat in beats: _append(str(beat[0]),str(beat[1]))
+			return
+	if records_story:
 		for beat in CoreLoopSystem.dialogue_prefix(npc): _append(str(beat[0]),str(beat[1]))
 	if records_story and npc=="wu_wu" and int(GameState.shared_state.get("linear_talk_counts_"+GameState.current_role,{}).get(npc,0))==0:
 		encounter_choice=true
@@ -116,6 +124,9 @@ func _advance() -> void:
 
 func _finish() -> void:
 	if closing: return
+	if narrative_heard and GameState.current_day==4 and not meeting_decision:
+		_choice_box([["好，明天在社区中心见。","meet"],["我再想一想。","later"]],_meeting_choice)
+		return
 	if encounter_choice and not encounter_finished:
 		_show_encounter_choices(); return
 	if not offer.is_empty() and not offer_decided:
@@ -145,6 +156,7 @@ func _finish() -> void:
 		_close()
 		return
 	var snapshot := GameState.to_save_data().duplicate(true)
+	if narrative_heard: ChapterSystem.on_conversation_completed(npc)
 	if records_story: DialogueSystem.complete_linear_conversation(npc)
 	if encounter_finished:
 		var facts: Array=GameState.shared_state.get("knowledge_"+GameState.current_role,[])
@@ -312,3 +324,14 @@ func _choose_encounter(choice: String) -> void:
 	_append("npc","Xanni 也爱收集路上的声音。上次我在唱片店听了半天，才发现那段是雨落在狗碗里。")
 	_append("npc","你要是录到什么，带去给她听听。她的制作台常空着一边。")
 	index=start; _show_line()
+
+func _meeting_choice(choice: String) -> void:
+	_clear_choices()
+	if choice=="later": _close(); return
+	var snapshot := GameState.to_save_data()
+	ChapterSystem.on_conversation_completed(npc)
+	if not ChapterSystem.arrange_meeting() or not SaveManager.save_or_report("约定未能保存"):
+		GameState.load_save_data(snapshot)
+		return
+	meeting_decision=true
+	_finish()

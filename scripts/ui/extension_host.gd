@@ -8,6 +8,7 @@ const LETTER_DESIGN_SIZE := Vector2i(1600, 900)
 const LETTER_HOST_BAR_HEIGHT := 72.0
 
 var module_id := ""
+var session_context: Dictionary = {}
 var metadata: Dictionary = {}
 var experience: Node
 var complete_button: Button
@@ -22,9 +23,10 @@ var host_panel: Panel
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	module_id = GameplayModuleSystem.pending_module_id()
+	session_context=GameplayModuleSystem.session_context()
 	metadata = GameplayModuleSystem.modules.get(module_id, {})
 	var scene_path := str(metadata.get("extension_scene_path", ""))
-	if module_id.is_empty() or scene_path.is_empty() or not ResourceLoader.exists(scene_path):
+	if str(session_context.get("current_character",""))!=GameState.current_role or module_id.is_empty() or scene_path.is_empty() or not ResourceLoader.exists(scene_path):
 		call_deferred("_fail_and_return", "扩展场景不存在，已安全返回。")
 		return
 	var packed = load(scene_path)
@@ -32,6 +34,7 @@ func _ready() -> void:
 		call_deferred("_fail_and_return", "扩展场景无法读取，已安全返回。")
 		return
 	experience = packed.instantiate()
+	experience.set_meta("solmere_context",session_context.duplicate(true))
 	if module_id == "ghostwriting":
 		# The letter uses both Node2D drawing and CanvasLayers. A Node2D offset
 		# moves only its drawing, leaving controls and capture coordinates behind.
@@ -206,12 +209,14 @@ func _complete() -> void:
 		"choice_id": "extension_complete",
 		"label": str(metadata.get("name", module_id)),
 		"source_event_id": source_event_id,
-		"interaction": {"mode": "extension", "selected_labels": [str(metadata.get("name", module_id))]},
+		"interaction": {"context":session_context.duplicate(true),"mode": "extension", "selected_labels": [str(metadata.get("name", module_id))]},
 	}
 	if module_id == "contemplation":
 		outcome["interaction"].merge(experience.observation_result(),true)
 	if module_id == "ghostwriting":
 		# END is reached only after NPC delivery or a successful real public publish.
+		experience.save_game()
+		outcome["letter"]={"preview_path":str(experience.preview_path),"title":str(experience.letter_title),"owner":GameState.current_role}
 		var public_id := int(experience.get("bottle_published_id"))
 		outcome["contribution_accepted"] = str(experience.get("letter_mode")) == "npc" or public_id > 0
 		outcome["acceptance"] = {"location":"handcraft_shop","source":"public_letter_publish" if public_id > 0 else "npc_letter_delivery","external_id":str(public_id),"stage":str(experience.get("stage"))}
@@ -243,7 +248,9 @@ func _cancel() -> void:
 		experience.save_session()
 		preserved_key = "myriorama_" + GameState.current_role
 		preserved_extension_state = GameState.shared_state.get(preserved_key, {}).duplicate(true)
+	var extension_drafts: Dictionary=GameState.artifacts.get("minigame_drafts",{}).duplicate(true)
 	GameplayModuleSystem.cancel_session()
+	GameState.artifacts["minigame_drafts"]=extension_drafts
 	if module_id == "contemplation" and is_instance_valid(experience):
 		experience.preserve_after_cancel()
 	if not preserved_key.is_empty() and not preserved_extension_state.is_empty():

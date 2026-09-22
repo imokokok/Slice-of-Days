@@ -209,12 +209,16 @@ func complete_action() -> void:
 			next_button.disabled = false
 			return
 		if has_node("/root/GameState"):
+			var snapshot := GameState.to_save_data()
 			GameState.credit_record_once(
 				str(saved_record.get("record_id", saved_record.get("id", ""))),
 				int(saved_record.get("payment", payment)),
 				saved_record
 			)
-			SaveManager.save_or_report("唱片压制结果保存失败")
+			if not GameplayModuleSystem.record_studio_delivery(saved_record) or not SaveManager.save_or_report("唱片压制结果保存失败"):
+				GameState.load_save_data(snapshot)
+				instructions.text="唱片文件已经留下，主存档未能保存。请重试交付。"
+				locked=false; next_button.disabled=false; return
 		instructions.text = LocalizationSystem.text("老板：我晚点再听一遍。\n正在把你的唱片放上 LOCAL RECORDINGS……")
 		var tween := create_tween()
 		tween.tween_property(self, "progress", 1.0, 3.5).set_trans(Tween.TRANS_CUBIC)

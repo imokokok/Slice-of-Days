@@ -22,6 +22,7 @@ var guidance_tick := 0.0
 var last_time_period := ""
 var time_notice_age := 8.0
 
+var switch_button: Button
 var clock_back: Panel
 
 func _ready() -> void:
@@ -110,6 +111,10 @@ func _ready() -> void:
 	hints.add_child(hint_label)
 	ResidencySystem.changed.connect(_papers_changed)
 	last_material_count = ResidencySystem.state().materials.size()
+	switch_button=preload("res://scripts/ui/components/solmere_button.gd").new()
+	switch_button.variant="outlined"; switch_button.position=Vector2(265,23); switch_button.size=Vector2(190,47)
+	switch_button.pressed.connect(CharacterSystem.switch_character)
+	add_child(switch_button)
 
 func _papers_changed() -> void:
 	var count := int(ResidencySystem.state().materials.size())
@@ -143,6 +148,9 @@ func finish_recording_for_exit() -> bool:
 
 func _process(delta: float) -> void:
 	folder.hide()
+	switch_button.visible=CharacterSystem.switch_unlocked()
+	switch_button.disabled=not CharacterSystem.can_switch()
+	switch_button.text="视角 "+GameState.current_role+" · "+SettingsSystem.binding_text("switch_character")
 	var minute := GameState.current_minute
 	var period := "Morning" if minute < 720 else "Afternoon" if minute < 960 else "Late Afternoon" if minute < 1140 else "Evening"
 	var period_key := str(GameState.current_day)+period
@@ -269,6 +277,9 @@ func _handle_shortcut(event: InputEvent) -> void:
 	if not bool(UIStateSystem.policy().notebook): return
 	if not event.is_pressed() or event.is_echo() or _blocked() or is_instance_valid(tool) or focus_opening: return
 	if get_viewport().gui_get_focus_owner() is TextEdit or get_viewport().gui_get_focus_owner() is LineEdit: return
+	if event.is_action_pressed("switch_character"):
+		CharacterSystem.switch_character()
+		get_viewport().set_input_as_handled(); return
 	var modes := {"open_map":"map","open_plan":"today","open_album":"gallery","open_bag":"bag","open_archive":"dossier","open_home":"home","open_notebook":"notebook","ui_cancel":"pause"}
 	for action in modes:
 		if event.is_action_pressed(action):

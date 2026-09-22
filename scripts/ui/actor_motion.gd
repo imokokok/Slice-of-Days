@@ -1,9 +1,14 @@
 extends RefCounted
-## Temporary animation adapter. Replace WALK with final authored frames later.
-const WALK := [preload("res://art/characters/temporary_walk/step_00.png"), preload("res://art/characters/temporary_walk/step_01.png"), preload("res://art/characters/temporary_walk/step_02.png"), preload("res://art/characters/temporary_walk/step_03.png")]
+## Authored four-pose walk cycle. The linework is retained from the supplied
+## character sheets and the colour pass is kept in separate assets so the
+## gameplay renderer can fall back safely if a texture is unavailable.
+const WALK := [preload("res://art/characters/temporary_walk/step_00_colored.png"), preload("res://art/characters/temporary_walk/step_01_colored.png"), preload("res://art/characters/temporary_walk/step_02_colored.png"), preload("res://art/characters/temporary_walk/step_03_colored.png")]
 
 static func frame_at(distance_phase: float) -> int:
-	return posmod(int(floor(distance_phase / (PI * .5))), WALK.size())
+	# A full cycle is four even quarters. Keeping the phase distance-driven
+	# prevents skating while the eased gait weight in WalkStage softens starts
+	# and stops instead of snapping directly between idle and contact poses.
+	return posmod(int(floor(fposmod(distance_phase, TAU) / (TAU / WALK.size()))), WALK.size())
 
 static func pose_point(uv: Vector2, size: Vector2, time: float, seed_value: int) -> Vector2:
 	# Ankles remain fixed. Only upper-body weight and breathing move, at a

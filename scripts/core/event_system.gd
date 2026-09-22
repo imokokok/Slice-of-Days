@@ -43,6 +43,7 @@ func day_leads() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for event_id in events:
 		var event: Dictionary = events[event_id]
+		if bool(event.get("legacy_seven_day",false)): continue
 		if not bool(event.get("repeatable", false)) and GameState.has_event(event_id):
 			continue
 		var conditions: Dictionary = event.get("conditions", {})
@@ -90,6 +91,7 @@ func is_available(event: Dictionary) -> bool:
 
 
 func availability(event: Dictionary) -> Dictionary:
+	if bool(event.get("legacy_seven_day",false)): return {"ok":false,"reason":"这段旧章节已归档。"}
 	var event_id := str(event.get("id", ""))
 	if not bool(event.get("repeatable", false)) and GameState.has_event(event_id):
 		return {"ok": false, "reason": "这个事件已经发生过。"}

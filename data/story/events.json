@@ -99,7 +99,8 @@
             "result": "进度条走得很慢。传完时，对方提出请A喝咖啡，下一段路因此有了方向。"
           }
         }
-      ]
+      ],
+      "legacy_seven_day": true
     },
     {
       "id": "a_d1_mossner_coffee",
@@ -166,7 +167,8 @@
             "label": "跟Mossner看彩排"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d1_theatre_rehearsal",
@@ -245,7 +247,8 @@
         "unlock_modules": [
           "photography"
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d1_evening_photo",
@@ -295,7 +298,8 @@
           "photography"
         ]
       },
-      "launch_module": "photography"
+      "launch_module": "photography",
+      "legacy_seven_day": true
     },
     {
       "id": "b_d1_cafeteria_observe",
@@ -391,7 +395,8 @@
             "result": "计划本记下的不只是时间，还有这次相遇不能被夸大的边界。"
           }
         }
-      ]
+      ],
+      "legacy_seven_day": true
     },
     {
       "id": "b_d1_library_wait",
@@ -461,7 +466,8 @@
             "text": "Maya，书店，18:00左右。尚未说话。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d1_notebook_anomaly",
@@ -526,7 +532,8 @@
             "text": "空白处出现过旧门牌号，随后消失。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d2_restaurant_shift",
@@ -581,7 +588,8 @@
           "cooking"
         ]
       },
-      "launch_module": "cooking"
+      "launch_module": "cooking",
+      "legacy_seven_day": true
     },
     {
       "id": "a_d2_restaurant_close",
@@ -655,7 +663,8 @@
             "text": "店主在最后一张桌子收完以后签了认可。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d2_park_music",
@@ -690,7 +699,8 @@
           "contemplation"
         ]
       },
-      "launch_module": "contemplation"
+      "launch_module": "contemplation",
+      "legacy_seven_day": true
     },
     {
       "id": "a_d2_family_light",
@@ -747,7 +757,8 @@
             "text": "照片里没有饭桌，只有几扇刚亮起来的窗。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d2_sunniva_observe",
@@ -797,7 +808,8 @@
             "text": "Mossner，饭店手作摊，11:00前后。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d2_tarot_deduction",
@@ -831,7 +843,8 @@
           "tarot"
         ]
       },
-      "launch_module": "tarot"
+      "launch_module": "tarot",
+      "legacy_seven_day": true
     },
     {
       "id": "b_d2_careful_questions",
@@ -875,7 +888,8 @@
           "zhou_xiaoliu": "granted",
           "mossner": "granted"
         }
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d2_chess_start",
@@ -906,7 +920,8 @@
           "chess"
         ]
       },
-      "launch_module": "chess"
+      "launch_module": "chess",
+      "legacy_seven_day": true
     },
     {
       "id": "b_d2_notebook_emergency",
@@ -949,7 +964,8 @@
             "text": "“应急”后面先出现的是一个抽屉，不是金额。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d3_social_chain",
@@ -1004,7 +1020,8 @@
           "wu_wu": "granted",
           "naonao": "granted"
         }
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d3_work_interruption",
@@ -1044,7 +1061,8 @@
             "text": "原计划闹闹。因工作电话取消。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d3_slow_dinner",
@@ -1102,7 +1120,8 @@
             "text": "第一张像书房，第二张只是晚饭。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d3_help_market",
@@ -1141,7 +1160,8 @@
         "confirmations": {
           "shi_yongqi": "granted"
         }
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d3_sound_session",
@@ -1242,7 +1262,8 @@
           }
         }
       ],
-      "launch_module": "sound_sampling"
+      "launch_module": "sound_sampling",
+      "legacy_seven_day": true
     },
     {
       "id": "b_d3_jiu_drink_wait",
@@ -1293,7 +1314,8 @@
             "text": "Maya，饮料店门口。第一次说话，没有谈认可。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d3_hinge_isolate",
@@ -1414,7 +1436,8 @@
             "result": "副本被删除。计划本仍记得它出现过，却无法再播放。"
           }
         }
-      ]
+      ],
+      "legacy_seven_day": true
     },
     {
       "id": "a_d4_confirmation_withdrawn",
@@ -1545,7 +1568,8 @@
             "text": "认可不是已经装进口袋里的东西。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d4_no_shared_memory",
@@ -1650,7 +1674,8 @@
             "text": "不是每一处空白都曾经属于我。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d4_listen_to_xia",
@@ -1693,7 +1718,8 @@
         "confirmations": {
           "xia_touming": "granted"
         }
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d4_long_bench",
@@ -1738,7 +1764,8 @@
             "text": "今天不能靠立刻做对另一件事，抹掉刚才没听见的那些话。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d4_station_clock",
@@ -1837,7 +1864,8 @@
             "第四天在停用站台见过A"
           ]
         }
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d4_missed_window",
@@ -1958,7 +1986,8 @@
           "完整的计划也可能因为别人的日程而失效。",
           "公交站的时钟会替没有抵达的人退回十一分钟。"
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d4_salvage_rehearsal",
@@ -2001,7 +2030,8 @@
         "confirmations": {
           "xanni": "granted"
         }
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d4_notice_anomaly",
@@ -2048,7 +2078,8 @@
             "text": "旧通知单出现过。没有翻页。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d5_library_rescue",
@@ -2107,7 +2138,8 @@
             "text": "第一次主动记下：谁会在什么时候出现。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d5_translation",
@@ -2141,7 +2173,8 @@
           "translation"
         ]
       },
-      "invitation_npc": "beetman"
+      "invitation_npc": "beetman",
+      "legacy_seven_day": true
     },
     {
       "id": "b_d5_ghostwriting",
@@ -2208,7 +2241,8 @@
           ]
         }
       },
-      "launch_module": "ghostwriting"
+      "launch_module": "ghostwriting",
+      "legacy_seven_day": true
     },
     {
       "id": "b_d5_letter_revision_listen",
@@ -2356,7 +2390,8 @@
             "result": "信可以寄出，委托人却没有在认可表上签名；准确完成和被真正听见成为两件事。"
           }
         }
-      ]
+      ],
+      "legacy_seven_day": true
     },
     {
       "id": "b_d5_letter_revision_efficient",
@@ -2447,7 +2482,8 @@
             "text": "委托按时完成，认可仍在考虑。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d5_resume_chess",
@@ -2478,7 +2514,8 @@
           "chess"
         ]
       },
-      "launch_module": "chess"
+      "launch_module": "chess",
+      "legacy_seven_day": true
     },
     {
       "id": "b_d5_save_hinge",
@@ -2525,7 +2562,8 @@
             "text": "保留，不使用。不是每样东西都需要证明价值。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d6_last_full_block",
@@ -2621,7 +2659,8 @@
             }
           }
         }
-      ]
+      ],
+      "legacy_seven_day": true
     },
     {
       "id": "b_d6_key_meeting",
@@ -2659,7 +2698,8 @@
         "confirmations": {
           "maya": "granted"
         }
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "b_d6_boundary_choice",
@@ -2770,7 +2810,8 @@
             }
           }
         }
-      ]
+      ],
+      "legacy_seven_day": true
     },
     {
       "id": "b_d6_pass_chess",
@@ -2821,7 +2862,8 @@
             "text": "明天审核。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "a_d7_last_sunset",
@@ -2875,7 +2917,8 @@
           "contemplation"
         ]
       },
-      "launch_module": "contemplation"
+      "launch_module": "contemplation",
+      "legacy_seven_day": true
     },
     {
       "id": "b_d7_last_note",
@@ -2940,7 +2983,8 @@
             "text": "今天晚霞很好。"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "optional_handcraft_margin",
@@ -2992,7 +3036,8 @@
             }
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "shared_d4_studio_invite",
@@ -3031,7 +3076,8 @@
             "label": "去社区中心看分镜走位"
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "shared_d5_studio_blocking",
@@ -3075,7 +3121,8 @@
         "confirmations": {
           "yuxingqing": "granted"
         }
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "optional_old_station_records",
@@ -3120,7 +3167,8 @@
           "optical_illusion"
         ]
       },
-      "launch_module": "optical_illusion"
+      "launch_module": "optical_illusion",
+      "legacy_seven_day": true
     },
     {
       "id": "optional_port_roomtone",
@@ -3168,7 +3216,8 @@
             }
           }
         ]
-      }
+      },
+      "legacy_seven_day": true
     },
     {
       "id": "optional_optical_illusion",
@@ -3198,7 +3247,8 @@
           "optical_illusion"
         ]
       },
-      "launch_module": "optical_illusion"
+      "launch_module": "optical_illusion",
+      "legacy_seven_day": true
     }
   ]
 }

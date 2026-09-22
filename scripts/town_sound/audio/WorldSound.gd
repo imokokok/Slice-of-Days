@@ -8,6 +8,7 @@ const RATE := 22050
 var ambience: AudioStreamPlayer
 var foley: AudioStreamPlayer
 var coast: AudioStreamPlayer
+var weather_player: AudioStreamPlayer
 var ui: AudioStreamPlayer
 var indoors := false
 var location := ""
@@ -19,6 +20,7 @@ var step_index := 0
 var ambience_thread: Thread
 var generating_location := ""
 var requested_location := ""
+var weather := "clear"
 
 func _ready() -> void:
 	_ensure_bus(BUS, "Master")
@@ -27,6 +29,7 @@ func _ready() -> void:
 	ambience = AudioStreamPlayer.new()
 	foley = AudioStreamPlayer.new()
 	coast = AudioStreamPlayer.new()
+	weather_player = AudioStreamPlayer.new()
 	ui = AudioStreamPlayer.new()
 	ambience.bus = MUSIC_BUS
 	coast.bus = MUSIC_BUS
@@ -39,6 +42,7 @@ func _ready() -> void:
 	coast.stream = make_sea()
 	coast.volume_db = -12.0
 	add_child(coast)
+	add_child(weather_player)
 	add_child(ui)
 	for player in [ambience, foley]:
 		add_child(player)
@@ -58,6 +62,7 @@ func set_active(value: bool) -> void:
 		coast.stop()
 		ambience.stop()
 		foley.stop()
+		weather_player.stop()
 	elif ambience.stream != null and not ambience.playing and AudioServer.get_driver_name() != "Dummy":
 		ambience.play()
 	if active and not coast.playing and AudioServer.get_driver_name() != "Dummy": coast.play()
@@ -72,6 +77,17 @@ func set_location(value: String) -> void:
 		_apply_ambience(value)
 	elif ambience_thread == null:
 		_start_ambience_job(value)
+
+func set_weather(value: String) -> void:
+	var next := "rain" if value == "rain" else "clear"
+	if weather == next: return
+	weather = next
+	if weather == "clear":
+		weather_player.stop()
+		return
+	weather_player.stream = make_weather_rain()
+	weather_player.volume_db = -18.0
+	if active and AudioServer.get_driver_name() != "Dummy": weather_player.play()
 
 
 func _start_ambience_job(place: String) -> void:
@@ -245,6 +261,29 @@ func play_footstep() -> void:
 func set_indoor(value: bool) -> void:
 	indoors = value
 	if coast != null: coast.volume_db = -30.0 if indoors else -12.0
+	if weather_player != null: weather_player.volume_db = -27.0 if indoors else -18.0
+
+static func make_weather_rain() -> AudioStreamWAV:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 50831
+	var count := RATE * 12
+	var data := PackedByteArray(); data.resize(count * 2)
+	var low := 0.0
+	for i in count:
+		var t := float(i) / RATE
+		var noise := rng.randf_range(-1.0, 1.0)
+		low += (noise - low) * 0.03
+		var drops := noise * 0.035 + low * 0.11
+		var swell := 0.6 + 0.4 * sin(TAU * t / 7.0)
+		drops *= swell * minf(1.0, minf(t, 12.0 - t) / 0.2)
+		data.encode_s16(i * 2, int(clampf(drops, -1.0, 1.0) * 32767.0))
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = RATE
+	wav.data = data
+	wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	wav.loop_end = count
+	return wav
 static func make_sea() -> AudioStreamWAV:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 71209

@@ -13,6 +13,9 @@ func list_records() -> Array[Dictionary]:
 		if parser.parse(FileAccess.get_file_as_string(path)) == OK and parser.data is Dictionary:
 			var item: Dictionary = parser.data
 			if item.has_all(["record_id", "title", "artist", "duration"]):
+				var tree := Engine.get_main_loop() as SceneTree
+				var state := tree.root.get_node_or_null("GameState") if tree!=null else null
+				if root_path=="user://records" and state!=null and str(item.get("created_by","")) in ["A","B"] and not state.shared_state.get("credited_record_ids",[]).has(str(item.record_id)): continue
 				item.final_audio_path = root_path.path_join(id) + "/audio.wav"
 				item.cover_path = root_path.path_join(id) + "/cover.png"
 				result.append(item)

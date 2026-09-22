@@ -78,7 +78,7 @@ func unlock(module_id: String) -> bool:
 
 func start(module_id: String) -> bool:
 	var state := ensure_state(module_id)
-	if state.is_empty() or not bool(state.get("unlocked", false)):
+	if not ChapterSystem.module_available(module_id) or state.is_empty() or not bool(state.get("unlocked", false)):
 		return false
 	state["plays"] = int(state.get("plays", 0)) + 1
 	state["last_day"] = GameState.current_day
@@ -89,25 +89,29 @@ func start(module_id: String) -> bool:
 
 
 func complete(module_id: String, outcome: Dictionary = {}) -> bool:
+	if pending_module_id()!=module_id: return false
 	var state := ensure_state(module_id)
-	if state.is_empty() or not bool(state.get("unlocked", false)):
+	if not ChapterSystem.module_available(module_id) or state.is_empty() or not bool(state.get("unlocked", false)):
 		return false
 	state["completed"] = true
 	state["last_day"] = GameState.current_day
 	var outcomes: Array = state.get("outcomes", [])
 	var stored := outcome.duplicate(true)
+	stored["context"] = session_context()
+	if str(stored.context.get("current_character",""))!=GameState.current_role: return false
 	stored["day"] = int(stored.get("day", GameState.current_day))
 	outcomes.append(stored)
 	state["outcomes"] = outcomes
 	GameState.module_states[module_id] = state
 	GameState.commit_active_role_state()
 	module_completed.emit(GameState.current_role, module_id, stored)
+	ChapterSystem.record_main_result(module_id,stored)
 	GameState.state_changed.emit()
 	return true
 
 
 func is_unlocked(module_id: String) -> bool:
-	return bool(ensure_state(module_id).get("unlocked", false))
+	return ChapterSystem.module_available(module_id) and bool(ensure_state(module_id).get("unlocked", false))
 
 
 func state_for(module_id: String) -> Dictionary:
@@ -123,6 +127,7 @@ func latest_outcome(module_id: String) -> Dictionary:
 
 
 func begin_session(module_id: String, source_event_id := "", rollback_snapshot: Dictionary = {}) -> bool:
+	if not ChapterSystem.module_available(module_id) or not GameState.shared_state.get("pending_module",{}).is_empty(): return false
 	if module_id == "contemplation" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
 		return false
 	if not unlock(module_id) or not start(module_id):
@@ -130,6 +135,7 @@ func begin_session(module_id: String, source_event_id := "", rollback_snapshot: 
 	GameState.shared_state["pending_module"] = {
 		"module_id": module_id,
 		"role": GameState.current_role,
+		"context": {"current_character":GameState.current_role,"day":GameState.current_day,"location":GameState.current_location},
 		"day": GameState.current_day,
 		"source_event_id": source_event_id,
 		"rollback_snapshot": rollback_snapshot.duplicate(true),
@@ -140,10 +146,14 @@ func begin_session(module_id: String, source_event_id := "", rollback_snapshot: 
 
 func pending_module_id() -> String:
 	var pending: Dictionary = GameState.shared_state.get("pending_module", {})
-	if str(pending.get("role", "")) != GameState.current_role:
+	if str(pending.get("role", "")) != GameState.current_role or int(pending.get("day",0)) != GameState.current_day:
 		return ""
 	return str(pending.get("module_id", ""))
 
+
+func session_context() -> Dictionary:
+	if pending_module_id().is_empty(): return {}
+	return GameState.shared_state.pending_module.get("context",{}).duplicate(true)
 
 func cancel_session() -> void:
 	var pending: Dictionary = GameState.shared_state.get("pending_module", {})
@@ -210,6 +220,7 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 			break
 	if selected.is_empty():
 		return {"ok": false, "message": "找不到这个玩法选择。"}
+	if interaction_record.get("context",{}) != session_context(): return {"ok":false,"message":"这次操作不属于当前角色的活动。"}
 	var stored_interaction := interaction_record.duplicate(true)
 	if not stored_interaction.has("selected_labels"):
 		var selected_labels: Array[String] = []
@@ -224,7 +235,7 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 		var stock_check := EconomySystem.cooking_check(stored_interaction.get("selected_tokens", []))
 		if not bool(stock_check.ok): return stock_check
 		cost = EconomySystem.cooking_cost(cost)
-	var payment := EventSystem.can_pay_cost_data(cost)
+	var payment: Dictionary = EventSystem.can_pay_cost_data(cost)
 	if not bool(payment.get("ok", false)):
 		return {"ok": false, "message": str(payment.get("reason", "当前资源不足。"))}
 	var amount := int(cost.get("money", 0))
@@ -279,7 +290,8 @@ func _prototype_token_label(prototype: Dictionary, token_id: String) -> String:
 
 
 func complete_external(module_id: String, outcome: Dictionary, results: Dictionary = {}) -> bool:
-	if not modules.has(module_id) or not is_unlocked(module_id):
+	if outcome.get("interaction",{}).get("context",{}) != session_context(): return false
+	if module_id!=pending_module_id() or not modules.has(module_id) or not is_unlocked(module_id):
 		return false
 	var was_completed := bool(ensure_state(module_id).get("completed", false))
 	if not complete(module_id, outcome):
@@ -306,3 +318,15 @@ func time_hint(module_id: String) -> String:
 	if costs.is_empty(): return ""
 	costs.sort()
 	return "%d分钟" % costs[0] if costs[0] == costs[-1] else "%d—%d分钟" % [costs[0],costs[-1]]
+
+func record_studio_delivery(record: Dictionary) -> bool:
+	if str(record.get("created_by",""))!=GameState.current_role or int(record.get("game_day",0))!=GameState.current_day: return false
+	if not FileAccess.file_exists(str(record.get("final_audio_path",""))) or float(record.get("duration",0))<=0: return false
+	var id := str(record.get("record_id",""))
+	var completed: Array=GameState.artifacts.get("studio_deliveries",[])
+	if completed.has(id): return true
+	if not begin_session("sound_sampling","studio:record_store"): return false
+	var outcome := {"choice_id":"pressed_record","label":str(record.title),"record":record.duplicate(true),"interaction":{"context":session_context(),"mode":"studio","selected_labels":[str(record.title)]}}
+	if not complete_external("sound_sampling",outcome): cancel_session(); return false
+	completed.append(id); GameState.artifacts["studio_deliveries"]=completed
+	return true

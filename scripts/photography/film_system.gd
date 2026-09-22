@@ -93,7 +93,7 @@ func acquire_camera(help := true) -> Dictionary:
 	var s := state()
 	if busy or not at_counter(): return _fail("到杂货店柜台聊聊这台相机。")
 	if bool(s.camera_owned): return _fail("这台相机已经在你的包里。")
-	if help and GameState.current_role == "A": return _fail("A 决定按标价买下它；帮忙换旧相机是 B 的生活交换。")
+	if help and GameState.current_role == "A": return _fail("我想按标价买下它。")
 	if help and not bool(s.camera_seen): return _fail("先看看柜台上那台二手相机。")
 	if help and not GameState.can_fit_now(int(config.help_minutes)): return _fail("整理旧货要25分钟，眼下的空闲不够。")
 	busy = true

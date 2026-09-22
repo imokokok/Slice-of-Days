@@ -15,9 +15,9 @@ func run() -> void:
 	var host = current_scene
 	var sky = host.experience
 	check(sky is Node3D and sky.camera is Camera3D,"Real 3D telescope scene")
-	check(sky.entries.size()==5,"Five observation sources with published/observed 3D structures")
+	check(sky.entries.size()==5,"Five real telescope image sources")
 	check(not sky.solmere_completed,"Old discoveries cannot complete a new session")
-	check(sky.volume.sample_count>30000 and sky.volume.depth_range.y-sky.volume.depth_range.x>3,"Published model has real 3D depth")
+	check(sky.volume.components.size()==1 and sky.volume.depth_range==Vector2.ZERO,"One observed image, without fabricated depth")
 	var before: Transform3D=sky.camera.transform
 	var press := InputEventMouseButton.new()
 	press.position=Vector2(750,380); press.button_index=MOUSE_BUTTON_LEFT; press.pressed=true
@@ -39,13 +39,13 @@ func run() -> void:
 	reveal.pressed=false; root.push_input(reveal,true)
 	var saved: Vector2=sky.angles
 	sky.select_nebula(0)
-	check(sky.volume.sample_count>300000,"Official Pillars model imported at increased surface density")
+	check(sky.volume.components[0].material_override.albedo_texture.get_size().x>=2000,"Original Pillars photograph remains high resolution")
 	sky.select_nebula(2)
-	check(sky.entries[2].model.ends_with("crab_observed.tscn") and sky.volume.components.size()>0,"Crab uses the published NASA geometry")
+	check(sky.entries[2].image.ends_with("crab.jpg") and sky.volume.components.size()==1,"Crab loads its actual image")
 	sky.select_nebula(3)
-	check(sky.entries[3].model.ends_with("cygnus_observed.tscn") and sky.volume.components.size()>0,"Cygnus Loop uses the published NASA geometry")
+	check(sky.entries[3].image.ends_with("cygnus_loop.jpg") and sky.volume.components.size()==1,"Cygnus loads its actual image")
 	sky.select_nebula(4)
-	check(sky.entries[4].model.ends_with("casa_observed.tscn") and sky.volume.components.size()>=7,"Cassiopeia A retains independently coloured observed layers")
+	check(sky.entries[4].image.ends_with("casa.jpg") and sky.volume.components.size()==1,"Cassiopeia A retains the observed image colours")
 	sky.select_nebula(0)
 	check(sky.get_node_or_null("StarField")==null,"Nebula inspection has no decorative starfield")
 	check(sky.hint.get_theme_font_size("font_size")>=23,"Observation input remains readable")
@@ -56,7 +56,7 @@ func run() -> void:
 	close_intro.pressed.emit(); await process_frame
 	check(not is_instance_valid(sky.science_panel),"Introduction can be closed without exiting observation")
 	sky.select_nebula(2)
-	check(sky.volume.depth_range.y-sky.volume.depth_range.x>5,"Official Eta Carinae model retains its depth")
+	check(sky.volume.depth_range==Vector2.ZERO,"Photo inspection does not claim reconstructed physical depth")
 	sky.select_nebula(0)
 	check(sky.angles.is_equal_approx(saved),"Each nebula keeps its view")
 	sky.reset_view()
@@ -73,7 +73,7 @@ func run() -> void:
 		var photo: Dictionary=sky.session_photos[0]
 		check(FileAccess.file_exists(photo.developed_path),"Actual photograph exists")
 		check(not root.get_node("FilmSystem").photo(photo.id).is_empty(),"Observation uses canonical gallery data")
-		check(root.get_node("ResidencySystem").state().materials.has(photo.id),"Photo usable in portfolio")
+		check(root.get_node("ResidencySystem").state().materials.has(photo.id),"Photo usable in life records")
 		sky.open_gallery(); await process_frame
 		check(is_instance_valid(sky.gallery),"Observation gallery opens")
 		sky.close_gallery()

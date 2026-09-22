@@ -43,6 +43,7 @@ func record_encounter(resident_id: String, event_id := "", flags: Array = []) ->
 	state["flags"] = stored_flags
 	GameState.relationships[resident_id] = state
 	GameState.meet_resident(resident_id)
+	_record_actual_memory(resident_id,event_id)
 	GameState.commit_active_role_state()
 	relationship_changed.emit(GameState.current_role, resident_id)
 	GameState.state_changed.emit()
@@ -189,3 +190,18 @@ func _request_memory(status: String) -> String:
 		"pending": "听过认可请求，但说还需要考虑",
 		"refused": "曾拒绝把一次闲聊直接变成认可",
 	}.get(status, "谈过一次认可请求")
+
+func _record_actual_memory(npc: String, event_id: String) -> void:
+	var memories: Dictionary=GameState.shared_state.get("npc_memory",{})
+	if not memories.has(npc): memories[npc]={"actual_met_A":false,"actual_met_B":false,"perceived_same_person":true,"memory_flags":{}}
+	var memory: Dictionary=memories[npc]
+	memory["actual_met_"+GameState.current_role]=true
+	memory.perceived_same_person=not bool(ChapterSystem.story().reveal_completed)
+	memory.memory_flags[GameState.current_role+":"+event_id]=true
+	GameState.shared_state["npc_memory"]=memories
+
+func npc_memory(npc: String) -> Dictionary:
+	GameState.commit_active_role_state()
+	var memory: Dictionary=GameState.shared_state.get("npc_memory",{}).get(npc,{"actual_met_A":false,"actual_met_B":false,"perceived_same_person":true,"memory_flags":{}}).duplicate(true)
+	for role in ["A","B"]: memory["relationship_"+role]=GameState.role_states.get(role,{}).get("relationships",{}).get(npc,{}).duplicate(true)
+	return memory

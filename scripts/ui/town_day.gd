@@ -183,7 +183,7 @@ func _refresh() -> void:
 	WorldSound.set_location(GameState.current_location)
 	GameState.refresh_appointments()
 	location_title.text = LocalizationSystem.text(_location_name(GameState.current_location))
-	clock_label.text = LocalizationSystem.text("%s · 第%d天 · %s" % [GameState.current_role,GameState.current_day,GameState.clock_text()])
+	clock_label.text = LocalizationSystem.text("第%d天 · %s" % [GameState.current_day,GameState.clock_text()])
 	var money_changed := displayed_money >= 0 and displayed_money != GameState.money
 	displayed_money = GameState.money
 	wallet_label.text = LocalizationSystem.text("%d 元" % GameState.money)
@@ -192,7 +192,6 @@ func _refresh() -> void:
 		wallet_icon.pivot_offset = wallet_icon.size * 0.5
 		create_tween().tween_property(wallet_icon, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	time_guidance_label.text = LocalizationSystem.text(_time_guidance_text())
-	if GameState.current_day == 6 and GameState.current_minute >= 1200: clock_label.text += LocalizationSystem.text(" · 确认%d/12" % GameState.residency_confirmations)
 	street.walk_limit = _world_x(street_order.find("park"), 1060) if GameState.current_minute < WorldGraph.LOOKOUT_OPEN and street_order.has("park") else INF
 	if street.player_x > street.walk_limit:
 		street.player_x = street.walk_limit
@@ -628,8 +627,10 @@ func _rebuild_hotspots() -> void:
 	var center := building_center + Composition.entry_offset(GameState.current_location)
 	for i in street_order.size():
 		var place := street_order[i]
-		# The lookout's public path ends at the telescope gate before 21:00.
-		var sign_x := _world_x(i,980 if place == "park" else 1440)
+		# Every map block owns one physical transport node at its far-right edge.
+		# Keeping the local coordinate fixed makes the road sign readable as the
+		# boundary/choice point instead of a hotspot that drifts with the building.
+		var sign_x := _world_x(i,1500.0)
 		street.hotspots.append({"x":sign_x,"kind":"transport","id":place,"label":"小镇站牌 · 查看路线与出行方式"})
 		# Adjacent blocks are already visible before the player crosses a boundary.
 		if place != GameState.current_location:
@@ -637,8 +638,6 @@ func _rebuild_hotspots() -> void:
 			var at := _world_x(i,Composition.center_local(place))
 			for n in mini(neighbors.size(),3):
 				street.neighboring_residents.append({"kind":"person","id":neighbors[n],"x":at+Composition.npc_offset(place,neighbors[n],n)})
-			if place == "produce_stall" and not bool(DialogueSystem.argument_state().get("finished",false)):
-				street.neighboring_residents.append({"kind":"argument","id":"translation","x":at+Composition.argument_offset()})
 	if preload("res://scripts/core/coastal_fishing.gd").LOCATIONS.has(GameState.current_location):
 		street.hotspots.append({"x":_world_x(current_index,720 if GameState.current_location=="park" else 1190),"kind":"fishing","label":"走到海边钓位 · 每竿 10 分钟"})
 	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
@@ -659,16 +658,16 @@ func _rebuild_hotspots() -> void:
 		for i in rooms.size():
 			street.hotspots.append({"x":center + i * 120, "kind":"door", "reach":street.DOOR_REACH, "id":str(rooms[i].id), "label":"进入" + str(rooms[i].name)})
 	for item in outdoor_objects:
+		if not ChapterSystem.module_available(str(item.get("module_id",""))): continue
 		if str(item.get("location_id", "")) == GameState.current_location:
-			if str(item.get("kind","")) == "encounter":
-				if bool(DialogueSystem.argument_state().get("finished", false)):
-					street.hotspots.append({"x":building_center+Composition.argument_offset(),"kind":"argument_observation","id":"market_argument_finished","label":"看看菜篮留下的印子"})
-				else: street.hotspots.append({"x":building_center+Composition.argument_offset(),"kind":"argument","id":"translation","label":str(item.name)})
-			elif str(item.get("kind","")) == "dialogue":
+			if str(item.get("kind","")) == "dialogue":
 				if not DialogueSystem.invitation_for(str(item.npc_id)).is_empty(): street.hotspots.append({"x":center,"kind":"invitation","id":str(item.npc_id),"label":str(item.name)})
 			elif str(item.get("kind", "")) == "shop":
 				street.hotspots.append({"x":center + 145.0, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
 			else: street.hotspots.append({"x":center, "kind":"module", "id":str(item.module_id), "label":str(item.name) + " · " + GameplayModuleSystem.time_hint(str(item.module_id))})
+	if GameState.current_location=="print_shop":
+		street.hotspots.append({"x":_world_x(current_index,1210),"kind":"public_traces","label":"查看公共柜里的作品"})
+		if ChapterSystem.meeting_available(): street.hotspots.append({"x":_world_x(current_index,990),"kind":"meeting","label":"和赴约的人交谈"})
 	var available := EventSystem.available_events()
 	for index in available.size():
 		street.hotspots.append({"x":center - 190.0 - index * 110.0, "kind":"event", "id":str(available[index].id), "label":str(available[index].get("choice_text", "交谈"))})
@@ -695,15 +694,11 @@ func _interact() -> void:
 			if not is_instance_valid(pocket_panel): _show_pocket_panel(preload("res://scripts/ui/transport_panel.gd").new())
 		"fishing":
 			if not is_instance_valid(pocket_panel): _show_pocket_panel(preload("res://scripts/ui/coastal_fishing_panel.gd").new())
-		"argument": _start_market_encounter()
-		"argument_observation": _observe_market_afterward()
+		"public_traces": _open_public_traces()
+		"meeting": _open_meeting()
 		"module":
 			if _guard_pocket_audio(): return
-			var invite := DialogueSystem.invitation_for_module(str(item.id))
-			if str(item.id) == "chess" and not DialogueSystem.invitation_accepted("chess"):
-				if not DialogueSystem.invitation_for(str(invite.get("npc",""))).is_empty(): _talk_nearby(str(invite.npc),"minigame_hook")
-				else: _show_line("", "棋盘摆好了，对面的椅子还空着。等棋友来再聊聊。")
-			else: SceneRouter.gameplay_module(str(item.id), "street:" + GameState.current_location)
+			SceneRouter.gameplay_module(str(item.id), "street:" + GameState.current_location)
 		"event": _open_event(str(item.id))
 
 func _talk_to_nearest() -> void:
@@ -877,3 +872,14 @@ func _open_map() -> void:
 		_refresh()
 		return
 	SceneRouter.town_map()
+
+func _open_public_traces() -> void:
+	if is_instance_valid(conversation): return
+	conversation=preload("res://scripts/ui/components/public_trace_panel.gd").new()
+	add_child(conversation)
+func _open_meeting() -> void:
+	if is_instance_valid(conversation) or not ChapterSystem.meeting_available(): return
+	conversation=preload("res://scripts/ui/components/meeting_scene.gd").new()
+	conversation.set_meta("street",street)
+	conversation.tree_exited.connect(_refresh)
+	add_child(conversation)

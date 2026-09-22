@@ -16,7 +16,7 @@ func _ready() -> void:
 func state() -> Dictionary:
 	if not GameState.artifacts.has("residency"):
 		var pages: Array = []
-		for day in range(1,8): pages.append({"day":day,"fields":{},"today":"","record":"","keep":[],"marks":[],"ledger_checked":false})
+		for day in range(1,6): pages.append({"day":day,"fields":{},"today":"","record":"","keep":[],"marks":[],"ledger_checked":false})
 		GameState.artifacts.residency = {"version":1,"packet":false,"pages":pages,"materials":{},"filing":{},"ledger":[],"visits":{},"annotations":[],"map_notes":{},"submitted":{},"opening_balance":GameState.money,"imported":false}
 	var s: Dictionary = GameState.artifacts.residency
 	if not s.has("visit_history"):
@@ -299,7 +299,7 @@ func _ensure_mark(resident: String) -> String:
 	var id := "recognition_"+resident
 	if not GameState.confirmed_residents.has(resident): return ""
 	var display_name := str(ScheduleSystem.residents.get(resident,{}).get("display_name",resident))
-	_add(id,"recognition",display_name+"的签记",{"source":"resident_recognition","resident":resident,"signature":display_name,"text":"这张签记来自"+display_name+"。可以夹入七日页面，或收进居民认可页。"})
+	_add(id,"recognition",display_name+"的签记",{"source":"resident_recognition","resident":resident,"signature":display_name,"text":"这张签记来自"+display_name+"。可以留在自由拼贴或居民留字页。"})
 	state().materials[id]["circle"] = recognition_circle(resident)
 	state().materials[id]["relationship_evidence"] = GameState.relationships.get(resident,{}).duplicate(true)
 	# Existing saves may already have a day-page signature from the earlier interface.
@@ -364,11 +364,11 @@ func page_record_complete(page: Dictionary) -> bool:
 	return not str(page.get("today","")).strip_edges().is_empty() and (not str(page.get("record","")).strip_edges().is_empty() or not page.get("keep",[]).is_empty())
 
 func _record_organize() -> void:
-	if not can_organize() or not state().packet or GameState.current_day < 1 or GameState.current_day > 7: return
+	if not can_organize() or not state().packet or GameState.current_day < 1 or GameState.current_day > 5: return
 	state().pages[GameState.current_day-1]["organized_at"] = {"day":GameState.current_day,"minute":GameState.current_minute,"space":SceneRouter.active_space_id}
 
 func night_organized(day: int) -> bool:
-	if day < 1 or day > 7: return false
+	if day < 1 or day > 5: return false
 	var s := state()
 	var page: Dictionary = s.pages[day-1]
 	var action: Dictionary = page.get("organized_at",{})
@@ -379,7 +379,7 @@ func night_organized(day: int) -> bool:
 
 func set_field(day: int, key: String, value: String) -> bool:
 	var s := state()
-	if day < 1 or day > mini(7,GameState.current_day) or not s.submitted.is_empty(): return false
+	if day < 1 or day > mini(5,GameState.current_day) or not s.submitted.is_empty(): return false
 	var page: Dictionary = s.pages[day-1]
 	if key in ["today","record"]: page[key] = value
 	else: page.fields[key] = value
@@ -398,7 +398,7 @@ func file_material(id: String, destination: String, require_home := false) -> bo
 		return assign_mark(str(item.get("resident","")),int(destination.trim_prefix("day_")))
 	if destination.begins_with("day_"):
 		var day := int(destination.trim_prefix("day_"))
-		if day < 1 or day > mini(7,GameState.current_day): return false
+		if day < 1 or day > mini(5,GameState.current_day): return false
 	elif destination not in ["proof","recognition","personal","loose"]: return false
 	if destination == "recognition" and item.kind != "recognition": return false
 	if item.kind == "recognition" and destination not in ["recognition","loose"]: return false
@@ -419,7 +419,7 @@ func file_material(id: String, destination: String, require_home := false) -> bo
 
 func assign_mark(resident: String, day: int) -> bool:
 	var s := state()
-	if not s.packet or not GameState.confirmed_residents.has(resident) or day < 1 or day > mini(7,GameState.current_day) or not s.submitted.is_empty(): return false
+	if not s.packet or not GameState.confirmed_residents.has(resident) or day < 1 or day > mini(5,GameState.current_day) or not s.submitted.is_empty(): return false
 	if s.pages[day-1].marks.has(resident): return true
 	if s.pages[day-1].marks.size() >= 2: return false
 	for page in s.pages: page.marks.erase(resident)
@@ -431,7 +431,7 @@ func assign_mark(resident: String, day: int) -> bool:
 	return true
 
 func check_ledger(day: int) -> void:
-	if day < 1 or day > mini(7,GameState.current_day) or not state().submitted.is_empty(): return
+	if day < 1 or day > mini(5,GameState.current_day) or not state().submitted.is_empty(): return
 	state().pages[day-1].ledger_checked = true
 	_record_organize()
 	persist()
@@ -468,74 +468,15 @@ func ledger_for(day: int, s: Dictionary = {}) -> Dictionary:
 	return {"income":income,"expense":expense,"balance":balance}
 
 func audit(role := "") -> Dictionary:
-	if role.is_empty(): role = GameState.current_role
+	# Compatibility for diagnostic readers only. The former application is retired;
+	# ChapterSystem alone decides progression. No page or recognition quota remains.
 	GameState.commit_active_role_state()
-	var role_state: Dictionary = GameState.role_states.get(role,{})
-	var s: Dictionary = role_state.get("artifacts",{}).get("residency",{})
-	var result := {"packet":false,"pages":false,"income":false,"living_receipts":false,"receipt_categories":false,"ledger":false,"exploration":false,"recognition":false,"recognition_circles":false,"contribution":false,"personal":false,"why_stay":false}
-	if s.is_empty(): return {"ready":false,"requirements":result,"missing":result.keys(),"submitted":{}}
-	var minimum: Dictionary = content.get("requirements",{})
-	result.packet = bool(s.packet)
-	var complete := 0
-	var ledger := 0
-	var income_proofs := 0
-	var contribution_proofs := 0
-	var living_receipts := 0
-	var eligible_receipts := 0
-	var receipt_categories: Array = []
-	var exploration_kinds: Array = []
-	var recognition_circles: Array = []
-	var marks: Array = []
-	var granted: Array = role_state.get("confirmed_residents",[])
-	for page in s.pages:
-		if page_record_complete(page): complete += 1
-		if bool(page.ledger_checked): ledger += 1
-		for mark in page.marks:
-			if granted.has(mark) and not marks.has(mark): marks.append(mark)
-	result.pages = complete >= int(minimum.get("pages",7))
-	result.ledger = ledger >= int(minimum.get("ledger",7))
-	for item in s.materials.values():
-		if valid_living_receipt(item,s.ledger): eligible_receipts += 1
-	for id in s.filing:
-		if s.filing[id] == "loose": continue
-		var item: Dictionary = s.materials.get(id,{})
-		if item.get("kind","") == "recognition" and s.filing[id] == "recognition":
-			var resident := str(item.get("resident",""))
-			if granted.has(resident) and not marks.has(resident): marks.append(resident)
-		if valid_living_receipt(item,s.ledger):
-			living_receipts += 1
-			for category in item.get("categories",[str(item.category)]):
-				if not receipt_categories.has(str(category)): receipt_categories.append(str(category))
-		if valid_exploration(item,s):
-			if not exploration_kinds.has(str(item.exploration_kind)): exploration_kinds.append(str(item.exploration_kind))
-		if item.get("kind","") != "proof": continue
-		var source: Dictionary = s.materials.get(str(item.get("source_material","")),{})
-		if item.get("proof_kind","") == "income" and int(source.get("amount",0)) > 0 and s.ledger.any(func(row: Dictionary) -> bool: return str(row.get("source","")) == str(source.get("source","")) and int(row.get("amount",0)) > 0 and str(row.get("kind","")) != "reimbursement" and not str(row.get("reason","")).contains("报销") and not str(row.get("reason","")).contains("初始资金")): income_proofs += 1
-		if item.get("proof_kind","") == "contribution" and bool(source.get("contribution_entered_town",false)) and _has_contribution_trace(str(source.get("world_trace_id",""))): contribution_proofs += 1
-	for resident in marks:
-		var circle := recognition_circle(str(resident))
-		if not circle.is_empty() and not recognition_circles.has(circle): recognition_circles.append(circle)
-	result.income = income_proofs >= int(minimum.get("income",1))
-	result.contribution = contribution_proofs >= int(minimum.get("contribution",1))
-	result.living_receipts = living_receipts >= int(minimum.get("living_receipts",3))
-	result.receipt_categories = receipt_categories.size() >= int(minimum.get("receipt_categories",2))
-	result.recognition = marks.size() >= int(minimum.get("recognition",12))
-	result.recognition_circles = recognition_circles.size() >= int(minimum.get("recognition_circles",4))
-	result.exploration = exploration_kinds.size() >= int(minimum.get("exploration",3))
-	var personal: Dictionary = s.pages[4].fields
-	var answered := 0
-	for i in range(1,10):
-		if not str(personal.get("q%d" % i,"")).strip_edges().is_empty(): answered += 1
-	result.personal = answered >= 3 or not str(personal.get("free","")).strip_edges().is_empty() or s.filing.values().has("personal")
-	var final_fields: Dictionary = s.pages[6].fields
-	result.why_stay = ["why_stay","choice","signature"].all(func(k: String) -> bool: return not str(final_fields.get(k,"")).strip_edges().is_empty())
-	var missing: Array = []
-	for key in result:
-		if not result[key]: missing.append(key)
-	var counts := {"packet":int(result.packet),"pages":complete,"income":income_proofs,"living_receipts":living_receipts,"receipt_categories":receipt_categories.size(),"ledger":ledger,"exploration":exploration_kinds.size(),"recognition":marks.size(),"recognition_circles":recognition_circles.size(),"contribution":contribution_proofs,"personal":int(result.personal),"why_stay":int(result.why_stay)}
-	var progress: Dictionary = {}
-	for key in counts: progress[key] = {"count":counts[key],"target":int(minimum.get(key,1))}
-	return {"ready":missing.is_empty(),"requirements":result,"progress":progress,"missing":missing,"submitted":s.submitted,"pages_complete":complete,"recognitions":marks.size(),"recognition_circles":recognition_circles,"receipt_categories":receipt_categories,"collected_living_receipts":eligible_receipts,"exploration_kinds":exploration_kinds}
+	var role_state: Dictionary=GameState.role_states.get(GameState.current_role if role.is_empty() else role,{})
+	var saved: Dictionary=role_state.get("artifacts",{}).get("residency",{})
+	var completed := 0
+	for page in saved.get("pages",[]):
+		if page_record_complete(page): completed+=1
+	return {"retired":true,"ready":false,"requirements":{},"progress":{},"missing":[],"submitted":{},"pages_complete":completed,"recognitions":role_state.get("confirmed_residents",[]).size(),"recognition_circles":[],"receipt_categories":[],"collected_living_receipts":0,"exploration_kinds":[]}
 
 func valid_exploration(item: Dictionary, s: Dictionary = {}) -> bool:
 	if s.is_empty(): s = state()
@@ -553,42 +494,10 @@ func valid_exploration(item: Dictionary, s: Dictionary = {}) -> bool:
 	return periods.size() >= 2
 
 func submit() -> Dictionary:
-	var s := state()
-	if not s.submitted.is_empty(): return {"ok":false,"message":"这份档案已提交。"}
-	if GameState.current_day != 7 or GameState.current_minute >= 1080: return {"ok":false,"message":"提交时间是 Day 7 · 09:00–18:00。"}
-	if GameState.current_location != "print_shop" or SceneRouter.active_space_id != "print_studio" or not office_open(): return {"ok":false,"message":"请到社区中心柜台交件。"}
-	var review := audit()
-	if not review.ready: return {"ok":false,"message":"还需要补齐标出的材料。","audit":review}
-	var choice := str(s.pages[6].fields.get("choice","还没想好"))
-	var outcome := "申请材料已受理。你为留下做出了自己的选择。"
-	if choice.contains("离开"): outcome = "材料已存档。你选择离开，这七天仍属于你。"
-	elif choice.contains("没") or choice.contains("清楚"): outcome = "材料已存档。你为自己保留了继续考虑的时间。"
-	s.submitted = {"day":7,"minute":GameState.current_minute,"role":GameState.current_role,"choice":choice,"outcome":outcome,"snapshot":{"pages":s.pages.duplicate(true),"filing":s.filing.duplicate(true)}}
-	persist()
-	return {"ok":true,"message":outcome}
+	return {"ok":false,"retired":true,"message":"居住申请交件已取消，生活记录可以自由保留。"}
 
 func submit_free_application() -> Dictionary:
-	var s := state()
-	if not s.submitted.is_empty(): return {"ok":false,"message":"申请已经提交。"}
-	if GameState.current_day < 7: return {"ok":false,"message":"先把这七天好好过完，第七天再提交。"}
-	var pages: Dictionary = s.get("free_pages",{})
-	if pages.get("personal",[]).is_empty(): return {"ok":false,"message":"个人信息页还没有留下你的表达。"}
-	if pages.get("life",[]).is_empty(): return {"ok":false,"message":"生活记录页还没有留下生活材料。"}
-	if GameState.confirmed_residents.size()<12: return {"ok":false,"message":"还有居民等着认识你。"}
-	for d in range(1,8):
-		if pages.get("day_%d" % d,[]).is_empty(): return {"ok":false,"message":"Day %02d 的作品页还是空白。" % d}
-	var answers: Dictionary = s.get("final_answers",{})
-	for key in ["0","1","2","3","4","signature"]:
-		if str(answers.get(key,"")).strip_edges().is_empty(): return {"ok":false,"message":"请补完最终文件，并留下签名。"}
-	var application_pages := pages.duplicate(true)
-	application_pages.erase("notebook")
-	var before := GameState.to_save_data().duplicate(true)
-	s.submitted={"day":GameState.current_day,"minute":GameState.current_minute,"role":GameState.current_role,"outcome":"你的申请已收到。谢谢你把这七天留给 Solmere。","snapshot":{"free_pages":application_pages,"final_answers":answers.duplicate(true),"final_references":s.get("final_references",{}).duplicate(true)}}
-	GameState.commit_active_role_state()
-	if not SaveManager.save_or_report("申请未能保存，请重试"):
-		GameState.load_save_data(before); return {"ok":false,"message":"申请还没有交出，所有页面仍在，请重试。"}
-	changed.emit()
-	return {"ok":true,"message":s.submitted.outcome}
+	return {"ok":false,"retired":true,"message":"居住申请交件已取消，生活记录可以自由保留。"}
 
 func add_note(text: String, revision_of := "", mark := "") -> String:
 	if text.strip_edges().is_empty(): return ""

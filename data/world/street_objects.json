@@ -19,13 +19,6 @@
       "location_id": "park"
     },
     {
-      "id": "vegetable_memory",
-      "location_id": "produce_stall",
-      "kind": "encounter",
-      "module_id": "translation",
-      "name": "听听两个人在争执什么"
-    },
-    {
       "id": "produce_counter",
       "location_id": "produce_stall",
       "kind": "shop",

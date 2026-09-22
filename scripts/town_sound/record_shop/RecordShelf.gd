@@ -44,7 +44,7 @@ func _ready() -> void:
 				cover.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 				row.add_child(cover)
 		var creator := str(record.get("created_by", ""))
-		var origin := " · %s视角制作" % creator if not creator.is_empty() else ""
+		var origin := " · %s视角制作" % creator if not creator.is_empty() and CharacterSystem.switch_unlocked() else ""
 		row.add_child(host._label("%s / %s / %.1f s%s\n%s" % [record.title, record.artist, record.duration, origin, record.get("one_line_note", "")], 15))
 		row.add_child(host._button("▶ 试听", func() -> void: listen(record)))
 	column.add_child(host._button("■ 停止试听", func() -> void: player.stop()))

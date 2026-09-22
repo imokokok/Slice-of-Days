@@ -18,23 +18,23 @@ func _ready() -> void:
 	if rows.get_child_count()==0: _label(paper,"还没有收进来的材料。\n也可以先写下一件小事。",Vector2(45,190),Vector2(390,110),22)
 	reflection=TextEdit.new(); reflection.position=Vector2(490,148); reflection.size=Vector2(420,310); reflection.text=str(CoreLoopSystem.day_state().get("reflection_draft",CoreLoopSystem.day_state().reflection)); reflection.placeholder_text="今天，有哪一刻想留住？\n\n未完成的事情可以明天继续。"; paper.add_child(reflection)
 	reflection.text_changed.connect(func() -> void: CoreLoopSystem.day_state()["reflection_draft"]=reflection.text)
-	feedback=_label(paper,"作品页可以现在补，也可以之后再做。",Vector2(45,470),Vector2(850,54),19)
-	if GameState.current_day==7 and ResidencySystem.state().submitted.is_empty(): feedback.text="最终文件还没提交，今天仍可以继续补齐材料。"
-	_button(paper,"收好，今晚先休息",Vector2(45,551),Vector2(260,54),_rest)
-	_button(paper,"收好，打开今日作品页",Vector2(319,551),Vector2(305,54),_portfolio)
-	var extension: bool=GameState.current_day==7 and GameState.current_minute>=1260 and ResidencySystem.state().submitted.is_empty()
-	_button(paper,"再留一晚补齐申请" if extension else "先收起",Vector2(650,551),Vector2(260,54),_extend if extension else _dismiss)
+	feedback=_label(paper,"记录可以自由整理，不影响明天。",Vector2(45,470),Vector2(850,54),19)
+	_button(paper,"收好，今晚先休息",Vector2(45,551),Vector2(390,54),_rest)
+	_button(paper,"先收起",Vector2(520,551),Vector2(390,54),_dismiss)
 	reflection.grab_focus()
 func _label(parent: Node, text: String, at: Vector2, bounds: Vector2, size: int) -> Label:
 	var label := Label.new(); label.text=text; label.position=at; label.size=bounds; label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; label.add_theme_font_size_override("font_size",size); parent.add_child(label); return label
 func _button(parent: Node, text: String, at: Vector2, bounds: Vector2, action: Callable) -> void:
 	var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.variant="outlined"; button.text=text; button.position=at; button.size=bounds; parent.add_child(button); button.pressed.connect(action)
 func _rest() -> void:
+	var check := ChapterSystem.can_end_day()
+	if not bool(check.ok): feedback.text=str(check.reason); return
 	var result := CoreLoopSystem.review_day(reflection.text)
 	feedback.text=str(result.message)
 	if not result.ok: return
-	if GameState.current_day==7 and ResidencySystem.state().submitted.is_empty(): feedback.text="先打开档案中的最终文件；申请还没提交。"; return
-	queue_free(); ChapterSystem.sleep_at_home.call_deferred()
+	queue_free()
+	ChapterSystem.sleep_at_home.call_deferred()
+
 func _portfolio() -> void:
 	var result := CoreLoopSystem.review_day(reflection.text); feedback.text=str(result.message)
 	if not result.ok: return

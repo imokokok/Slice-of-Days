@@ -7,10 +7,12 @@ signal role_changed(role: String)
 signal money_recorded(transaction: Dictionary)
 
 const REAL_SECONDS_PER_GAME_MINUTE := 4.0
-const SAVE_VERSION := 6
+const SAVE_VERSION := 7
 const CALENDAR_PATH := "res://data/story/calendar.json"
 
 var current_role := "A"
+var current_character: String:
+	get: return current_role
 var current_day := 1
 var current_minute := 9 * 60
 var clock_remainder := 0.0
@@ -81,10 +83,11 @@ func _default_role_state(role: String) -> Dictionary:
 	var schedule := schedule_for(role, 1)
 	var economy := _load_json("res://data/economy/economy_config.json")
 	return {
+		"character_id":role,
 		"day": 1,
 		"minute": int(schedule.get("start", 9 * 60)),
 		"money": int(economy.get("starting_balance", {}).get(role, schedule.get("starting_money", 12000 if role == "A" else 1600))),
-		"location": "residence",
+		"location": "residence" if role == "A" else "dorm",
 		"completed_events": [],
 		"confirmed_residents": [],
 		"encountered_residents": [],
@@ -107,6 +110,7 @@ func commit_active_role_state() -> void:
 	if current_role.is_empty():
 		return
 	role_states[current_role] = {
+		"character_id":current_role,
 		"day": current_day,
 		"minute": current_minute,
 		"clock_remainder": clock_remainder,
@@ -153,7 +157,7 @@ func switch_to_role(role: String, day := -1, reset_to_schedule_start := false) -
 
 func _load_role_state(role: String) -> void:
 	current_role = role
-	var data: Dictionary = role_states.get(role, _default_role_state(role))
+	var data: Dictionary = role_states.get(role, _default_role_state(role)).duplicate(true)
 	current_day = int(data.get("day", 1))
 	current_minute = int(data.get("minute", 9 * 60))
 	clock_remainder = clampf(float(data.get("clock_remainder", 0.0)), 0.0, REAL_SECONDS_PER_GAME_MINUTE)
@@ -287,6 +291,7 @@ func can_fit_now(minutes: int) -> bool:
 func can_fit_at(role: String, day: int, minute: int, minutes: int) -> bool:
 	if minutes < 0:
 		return false
+	if minute>=1320 and day in range(1,6): return true
 	for block in schedule_for(role, day).get("blocks", []):
 		var start := int(block[0])
 		var end := int(block[1])
@@ -728,55 +733,36 @@ func to_save_data() -> Dictionary:
 	return {
 		"save_version": SAVE_VERSION,
 		"current_role": current_role,
+		"current_day": current_day,
+		"current_character": current_role,
+		"character_switch_enabled": bool(shared_state.get("character_switch_enabled",false)),
 		"role_states": role_states.duplicate(true),
 		"shared_state": shared_state.duplicate(true),
 	}
 
 
 func load_save_data(data: Dictionary) -> void:
+	if not compatible_save(data): return
 	session_restored.emit()
-	if data.has("role_states"):
-		role_states = data.get("role_states", {}).duplicate(true)
-		shared_state = data.get("shared_state", {}).duplicate(true)
-		# Apply only the difference from each save's original starting capital.
-		# Existing earnings and spending survive, including for the inactive role.
-		var budget_version := int(shared_state.get("starting_budget_version", 1))
-		if budget_version < 3:
-			if int(data.get("save_version", 0)) >= 4:
-				for role in ["A", "B"]:
-					if not role_states.has(role): continue
-					var previous_budget := (1000 if budget_version == 2 else 300) if role == "A" else 160
-					var role_state: Dictionary = role_states[role]
-					var adjustment := int(schedule_for(role, 1).get("starting_money", 12000 if role == "A" else 1600)) - previous_budget
-					role_state.money = int(role_state.get("money", previous_budget)) + adjustment
-					var ledger: Array = role_state.get("money_ledger", []).duplicate(true)
-					ledger.append({"day":int(role_state.get("day", 1)), "minute":int(role_state.get("minute", 480)), "amount":adjustment, "reason":"初始资金调整", "balance":role_state.money})
-					role_state.money_ledger = ledger
-			shared_state["starting_budget_version"] = 3
-		for role in ["A", "B"]:
-			if not role_states.has(role):
-				role_states[role] = _default_role_state(role)
-		_load_role_state(str(data.get("current_role", "A")))
-	else:
-		_migrate_legacy_save(data)
-		shared_state.erase("resident_cast_version")
-	var location_aliases := {"cafeteria":"night_market", "theatre":"print_shop", "studio":"print_shop", "old_station":"bus_stop", "court":"town_entrance"}
-	current_location = str(location_aliases.get(current_location, current_location))
-	shared_state["chapter_start_role"] = "A"
-	shared_state["chapter_index"] = current_day - 1
-	if int(data.get("save_version", 0)) < 4:
-		var roles: Array = calendar_data.get("day_roles", [])
-		while current_day < 7 and str(roles[current_day - 1]) != current_role: current_day += 1
-		if current_day == 7: shared_state["final_role"] = current_role
-		shared_state["chapter_index"] = current_day - 1
-		shared_state.erase("street_positions")
+	role_states=data.role_states.duplicate(true)
+	shared_state=data.shared_state.duplicate(true)
+	_load_role_state(str(data.current_role))
 	ChapterSystem.align_saved_chapter()
-	commit_active_role_state()
-	preload("res://scripts/core/resident_save_migration.gd").apply(self)
-	_load_role_state(current_role)
 	commit_active_role_state()
 	state_changed.emit()
 
+func compatible_save(data: Dictionary) -> bool:
+	if int(data.get("save_version",0))!=SAVE_VERSION: return false
+	if not data.get("role_states") is Dictionary or not data.get("shared_state") is Dictionary: return false
+	if not data.get("role_states",{}).has_all(["A","B"]): return false
+	for key in ["A","B"]:
+		if not data.role_states[key] is Dictionary: return false
+	var role := str(data.get("current_role",""))
+	var day := int(data.get("current_day",0))
+	if role not in ["A","B"] or day<1 or day>5: return false
+	if day<5 and role!=str(calendar_data.day_roles[day-1]): return false
+	if day==5 and role=="B" and not bool(data.get("shared_state",{}).get("five_day_story",{}).get("reveal_completed",false)): return false
+	return int(data.role_states[role].get("day",0))==day
 
 func _migrate_legacy_save(data: Dictionary) -> void:
 	var role := str(data.get("current_role", "A"))

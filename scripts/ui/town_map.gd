@@ -58,7 +58,7 @@ func _draw() -> void:
 			draw_line(_point(str(ids[i-1])), _point(str(ids[i])), colors[r], 5, true)
 	for path in [[Vector2(720,360),Vector2(720,230),Vector2(350,230),Vector2(350,150)], [Vector2(720,360),Vector2(720,490),Vector2(160,490),Vector2(160,620)], [Vector2(890,360),Vector2(995,360),Vector2(995,190),Vector2(930,190)]]:
 		for i in range(1, path.size()): draw_line(path[i-1],path[i],Color("8b9b86"),4,true)
-	for caption in [["住宅区 · A 的家 / B 的家 / 停车区",Vector2(300,100)],["主街 · 从左侧公交站出发",Vector2(40,315)],["文化街支路 · 巷尾可以转身返回",Vector2(100,570)],["海边观景台",Vector2(835,135)]]:
+	for caption in [["住宅区 · 海边住处 / 街角住处 / 停车区",Vector2(300,100)],["主街 · 从左侧公交站出发",Vector2(40,315)],["文化街支路 · 巷尾可以转身返回",Vector2(100,570)],["海边观景台",Vector2(835,135)]]:
 		draw_string(ThemeDB.fallback_font,caption[1],LocalizationSystem.text(caption[0]),HORIZONTAL_ALIGNMENT_LEFT,-1,20,Color("294f56"))
 	draw_rect(Rect2(1038,90,540,745),Color("f4f0e5"))
 func _map_point(index: int) -> Vector2:

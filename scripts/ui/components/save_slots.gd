@@ -7,7 +7,7 @@ func _ready() -> void:
 		var slot := i+1
 		var info := SaveManager.slot_summary(slot)
 		var card := preload("res://scripts/ui/components/solmere_button.gd").new()
-		card.variant="outlined"; card.position=Vector2(i*340,0); card.size=Vector2(318,368); card.disabled=not bool(info.get("exists",false)); card.name="LoadSlot_%d" % slot; add_child(card)
+		card.variant="outlined"; card.position=Vector2(i*340,0); card.size=Vector2(318,368); card.disabled=not bool(info.get("exists",false)) or not bool(info.get("compatible",false)); card.name="LoadSlot_%d" % slot; add_child(card)
 		card.pressed.connect(func() -> void: loaded.emit(slot))
 		var paper := ColorRect.new(); paper.position=Vector2(12,12); paper.size=Vector2(294,165); paper.color=Color("c8d9e0"); paper.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(paper)
 		if not str(info.get("thumbnail","")).is_empty():
@@ -17,7 +17,7 @@ func _ready() -> void:
 		else: _label(card,"尚无影像" if bool(info.get("exists",false)) else "尚未开始",Vector2(28,78),22)
 		_label(card,"旅程 %02d" % slot,Vector2(21,199),24)
 		if bool(info.get("exists",false)):
-			_label(card,"%s · Day %02d · %s" % [str(info.role),int(info.day),GuidanceSystem.time_text(int(info.minute))],Vector2(21,249),18)
+			_label(card,("Day %02d · %s" % [int(info.day),GuidanceSystem.time_text(int(info.minute))]) if bool(info.get("compatible",false)) else "旧七日存档 · 请开始新旅程",Vector2(21,249),18)
 			_label(card,TravelSystem.location_name(str(info.location)),Vector2(21,292),20)
 			var remove := preload("res://scripts/ui/components/solmere_button.gd").new(); remove.text="删除这份存档"; remove.position=Vector2(i*340+64,386); remove.size=Vector2(200,40); remove.disabled=not FileAccess.file_exists(SaveManager.path_for_slot(slot)); add_child(remove)
 			remove.pressed.connect(func() -> void:

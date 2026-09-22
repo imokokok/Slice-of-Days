@@ -121,8 +121,12 @@ var spoon_on_fire := false
 var stamp_imprint := false
 var notes_open := false
 var settings_open := false
+var session_context: Dictionary = {}
 
 func _ready() -> void:
+	session_context=get_meta("solmere_context",{})
+	if not session_context.is_empty():
+		preview_path="user://letter_%s_%s.png"%[str(GameState.shared_state.get("journey_id","local")),str(session_context.current_character)]
 	smoke = OS.get_cmdline_user_args().has("--workshop-test")
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--profile="): save_path = "user://workshop_" + arg.trim_prefix("--profile=").validate_filename() + ".json"
@@ -1145,7 +1149,7 @@ func send_letter() -> void:
 		return
 	stage="END";mode=Mode.SENT
 	audio.play("MAIL_DROP",0.7)
-	say("林舟的信已封存。谢谢你留给这封信的时间。")
+	say("信已封存。谢谢你留给这封信的时间。")
 	save_game()
 
 func open_bottles() -> void:
@@ -1258,22 +1262,34 @@ func redo() -> void:
 
 func save_game() -> void:
 	if not ready_done or smoke: return
-	var file:=FileAccess.open(save_path+".tmp",FileAccess.WRITE)
-	if not file: return
-	file.store_string(JSON.stringify(snapshot()))
-	file.close()
-	if DirAccess.rename_absolute(save_path+".tmp",save_path)!=OK: return
+	if not session_context.is_empty():
+		if str(session_context.current_character)!=GameState.current_role: return
+		if not GameState.artifacts.has("minigame_drafts"): GameState.artifacts["minigame_drafts"]={}
+		GameState.artifacts.minigame_drafts["ghostwriting"]=snapshot()
+		GameState.commit_active_role_state()
+		if not SaveManager.save_game(): hint="草稿仍在桌上，但未能写入存档。请再试一次保存。"
+	else:
+		var file:=FileAccess.open(save_path+".tmp",FileAccess.WRITE)
+		if not file: return
+		file.store_string(JSON.stringify(snapshot()))
+		file.close()
+		if DirAccess.rename_absolute(save_path+".tmp",save_path)!=OK: return
 	if has_node("/root/FilmSystem"):
 		for paper in papers.get_children():
 			if not str(paper.photo_id).is_empty() and not bool(FilmSystem.photo(paper.photo_id).get("used_in_collage",false)): FilmSystem.mark_photo_use(paper.photo_id,"collage")
 
 func load_game() -> void:
+	if not session_context.is_empty():
+		var draft: Dictionary=GameState.artifacts.get("minigame_drafts",{}).get("ghostwriting",{})
+		if draft.get("version",0)==3: restore_snapshot(draft)
+		return
 	if not FileAccess.file_exists(save_path): return
 	var data=JSON.parse_string(FileAccess.get_file_as_string(save_path))
 	if data is Dictionary and data.get("version",0)==3: restore_snapshot(data)
 
 func show_drafts() -> void:
 	save_game()
+	if not session_context.is_empty() and not SaveManager.save_or_report("草稿未能保存"): return
 	say("当前草稿已保存。下次回到桌边，会继续这封信。")
 
 func show_notes() -> void:
@@ -1290,7 +1306,7 @@ func _build_note_panel() -> void:
 	panel.position=Vector2(475,220);panel.size=Vector2(650,420);panel.add_theme_stylebox_override("panel",_paper_style())
 	ui.add_child(panel)
 	if notes_open:
-		_label("林舟的委托",Rect2(510,250,550,50),28)
+		_label("书信事务所的委托",Rect2(510,250,550,50),28)
 		var text:="给很久没见的朋友写一封信。\n留一张旧车票，可以加上公交站的画面。\n别直说‘我想你’，也别写成告别。\n\n拖动纸片 · Q / E 旋转 · 滚轮缩放 · [ / ] 层级\n剪刀端点：Shift + 拖动；从圆点沿线剪\n刻刀需要刻板；胶带要用剪刀剪断。\nCtrl+Z 撤销 · Ctrl+Y 重做 · Esc 放回工具"
 		_label(text,Rect2(510,310,580,290),18)
 	else:

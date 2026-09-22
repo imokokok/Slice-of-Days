@@ -34,11 +34,7 @@ func argument_state() -> Dictionary:
 		GameState.shared_state[key] = state
 	return state
 
-func argument_pending() -> bool:
-	# The old per-day encounter marker was written as soon as the overlay opened.
-	# It therefore cannot decide whether the optional conversation was actually
-	# completed: leaving early keeps it available for another voluntary interaction.
-	return not bool(argument_state().get("finished", false))
+func argument_pending() -> bool: return false
 
 func mark_argument(finished: bool) -> void:
 	var state := argument_state()
@@ -55,16 +51,12 @@ func argument_lingering() -> bool:
 	return bool(state.get("finished", false)) and int(state.get("day", 0)) == GameState.current_day and GameState.current_minute < int(state.get("minute", 0)) + ARGUMENT_LINGER_MINUTES
 
 func people_at(location: String) -> Array[String]:
-	var people := ScheduleSystem.residents_at(location, GameState.current_day, GameState.current_minute)
-	for person in ARGUMENT_PEOPLE: people.erase(person)
-	if bool(argument_state().get("finished", false)):
-		for person in ARGUMENT_PEOPLE:
-			var destination := "produce_stall" if argument_lingering() else str(ScheduleSystem.activity_at(person, GameState.current_day, GameState.current_minute).get("location", ""))
-			if destination == location: people.push_front(person)
-	# Keep the actual vendor reachable even on a crowded market day.
-	if people.has("beetman"):
-		people.erase("beetman")
-		people.push_front("beetman")
+	var people := ScheduleSystem.residents_at(location,GameState.current_day,GameState.current_minute)
+	# Daily collaborator remains reachable until the main activity and conversation finish.
+	var p := ChapterSystem.plan()
+	if str(p.location)==location and not str(p.npc).is_empty() and not bool(ChapterSystem.day_state().narrative_completed):
+		people.erase(str(p.npc))
+		people.push_front(str(p.npc))
 	return people
 
 func conversation_id(npc: String, topic: String) -> String:
@@ -198,11 +190,13 @@ func invitation_for(npc: String) -> Dictionary:
 	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
 	if not bool(activity.get("allows_invitation", true)): return {}
 	for offer in invitations:
+		if not ChapterSystem.module_available(str(offer.module)): continue
 		if bool(offer.get("encounter",false)): continue
 		if str(offer.npc) == npc and str(offer.location) == GameState.current_location and str(ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute).get("location","")) == GameState.current_location: return offer
 	return {}
 func invitation_for_module(module_id: String) -> Dictionary:
 	for offer in invitations:
+		if not ChapterSystem.module_available(str(offer.module)): continue
 		if str(offer.module) == module_id: return offer
 	return {}
 
@@ -239,6 +233,7 @@ func notebook_leads() -> Array:
 	var notes: Array = []
 	var prompts := {"cooking":"想听听厨房里的声音，去饭店找石泳琪聊聊今天的菜。", "ghostwriting":"去书信事务所见见 Mossner，问问桌上那封没写完的信。", "sound_sampling":"带着路上听到的声音，去唱片店跟 Xanni 聊聊。", "tarot":"去塔罗店找夏透明，听听那副旧牌的故事。", "chess":"傍晚去棋摊找闹闹，问问对面的位子有没有人。", "translation":"买菜时和 BEETMAN 聊聊，听说摊边有人把话说岔了。", "contemplation":"晚上九点以后去观景台，遇见宇星晴就问问他在看哪片天空。"}
 	for offer in invitations:
+		if not ChapterSystem.module_available(str(offer.module)): continue
 		var accepted := invitation_accepted(str(offer.module))
 		if bool(offer.get("encounter",false)):
 			notes.append({"kind":"note","heading":"路上听见的事","text":"买菜摊旁，两个人为了晚饭争执起来。走近听听他们各自在意什么。","place":"produce_stall"})

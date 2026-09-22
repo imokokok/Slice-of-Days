@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Solmere"
+config/name="Solmere · 五日旅程"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="Solmere_Playable_Meta"
 run/main_scene="res://scenes/main_menu.tscn"

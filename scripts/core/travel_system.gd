@@ -125,7 +125,7 @@ func travel(to_id: String, method: String) -> Dictionary:
 		return {"ok": false, "message": str(option.get("reason", "当前无法使用。"))}
 	var duration := int(option.get("minutes", 0))
 	var cost := int(option.get("cost", 0))
-	if GameState.current_minute + duration >= 1440:
+	if GameState.current_day>5 and GameState.current_minute + duration >= 1440:
 		return {"ok": false, "message": "今天已没有足够时间完成这段路程。"}
 	if cost > 0 and GameState.money < cost:
 		return {"ok": false, "message": "余额不足。"}

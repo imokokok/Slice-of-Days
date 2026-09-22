@@ -21,7 +21,7 @@ const PLAYER_HOME_ART = preload("res://art/user_scenes/player_home.png")
 const PRODUCE_STALL_ART = preload("res://art/user_scenes/produce_stall.png")
 const RESTAURANT_ART = preload("res://art/user_scenes/restaurant.png")
 const CORRESPONDENCE_OFFICE_ART = preload("res://art/user_scenes/correspondence_office.png")
-const PROTAGONIST_ART = preload("res://art/user_scenes/protagonist_white.png")
+const PROTAGONIST_ART = preload("res://art/user_scenes/protagonist_colored.png")
 const CHENYUAN_ART = preload("res://art/user_scenes/chenyuan.png")
 const CICI_ART = preload("res://art/user_scenes/cici.png")
 const NAONAO_ART = preload("res://art/user_scenes/naonao_white.png")
@@ -53,6 +53,7 @@ var idle_redraw := 0.0
 var resident_directions: Dictionary = {}
 var presence = preload("res://scripts/ui/resident_presence.gd").new()
 var neighboring_residents: Array[Dictionary] = []
+var weather_last := ""
 
 func presented_residents() -> Array[Dictionary]:
 	return presence.reconcile(hotspots + neighboring_residents, camera_x)
@@ -108,6 +109,10 @@ func _update_world_finish() -> void:
 		return
 	if not material is ShaderMaterial: return
 	var light := Composition.daylight(GameState.current_minute)
+	var weather := _weather_kind()
+	if weather != weather_last:
+		weather_last = weather
+		WorldSound.set_weather(weather)
 	material.set_shader_parameter("camera_offset", Vector2(camera_x,0))
 	material.set_shader_parameter("daylight", Vector3(light.r,light.g,light.b))
 	material.set_shader_parameter("amount", 0.0 if indoor else 1.0)
@@ -142,12 +147,15 @@ func move_player(axis: float, delta: float, hurry := false) -> void:
 	var previous := player_x
 	player_x = clampf(player_x + velocity * delta, 80.0, minf(world_width - 80.0, walk_limit))
 	var distance := absf(player_x - previous)
-	var previous_step := int(phase / PI)
+	var previous_step := int(phase / (PI * .5))
 	# Tie the gait to distance instead of time so feet do not skate when the
 	# character accelerates. A slightly longer step also keeps the walk relaxed.
 	phase += distance / 42.0
-	if int(phase / PI) != previous_step and enabled: WorldSound.play_footstep()
-	gait_weight = move_toward(gait_weight, minf(absf(velocity) / SPEED, 1.0) if distance > 0.0 else 0.0, delta * 8.0)
+	if int(phase / (PI * .5)) != previous_step and enabled: WorldSound.play_footstep()
+	# Ease the visual gait independently from the physics velocity. This gives
+	# the feet a contact phase during acceleration and a soft settle on release.
+	var target_gait := minf(absf(velocity) / SPEED, 1.0) if distance > 0.0 else 0.0
+	gait_weight = move_toward(gait_weight, target_gait, delta * (11.0 if target_gait > gait_weight else 7.0))
 	if distance > 0.0: moved.emit(player_x)
 	var camera_target := clampf(player_x - composition_anchor, 0.0, maxf(0.0, world_width - 1600.0))
 	camera_x = lerpf(camera_x, camera_target, 1.0 - exp(-5.0 * delta)) if delta > 0.0 else camera_target
@@ -214,6 +222,11 @@ func _draw() -> void:
 			# 尘缘坚持吃肉，CICI 则坚持素食；两位都用用户提供的形象。
 			_draw_authored_npc("chenyuan", Vector2(x-70,_npc_ground("chenyuan",float(item.x))), 1.0)
 			_draw_authored_npc("wu_wu", Vector2(x+70,_npc_ground("wu_wu",float(item.x))), -1.0)
+		elif kind == "public_traces":
+			draw_texture_rect(preload("res://art/ui/handmade/recipe_book.png"),Rect2(x-54,ground-110,108,110),false)
+			_world_label("public_cabinet",Rect2(x-135,ground-150,270,32),"公共柜 · 留下的东西",Color("315e79"),18)
+		elif kind == "meeting":
+			_draw_protagonist(Vector2(x,ground),0.0,0.0,-1.0)
 		elif kind == "event":
 			# An event is a notice at its place, never an extra anonymous resident.
 			_draw_event_notice(x)
@@ -232,6 +245,38 @@ func _draw() -> void:
 		var gate_x := walk_limit - camera_x + 18
 		draw_line(Vector2(gate_x, 640), Vector2(gate_x, 718), Color("40544e"), 7)
 		draw_line(Vector2(gate_x, 655), Vector2(gate_x + 145, 680), Color("c6b798"), 4)
+	_draw_atmosphere()
+
+func _weather_kind() -> String:
+	# Weather is authored per day/location so it is repeatable in saves and
+	# never feels like a random filter flickering from frame to frame.
+	var seed := absi(GameState.current_location.hash()) + GameState.current_day * 17
+	return "rain" if posmod(seed, 5) == 0 and not indoor else "clear"
+
+func _draw_atmosphere() -> void:
+	if indoor: return
+	var minute := GameState.current_minute
+	var t := fposmod(float(minute), 1440.0)
+	# Separate top and horizon washes create a dawn / golden-hour / blue-hour
+	# transition while preserving the supplied buildings and panorama.
+	if t >= 330.0 and t < 510.0:
+		draw_rect(Rect2(0, 70, 1600, 648), Color(0.96, 0.56, 0.38, 0.045))
+	elif t >= 960.0 and t < 1170.0:
+		draw_rect(Rect2(0, 70, 1600, 648), Color(0.98, 0.48, 0.25, 0.065))
+	elif t >= 1170.0 or t < 330.0:
+		draw_rect(Rect2(0, 70, 1600, 648), Color(0.08, 0.16, 0.32, 0.17))
+		# A low warm band keeps windows and the sea from becoming a flat black
+		# block as the sun disappears behind the coast.
+		draw_rect(Rect2(0, 528, 1600, 190), Color(0.55, 0.36, 0.28, 0.06))
+	if _weather_kind() != "rain": return
+	# Hand-drawn rain strokes: sparse, angled and layered so the weather reads
+	# as atmosphere instead of a particle-system overlay.
+	var drift := fposmod(idle_time * 90.0, 160.0)
+	for i in range(30):
+		var x := fposmod(float(i) * 83.0 - drift + camera_x * 0.04, 1680.0) - 40.0
+		var y := 112.0 + fposmod(float(i) * 137.0 + camera_x * 0.015, 560.0)
+		draw_line(Vector2(x, y), Vector2(x - 8.0, y + 25.0), Color(0.78, 0.90, 0.91, 0.16), 2.0)
+	draw_rect(Rect2(0, 558, 1600, 160), Color(0.27, 0.40, 0.43, 0.08))
 
 func _draw_atlas() -> bool:
 	if indoor:
@@ -672,17 +717,23 @@ func dialogue_obstacles(npc_id := "") -> Dictionary:
 	return {"actors":actors,"scenery":scenery,"anchor":transform*anchor}
 
 func _draw_protagonist(at: Vector2, gait_phase: float, gait_strength: float, direction: float) -> void:
-	# Four temporary drawn contact/passing frames, driven by travelled distance.
-	# Preserve the user's original standing artwork until final animation arrives.
+	# Four authored contact/passing frames, driven by travelled distance. The
+	# small weight shift keeps the cycle alive without lifting the feet off the
+	# road or introducing a distracting camera-like bounce.
 	var art: Texture2D = ActorMotion.WALK[ActorMotion.frame_at(gait_phase)] if gait_strength > .08 else PROTAGONIST_ART
 	var height := _actor_height() * 1.08
 	var width := height * float(art.get_width()) / float(art.get_height())
 	draw_colored_polygon(PackedVector2Array([at + Vector2(-width * 0.32, 2), at + Vector2(width * 0.32, 2), at + Vector2(width * 0.42, 6), at + Vector2(-width * 0.42, 6)]), Color("112630", 0.20))
 	# The reference pose faces left in its source image, so mirror it for
 	# rightward travel and keep the visible direction aligned with input.
-	draw_set_transform(at, 0.0, Vector2(-1.0 if direction >= 0.0 else 1.0, 1.0))
-	# Generated cells have an eight-pixel transparent bottom margin.
-	var margin := height * 8.0 / 616.0 if gait_strength > .08 else 0.0
+	var walking := gait_strength > .08
+	var weight_shift := sin(gait_phase) * 0.012 * gait_strength
+	var lift := (1.0 - cos(gait_phase * 2.0)) * 0.65 * gait_strength
+	var sprite_at := at + Vector2(0.0, -lift)
+	draw_set_transform(sprite_at, weight_shift, Vector2((-1.0 if direction >= 0.0 else 1.0) * (1.0 + weight_shift * 0.15), 1.0 - absf(weight_shift) * 0.10))
+	# The colour pass is exported on the same canvas as each authored frame;
+	# keeping the bottom edge at the ground line avoids the old floating step.
+	var margin := 0.0 if walking else 0.0
 	draw_texture_rect(art, Rect2(-width * 0.5, -height + margin, width, height), false)
 	draw_set_transform(Vector2.ZERO)
 

@@ -27,6 +27,7 @@ var role_choice: OptionButton
 var solmere_completed := false
 
 func _ready() -> void:
+	Memory.hosted=has_meta("solmere_context")
 	if has_node("/root/GameState"):
 		Memory.role = str(get_node("/root/GameState").current_role)
 	DisplayServer.window_set_title(LocalizationSystem.text("Solmere · 老棋友"))
@@ -98,6 +99,7 @@ func _build_dialogue() -> void:
 	speaker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.add_child(speaker)
 	role_choice = OptionButton.new()
+	role_choice.visible=not Memory.hosted
 	role_choice.add_item(LocalizationSystem.text("角色 A"))
 	role_choice.add_item(LocalizationSystem.text("角色 B"))
 	role_choice.select(0 if Memory.role == "A" else 1)

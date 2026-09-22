@@ -1,8 +1,12 @@
 extends RefCounted
 static var directory := "user://elder_memory"
 static var role := "A"
+static var hosted := false
 
 static func read() -> Dictionary:
+	if hosted:
+		var state=Engine.get_main_loop().root.get_node("GameState")
+		return state.artifacts.get("minigame_drafts",{}).get("chess",{"version":1,"story":0,"profiles":[],"draft":{}}).duplicate(true)
 	for suffix in ["/memory.json", "/memory.backup.json"]:
 		if not FileAccess.file_exists(directory + suffix): continue
 		var parsed = JSON.parse_string(FileAccess.get_file_as_string(directory + suffix))
@@ -11,6 +15,12 @@ static func read() -> Dictionary:
 	return {"version": 1, "story": 0, "profiles": [], "draft": {}}
 
 static func write(data: Dictionary) -> bool:
+	if hosted:
+		var root=Engine.get_main_loop().root
+		var state=root.get_node("GameState")
+		if state.current_role!=role: return false
+		state.artifacts.get_or_add("minigame_drafts",{})["chess"]=data.duplicate(true)
+		return root.get_node("SaveManager").save_or_report("棋局记录未能保存")
 	if DirAccess.make_dir_recursive_absolute(directory) != OK: return false
 	var path := directory + "/memory.json"
 	if FileAccess.file_exists(path):

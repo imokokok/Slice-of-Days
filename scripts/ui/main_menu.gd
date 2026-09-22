@@ -414,6 +414,12 @@ func _capture(filename: String) -> void:
 func _continue_latest() -> void:
 	if SaveManager.load_latest():
 		SceneRouter.town_day()
+	else:
+		_prepare_modal()
+		_make_label(modal_panel,"这份旅程需要重新开始",Vector2(34,30),Vector2(522,54),27,INK)
+		var notice := _make_label(modal_panel,SaveManager.last_error,Vector2(34,108),Vector2(522,200),20,MUTED)
+		notice.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+		_make_button(modal_panel,"返回，开始新旅程",Vector2(145,355),Vector2(300,52),"primary").pressed.connect(_hide_modal)
 
 func _preview_role(role: String) -> void:
 	GameState.begin_vertical_slice(role)

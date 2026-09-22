@@ -1,23 +1,78 @@
 {
   "version": 3,
   "requirements": {
-    "income": 1,
-    "living_receipts": 3,
-    "receipt_categories": 2,
-    "exploration": 3,
-    "recognition": 12,
-    "recognition_circles": 4,
-    "contribution": 1,
-    "pages": 7,
-    "ledger": 7
+    "income": 0,
+    "living_receipts": 0,
+    "receipt_categories": 0,
+    "exploration": 0,
+    "recognition": 0,
+    "recognition_circles": 0,
+    "contribution": 0,
+    "pages": 0,
+    "ledger": 0
   },
-  "exploration_periods": [[0,720,"morning"],[720,1020,"afternoon"],[1020,1140,"dusk"],[1140,1440,"night"]],
+  "exploration_periods": [
+    [
+      0,
+      720,
+      "morning"
+    ],
+    [
+      720,
+      1020,
+      "afternoon"
+    ],
+    [
+      1020,
+      1140,
+      "dusk"
+    ],
+    [
+      1140,
+      1440,
+      "night"
+    ]
+  ],
   "recognition_circles": {
-    "labels": {"food":"饮食与采买","arts":"音乐、书信与阅读","community":"社区与邻里","coast":"闲暇与海边"},
-    "residents": {"beetman":"food","shi_yongqi":"food","mossner":"arts","xanni":"arts","maya":"arts","chenyuan":"community","mingming":"community","zhou_xiaoliu":"community","xia_touming":"coast","yuxingqing":"coast","naonao":"coast","wu_wu":"community"},
-    "locations": {"night_market":"food","produce_stall":"food","cafe":"food","handcraft_shop":"arts","library":"arts","record_store":"arts","print_shop":"community","residence":"community","dorm":"community","bus_stop":"community","town_entrance":"community","tarot_stall":"coast","chess_stall":"coast","park":"coast","port":"coast"}
+    "labels": {
+      "food": "饮食与采买",
+      "arts": "音乐、书信与阅读",
+      "community": "社区与邻里",
+      "coast": "闲暇与海边"
+    },
+    "residents": {
+      "beetman": "food",
+      "shi_yongqi": "food",
+      "mossner": "arts",
+      "xanni": "arts",
+      "maya": "arts",
+      "chenyuan": "community",
+      "mingming": "community",
+      "zhou_xiaoliu": "community",
+      "xia_touming": "coast",
+      "yuxingqing": "coast",
+      "naonao": "coast",
+      "wu_wu": "community"
+    },
+    "locations": {
+      "night_market": "food",
+      "produce_stall": "food",
+      "cafe": "food",
+      "handcraft_shop": "arts",
+      "library": "arts",
+      "record_store": "arts",
+      "print_shop": "community",
+      "residence": "community",
+      "dorm": "community",
+      "bus_stop": "community",
+      "town_entrance": "community",
+      "tarot_stall": "coast",
+      "chess_stall": "coast",
+      "park": "coast",
+      "port": "coast"
+    }
   },
-  "due_day": 7,
+  "due_day": 5,
   "due_minute": 1080,
   "pages": [
     {
@@ -158,106 +213,27 @@
           "label": "自由页 · 也可放照片、录音或作品"
         }
       ]
-    },
-    {
-      "day": 6,
-      "title": "PEOPLE & PLACES · 人与地方",
-      "prompt": "传闻可以保留疑问，也可以修改。",
-      "fields": [
-        {
-          "id": "place",
-          "label": "一个地方 · 最佳时间／能做什么／现在的评价"
-        },
-        {
-          "id": "person",
-          "label": "一个人 · 初见／现在／在哪里认识"
-        },
-        {
-          "id": "heard",
-          "label": "听来的一件事 · 来源／待核实／修订"
-        }
-      ]
-    },
-    {
-      "day": 7,
-      "title": "WHY STAY? · 留下或离开",
-      "prompt": "这是自己的选择。没有、暂时不清楚，都可以写。",
-      "fields": [
-        {
-          "id": "like",
-          "label": "喜欢什么，为什么"
-        },
-        {
-          "id": "frequent",
-          "label": "最常去哪里"
-        },
-        {
-          "id": "change",
-          "label": "七天里改变了什么"
-        },
-        {
-          "id": "miss",
-          "label": "会想念谁，或暂时没有"
-        },
-        {
-          "id": "advice",
-          "label": "给下一位来客的话"
-        },
-        {
-          "id": "why_stay",
-          "label": "为什么留下，或为什么离开"
-        },
-        {
-          "id": "knowledge",
-          "label": "我了解这里／还不了解／第一天以为了解"
-        },
-        {
-          "id": "choice",
-          "label": "留下／离开／还没想好"
-        },
-        {
-          "id": "signature",
-          "label": "签名"
-        }
-      ]
     }
   ],
   "starter": [
     {
       "id": "welcome",
-      "title": "WELCOME TO SOLMERE",
-      "subtitle": "欢迎来到 Solmere",
-      "text": "欢迎来到 Solmere。\n\n先放下行李，再沿着海边走一走。这七天，你可以工作、和人交谈，也可以给自己留一点空白。\n\n袋子里放着六份独立资料。七日作品集每天一页；RP-07 文件夹收存愿意交出的材料；地图可以指路。票据、照片和声音会先留在素材本里。\n\n社区中心柜台每天 09:00–18:00 开放。第七天 18:00 前，可以带着自己的记录回来。"
-    },
-    {
-      "id": "seven_days",
-      "title": "WHY SEVEN DAYS?",
-      "subtitle": "为什么是七天",
-      "text": "一周足够看见几次不同的潮水，也足够把一条路走熟。\n\n每天的纸张各有一个题目。今天的想法可以和昨天不同，后来也可以补写、修订。当天收支会留下真实账目，记得逐日核对。\n\n工作结束后，完成记录先进入素材本。正式证明要在营业时间向工作地点领取。居民签记也由相处中的回应慢慢留下。\n\n晚上回自己的房间，可以把材料铺在桌上整理。想保留给自己的文字，继续留在私人手记或散页里。"
-    },
-    {
-      "id": "requirements",
-      "title": "RESIDENCY REQUIREMENTS",
-      "subtitle": "申请要求 · 动态清单",
-      "text": "七张每日记录；收入证明一份；至少三张生活小票、覆盖两种用途；三种实地探索；十二位居民认可、来自至少四个生活圈；一份已在小镇留下的贡献；个人介绍；最后的选择。证明需向工作地点领取。"
-    },
-    {
-      "id": "portfolio",
-      "title": "A WEEK IN SOLMERE",
-      "subtitle": "七日作品集 · 恰好七页",
-      "text": "每天一页：TODAY、RECORD、KEEP 与两处居民签记。可以在自己的房间整理材料。"
+      "title": "欢迎来到 Solmere",
+      "subtitle": "沿着海边走走",
+      "text": "在小镇认识居民，做一点喜欢的事。声音、料理、信件与对局，都可以留下自己的痕迹。"
     },
     {
       "id": "folder",
-      "title": "RP-07 RESIDENCY DOSSIER",
-      "subtitle": "居住申请文件夹",
-      "text": "需要提交的材料夹在这里。未归档素材留在素材本。"
+      "title": "生活档案",
+      "subtitle": "只收下你愿意留下的东西",
+      "text": "记录没有数量要求，也不需要交齐纸页。照片、票据、录音和随笔会保存在自己的随身物里。"
     },
     {
       "id": "map",
-      "title": "GUIDE MAP",
-      "subtitle": "小镇基础地图",
-      "text": "Tab 展开地图，点击地点选择步行或打车。地图上的手写标记只属于当前角色。"
+      "title": "小镇地图",
+      "subtitle": "走过的路",
+      "text": "在地图里查看地点，再到街尾的路牌选择交通方式。"
     }
-  ]
+  ],
+  "legacy_application_retired": true
 }

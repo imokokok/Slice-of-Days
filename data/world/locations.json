@@ -15,11 +15,11 @@
     },
     {
       "id": "residence",
-      "name": "A的家",
+      "name": "海边住处",
       "interior": true,
       "kind": "home_a",
       "street_index": 1,
-      "subtitle": "A的家",
+      "subtitle": "海边住处",
       "position": [
         1350,
         718
@@ -151,11 +151,11 @@
     },
     {
       "id": "dorm",
-      "name": "B的家",
+      "name": "街角住处",
       "interior": true,
       "kind": "home_b",
       "street_index": 10,
-      "subtitle": "B的家",
+      "subtitle": "街角住处",
       "position": [
         9450,
         718

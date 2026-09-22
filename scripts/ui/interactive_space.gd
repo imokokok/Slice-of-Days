@@ -190,7 +190,7 @@ func _open_selected() -> void:
 		var result := GameState.complete_next_commitment()
 		WorldSound.play_ui("coin" if bool(result.get("ok", false)) else "dialogue")
 		room_dialogue.show()
-		name_label.text = LocalizationSystem.text("B的工作日程")
+		name_label.text = LocalizationSystem.text("工作日程")
 		cue_label.text = LocalizationSystem.text(str(result.get("message", "")))
 		detail_label.text = LocalizationSystem.text("余额 %d元 · Space 收起" % GameState.money)
 		SaveManager.save_or_report("工作结算后保存失败")
@@ -205,7 +205,7 @@ func _open_selected() -> void:
 	if str(item.get("kind","")) == "record_shop": module_id = "sound_sampling"
 	if str(item.get("kind","")) == "tarot": module_id = "tarot"
 	var invite := DialogueSystem.invitation_for_module(module_id)
-	if not invite.is_empty() and not DialogueSystem.invitation_accepted(module_id):
+	if module_id not in ChapterSystem.MAIN_OWNERS and not invite.is_empty() and not DialogueSystem.invitation_accepted(module_id):
 		if not DialogueSystem.invitation_for(str(invite.npc)).is_empty():
 			_start_conversation(str(invite.npc),"minigame_hook")
 		else:
@@ -248,6 +248,9 @@ func _open_clock_repair(item: Dictionary) -> void:
 
 
 func _open_record_shop() -> void:
+	if not ChapterSystem.module_available("sound_sampling"):
+		GameState.message_posted.emit("今天先做手边的事情。")
+		return
 	if is_instance_valid(pocket_panel):
 		return
 	pocket_panel = load("res://scenes/town_sound/Recorder.tscn").instantiate()

@@ -29,7 +29,7 @@ func _draw() -> void:
 
 
 func _build_ui() -> void:
-	var title := "A 的 Pocket / 随身物件" if GameState.current_role == "A" else "B的日程本"
+	var title := "随身本"
 	_label(self, title, Vector2(45, 24), Vector2(600, 46), 30, INK)
 	var job_title := CharacterSystem.job_title(GameState.current_role)
 	_label(self, "%s · 第 %d 天 · %s · %d元 · 认可 %d/12" % [job_title, GameState.current_day, GameState.clock_text(), GameState.money, GameState.residency_confirmations], Vector2(48, 70), Vector2(850, 28), 15, MUTED)

@@ -69,9 +69,21 @@ static func clear_arrival(desired: float, hotspots: Array, left: float, right: f
 	return desired
 
 static func daylight(minute: int) -> Color:
-	# Apply light to *every* world element, including generated geometry/actors.
-	if minute < 360 or minute >= 1200: return Color("72869c")
-	if minute >= 1080: return Color("eed0b5").lerp(Color("72869c"), float(minute-1080)/120.0)
-	if minute >= 990: return Color.WHITE.lerp(Color("eed0b5"), float(minute-990)/90.0)
-	if minute < 450: return Color("d4dfda").lerp(Color.WHITE, float(minute-360)/90.0)
-	return Color.WHITE
+	# Apply one continuous coastal light cycle to every world element. The
+	# transition is driven by the sun's position, rather than a binary dark
+	# overlay: morning is cool, late afternoon turns amber, and blue hour fades
+	# into the deep marine night palette.
+	var t := fposmod(float(minute), 1440.0)
+	if t < 330.0:
+		return Color("415a78").lerp(Color("667990"), t / 330.0)
+	if t < 420.0:
+		return Color("667990").lerp(Color("f0c09a"), (t - 330.0) / 90.0)
+	if t < 510.0:
+		return Color("f0c09a").lerp(Color("fff8df"), (t - 420.0) / 90.0)
+	if t < 960.0:
+		return Color("fff8df").lerp(Color("fffdf0"), (t - 510.0) / 450.0)
+	if t < 1080.0:
+		return Color("fffdf0").lerp(Color("f0bd91"), (t - 960.0) / 120.0)
+	if t < 1170.0:
+		return Color("f0bd91").lerp(Color("8799bf"), (t - 1080.0) / 90.0)
+	return Color("8799bf").lerp(Color("415a78"), (t - 1170.0) / 270.0)

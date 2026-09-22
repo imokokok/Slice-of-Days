@@ -1,6 +1,6 @@
 # 验证记录
 
-最新结果见 docs/FINAL_TEST_RESULTS.json，各轮日志在工程旁 final_regression_test_*.log。测试均使用 --isolated-save，按顺序运行。
+2026-09-18 的整轮结果见 docs/FINAL_TEST_RESULTS.json，各轮日志在工程旁 final_regression_test_*.log。测试均使用 --isolated-save，按顺序运行。
 
 | 脚本 | 验证范围 |
 | --- | --- |
@@ -15,6 +15,13 @@
 | test_world_clock | 世界计时、固定工作与时间段 |
 | test_meta_layer | 心声、旁注、安全区域与人文系统 |
 | test_v2_entry_debug | 记忆入场与调试信息 |
+| test_transaction_boundaries | 拒绝无效交易时状态不变；成功购买只扣款一次，物品、时间和账本在角色切换及读档后保持一致 |
+
+2026-09-22 新增交易边界测试，单独运行结果为 17 项检查、0 项失败。可在项目目录运行：
+
+```sh
+godot --headless --path . --script res://tests/integration/test_transaction_boundaries.gd -- --isolated-save
+```
 
 ## 实际游玩复查
 

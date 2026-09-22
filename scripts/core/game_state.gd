@@ -253,6 +253,9 @@ func advance_world_clock(real_seconds: float) -> void:
 	# Fragmented schedules contain unavailable gaps. Natural world time may reach
 	# a block boundary, but must never leak through it.
 	if current_block_remaining() <= 0:
+		if current_day==5:
+			clock_remainder=0.0
+			return # Day 5 waits/switches are explicit planner actions.
 		if not advance_to_next_free_block():
 			clock_remainder = 0.0
 			return
@@ -291,7 +294,7 @@ func can_fit_now(minutes: int) -> bool:
 func can_fit_at(role: String, day: int, minute: int, minutes: int) -> bool:
 	if minutes < 0:
 		return false
-	if minute>=1320 and day in range(1,6): return true
+	if minute>=1320 and day in range(1,5): return true
 	for block in schedule_for(role, day).get("blocks", []):
 		var start := int(block[0])
 		var end := int(block[1])

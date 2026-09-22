@@ -176,7 +176,7 @@ func _finish() -> void:
 	# Only walking up to a game point requests entry. Casual chat returns to walking.
 	if starting_topic == "minigame_hook" and offer_accepted and bool(offer.get("launch",false)):
 		var minutes := int(GameplayModuleSystem.modules.get(str(offer.module),{}).get("direct_time_minutes",0))
-		if GameState.can_fit_now(minutes): SceneRouter.gameplay_module(str(offer.module),"street:"+GameState.current_location+":invitation:"+npc)
+		if GameState.can_fit_now(minutes): SceneRouter.request_gameplay(str(offer.module),"street:"+GameState.current_location+":invitation:"+npc)
 	_close()
 
 func _close() -> void:

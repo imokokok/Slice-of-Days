@@ -1,7 +1,7 @@
 extends Control
 ## Real shared records; reading changes only discovery metadata, never ownership.
 var detail: Label
-var actions: VBoxContainer
+var actions: GridContainer
 var media: HBoxContainer
 var audio: AudioStreamPlayer
 func _ready() -> void:
@@ -11,16 +11,21 @@ func _ready() -> void:
 	var panel := PanelContainer.new(); panel.position=Vector2(360,155); panel.size=Vector2(880,590)
 	var face := StyleBoxFlat.new(); face.bg_color=Color("faf7ee"); face.set_corner_radius_all(9); face.set_content_margin_all(28); panel.add_theme_stylebox_override("panel",face); add_child(panel)
 	var rows := VBoxContainer.new(); rows.add_theme_constant_override("separation",16); panel.add_child(rows)
-	var heading := Label.new(); heading.text="公共柜 · 小镇留下的东西"; heading.add_theme_font_size_override("font_size",28); rows.add_child(heading)
+	var heading := Label.new(); heading.text="起居角 · 唱片与纸张" if GameState.current_location in ["residence","dorm"] else "小镇的公共作品架"; heading.add_theme_font_size_override("font_size",28); rows.add_child(heading)
 	var scroll := ScrollContainer.new(); scroll.custom_minimum_size.y=180; rows.add_child(scroll)
-	actions=VBoxContainer.new(); actions.size_flags_horizontal=SIZE_EXPAND_FILL; scroll.add_child(actions)
-	var traces := ChapterSystem.traces_at(GameState.current_location)
+	actions=GridContainer.new(); actions.columns=3; actions.size_flags_horizontal=SIZE_EXPAND_FILL; actions.add_theme_constant_override("h_separation",10); actions.add_theme_constant_override("v_separation",10); scroll.add_child(actions)
+	var traces := ChapterSystem.everyday_at(GameState.current_location)
 	for trace in traces:
 		var card := preload("res://scripts/ui/components/solmere_button.gd").new()
-		card.name="Trace_"+str(trace.id); card.variant="outlined"; card.text=str(trace.title)+" · Day %02d"%int(trace.day); card.custom_minimum_size.y=54
+		card.name="Trace_"+str(trace.id); card.variant="goods"; card.tooltip_text=str(trace.title); card.custom_minimum_size=Vector2(250,171)
+		var content := MarginContainer.new(); content.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(content); content.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+		for edge in ["left","right","top","bottom"]: content.add_theme_constant_override("margin_"+edge,10)
+		var stack := VBoxContainer.new(); stack.mouse_filter=MOUSE_FILTER_IGNORE; stack.add_theme_constant_override("separation",6); content.add_child(stack)
+		var picture := TextureRect.new(); picture.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; picture.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED; picture.custom_minimum_size.y=104; picture.size_flags_vertical=SIZE_EXPAND_FILL; picture.mouse_filter=MOUSE_FILTER_IGNORE; picture.texture=preload("res://scripts/ui/components/everyday_shelf_display.gd").texture_for(trace); stack.add_child(picture)
+		var caption := Label.new(); caption.text=str(trace.title); caption.custom_minimum_size.y=35; caption.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER; caption.add_theme_font_size_override("font_size",18); caption.mouse_filter=MOUSE_FILTER_IGNORE; stack.add_child(caption)
 		card.pressed.connect(_read.bind(str(trace.id))); actions.add_child(card)
 	if traces.is_empty():
-		var empty := Label.new(); empty.text="柜里还没有作品。"; actions.add_child(empty)
+		var empty := Label.new(); empty.text="桌面收拾得很干净。"; actions.add_child(empty)
 	detail=Label.new(); detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; detail.custom_minimum_size=Vector2(800,95); rows.add_child(detail)
 	media=HBoxContainer.new(); rows.add_child(media)
 	audio=AudioStreamPlayer.new(); audio.bus="Music"; add_child(audio)
@@ -28,14 +33,20 @@ func _ready() -> void:
 	back.grab_focus()
 func _read(id: String) -> void:
 	var snapshot := GameState.to_save_data()
-	var trace := ChapterSystem.inspect_trace(id)
+	var trace := ChapterSystem.observe_everyday_object(id)
 	if trace.is_empty(): return
 	var payload: Dictionary=trace.payload
 	audio.stop()
 	for child in media.get_children(): media.remove_child(child); child.queue_free()
 	var labels: Array=payload.get("interaction",{}).get("selected_labels",[])
-	detail.text=str(trace.title)+"\n"+str(payload.get("label",""))+"\n"+" · ".join(labels)
-	if GameState.current_day>=3 and str(trace.owner)!=GameState.current_role: detail.text+="\n这份记录不是我留下的。"
+	detail.text=str(trace.title)+" · 第 %d 天"%int(trace.day)
+	if not str(payload.get("label","")).is_empty(): detail.text+="\n"+str(payload.label)
+	if not labels.is_empty(): detail.text+="\n"+" · ".join(labels)
+	for card in actions.get_children():
+		if card is Button: card.selected=card.name=="Trace_"+id
+	for receipt in payload.get("receipts",[]):
+		detail.text+="\n"+str(receipt.get("shop_name","采购"))+" · "+str(receipt.get("total",receipt.get("amount",0)))+" 元 · "+str(receipt.get("stamp",""))
+	if bool(ChapterSystem.story().get(GameState.current_role+"_noticing",false)) and str(trace.owner)!=GameState.current_role: detail.text+="\n做法、日期和留下的纸张对得上，却不全是我的经历。"
 	var record: Dictionary=payload.get("record",{})
 	var path := str(record.get("final_audio_path",""))
 	if FileAccess.file_exists(path):

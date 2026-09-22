@@ -50,22 +50,65 @@ func talk(npc: String) -> void:
 		limit+=1
 	check(limit<100,"conversation completes without debug flags")
 func inspect_other() -> void:
-	await travel("print_shop")
-	current_scene._open_public_traces()
+	await travel(root.get_node("CoreLoopSystem").home())
+	router.enter_space("home_a" if gs.current_role=="A" else "home_b")
+	await settle()
+	for index in current_scene.objects.size():
+		if str(current_scene.objects[index].get("kind",""))=="everyday":
+			current_scene.selected_index=index
+			current_scene.stage.player_x=current_scene._hotspot_x(index)
+	current_scene.get_node("GameplayShell").hints.pressed.emit()
 	await process_frame
-	var panel=current_scene.conversation
+	var panel=current_scene.pocket_panel
+	check(is_instance_valid(panel),"ordinary home shelf opens through the actual room object")
 	var id := ""
-	for trace in chapter.traces_at("print_shop"):
-		if str(trace.owner)!=gs.current_role: id=str(trace.id); break
+	var guidance_before: String=root.get_node("GuidanceSystem").next_step().text
+	var count := 0
+	for trace in chapter.everyday_at(gs.current_location):
+		if str(trace.owner)==gs.current_role: continue
+		id=str(trace.id)
+		panel.actions.get_node("Trace_"+id).pressed.emit()
+		count+=1
+		if count==1 and gs.current_day in [3,4]:
+			check(not bool(chapter.story().get(gs.current_role+"_noticing",false)),"one ordinary object cannot confirm another person")
+			panel.actions.get_node("Trace_"+id).pressed.emit()
+			check(not bool(chapter.story().get(gs.current_role+"_noticing",false)),"repeated clicks cannot count as two independent observations")
 	check(not id.is_empty(),"other role's real record is present in shared world")
-	if not id.is_empty(): panel.actions.get_node("Trace_"+id).pressed.emit()
 	check(bool(chapter.story().get(gs.current_role+"_noticing",false)) or gs.current_day<3,"clicking actual trace records discovery")
+	if gs.current_day in [3,4]:
+		check(count>=2 and bool(chapter.story().get("day%d_%s_confirmed_other_person"%[gs.current_day,gs.current_role.to_lower()],false)),"two sourced ordinary objects set the day-specific narrative flag")
+		check(root.get_node("GuidanceSystem").next_step().text!=guidance_before,"actual observations change possibility guidance")
 	if gs.current_day==2:
 		check(panel.audio.stream!=null,"shared cabinet loads actual Day 1 record audio")
 		panel.media.get_child(0).pressed.emit()
 		check(panel.audio.playing,"B can listen to A's public recording")
 	await capture("public-cabinet-day-"+str(gs.current_day))
 	panel.queue_free(); await process_frame
+
+func switch_at_planner() -> void:
+	var characters=root.get_node("CharacterSystem")
+	check(not characters.can_switch(),"no instant character switch while simply walking")
+	var shell=current_scene.get_node("GameplayShell")
+	shell.open_paper("day_schedule"); await process_frame
+	var target := "B" if gs.current_role=="A" else "A"
+	var button=shell.overlay.find_child("Choose_"+target,true,false)
+	check(button!=null and not button.disabled,"explicit safe planner exposes real other-role button")
+	button.pressed.emit()
+	check(gs.current_role==target,"planner button switches the actual role")
+	shell.overlay.close(); await process_frame
+
+func ensure_time(minutes: int) -> void:
+	while not gs.can_fit_now(minutes):
+		var shell=current_scene.get_node("GameplayShell")
+		shell.open_paper("day_schedule"); await process_frame
+		var button=shell.overlay.find_child("WaitForWindow",true,false)
+		check(button!=null and not button.disabled,"next real time block remains available")
+		button.pressed.emit(); await process_frame
+		var before: int=gs.current_minute
+		get_nodes_in_group("native_confirmation")[0].accepted.emit()
+		await process_frame
+		check(gs.current_minute>before,"confirmed wait consumes shared world time")
+		shell.overlay.close(); await process_frame
 func native(module: String, tokens: Array, choice: String) -> void:
 	check(router.gameplay_module(module,"street:"+gs.current_location),"start production module "+module)
 	await settle()
@@ -184,6 +227,17 @@ func run() -> void:
 		check(gs.current_role=="B" and gs.current_day==5 and root.get_node("CharacterSystem").switch_unlocked(),"quit then restart preserves chosen role and reveal")
 		check(gs.shared_state.public_traces.size()==4 and gs.shared_state.public_traces.A_1_sound_sampling.owner=="A","quit then restart preserves public objects and owners")
 		check(gs.role_states.A.artifacts.minigame_drafts.ghostwriting.stage=="END" and not gs.artifacts.get("minigame_drafts",{}).has("ghostwriting"),"finished letter remains A's private draft across process restart")
+		check(save.load_game("user://stage2_cross_domain.json"),"separate process loads the real cross-domain completion save")
+		check(gs.current_role=="B" and gs.current_day==5,"cross-domain save restores B at Day 5")
+		check(gs.artifacts.minigame_drafts.ghostwriting.stage=="END" and gs.role_states.A.artifacts.minigame_drafts.ghostwriting.stage=="END","both letters remain in independent private drafts")
+		for role in ["A","B"]:
+			for module in (["cooking","chess"] if role=="A" else ["sound_sampling","ghostwriting"]):
+				var outcome: Dictionary=gs.role_states[role].module_states[module].outcomes[-1]
+				check(outcome.context.current_character==role and int(outcome.context.day)==5,"saved cross-domain result belongs to "+role+" / "+module)
+		check(chapter.everyday_objects().size()>=9,"sourced everyday objects survive a process restart")
+		var object_count: int=chapter.everyday_objects().size()
+		gs.shared_state.erase("everyday_objects")
+		check(chapter.everyday_objects().size()==object_count,"earlier five-day saves rebuild ordinary objects only from real delivered work and original owner's receipts")
 		print("FIVE_DAY_RELOAD: PASS checks=",checks); quit(0); return
 	chapter.start_new_game()
 	save.active_slot=3
@@ -241,7 +295,7 @@ func run() -> void:
 	var shared: Dictionary=gs.shared_state.public_traces.duplicate(true)
 	var minute: int=gs.current_minute
 	var scene_before: Node=current_scene
-	check(root.get_node("CharacterSystem").switch_character(),"visible live-town switch changes character")
+	await switch_at_planner()
 	check(gs.current_role=="B" and gs.money==int(original.B.money),"switch loads B private balance")
 	check(gs.inventory==original.B.inventory and gs.relationships==original.B.relationships,"switch loads B's independent inventory and relationships")
 	check(scene_before==current_scene,"switch preserves the actual world scene")
@@ -253,9 +307,39 @@ func run() -> void:
 	# JSON roundtrips normalize int/float and typed arrays. Compare serialized
 	# values, including payloads, rather than Variant container types.
 	check(JSON.stringify(gs.shared_state.public_traces)==JSON.stringify(shared),"world trace ownership and discovery survive load")
+	# Actually complete the opposite domains, not just mount their scenes.
+	await switch_at_planner() # A: restaurant and chess.
+	var b_before: Dictionary=gs.role_states.B.duplicate(true)
+	await travel("night_market"); router.active_space_id="restaurant"
+	check(root.get_node("EconomySystem").accept_procurement().ok,"Day 5 A accepts a real restaurant order")
+	await travel("produce_stall")
+	if gs.current_minute<630: check(gs.use_free_time(630-gs.current_minute),"wait for the produce shop uses actual time")
+	for ingredient in ["tomato","herbs","sea_beans"]: check(root.get_node("EconomySystem").purchase("produce_stall",ingredient).ok,"A buys own cooking ingredient")
+	await travel("night_market"); router.active_space_id="restaurant"
+	check(root.get_node("EconomySystem").deliver_procurement().ok,"A's own receipts reimburse A")
+	var cooking_before: int=gs.current_minute
+	await native("cooking",["tomato","herbs","sea_beans"],"careful_menu")
+	check(gs.current_minute==cooking_before+90 and modules.latest_outcome("cooking").context.current_character=="A","A's actual cooking cost and result route correctly")
+	await travel("chess_stall"); await chess()
+	check(modules.latest_outcome("chess").context.current_character=="A","A actually completes the existing chess game")
+	check(gs.role_states.B.inventory==b_before.inventory and gs.role_states.B.money==b_before.money,"A's completed cross-domain activities do not alter B's wallet or items")
+	await switch_at_planner()
+	var a_before: Dictionary=gs.role_states.A.duplicate(true)
+	await ensure_time(120); await travel("record_store")
+	await ensure_time(60)
+	var music_before: int=gs.current_minute
+	await studio()
+	check(gs.current_minute>=music_before+60 and modules.latest_outcome("sound_sampling").context.current_character=="B","B creates actual music and pays its real time cost")
+	await ensure_time(90); await travel("handcraft_shop"); await letter()
+	check(modules.latest_outcome("ghostwriting").context.current_character=="B","B actually completes and saves a private letter")
+	check(gs.role_states.A.inventory==a_before.inventory and gs.role_states.A.money==a_before.money,"B's completed cross-domain activities preserve A's private accounts")
+	check(save.save_game("user://stage2_cross_domain.json"),"cross-domain outcomes save after real completion")
 	for role in ["A","B"]:
-		if gs.current_role!=role: check(root.get_node("CharacterSystem").switch_character(),"switch safely before entering the other role's domains")
+		if gs.current_role!=role: await switch_at_planner()
 		for module in ["sound_sampling","cooking","ghostwriting","chess"]:
+			# This final pass checks launch/cancel as time allows; all four opposite
+			# domains above have already completed through real mechanics.
+			if not gs.can_fit_now(modules.required_minutes(module)): continue
 			check(router.gameplay_module(module,"street:"+gs.current_location),"Day 5 "+role+" can enter "+module)
 			await settle()
 			check(modules.session_context().current_character==role,"minigame reads correct character context")

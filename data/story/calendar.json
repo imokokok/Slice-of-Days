@@ -80,7 +80,7 @@
       "opening_facts": []
     }
   },
-  "day_overrides": [],
+  "day_overrides": [{"day":5,"roles":{"A":{"blocks":[[480,1140],[1200,1320]]},"B":{"blocks":[[420,600],[660,720],[840,960],[1080,1320]]}}}],
   "day_roles": [
     "A",
     "B",

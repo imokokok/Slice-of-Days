@@ -46,12 +46,15 @@ func switch_unlocked() -> bool:
 	return GameState.current_day==5 and bool(ChapterSystem.story().reveal_completed) and bool(GameState.shared_state.get("character_switch_enabled",false))
 func can_switch() -> bool:
 	if not switch_unlocked() or SceneRouter.transitioning or not SceneRouter.active_space_id.is_empty(): return false
-	if not GameplayModuleSystem.pending_module_id().is_empty() or MetaExperience.modal_open(): return false
+	if not GameplayModuleSystem.pending_module_id().is_empty(): return false
 	if not get_tree().get_nodes_in_group("world_tool").is_empty(): return false
 	var scene := get_tree().current_scene
 	if scene==null or scene.scene_file_path!=SceneRouter.TOWN_DAY: return false
 	var shell := scene.get_node_or_null("GameplayShell")
-	return shell!=null and not shell._blocked() and not is_instance_valid(shell.tool) and not is_instance_valid(shell.overlay)
+	if shell==null or is_instance_valid(shell.tool) or not is_instance_valid(shell.overlay) or str(shell.overlay.mode)!="day_schedule": return false
+	for modal in get_tree().get_nodes_in_group("meta_modal"):
+		if modal!=shell.overlay and not modal.is_queued_for_deletion() and modal.is_visible_in_tree(): return false
+	return not is_instance_valid(scene.get("conversation"))
 func switch_character() -> bool:
 	if not can_switch(): return false
 	var scene := get_tree().current_scene
@@ -74,4 +77,20 @@ func switch_character() -> bool:
 		return false
 	scene._refresh()
 	GameState.state_changed.emit()
+	return true
+
+func next_window(role: String) -> int:
+	for block in GameState.schedule_for(role,5).get("blocks",[]):
+		if int(block[0])>GameState.current_minute: return int(block[0])
+	return -1
+
+func wait_for_window() -> bool:
+	if not can_switch(): return false
+	var minute := next_window(GameState.current_role)
+	if minute<0: return false
+	var snapshot := GameState.to_save_data()
+	GameState.spend_time(minute-GameState.current_minute)
+	GameState.shared_state.erase("pending_commitment")
+	if not SaveManager.save_or_report("等待未能保存"):
+		GameState.load_save_data(snapshot); return false
 	return true

@@ -29,7 +29,7 @@ func _ready() -> void:
 func present(value: Dictionary) -> void:
 	entry=value.duplicate(true); title.text=str(value.get("text","")); text=title.text.replace("\n"," ")
 	var urgent := str(value.get("priority",""))=="critical"
-	heading.text="快到约定时间" if urgent else "你正在留意" if str(value.get("priority",""))=="personal" else "故事有了下文" if str(value.get("priority",""))=="connection" else "接下来，可以…"
+	heading.text="先确认一下" if urgent else "你正在留意" if str(value.get("priority",""))=="personal" else "故事有了下文" if str(value.get("priority",""))=="connection" else "接下来，可以…"
 	var detail := str(value.get("context",""))
 	context.text=detail; context.visible=not detail.is_empty()
 	var title_height := maxf(32,mini(3,title.get_line_count())*31)
@@ -39,7 +39,7 @@ func present(value: Dictionary) -> void:
 	var location := str(value.get("location",""))
 	var place := TravelSystem.location_name(location) if not location.is_empty() else "随身本"
 	var action := str(value.get("action",""))
-	var destination := "整理今天" if action=="evening" and location==GameState.current_location else "查看记录" if action in ["portfolio","final","personal"] else "查看路线"
+	var destination := "日程与视角" if action=="day_schedule" else "整理今天" if action=="evening" and location==GameState.current_location else "查看记录" if action in ["portfolio","final","personal"] else "查看路线"
 	route.text=("就在这里 · " if location==GameState.current_location else place+" · ")+destination+"  ›"
 	size=Vector2(390,route.position.y+42)
 	tooltip_text=text+"\n"+detail+"\n"+SettingsSystem.binding_text("open_map")+" 地图 · "+SettingsSystem.binding_text("open_notebook")+" 随身本"

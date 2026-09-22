@@ -19,6 +19,7 @@ var region_track := 0
 var mute_controls: Array[CheckButton] = []
 var gain_controls: Array[HSlider] = []
 var mixing := false
+var tutorial: Label
 
 var monitor_locked := false
 var edit_history: Array=[]
@@ -60,6 +61,8 @@ func _ready() -> void:
 	root_column.add_child(header)
 	var role_label := " · %s" % GameState.current_role if has_node("/root/CharacterSystem") and CharacterSystem.switch_unlocked() else ""
 	header.add_child(label("唱片店 · 声音工作台%s" % role_label, 26))
+	tutorial=label("先从素材区放入一段声音，再试听。",19)
+	root_column.add_child(tutorial)
 	header.add_child(button("♪ 声音设置", func() -> void: get_node("/root/SoundSettings").show_dialog()))
 	header.add_child(button("返回录音", func() -> void:
 		if model.save_project():
@@ -82,7 +85,7 @@ func _ready() -> void:
 			status.text = LocalizationSystem.text("工程已恢复。")
 		else:
 			status.text = LocalizationSystem.text(model.error)))
-	transport.add_child(button("制作唱片", open_visual))
+	transport.add_child(button("制作唱片", request_visual))
 	clock_label = label("00:00 / 00:00")
 	transport.add_child(clock_label)
 	undo_button=button("撤销",_undo_edit); redo_button=button("重做",_redo_edit); undo_button.disabled=true; redo_button.disabled=true
@@ -301,6 +304,7 @@ func build_inspector() -> void:
 		changed()))
 
 func changed() -> void:
+	if is_instance_valid(tutorial): tutorial.text="可以拖动片段调整位置；点播放，先听一听。" if not model.clips.is_empty() else "先从素材区放入一段声音，再试听。"
 	if not restoring_history: _remember_edit()
 	for i in mute_controls.size():
 		mute_controls[i].set_pressed_no_signal(bool(model.muted[i]))
@@ -332,6 +336,7 @@ func play() -> void:
 	player.stream = mixdown
 	player.stream_paused = false
 	player.play(paused_at if paused_at < model.length() else 0.0)
+	tutorial.text="听好后，可以制作封面并压片。完成交付约需 60 分钟。"
 	status.text = LocalizationSystem.text("播放中 · 所有轨道已混合到同一个采样时钟。")
 
 func pause() -> void:
@@ -396,6 +401,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			else: delete_clip()
 
 func open_visual() -> void:
+	var check := GameplayModuleSystem.entry_check("sound_sampling",60)
+	if not bool(check.ok): status.text=str(check.reason); return
 	if not await prepare_mix():
 		return
 	if not model.save_project():
@@ -408,6 +415,15 @@ func open_visual() -> void:
 	visual.audio = mixdown
 	get_parent().add_child(visual)
 	hide()
+
+func request_visual() -> void:
+	var check := GameplayModuleSystem.entry_check("sound_sampling",60)
+	if not bool(check.ok): status.text=str(check.reason); return
+	var confirmation := preload("res://scripts/ui/components/confirm_sheet.gd").new()
+	confirmation.heading="制作并交付唱片"
+	confirmation.description=("当前视角 "+GameState.current_role+"\n" if CharacterSystem.switch_unlocked() else "")+"封面与压片交付会用去 60 分钟。\n工程已保留；取消不会结算这段时间。"
+	confirmation.confirm_text="开始制作"; add_child(confirmation)
+	confirmation.accepted.connect(func(): confirmation.queue_free(); await open_visual())
 
 func _exit_tree() -> void:
 	if monitor_locked: get_node("/root/WorldSound").lock_monitor(false)

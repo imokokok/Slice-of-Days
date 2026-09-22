@@ -128,6 +128,7 @@ func latest_outcome(module_id: String) -> Dictionary:
 
 func begin_session(module_id: String, source_event_id := "", rollback_snapshot: Dictionary = {}) -> bool:
 	if not ChapterSystem.module_available(module_id) or not GameState.shared_state.get("pending_module",{}).is_empty(): return false
+	if not GameState.can_fit_now(60 if source_event_id.begins_with("studio:") else required_minutes(module_id)): return false
 	if module_id == "contemplation" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
 		return false
 	if not unlock(module_id) or not start(module_id):
@@ -326,7 +327,23 @@ func record_studio_delivery(record: Dictionary) -> bool:
 	var completed: Array=GameState.artifacts.get("studio_deliveries",[])
 	if completed.has(id): return true
 	if not begin_session("sound_sampling","studio:record_store"): return false
+	if not GameState.use_free_time(60): cancel_session(); return false
 	var outcome := {"choice_id":"pressed_record","label":str(record.title),"record":record.duplicate(true),"interaction":{"context":session_context(),"mode":"studio","selected_labels":[str(record.title)]}}
 	if not complete_external("sound_sampling",outcome): cancel_session(); return false
 	completed.append(id); GameState.artifacts["studio_deliveries"]=completed
 	return true
+
+func required_minutes(module_id: String) -> int:
+	var direct := int(modules.get(module_id,{}).get("direct_time_minutes",0))
+	if direct>0: return direct
+	var value := 0
+	for choice in prototypes.get(module_id,{}).get("choices",[]): value=maxi(value,int(choice.get("cost",{}).get("minutes",0)))
+	if module_id=="cooking": return int(EconomySystem.cooking_cost({"minutes":value}).get("minutes",value))
+	return maxi(60,value) if module_id=="sound_sampling" else value
+
+func entry_check(module_id: String, duration_override := -1) -> Dictionary:
+	if not ChapterSystem.module_available(module_id): return {"ok":false,"reason":"今天先做手边的事情。"}
+	if module_id=="contemplation" and GameState.current_minute<WorldGraph.LOOKOUT_OPEN: return {"ok":false,"reason":"观景台入夜开放，可以晚些再来。"}
+	var minutes := duration_override if duration_override>=0 else required_minutes(module_id)
+	if not GameState.can_fit_now(minutes): return {"ok":false,"reason":"这次活动需要约 %d 分钟，当前空闲时段放不下。可以查看日程。"%minutes}
+	return {"ok":true,"reason":"","minutes":minutes}

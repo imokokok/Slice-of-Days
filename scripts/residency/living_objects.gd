@@ -88,7 +88,7 @@ func build() -> void:
 	var names := ["随身本  Notebook","档案  Archive","相机  Camera","录音机  Recorder"]
 	var targets := ["notebook","dossier","gallery","sound_library"]
 	for i in 4:
-		var chosen: bool=mode==targets[i] or (i==0 and mode in ["home","map","today","knowledge","fieldbook","bag"])
+		var chosen: bool=mode==targets[i] or (i==0 and mode in ["home","map","today","knowledge","fieldbook","bag","day_schedule"])
 		var b := button(body,names[i],Vector2(212+i*222,-42),Vector2(214,39),_switch_object.bind(targets[i]))
 		b.name="ObjectTab_"+targets[i]; b.variant="tab"; b.selected=chosen; b.refresh()
 		b.add_theme_font_size_override("font_size",17)
@@ -96,6 +96,9 @@ func build() -> void:
 	back.tooltip_text=SettingsSystem.binding_text("ui_cancel")+" 收起"
 	back.add_theme_color_override("font_color",Color.WHITE)
 	match mode:
+		"day_schedule":
+			var planner := preload("res://scripts/ui/components/day_five_planner.gd").new()
+			planner.position=Vector2(75,50); planner.size=Vector2(1200,620); body.add_child(planner)
 		"bag": _inventory()
 		"counter": _counter()
 		"proofs": _proofs()
@@ -549,6 +552,8 @@ func _notebook_collection(section: String) -> void:
 
 func _map_select(location: String) -> void:
 	map_selected=location
+	var status := GuidanceSystem.location_status(location)
+	feedback.text=str(status.reason)
 	var old := body.get_node_or_null("MapDetails")
 	if old != null: body.remove_child(old); old.queue_free()
 	if location==GameState.current_location: return

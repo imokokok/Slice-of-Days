@@ -35,6 +35,21 @@ func _ready() -> void:
 		marker.selected=str(lead.get("location",""))==str(id)
 		marker.pressed.connect(func() -> void: selected.emit(str(id)))
 	queue_redraw()
+	GuidanceSystem.updated.connect(refresh_markers)
+	GameState.state_changed.connect(refresh_markers)
+	refresh_markers()
+
+func refresh_markers() -> void:
+	var next := GuidanceSystem.next_step()
+	for marker in get_children():
+		if not marker is Button: continue
+		var id := str(marker.get_meta("location",""))
+		var status := GuidanceSystem.location_status(id)
+		var discovered: bool=ResidencySystem.state().visits.has(id) or id==GameState.current_location
+		marker.set_meta("state",("discovered" if discovered else "undiscovered") if bool(status.open) else "unavailable")
+		marker.tooltip_text=str(status.reason) if not bool(status.open) else "已经到访" if discovered else "可以沿路去看看"
+		marker.selected=str(next.get("location",""))==id and bool(status.open)
+		marker.refresh()
 
 func filter_locations(filter_index: int) -> void:
 	var heard := {}

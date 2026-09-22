@@ -57,11 +57,13 @@ func record_main_result(module_id: String, result: Dictionary) -> void:
 		day_state().result=result.duplicate(true)
 	if MAIN_OWNERS.has(module_id):
 		var id := "%s_%d_%s"%[GameState.current_role,GameState.current_day,module_id]
-		var titles := {"sound_sampling":"留在公共柜上的声音作品","cooking":"一张写着今日做法的菜谱","ghostwriting":"公共信格里的拼贴信副本","chess":"棋摊留下的对局记录"}
+		var titles := {"sound_sampling":"唱片机旁的唱片","cooking":"饭店今天的做法","ghostwriting":"寄出信件的留底","chess":"棋摊的对局记录"}
 		var traces: Dictionary=GameState.shared_state.get("public_traces",{})
 		var discovered: Array=traces.get(id,{}).get("discovered_by",[GameState.current_role])
 		traces[id]={"id":id,"owner":GameState.current_role,"day":GameState.current_day,"location":"print_shop","type":module_id,"payload":result.duplicate(true),"title":titles[module_id],"visibility":"public","discovered_by":discovered}
 		GameState.shared_state["public_traces"]=traces
+		remember_everyday_objects(module_id, traces[id])
+	GuidanceSystem.notification.emit("DONE", "作品已保存，可以继续逛逛。" if module_id!="cooking" else "料理已经出餐，收入与小票已记好。")
 	GameState.commit_active_role_state()
 func traces_at(location: String) -> Array:
 	var result: Array=[]
@@ -76,18 +78,16 @@ func inspect_trace(id: String) -> Dictionary:
 	if not trace.discovered_by.has(GameState.current_role):
 		trace.discovered_by.append(GameState.current_role)
 		GameState.add_journal_entry({"kind":"public_trace","trace_id":id,"text":"在公共柜看到了："+str(trace.title)})
-	if str(trace.owner)!=GameState.current_role:
-		if GameState.current_day==3 and GameState.current_role=="A": story().A_noticing=true
-		if GameState.current_day==4 and GameState.current_role=="B": story().B_noticing=true
+	observe_everyday_object(id)
 	GameState.commit_active_role_state()
 	return trace.duplicate(true)
 func narrative_lines(npc: String) -> Array:
 	if not bool(day_state().main_completed) or npc!=str(plan().npc): return []
 	match GameState.current_day:
-		1: return [["npc","这段声音收好了。我会把它放进社区中心的公共柜，让路过的人也能听见。"]]
-		2: return [["npc","今天的做法我抄了一份，放在社区中心。有人照着做，也算一起吃过这顿饭。"]]
+		1: return [["npc","这段声音收好了。想听的时候，随时可以放来听。"]]
+		2: return [["npc","今天的菜做好了，小票也收好了。忙完可以歇一会儿。"]]
 		3:
-			if bool(story().A_noticing): return [["player","公共柜里的记录，有些像我做过的事，却又不一样。你知道是谁留下的吗？"],["npc","我还不确定。下次有人来取信时，我帮你问问。"]]
+			if bool(story().A_noticing): return [["player","桌上的做法和小票对得上，但我不记得自己做过这些。想知道是谁用过那张桌子。"],["npc","不急。今天先把手边的信收好。"]]
 		4:
 			if bool(story().B_noticing): return [["player","那份声音作品不是我的，可有人把它认成了我留下的。"],["npc","正好，也有人问起这些记录。要不要明天在社区中心见面，把各自的事情说清楚？"]]
 	return []
@@ -101,7 +101,7 @@ func on_conversation_completed(npc: String) -> void:
 		4: story().B_searching=true
 	GameState.commit_active_role_state()
 func arrange_meeting() -> bool:
-	if GameState.current_day!=4 or not bool(day_state().main_completed) or not bool(story().A_searching) or not bool(story().B_searching): return false
+	if GameState.current_day!=4 or GameState.current_location!="chess_stall" or not bool(day_state().main_completed) or not bool(story().A_searching) or not bool(story().B_searching): return false
 	story().meeting_arranged=true
 	day_state().narrative_completed=true
 	GameState.add_journal_entry({"kind":"appointment","text":"明天去社区中心，和留下那些记录的人见面。"})
@@ -127,14 +127,14 @@ func objectives() -> Array:
 		var order := EconomySystem.procurement_summary()
 		rows[0].text=str(order.next)
 		rows[0].location="produce_stall" if str(order.status)=="buy" else "night_market"
-	if day in [3,4]: rows.append({"id":"day_%d_trace"%day,"text":"看看社区中心公共柜里留下的东西","done":bool(story().get(GameState.current_role+"_noticing",false)),"location":"print_shop","action":"map"})
-	if day<5: rows.append({"id":"day_%d_talk"%day,"text":"和%s聊聊今天的经历"%str(ScheduleSystem.residents.get(str(p.npc),{}).get("display_name",p.npc)),"done":bool(day_state().narrative_completed),"location":p.location,"action":"map"})
+	if day in [3,4] and bool(day_state().main_completed): rows.append({"id":"day_%d_home"%day,"text":"回住处坐坐，桌上的东西可以慢慢翻看","done":bool(story().get(GameState.current_role+"_noticing",false)),"location":CoreLoopSystem.home(),"action":"map"})
+	if day in [3,4] and bool(story().get(GameState.current_role+"_noticing",false)): rows.append({"id":"day_%d_talk"%day,"text":"和%s聊聊今天的经历"%str(ScheduleSystem.residents.get(str(p.npc),{}).get("display_name",p.npc)),"done":bool(day_state().narrative_completed),"location":p.location,"action":"map"})
 	rows.append({"id":"day_%d_rest"%day,"text":"回家休息" if day<5 else "继续自由探索，或回家收好这段旅程","done":bool(GameState.shared_state.get("game_complete",false)),"location":CoreLoopSystem.home(),"action":"evening"})
 	for row in rows: row["type"]="MustObjective"
 	return rows
 func can_end_day() -> Dictionary:
 	if not bool(day_state().main_completed): return {"ok":false,"reason":"今天还有一件想做的事："+str(plan().label)}
-	if not bool(day_state().narrative_completed): return {"ok":false,"reason":"还有一点今天的事情，想和人聊聊。看看右侧的提示。"}
+	if GameState.current_day>=3 and not bool(day_state().narrative_completed): return {"ok":false,"reason":"还想在住处坐一会儿，看看桌上的东西，再聊聊今天的经历。"}
 	return {"ok":true,"reason":""}
 func advance_chapter() -> Dictionary:
 	var check := can_end_day()
@@ -187,3 +187,61 @@ func residency_audit(role: String) -> Dictionary:
 	var state: Dictionary=GameState.role_states.get(role,{})
 	return {"role":role,"passed":bool(story().reveal_completed),"completed_events":state.get("completed_events",[]).size(),"journal_entries":state.get("journal_entries",[]).size(),"choices":state.get("choice_history",[]).size(),"confirmed":state.get("confirmed_residents",[]).size(),"required":0}
 func journey_audit() -> Dictionary: return {"A":residency_audit("A"),"B":residency_audit("B"),"game_complete":bool(GameState.shared_state.get("game_complete",false))}
+
+# Persistent ordinary objects. Sources are real deliveries/receipts, never clues
+# awarded for entering a day. The same reading surface is used at the shared
+# sitting-room shelf and the community exchange shelf.
+func everyday_objects() -> Dictionary:
+	if not GameState.shared_state.has("everyday_objects"):
+		GameState.shared_state["everyday_objects"]={}
+		# Existing five-day saves have authentic deliveries already. Reuse only
+		# those sources, not the day number, to restore their ordinary objects.
+		for old in GameState.shared_state.get("public_traces",{}).values():
+			remember_everyday_objects(str(old.type),old)
+	return GameState.shared_state.everyday_objects
+
+func remember_everyday_objects(module: String, source: Dictionary) -> void:
+	var item := source.duplicate(true)
+	item["source_id"]=str(source.id)
+	item["minute"]=GameState.current_minute
+	item["places"]=["print_shop","residence","dorm"]
+	item["view_kind"]={"sound_sampling":"record","cooking":"recipe","ghostwriting":"letter","chess":"book"}.get(module,"book")
+	# These are publicly retained copies of delivered work. No new private item
+	# or clue reward is granted when someone views them.
+	everyday_objects()[str(item.id)]=item
+	if module=="cooking":
+		var receipts: Array=[]
+		var private: Dictionary=GameState.artifacts if str(item.owner)==GameState.current_role else GameState.role_states.get(str(item.owner),{}).get("artifacts",{})
+		for receipt in private.get("economy",{}).get("receipts",{}).values():
+			if bool(receipt.get("reimbursed",false)) and int(receipt.get("day",0))==int(item.day):
+				receipts.append(receipt.duplicate(true))
+		if not receipts.is_empty():
+			var receipt_item := item.duplicate(true)
+			receipt_item.id=str(item.id)+"_receipts"
+			receipt_item.source_id=str(receipts[0].id)
+			receipt_item.title="夹在做法旁的采购小票"
+			receipt_item.view_kind="receipt"
+			receipt_item.payload={"receipts":receipts}
+			everyday_objects()[str(receipt_item.id)]=receipt_item
+
+func everyday_at(location: String) -> Array:
+	var rows: Array=[]
+	for item in everyday_objects().values():
+		if int(item.day)<=GameState.current_day and location in item.places: rows.append(item.duplicate(true))
+	return rows
+
+func observe_everyday_object(id: String) -> Dictionary:
+	if not everyday_objects().has(id): return {}
+	var item: Dictionary=everyday_objects()[id]
+	if GameState.current_location not in item.places or int(item.day)>GameState.current_day: return {}
+	if not item.discovered_by.has(GameState.current_role): item.discovered_by.append(GameState.current_role)
+	if GameState.current_day in [3,4] and str(item.owner)!=GameState.current_role and int(item.day)<GameState.current_day:
+		var key := "observed_"+GameState.current_role
+		var observed: Array=story().get_or_add(key,[])
+		if not observed.has(id): observed.append(id)
+		if observed.size()>=2:
+			story()[GameState.current_role+"_noticing"]=true
+			story()["day%d_%s_confirmed_other_person"%[GameState.current_day,GameState.current_role.to_lower()]]=true
+	GameState.commit_active_role_state()
+	GameState.state_changed.emit()
+	return item.duplicate(true)

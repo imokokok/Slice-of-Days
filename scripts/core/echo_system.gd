@@ -1,11 +1,7 @@
 extends Node
 func close_day() -> void:
-	var offscreen := "B" if GameState.current_role == "A" else "A"
-	var traces: Array = GameState.shared_state.get("offscreen_"+offscreen,[])
-	var token := "trace_%d_%s" % [GameState.current_day,offscreen]
-	if traces.any(func(t: Dictionary) -> bool: return str(t.id) == token): return
-	traces.append({"id":token,"day":GameState.current_day,"text":"口袋里多了一张海边收据，背面画着半只海鸥。" if offscreen == "A" else "日程本夹着一张公交票：昨天经过公共区域，没有作新的承诺。"})
-	GameState.shared_state["offscreen_"+offscreen] = traces
+	# Overnight keeps actual world objects; it never invents the other person's purchases.
+	pass
 func begin_day() -> void:
 	if GameState.current_day == 6:
 		GameState.add_journal_entry({"kind":"application","text":"明晚仍有一整天生活。今晚记得检查永居申请需要的居民确认。"})

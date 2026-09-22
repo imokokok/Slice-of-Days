@@ -7,6 +7,7 @@ var confirm_text := "确认"
 var busy := false
 func _ready() -> void:
 	add_to_group("native_confirmation")
+	add_to_group("meta_modal")
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter=MOUSE_FILTER_STOP
 	var shade := ColorRect.new(); shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT); shade.color=Color("16334b",.55); add_child(shade)

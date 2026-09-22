@@ -698,7 +698,7 @@ func _interact() -> void:
 		"meeting": _open_meeting()
 		"module":
 			if _guard_pocket_audio(): return
-			SceneRouter.gameplay_module(str(item.id), "street:" + GameState.current_location)
+			SceneRouter.request_gameplay(str(item.id), "street:" + GameState.current_location)
 		"event": _open_event(str(item.id))
 
 func _talk_to_nearest() -> void:

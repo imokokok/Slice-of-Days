@@ -113,7 +113,7 @@ func _ready() -> void:
 	last_material_count = ResidencySystem.state().materials.size()
 	switch_button=preload("res://scripts/ui/components/solmere_button.gd").new()
 	switch_button.variant="outlined"; switch_button.position=Vector2(265,23); switch_button.size=Vector2(190,47)
-	switch_button.pressed.connect(CharacterSystem.switch_character)
+	switch_button.pressed.connect(func(): open_paper("day_schedule"))
 	add_child(switch_button)
 
 func _papers_changed() -> void:
@@ -149,8 +149,8 @@ func finish_recording_for_exit() -> bool:
 func _process(delta: float) -> void:
 	folder.hide()
 	switch_button.visible=CharacterSystem.switch_unlocked()
-	switch_button.disabled=not CharacterSystem.can_switch()
-	switch_button.text="视角 "+GameState.current_role+" · "+SettingsSystem.binding_text("switch_character")
+	switch_button.disabled=_blocked() or is_instance_valid(overlay) or is_instance_valid(tool)
+	switch_button.text="日程与视角 · "+GameState.current_role
 	var minute := GameState.current_minute
 	var period := "Morning" if minute < 720 else "Afternoon" if minute < 960 else "Late Afternoon" if minute < 1140 else "Evening"
 	var period_key := str(GameState.current_day)+period
@@ -248,12 +248,17 @@ func _context() -> Dictionary:
 func _special() -> String:
 	if not stage.indoor: return ""
 	var space := SceneRouter.active_space_id
-	if space == "print_studio" and absf(stage.player_x-450)<95: return "counter"
+	var service := ""
+	var at := 0.0
+	if space == "print_studio" and absf(stage.player_x-450)<95: service="counter"; at=450
 	if space == ("home_a" if GameState.current_role == "A" else "home_b"):
-		if absf(stage.player_x-460)<95: return "organize"
-		if absf(stage.player_x-680)<70: return "residence"
-	if space in ["restaurant","letter_office","record_shop","home_b"] and absf(stage.player_x-1250)<90: return "proofs"
-	return ""
+		if absf(stage.player_x-460)<95: service="organize"; at=460
+		if absf(stage.player_x-680)<70: service="residence"; at=680
+	if space in ["restaurant","letter_office","record_shop","home_b"] and absf(stage.player_x-1250)<90: service="proofs"; at=1250
+	# A service cannot hijack the prompt for a closer, visible room object.
+	var object: Dictionary=stage.nearest_of(["object"])
+	if not object.is_empty() and absf(float(object.x)-stage.player_x)<=absf(at-stage.player_x): return ""
+	return service
 
 func _service_points() -> void:
 	if not stage.indoor: return
@@ -277,9 +282,6 @@ func _handle_shortcut(event: InputEvent) -> void:
 	if not bool(UIStateSystem.policy().notebook): return
 	if not event.is_pressed() or event.is_echo() or _blocked() or is_instance_valid(tool) or focus_opening: return
 	if get_viewport().gui_get_focus_owner() is TextEdit or get_viewport().gui_get_focus_owner() is LineEdit: return
-	if event.is_action_pressed("switch_character"):
-		CharacterSystem.switch_character()
-		get_viewport().set_input_as_handled(); return
 	var modes := {"open_map":"map","open_plan":"today","open_album":"gallery","open_bag":"bag","open_archive":"dossier","open_home":"home","open_notebook":"notebook","ui_cancel":"pause"}
 	for action in modes:
 		if event.is_action_pressed(action):
@@ -338,6 +340,7 @@ func _update_active_direction() -> void:
 func _open_active_direction() -> void:
 	var next := GuidanceSystem.next_step()
 	if next.is_empty(): return
+	if str(next.get("action",""))=="day_schedule": open_paper("day_schedule"); return
 	if str(next.get("action",""))=="evening" and GameState.current_location==CoreLoopSystem.home(): CoreLoopSystem.open_evening(); return
 	open_paper("notebook")
 	if is_instance_valid(overlay): overlay._guidance_action(next)

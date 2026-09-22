@@ -54,6 +54,7 @@ var resident_directions: Dictionary = {}
 var presence = preload("res://scripts/ui/resident_presence.gd").new()
 var neighboring_residents: Array[Dictionary] = []
 var weather_last := ""
+var everyday_display: Node
 
 func presented_residents() -> Array[Dictionary]:
 	return presence.reconcile(hotspots + neighboring_residents, camera_x)
@@ -72,6 +73,9 @@ func _ready() -> void:
 	original_resident = preload("res://scripts/ui/original_resident.gd").new()
 	add_child(original_resident)
 	original_resident.hide()
+	if indoor and room_kind in ["home_a","home_b"]:
+		everyday_display=preload("res://scripts/ui/components/everyday_shelf_display.gd").new()
+		add_child(everyday_display)
 	WorldSound.set_indoor(indoor)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -240,6 +244,7 @@ func _draw() -> void:
 			draw_string(ThemeDB.fallback_font,Vector2(x-35,615),LocalizationSystem.text("今日的菜"),HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("f1e6c6"))
 		elif indoor and kind == "object" and not illustrated:
 			_draw_furniture(x, str(item.get("prop", "table")))
+	if is_instance_valid(everyday_display): everyday_display.draw_on(self)
 	_draw_protagonist(Vector2(player_x - camera_x, ground), phase, gait_weight, facing)
 	if is_finite(walk_limit) and not illustrated:
 		var gate_x := walk_limit - camera_x + 18

@@ -36,6 +36,8 @@ func _ready() -> void:
 		SceneRouter.leave_space()
 		return
 	objects = space.get("objects", [])
+	if SceneRouter.active_space_id in ["home_a","home_b"]:
+		objects.append({"id":"everyday_shelf","name":"起居角的唱片与纸张","kind":"everyday","x":620})
 	people = DialogueSystem.people_at(GameState.current_location)
 	if SceneRouter.active_space_id in ["home_a", "home_b"]: people.clear()
 	_build_theme()
@@ -159,6 +161,11 @@ func _open_selected() -> void:
 	if objects.is_empty() or absf(stage.player_x - _hotspot_x(selected_index)) > stage.REACH:
 		return
 	var item: Dictionary = objects[selected_index]
+	if str(item.get("kind",""))=="everyday":
+		if not is_instance_valid(pocket_panel):
+			pocket_panel=preload("res://scripts/ui/components/public_trace_panel.gd").new()
+			add_child(pocket_panel)
+		return
 	if str(item.get("kind", "")) in ["restaurant_counter", "collections", "grocery_counter"]:
 		EconomySystem.open_counter(self, {"restaurant_counter":"restaurant", "collections":"collections", "grocery_counter":"grocery"}[str(item.kind)])
 		return
@@ -228,10 +235,10 @@ func _open_selected() -> void:
 		"record_shop":
 			_open_record_shop()
 		"tarot":
-			SceneRouter.gameplay_module("tarot", "space:%s:%s" % [str(space.get("id", "")), str(item.get("id", ""))])
+			SceneRouter.request_gameplay("tarot", "space:%s:%s" % [str(space.get("id", "")), str(item.get("id", ""))])
 		_:
 			if not module_id.is_empty():
-				SceneRouter.gameplay_module(module_id, "space:%s:%s" % [str(space.get("id", "")), str(item.get("id", ""))])
+				SceneRouter.request_gameplay(module_id, "space:%s:%s" % [str(space.get("id", "")), str(item.get("id", ""))])
 
 
 func _open_clock_repair(item: Dictionary) -> void:

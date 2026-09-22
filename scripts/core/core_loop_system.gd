@@ -242,9 +242,7 @@ func _contact_place() -> String:
 	return str(ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute).get("location","cafe"))
 func _action_place() -> String: return str(catalog.people.get(_source(),{}).get("place","record_store"))
 func active_guidance() -> Dictionary:
-	for row in objectives():
-		if not bool(row.done): return row.merged({"context":"按自己的节奏来，支线和记录都可以自由选择。","priority":"must"})
-	return {}
+	return GuidanceSystem.possibility()
 
 func review_day(reflection: String) -> Dictionary:
 	if GameState.current_location!=home(): return {"ok":false,"message":"先回自己的住处，材料可以留到晚上整理。"}

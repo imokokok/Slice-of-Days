@@ -88,13 +88,27 @@ func gameplay_module(module_id: String, source_event_id := "", rollback_snapshot
 	if session_snapshot.is_empty():
 		session_snapshot = GameState.to_save_data().duplicate(true)
 	if not GameplayModuleSystem.begin_session(module_id, source_event_id, session_snapshot):
-		push_warning("Unable to begin gameplay module: %s" % module_id)
+		var reason := str(GameplayModuleSystem.entry_check(module_id).get("reason",""))
+		GuidanceSystem.blocked(reason if not reason.is_empty() else "当前还有一个活动没有收好。")
 		return false
 	if not SaveManager.save_or_report("进入玩法时保存失败"):
 		GameplayModuleSystem.cancel_session()
 		return false
 	var metadata: Dictionary = GameplayModuleSystem.modules.get(module_id, {})
 	go_to(str(metadata.get("scene_path", MODULE_WORKBENCH)))
+	return true
+
+func request_gameplay(module_id: String, source := "") -> bool:
+	if transitioning or not get_tree().get_nodes_in_group("native_confirmation").is_empty(): return false
+	var check := GameplayModuleSystem.entry_check(module_id)
+	if not bool(check.ok): GuidanceSystem.blocked(str(check.reason)); return false
+	var confirmation := preload("res://scripts/ui/components/confirm_sheet.gd").new()
+	confirmation.heading=str(GameplayModuleSystem.modules.get(module_id,{}).get("name","开始活动"))
+	confirmation.description=("当前视角 "+GameState.current_role+"\n" if CharacterSystem.switch_unlocked() else "")+"预计最多 %d 分钟，完成时结算实际耗时。\n取消可以保留原来的时间。"%int(check.minutes)
+	confirmation.confirm_text="开始"; get_tree().current_scene.add_child(confirmation)
+	confirmation.accepted.connect(func():
+		if gameplay_module(module_id,source): confirmation.queue_free()
+		else: confirmation.busy=false)
 	return true
 
 

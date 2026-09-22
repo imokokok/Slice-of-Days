@@ -101,7 +101,7 @@ func _start_shift() -> void:
 	var minutes := int(EconomySystem.config.work.restaurant.minutes)
 	var sheet := preload("res://scripts/ui/components/confirm_sheet.gd").new(); sheet.heading="开始料理班次？"; sheet.description="本次班次预计 %d 分钟。进入料理台后可查看采购要求和真实食材库存。" % minutes; sheet.confirm_text="上料理台"; add_child(sheet)
 	sheet.accepted.connect(func() -> void:
-		if SceneRouter.gameplay_module("cooking","restaurant_procurement:"+str(EconomySystem.active_order().id)): queue_free()
+		if SceneRouter.request_gameplay("cooking","restaurant_procurement:"+str(EconomySystem.active_order().id)): queue_free()
 		else: sheet.queue_free())
 
 func grocery() -> void:

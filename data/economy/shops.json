@@ -43,8 +43,8 @@
     {
       "id": "grocery",
       "name": "杂货店柜台",
-      "owner_name": "杂货店老板",
-      "greeting": "今天想买点什么？面包和奶酪在这边。要肥皂、火柴的话，我给你拿。",
+      "owner_name": "杂货店柜台",
+      "greeting": "日用品、旧物与摄影用品；价签在各层货架旁。",
       "location_id": "cafe",
       "items": [
         {

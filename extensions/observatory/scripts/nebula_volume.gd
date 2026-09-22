@@ -1,77 +1,71 @@
 extends Node3D
-## Genuine world-space gas samples, rendered in one draw call per nebula.
-## Official models use their supplied geometry. Orion is a labelled artistic
-## reconstruction: image colour supplies emission, never scientific distance.
+## Display published spatial geometry. A photograph is never promoted to depth.
 var sample_count := 0
 var depth_range := Vector2.ZERO
+var source_bounds := AABB()
+var components: Array[MeshInstance3D]=[]
 var batch: MultiMeshInstance3D
+const GAS = preload("res://extensions/observatory/shaders/observed_structure.gdshader")
 
 func build(entry: Dictionary) -> void:
-	for child in get_children():
-		remove_child(child)
-		child.queue_free()
-	var vertices := PackedVector3Array()
-	var colors := PackedColorArray()
-	var sizes := PackedFloat32Array()
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 36217
-	var image: Image
-	if not str(entry.get("image", "")).is_empty():
-		var texture: Texture2D = load(entry.image)
-		image = texture.get_image()
-		if image.is_compressed(): image.decompress()
-	if entry.has("model"):
-		var mesh: ArrayMesh = load(entry.model)
-		var points: PackedVector3Array = mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
-		for p in points:
-			vertices.append(p + Vector3(rng.randf_range(-.1,.1),rng.randf_range(-.1,.1),rng.randf_range(-.1,.1)))
-			var color := Color("b46ce0").lerp(Color("ffc48e"), clampf((p.y+17)/34,0,1))
-			if image != null:
-				var uv := Vector2(clampf(p.x/34+.5,0,1),clampf(.5-p.y/34,0,1))
-				color = image.get_pixel(int(uv.x*(image.get_width()-1)),int(uv.y*(image.get_height()-1)))
-			color.a = 0.075 * smoothstep(-17.0,-13.0,p.y)
-			colors.append(color)
-			sizes.append(rng.randf_range(.75,1.1))
+	for child in get_children(): remove_child(child); child.queue_free()
+	components.clear(); sample_count=0
+	assert(entry.has("model"),"Only traceable 3D sources may enter the orbit viewer")
+	var path := str(entry.model)
+	var asset=load(path)
+	if path.ends_with(".glb"):
+		# Godot's GLTFDocument keeps the original NASA GLB geometry available even
+		# before the editor has generated a .import sidecar.
+		var document := GLTFDocument.new(); var state := GLTFState.new()
+		var error := document.append_from_file(path,state)
+		if error==OK:
+			var scene: Node3D=document.generate_scene(state); add_child(scene); _collect_meshes(scene)
+		else: push_error("Unable to read published nebula GLB: "+path)
+	elif asset is PackedScene:
+		var scene: Node3D=asset.instantiate(); add_child(scene); _collect_meshes(scene)
 	else:
-		# Stratified, non-coplanar emission field: no full-image background quad.
-		var noise := FastNoiseLite.new()
-		noise.seed = 801
-		noise.frequency = .016
-		for y in 384:
-			for x in 384:
-				var u := (float(x)+rng.randf())/384
-				var v := (float(y)+rng.randf())/384
-				var color := image.get_pixel(int(u*(image.get_width()-1)),int(v*(image.get_height()-1)))
-				var edge := smoothstep(0.0,.12,minf(minf(u,1-u),minf(v,1-v)))
-				var luminance := color.get_luminance()
-				if luminance < .035 or edge < .015: continue
-				var depth := noise.get_noise_2d(x*256.0/384,y*256.0/384)*9 + (luminance-.5)*5 + rng.randf_range(-1.2,1.2)
-				# Perspective compensation preserves the recognisable front view.
-				var spread := 1.0-depth/52.0
-				vertices.append(Vector3((u-.5)*46*spread,(.5-v)*46*spread,depth))
-				color.a = edge * .30
-				colors.append(color)
-				sizes.append(rng.randf_range(.46,.54))
-	sample_count = vertices.size()
-	var multi := MultiMesh.new()
-	multi.transform_format = MultiMesh.TRANSFORM_3D
-	multi.use_colors = true
-	var quad := QuadMesh.new()
-	quad.size = Vector2.ONE
-	multi.mesh = quad
-	multi.instance_count = sample_count
-	depth_range = Vector2(INF,-INF)
-	for i in sample_count:
-		multi.set_instance_transform(i,Transform3D(Basis.IDENTITY.scaled(Vector3.ONE*sizes[i]),vertices[i]))
-		multi.set_instance_color(i,colors[i])
-		depth_range.x = minf(depth_range.x,vertices[i].z)
-		depth_range.y = maxf(depth_range.y,vertices[i].z)
-	batch = MultiMeshInstance3D.new()
-	batch.name = "NebulaGas"
-	batch.multimesh = multi
-	batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var material := ShaderMaterial.new()
-	material.shader = preload("res://extensions/observatory/shaders/nebula_dust.gdshader")
-	material.set_shader_parameter("opacity",.52 if entry.has("model") else .88)
-	batch.material_override = material
-	add_child(batch)
+		var mesh := MeshInstance3D.new(); mesh.name="PublishedStructure"
+		mesh.mesh=load(path.replace(".res","_surface.res")); add_child(mesh); components.append(mesh)
+	var first := true
+	for mesh in components:
+		var box := mesh.global_transform * mesh.get_aabb()
+		if first: source_bounds=box; first=false
+		else: source_bounds=source_bounds.merge(box)
+	var factor := 34.0/maxf(source_bounds.get_longest_axis_size(),.001)
+	var center := source_bounds.get_center()
+	# A single shared similarity transform preserves relative positions and sizes.
+	var group := Node3D.new(); group.name="ObservedGeometry"; add_child(group)
+	var top_nodes := get_children().duplicate()
+	for child in top_nodes:
+		if child!=group: child.reparent(group)
+	group.scale=Vector3.ONE*factor; group.position=-center*factor
+	depth_range=Vector2((source_bounds.position.z-center.z)*factor,(source_bounds.end.z-center.z)*factor)
+	var observed_texture: Texture2D
+	var image_path := str(entry.get("image", ""))
+	if not image_path.is_empty() and ResourceLoader.exists(image_path): observed_texture=load(image_path)
+	for mesh in components:
+		mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		for i in mesh.mesh.get_surface_count():
+			var arrays := mesh.mesh.surface_get_arrays(i)
+			sample_count+=arrays[Mesh.ARRAY_VERTEX].size()
+			var original=mesh.mesh.surface_get_material(i)
+			var color := Color("bbcddc")
+			var mesh_id := mesh.name.to_lower()
+			if entry.id=="crab": color=Color("d98262") if "jet" in mesh_id else Color("e7b65d")
+			elif entry.id=="cygnus_loop": color=Color("84a8c7")
+			elif entry.id=="casa":
+				if "fek" in mesh_id: color=Color("e18a55")
+				elif "ar" in mesh_id: color=Color("d6a4bd")
+				elif "si" in mesh_id: color=Color("b6d3dc")
+				elif "jet" in mesh_id: color=Color("d6b45e")
+				else: color=Color("92b5c2")
+			if original is BaseMaterial3D: color=original.albedo_color
+			var material := ShaderMaterial.new(); material.shader=GAS
+			material.set_shader_parameter("layer_color",color)
+			material.set_shader_parameter("use_observed_image",observed_texture!=null)
+			if observed_texture!=null: material.set_shader_parameter("observed_image",observed_texture)
+			mesh.set_surface_override_material(i,material)
+
+func _collect_meshes(node: Node) -> void:
+	if node is MeshInstance3D: components.append(node)
+	for child in node.get_children(): _collect_meshes(child)

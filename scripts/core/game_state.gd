@@ -62,6 +62,7 @@ func _initialize_new_state(start_role: String) -> void:
 		"B": _default_role_state("B"),
 	}
 	shared_state = {
+		"resident_cast_version": 1,
 		"starting_budget_version": 3,
 		"chapter_index": 0,
 		"residency_calendar_version": 2,
@@ -470,6 +471,7 @@ func add_fact(fact: String, notify := true) -> void:
 
 
 func add_confirmation(resident_id: String) -> void:
+	resident_id = ResidentProfileSystem.canonical_id(resident_id)
 	if resident_id.is_empty() or confirmed_residents.has(resident_id):
 		return
 	confirmed_residents.append(resident_id)
@@ -507,6 +509,7 @@ func unmark_event(event_id: String) -> void:
 
 
 func meet_resident(resident_id: String) -> void:
+	resident_id = ResidentProfileSystem.canonical_id(resident_id)
 	if resident_id.is_empty() or encountered_residents.has(resident_id):
 		return
 	encountered_residents.append(resident_id)
@@ -756,6 +759,7 @@ func load_save_data(data: Dictionary) -> void:
 		_load_role_state(str(data.get("current_role", "A")))
 	else:
 		_migrate_legacy_save(data)
+		shared_state.erase("resident_cast_version")
 	var location_aliases := {"cafeteria":"night_market", "theatre":"print_shop", "studio":"print_shop", "old_station":"bus_stop", "court":"town_entrance"}
 	current_location = str(location_aliases.get(current_location, current_location))
 	shared_state["chapter_start_role"] = "A"
@@ -767,6 +771,9 @@ func load_save_data(data: Dictionary) -> void:
 		shared_state["chapter_index"] = current_day - 1
 		shared_state.erase("street_positions")
 	ChapterSystem.align_saved_chapter()
+	commit_active_role_state()
+	preload("res://scripts/core/resident_save_migration.gd").apply(self)
+	_load_role_state(current_role)
 	commit_active_role_state()
 	state_changed.emit()
 

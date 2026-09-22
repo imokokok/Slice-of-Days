@@ -42,7 +42,6 @@ var time_guidance_label: Label
 
 
 func _ready() -> void:
-	add_child(preload("res://scripts/meta/place_layer.gd").new())
 	_load_locations()
 	_load_interactive_spaces()
 	var segment := WorldGraph.segment_for(GameState.current_location)
@@ -620,12 +619,28 @@ func _remember_position() -> void:
 	GameState.shared_state["street_positions"] = positions
 
 func _rebuild_hotspots() -> void:
+	# Snapshot the rendered people before replacing schedule/interaction data.
+	street.presented_residents()
 	street.hotspots.clear()
+	street.neighboring_residents.clear()
 	street.queue_redraw()
 	var building_center := _place_center()
 	var center := building_center + Composition.entry_offset(GameState.current_location)
+	for i in street_order.size():
+		var place := street_order[i]
+		# The lookout's public path ends at the telescope gate before 21:00.
+		var sign_x := _world_x(i,980 if place == "park" else 1440)
+		street.hotspots.append({"x":sign_x,"kind":"transport","id":place,"label":"小镇站牌 · 查看路线与出行方式"})
+		# Adjacent blocks are already visible before the player crosses a boundary.
+		if place != GameState.current_location:
+			var neighbors := DialogueSystem.people_at(place)
+			var at := _world_x(i,Composition.center_local(place))
+			for n in mini(neighbors.size(),3):
+				street.neighboring_residents.append({"kind":"person","id":neighbors[n],"x":at+Composition.npc_offset(place,neighbors[n],n)})
+			if place == "produce_stall" and not bool(DialogueSystem.argument_state().get("finished",false)):
+				street.neighboring_residents.append({"kind":"argument","id":"translation","x":at+Composition.argument_offset()})
 	if preload("res://scripts/core/coastal_fishing.gd").LOCATIONS.has(GameState.current_location):
-		street.hotspots.append({"x":_world_x(current_index,940) if GameState.current_location=="park" else center-350,"kind":"fishing","label":"在海边钓鱼 · 每竿 10 分钟"})
+		street.hotspots.append({"x":_world_x(current_index,720 if GameState.current_location=="park" else 1190),"kind":"fishing","label":"走到海边钓位 · 每竿 10 分钟"})
 	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
 		street.hotspots.append({"x":_world_x(current_index, 1060), "kind":"closed", "label":"观景台 · 21:00 开放"})
 		return
@@ -639,8 +654,6 @@ func _rebuild_hotspots() -> void:
 		var own_home := "residence" if GameState.current_role == "A" else "dorm"
 		if GameState.current_location == own_home:
 			street.hotspots.append({"x":center, "kind":"home", "reach":street.DOOR_REACH, "label":"回家"})
-	elif GameState.current_location == "cafe":
-		street.hotspots.append({"x":center-125.0, "kind":"shopkeeper", "id":"grocery", "label":"和杂货店老板说话"})
 	else:
 		var rooms := _spaces_at(GameState.current_location)
 		for i in rooms.size():
@@ -678,6 +691,8 @@ func _interact() -> void:
 		"door":
 			if not _guard_pocket_audio(): SceneRouter.enter_space(str(item.id))
 		"shop": _open_shop(str(item.id))
+		"transport":
+			if not is_instance_valid(pocket_panel): _show_pocket_panel(preload("res://scripts/ui/transport_panel.gd").new())
 		"fishing":
 			if not is_instance_valid(pocket_panel): _show_pocket_panel(preload("res://scripts/ui/coastal_fishing_panel.gd").new())
 		"argument": _start_market_encounter()
@@ -699,6 +714,7 @@ func _talk_to_nearest() -> void:
 		"invitation": _talk_nearby(str(item.id), "minigame_hook")
 
 func _talk_nearby(resident_id: String, topic := "greeting") -> void:
+	if not ResidentProfileSystem.is_core(resident_id): return
 	if is_instance_valid(conversation): return
 	if not MetaExperience.pay_conversation(topic): return
 	conversation = preload("res://scripts/ui/conversation_panel.gd").new()
@@ -707,10 +723,6 @@ func _talk_nearby(resident_id: String, topic := "greeting") -> void:
 	if resident_id == "beetman" and GameState.current_location == "produce_stall":
 		conversation.shop_id = "produce_stall"
 		conversation.purchase_requested.connect(_open_shop.bind("produce_stall"))
-	if resident_id == "grocery":
-		conversation.shop_id = "grocery"
-		conversation.shop_name = "杂货店老板"
-		conversation.purchase_requested.connect(_open_shop.bind("grocery"))
 	for item in street.hotspots:
 		if str(item.get("id","")) == resident_id and absf(float(item.x)-street.player_x) > 1.0: street.facing = signf(float(item.x)-street.player_x)
 	street.velocity = 0.0
@@ -805,7 +817,7 @@ func _open_shop(shop_id: String) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not get_tree().get_nodes_in_group("world_tool").is_empty(): return
 	if is_instance_valid(conversation): return
-	if not event is InputEventKey or not event.pressed or event.echo: return
+	if not event.is_pressed() or event.is_echo(): return
 	if SceneRouter.transitioning: return
 	if _pocket_blocks_walking() or pocket_opening: return
 	if event_overlay.visible:
@@ -817,9 +829,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				if speech_tween: speech_tween.kill()
 				spoken_line.visible_characters = -1
 			else: dialogue_choices[0].pressed.emit()
-		elif dialogue_choices.size() > 1 and (event.is_action_pressed("ui_up") or event.physical_keycode == KEY_W):
+		elif dialogue_choices.size() > 1 and (event.is_action_pressed("ui_up") or (event is InputEventKey and event.physical_keycode == KEY_W)):
 			_focus_dialogue_choice(-1)
-		elif dialogue_choices.size() > 1 and (event.is_action_pressed("ui_down") or event.physical_keycode == KEY_S):
+		elif dialogue_choices.size() > 1 and (event.is_action_pressed("ui_down") or (event is InputEventKey and event.physical_keycode == KEY_S)):
 			_focus_dialogue_choice(1)
 	elif event.is_action_pressed("open_camera"): _open_pocket_camera()
 	elif event.is_action_pressed("open_recorder"): _open_pocket_recorder()

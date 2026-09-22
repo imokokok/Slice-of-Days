@@ -5,7 +5,7 @@ var card: Panel
 var words: Label
 var heading: Label
 var age := 0.0
-var lifetime := 6.0
+var lifetime := 14.0
 var current: Dictionary={}
 func _ready() -> void:
 	name="GuidanceToast"; mouse_filter=MOUSE_FILTER_IGNORE
@@ -26,15 +26,19 @@ func _process(delta: float) -> void:
 		heading.text=str(current.get("heading","刚刚发生"))
 		words.text=str(current.text); age=0; card.show()
 		card.size=Vector2(390,maxf(96,mini(6,words.get_line_count())*29+64))
-		lifetime=clampf(words.text.length()*.1+2.5,5,12)
+		lifetime=reading_seconds(words.text)
 	var direction: Control=get_parent().get("next_button")
 	var bottom := 35.0
 	if is_instance_valid(direction) and direction.visible: bottom=direction.position.y+direction.size.y+12
 	card.position=Vector2(get_parent().size.x-card.size.x-36,bottom)
-	age+=delta
+	# Let people finish reading; modal time and hovering do not consume the hold.
+	if not card.get_global_rect().has_point(get_global_mouse_position()): age+=delta
 	card.modulate.a=1
 	card.position.y+=0 if SettingsSystem.reduced_motion() else 3*(1-minf(1,age/.16))
 	if age>=lifetime: current={}; card.hide()
+
+static func reading_seconds(value: String) -> float:
+	return clampf(value.length()*.2+6,14,26)
 func _exit_tree() -> void:
 	if not current.is_empty() and age<lifetime-.4:
 		for entry in current.entries:

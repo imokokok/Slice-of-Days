@@ -70,8 +70,8 @@ func run() -> void:
 			check(Layout.overlap(at,actors)==0,"Never cover an actor at either edge")
 			var still := Layout.place(view,at.size,actors,buildings,Vector2(actor_x+2,660),at)
 			check(still.position==at.position,"Camera settling does not make the card jitter")
-	await town("cafe")
-	current_scene._talk_nearby("grocery")
+	await town("produce_stall")
+	current_scene._talk_nearby("beetman")
 	await create_timer(.3).timeout
 	var panel=current_scene.conversation
 	panel.speech_card.reveal()
@@ -157,12 +157,12 @@ func run() -> void:
 	key("ui_cancel"); await process_frame; await process_frame
 	check(not is_instance_valid(current_scene.conversation),"Input Map cancel also exits the argument")
 	# Room conversations use the same component and respect the larger silhouettes.
-	root.get_node("SceneRouter").active_space_id="grocery"
-	state.current_location="cafe"
+	root.get_node("SceneRouter").active_space_id="restaurant"
+	state.current_location="night_market"
 	change_scene_to_file("res://scenes/interactive_space.tscn")
 	await create_timer(.5).timeout
 	current_scene.stage.player_x=800
-	current_scene._start_conversation("grocery")
+	current_scene._start_conversation("shi_yongqi")
 	await create_timer(.3).timeout
 	panel=current_scene.conversation
 	verify_card(panel.speech_card,current_scene.stage,"Interior line")
@@ -176,14 +176,14 @@ func run() -> void:
 	var settings=root.get_node("SettingsSystem")
 	var motion_before: bool=settings.values.reduced_motion
 	settings.values.reduced_motion=true
-	current_scene._start_conversation("grocery")
+	current_scene._start_conversation("shi_yongqi")
 	await process_frame
 	check(current_scene.conversation.text_label.visible_characters==-1 and current_scene.conversation.speech_card.modulate.a==1,"Reduced motion shows the complete line without animation")
 	current_scene.conversation._close()
 	settings.values.reduced_motion=motion_before
-	await town("cafe")
+	await town("produce_stall")
 	state.current_minute=1260; current_scene._refresh()
-	current_scene._talk_nearby("grocery")
+	current_scene._talk_nearby("beetman")
 	await create_timer(.3).timeout
 	verify_card(current_scene.conversation.speech_card,current_scene.street,"Night dialogue")
 	await capture("07-night-line")

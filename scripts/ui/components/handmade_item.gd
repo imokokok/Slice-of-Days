@@ -3,6 +3,8 @@ extends Button
 const ART = preload("res://scripts/ui/components/handmade_assets.gd")
 var item_id := ""
 var caption := ""
+var caption_back: Panel
+var label: Label
 var selected := false:
 	set(value):
 		selected=value; queue_redraw()
@@ -12,10 +14,14 @@ func _ready() -> void:
 	focus_mode=FOCUS_ALL; mouse_default_cursor_shape=CURSOR_POINTING_HAND
 	for state in ["normal","hover","pressed","disabled","focus"]: add_theme_stylebox_override(state,StyleBoxEmpty.new())
 	art=ART.picture(self,item_id,Vector2(6,4),Vector2(size.x-12,size.y-38))
-	var label := preload("res://scripts/ui/components/interface_palette.gd").words(self,caption,Vector2(0,size.y-30),size.x,17)
+	caption_back=Panel.new(); caption_back.name="PriceLabelBacking"
+	caption_back.position=Vector2(0,size.y-34); caption_back.size=Vector2(size.x,34)
+	caption_back.mouse_filter=MOUSE_FILTER_IGNORE
+	caption_back.add_theme_stylebox_override("panel",preload("res://scripts/ui/components/interface_palette.gd").face(Color("faf7ee"),2,0)); add_child(caption_back)
+	label = preload("res://scripts/ui/components/interface_palette.gd").words(self,caption,Vector2(4,size.y-30),size.x-8,19)
 	label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	for state in ["mouse_entered","mouse_exited","focus_entered","focus_exited","button_down","button_up"]: connect(state,_feedback)
-	resized.connect(func(): art.size=Vector2(size.x-12,size.y-38); label.position.y=size.y-30; label.size.x=size.x)
+	resized.connect(func(): art.size=Vector2(size.x-12,size.y-38); label.position.y=size.y-30; label.size.x=size.x-8; caption_back.position.y=size.y-34; caption_back.size.x=size.x)
 func _feedback() -> void:
 	queue_redraw()
 	if not is_instance_valid(art): return

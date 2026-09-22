@@ -51,6 +51,18 @@ var world_labels: Dictionary = {}
 var idle_time := 0.0
 var idle_redraw := 0.0
 var resident_directions: Dictionary = {}
+var presence = preload("res://scripts/ui/resident_presence.gd").new()
+var neighboring_residents: Array[Dictionary] = []
+
+func presented_residents() -> Array[Dictionary]:
+	return presence.reconcile(hotspots + neighboring_residents, camera_x)
+
+func presented_hotspots() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for item in hotspots:
+		if str(item.get("kind", "")) not in ["person", "shopkeeper", "argument", "npc", "resident"]: result.append(item)
+	result.append_array(presented_residents())
+	return result
 
 func _ready() -> void:
 	var finish := ShaderMaterial.new()
@@ -148,7 +160,8 @@ func nearest_of(kinds: Array) -> Dictionary:
 	var distance := INF
 	for item in hotspots:
 		if not kinds.is_empty() and str(item.get("kind", "")) not in kinds: continue
-		var gap := absf(float(item.get("x", 0.0)) - player_x)
+		var presentation: Dictionary = presence.residents.get(str(item.get("id","")),item) if str(item.get("kind","")) in ["person","shopkeeper"] else item
+		var gap := absf(float(presentation.get("x", 0.0)) - player_x)
 		# A pair can be addressed from beside them, without standing between them.
 		if str(item.get("kind","")) == "argument": gap = maxf(0,gap-70)
 		var reach := float(item.get("reach", REACH))
@@ -182,7 +195,7 @@ func _draw() -> void:
 		for i in range(5):
 			draw_line(Vector2(0, 750 + i * 36), Vector2(1600, 750 + i * 36), Color("819084", 0.16), 1)
 		draw_line(Vector2(0, 718), Vector2(1600, 718), Color("8d9b96"), 2)
-	for item in hotspots:
+	for item in presented_hotspots():
 		var x := float(item.get("x", 0)) - camera_x
 		if x < -120 or x > 1720:
 			continue
@@ -193,7 +206,7 @@ func _draw() -> void:
 			var shade: Color = shades[absi(str(item.get("id", "")).hash()) % shades.size()]
 			var resident := str(item.get("id", ""))
 			var at := Vector2(x, _npc_ground(resident, float(item.x)))
-			var look := _resident_direction(resident, float(item.x))
+			var look := float(item.get("pose_facing", _resident_direction(resident, float(item.x))))
 			if _draw_authored_npc(resident, at, look):
 				continue
 			_draw_person(at, shade, idle_time, 0.0, look, false, "", absi(resident.hash()) % 3)
@@ -204,6 +217,10 @@ func _draw() -> void:
 		elif kind == "event":
 			# An event is a notice at its place, never an extra anonymous resident.
 			_draw_event_notice(x)
+		elif kind == "transport":
+			_draw_transport_sign(x, str(item.get("id", "")))
+		elif kind == "fishing":
+			_world_label("fishing_"+str(item.x),Rect2(x-100,686,200,30),"海边钓位  ↗",Color("315e79"),18)
 		elif kind == "echo" and not illustrated:
 			draw_rect(Rect2(x-55,572,110,118),Color("4c4937"))
 			draw_rect(Rect2(x-49,580,98,102),Color("203f43"))
@@ -315,12 +332,21 @@ func _scene_art_tint() -> Color:
 func _sync_original_resident() -> void:
 	if not is_instance_valid(original_resident): return
 	original_resident.hide()
-	for item in hotspots:
+	for item in presented_residents():
 		if str(item.get("id","")) != "zhou_xiaoliu": continue
 		var at := Vector2(float(item.x)-camera_x,_npc_ground("zhou_xiaoliu",float(item.x)))
 		original_resident.stand_at(at,_actor_height(),player_x > float(item.x),_scene_art_tint())
 		original_resident.visible = at.x > -120 and at.x < 1720
 		break
+
+func _draw_transport_sign(x: float, _id: String) -> void:
+	# Reuse the exact authored sign beside the bus shelter. Two atlas regions
+	# exclude the neighbouring bin without repainting or changing the original.
+	var scale_factor := .66
+	var top := Vector2(x-65*scale_factor,790-411*scale_factor)
+	var tint := _scene_art_tint()
+	draw_texture_rect_region(BUS_ART,Rect2(top,Vector2(136,282)*scale_factor),Rect2(443,497,136,282),tint)
+	draw_texture_rect_region(BUS_ART,Rect2(top+Vector2(55,282)*scale_factor,Vector2(19,133)*scale_factor),Rect2(498,779,19,133),tint)
 
 func _draw_bus_stop(left: float, width: float) -> void:
 	var tint := _scene_art_tint()
@@ -409,7 +435,7 @@ func _draw_foreground_road() -> void:
 		# Shallow contact shade rather than a heavy drop shadow around cutouts.
 		draw_colored_polygon(PackedVector2Array([Vector2(x-245,723),Vector2(x+240,723),Vector2(x+268,740),Vector2(x-212,740)]),Color("556b64",.11))
 
-func _world_label(key: String, rect: Rect2, text: String, color: Color) -> void:
+func _world_label(key: String, rect: Rect2, text: String, color: Color, point := 22) -> void:
 	# Font distance fields need Godot's native text shader. Keep lettering out
 	# of the pigment shader, with the same ambient light but perfectly sharp.
 	var label: Label = world_labels.get(key)
@@ -418,7 +444,7 @@ func _world_label(key: String, rect: Rect2, text: String, color: Color) -> void:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size",22)
+		label.add_theme_font_size_override("font_size",point)
 		add_child(label)
 		world_labels[key] = label
 	label.position=rect.position; label.size=rect.size
@@ -531,12 +557,6 @@ func _draw_outdoor(x: float, kind: String) -> void:
 			_draw_user_scene(CHESS_ART, Rect2(68, 13, 1423, 1014), x, Composition.SCENE_WIDTHS.chess_stall)
 		"bus":
 			_draw_user_scene(BUS_ART, Rect2(447, 501, 835, 419), x, Composition.SCENE_WIDTHS.bus_stop)
-			# The Solmere direction sign belongs beside the station, on its right.
-			var sign_post_x := x + 380.0
-			dialogue_scenery.append(Rect2(x+328,488,214,242))
-			draw_rect(Rect2(sign_post_x, 500, 9, 218), wood)
-			draw_rect(Rect2(x + 340, 516, 190, 55), Color("b5a27a"))
-			_world_label("station_sign",Rect2(x+343,521,182,44),"SOLMERE   →",Color("3e5350"))
 		"street":
 			pass
 		"lookout":
@@ -626,7 +646,7 @@ func dialogue_obstacles(npc_id := "") -> Dictionary:
 	var height := _actor_height()*1.18
 	var anchor := Vector2(player_x-camera_x,_actor_ground_at(player_x)-height*.7)
 	actors.append(Rect2(player_x-camera_x-height*.32,_actor_ground_at(player_x)-height,height*.64,height+12).grow(18))
-	for item in hotspots:
+	for item in presented_residents():
 		var kind := str(item.get("kind",""))
 		if kind not in ["person","shopkeeper","argument"]: continue
 		var x := float(item.get("x",0))-camera_x

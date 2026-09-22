@@ -59,6 +59,8 @@ func button_style(button: Button, in_scene := false) -> void:
 
 func _style(node: Control) -> void:
 	if not is_instance_valid(node) or not node.is_inside_tree() or node.is_queued_for_deletion(): return
+	# These components provide opaque, readable surfaces and their own states.
+	if _context(node,["map_paper.gd","fish_journal.gd","transport_panel.gd"]): return
 	if _context(node,["direction_card.gd","goods_card.gd","gameplay_shell.gd"]): return
 	if node.is_in_group("solid_hud"): return
 	if _context(node,["star_gazing_controller.gd","constellation_controller.gd","economy_paper.gd","StudioScreen.gd","myriorama_tarot/scripts/table.gd","native_module_game.gd","save_slots.gd","shop_panel.gd","film_paper.gd","confirm_sheet.gd","travel_card.gd","main_menu.gd","PocketCamera.gd","recorder_lite.gd","shutter_button.gd","living_objects.gd","media_browser.gd","guidance_toasts.gd","runtime_menu.gd","solmere_button.gd","paper_page.gd","portfolio_item.gd","runtime_debug.gd","flowing_thought.gd","workshop.gd"]): return

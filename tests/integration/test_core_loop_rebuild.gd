@@ -91,7 +91,9 @@ func run() -> void:
 	# New-day setup exercises a genuinely completed callback, not an invented result.
 	gs.current_day=2; gs.current_minute=660; gs.current_location="cafe"; guide.refresh()
 	talk=load("res://scripts/ui/conversation_panel.gd").new(); talk.npc="wu_wu"; current_scene.add_child(talk); await settle()
-	check(str(talk.lines).contains("没有收进抽屉"),"Next encounter refers to the actual previous material")
+	var callback: Dictionary=loop.state().callbacks["A_module_sound_sampling_0"]
+	var work_title := str(residency.state().materials[callback.material_id].title)
+	check(not callback.shared and str(talk.lines).contains(work_title) and str(talk.lines).contains("也让我看看") and not str(talk.lines).contains("没有收进抽屉"),"Before sharing, the resident names the real work and asks to see it without claiming receipt")
 	talk._close(); await settle(); check(not loop.state().callbacks["A_module_sound_sampling_0"].acknowledged,"Esc/close cannot acknowledge an unheard callback")
 	talk=load("res://scripts/ui/conversation_panel.gd").new(); talk.npc="wu_wu"; current_scene.add_child(talk); await settle(); await finish_talk(talk,true)
 	check(loop.state().callbacks["A_module_sound_sampling_0"].acknowledged,"Finishing callback acknowledges the previous contribution")

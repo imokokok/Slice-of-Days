@@ -9,4 +9,4 @@ func run() -> void:
 	state.current_location="park"; state.current_minute=1260
 	root.get_node("SceneRouter").gameplay_module("contemplation","street:park")
 	await create_timer(1.0).timeout
-	DisplayServer.window_set_title("Solmere · 星云观测（试玩）")
+	DisplayServer.window_set_title("Solmere · 真实星云观测（最新试玩）")

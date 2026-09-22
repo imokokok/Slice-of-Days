@@ -222,7 +222,7 @@ func deliver_procurement() -> Dictionary:
 				covered += int(line.unit_price)
 				needed.erase(str(line.item_id))
 		if covered <= 0: continue
-		receipt.merge({"reimbursed":true,"reimbursed_day":GameState.current_day,"reimbursed_amount":covered,"stamp":"REIMBURSED · 史勇奇","notes":"原小票保留，可继续用于生活记录。"},true)
+		receipt.merge({"reimbursed":true,"reimbursed_day":GameState.current_day,"reimbursed_amount":covered,"stamp":"已报销 · 石泳琪","notes":"原小票保留，可继续用于生活记录。"},true)
 		ResidencySystem.ingest_receipt(receipt)
 		total += covered
 		receipts.append(id)
@@ -237,13 +237,19 @@ func ingredient_available(id: String) -> bool:
 
 func cooking_check(tokens: Array) -> Dictionary:
 	for id in tokens:
-		if not ingredient_available(str(id)): return {"ok":false,"message":"手边没有%s，先去采购。" % str(id)}
+		if not ingredient_available(str(id)): return {"ok":false,"message":"手边没有%s，先去采购。" % ingredient_name(str(id))}
 	var order := active_order()
 	if not order.is_empty() and not bool(order.get("completed",false)):
 		if not bool(order.get("delivered",false)): return {"ok":false,"message":"先带材料和小票到出餐口交货。"}
 		for id in order.items:
 			if not tokens.has(id): return {"ok":false,"message":"今天的班次请使用交来的番茄、香草和奇怪食材。"}
 	return {"ok":true}
+
+func ingredient_name(id: String) -> String:
+	for shop: Dictionary in catalog.values():
+		for item: Dictionary in shop.get("items",[]):
+			if str(item.id)==id: return str(item.name)
+	return {"sardine":"欧洲沙丁鱼","sea_bream":"金头鲷"}.get(id,"这种食材")
 
 func cooking_cost(original: Dictionary) -> Dictionary:
 	var order := active_order()

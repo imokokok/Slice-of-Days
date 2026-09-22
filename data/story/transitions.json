@@ -12,8 +12,16 @@
         "motion": "horizontal",
         "motif": "入口与路线",
         "roles": {
-          "A": {"label": "A的第一张照片", "caption": "没有查地图，路线被临时邀请带向社区中心。", "tint": "c85f43"},
-          "B": {"label": "B的第一张计划页", "caption": "书店，傍晚。尚未说话。", "tint": "4f7d83"}
+          "A": {
+            "label": "A的第一张照片",
+            "caption": "没有查地图，路线被临时邀请带向社区中心。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "B的第一张计划页",
+            "caption": "书店，傍晚。尚未说话。",
+            "tint": "4f7d83"
+          }
         }
       },
       "next_day": {
@@ -25,8 +33,16 @@
         "motion": "vertical",
         "motif": "旧栏杆与门牌",
         "roles": {
-          "A": {"label": "相册", "caption": "海浪后面，像是家里旧阳台。", "tint": "c85f43"},
-          "B": {"label": "计划本", "caption": "空白处，短暂出现旧门牌号。", "tint": "4f7d83"}
+          "A": {
+            "label": "相册",
+            "caption": "海浪后面，像是家里旧阳台。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "计划本",
+            "caption": "空白处，短暂出现旧门牌号。",
+            "tint": "4f7d83"
+          }
         }
       }
     },
@@ -41,8 +57,16 @@
         "motion": "insert",
         "motif": "菜单与牌阵",
         "roles": {
-          "A": {"label": "公共菜谱", "caption": "《什么时候下班》有了名字、照片和署名。", "tint": "c85f43"},
-          "B": {"label": "塔罗记录", "caption": "她把问题问得很小心。", "tint": "4f7d83"}
+          "A": {
+            "label": "公共菜谱",
+            "caption": "《什么时候下班》有了名字、照片和署名。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "塔罗记录",
+            "caption": "她把问题问得很小心。",
+            "tint": "4f7d83"
+          }
         }
       },
       "next_day": {
@@ -54,8 +78,16 @@
         "motion": "diagonal",
         "motif": "竹笛与棋局",
         "roles": {
-          "A": {"label": "晚霞照片", "caption": "颜色像一顿已经结束的家庭聚餐。", "tint": "c85f43"},
-          "B": {"label": "未完棋谱", "caption": "应急两个字变成旧抽屉的边。", "tint": "4f7d83"}
+          "A": {
+            "label": "晚霞照片",
+            "caption": "颜色像一顿已经结束的家庭聚餐。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "未完棋谱",
+            "caption": "应急两个字变成旧抽屉的边。",
+            "tint": "4f7d83"
+          }
         }
       }
     },
@@ -70,8 +102,16 @@
         "motion": "horizontal",
         "motif": "雨棚与时间块",
         "roles": {
-          "A": {"label": "临时路线", "caption": "石泳琪、巫巫和见沼香依次停了下来。", "tint": "c85f43"},
-          "B": {"label": "被划掉的安排", "caption": "原本要去的地方，在电话结束后已经错过。", "tint": "4f7d83"}
+          "A": {
+            "label": "临时路线",
+            "caption": "石泳琪、巫巫和闹闹依次停了下来。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "被划掉的安排",
+            "caption": "原本要去的地方，在电话结束后已经错过。",
+            "tint": "4f7d83"
+          }
         }
       },
       "next_day": {
@@ -83,8 +123,16 @@
         "motion": "vertical",
         "motif": "照片与波形",
         "roles": {
-          "A": {"label": "世界风景", "caption": "父母书房的一角多停留了半秒。", "tint": "c85f43"},
-          "B": {"label": "城市采样", "caption": "门轴声只响了一下。", "tint": "4f7d83"}
+          "A": {
+            "label": "世界风景",
+            "caption": "父母书房的一角多停留了半秒。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "城市采样",
+            "caption": "门轴声只响了一下。",
+            "tint": "4f7d83"
+          }
         }
       }
     },
@@ -99,8 +147,16 @@
         "motion": "insert",
         "motif": "拍立得与手绘地图",
         "roles": {
-          "A": {"label": "没有拍完的照片", "caption": "你大概不太记得我。", "tint": "c85f43"},
-          "B": {"label": "出现空白的地图", "caption": "计划准确，关键人物仍然没有出现。", "tint": "4f7d83"}
+          "A": {
+            "label": "没有拍完的照片",
+            "caption": "你大概不太记得我。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "出现空白的地图",
+            "caption": "计划准确，关键人物仍然没有出现。",
+            "tint": "4f7d83"
+          }
         }
       },
       "next_day": {
@@ -112,8 +168,16 @@
         "motion": "diagonal",
         "motif": "长椅与空白页",
         "roles": {
-          "A": {"label": "长椅上的余光", "caption": "她第一次清楚地看见资源怎样改变过程。", "tint": "c85f43"},
-          "B": {"label": "没有立刻翻过的一页", "caption": "完整计划也可能因为别人而失效。", "tint": "4f7d83"}
+          "A": {
+            "label": "长椅上的余光",
+            "caption": "她第一次清楚地看见资源怎样改变过程。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "没有立刻翻过的一页",
+            "caption": "完整计划也可能因为别人而失效。",
+            "tint": "4f7d83"
+          }
         }
       }
     },
@@ -128,8 +192,16 @@
         "motion": "horizontal",
         "motif": "道具与句子碎片",
         "roles": {
-          "A": {"label": "搬运清单", "caption": "你听得很认真。", "tint": "c85f43"},
-          "B": {"label": "改过三次的短笺", "caption": "这次终于像我自己。", "tint": "4f7d83"}
+          "A": {
+            "label": "搬运清单",
+            "caption": "你听得很认真。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "改过三次的短笺",
+            "caption": "这次终于像我自己。",
+            "tint": "4f7d83"
+          }
         }
       },
       "next_day": {
@@ -141,8 +213,16 @@
         "motion": "vertical",
         "motif": "日程与未采用音轨",
         "roles": {
-          "A": {"label": "新写下的日程", "caption": "不是为了优化路线，只是不想再忘记。", "tint": "c85f43"},
-          "B": {"label": "单独保存的声音", "caption": "旧门轴声没有进入作品。", "tint": "4f7d83"}
+          "A": {
+            "label": "新写下的日程",
+            "caption": "不是为了优化路线，只是不想再忘记。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "单独保存的声音",
+            "caption": "旧门轴声没有进入作品。",
+            "tint": "4f7d83"
+          }
         }
       }
     },
@@ -157,8 +237,16 @@
         "motion": "diagonal",
         "motif": "星图与棋盘",
         "roles": {
-          "A": {"label": "只有夜空的照片", "caption": "少了一次稳妥机会，她没有后悔。", "tint": "c85f43"},
-          "B": {"label": "路过的棋局", "caption": "做得到，和要不要接，是两件事。", "tint": "4f7d83"}
+          "A": {
+            "label": "只有夜空的照片",
+            "caption": "少了一次稳妥机会，她没有后悔。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "路过的棋局",
+            "caption": "做得到，和要不要接，是两件事。",
+            "tint": "4f7d83"
+          }
         }
       },
       "next_day": {
@@ -170,8 +258,16 @@
         "motion": "insert",
         "motif": "夜空与审核页",
         "roles": {
-          "A": {"label": "相册", "caption": "一张只有夜空的照片。", "tint": "c85f43"},
-          "B": {"label": "计划本", "caption": "明天审核。", "tint": "4f7d83"}
+          "A": {
+            "label": "相册",
+            "caption": "一张只有夜空的照片。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "计划本",
+            "caption": "明天审核。",
+            "tint": "4f7d83"
+          }
         }
       }
     },
@@ -186,8 +282,16 @@
         "motion": "horizontal",
         "motif": "两张晚霞",
         "roles": {
-          "A": {"label": "A的晚霞", "caption": "我在这里待了七天。", "tint": "c85f43"},
-          "B": {"label": "B的晚霞", "caption": "今天晚霞很好。", "tint": "4f7d83"}
+          "A": {
+            "label": "A的晚霞",
+            "caption": "我在这里待了七天。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "B的晚霞",
+            "caption": "今天晚霞很好。",
+            "tint": "4f7d83"
+          }
         }
       },
       "next_day": {
@@ -199,8 +303,16 @@
         "motion": "horizontal",
         "motif": "留下的作品",
         "roles": {
-          "A": {"label": "A留下的东西", "caption": "照片、菜谱和临时答应过的事。", "tint": "c85f43"},
-          "B": {"label": "B留下的东西", "caption": "日程、音轨和没有浪费的帮助。", "tint": "4f7d83"}
+          "A": {
+            "label": "A留下的东西",
+            "caption": "照片、菜谱和临时答应过的事。",
+            "tint": "c85f43"
+          },
+          "B": {
+            "label": "B留下的东西",
+            "caption": "日程、音轨和没有浪费的帮助。",
+            "tint": "4f7d83"
+          }
         }
       }
     }
@@ -214,8 +326,16 @@
     "motion": "horizontal",
     "motif": "最后的晚霞",
     "roles": {
-      "A": {"label": "A的照片", "caption": "海风还在，旧空间不再出现。", "tint": "c85f43"},
-      "B": {"label": "B的照片", "caption": "本子合上以后，只剩亲手写过的字。", "tint": "4f7d83"}
+      "A": {
+        "label": "A的照片",
+        "caption": "海风还在，旧空间不再出现。",
+        "tint": "c85f43"
+      },
+      "B": {
+        "label": "B的照片",
+        "caption": "本子合上以后，只剩亲手写过的字。",
+        "tint": "4f7d83"
+      }
     }
   }
 }

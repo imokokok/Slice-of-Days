@@ -12,7 +12,6 @@ var voice_layer: CanvasLayer
 var voice_label: Label
 var voice_tween: Tween
 var voice_debug: Dictionary = {}
-var marginalia_debug: Dictionary = {}
 var conversation_counts: Dictionary = {}
 var voice_context: Dictionary = {}
 var debug_panel: Control
@@ -320,9 +319,6 @@ func _voice_safe_zone() -> Rect2:
 			for actor in actors:
 				var head_y := float(stage.call("_ground_at",float(actor.x)))-float(stage.call("_actor_height"))
 				blocked.append(Rect2(float(actor.x)-float(stage.camera_x)-65,head_y-20,130,145))
-		for layer in get_tree().get_nodes_in_group("marginalia_layers"):
-			for label in layer.labels:
-				if is_instance_valid(label): blocked.append(label.get_global_rect().grow(15))
 	for fraction in [Vector2(.36,.16),Vector2(.07,.19),Vector2(.65,.27),Vector2(.34,.34),Vector2(.07,.34)]:
 		var zone := Rect2(viewport_size*fraction,Vector2(minf(430,viewport_size.x*.28),88))
 		if zone.end.x > viewport_size.x-24 or zone.end.y > viewport_size.y-90: continue

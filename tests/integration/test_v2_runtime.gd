@@ -28,24 +28,8 @@ func run() -> void:
 	var stage=town.street
 	stage.hotspots.clear()
 	stage.enabled=true
-	var layer=get_nodes_in_group("marginalia_layers")[0]
-	layer.was_eligible=false
-	await create_timer(3.3).timeout
-	check(layer.selected_ids.size()>=5 and layer.selected_ids.size()<=9,"Closed empty place gives 5–9 comments")
-	check(layer.labels.size()>=3 and layer.labels.size()<=5,"Several comments coexist")
-	var old_ids: Array=layer.selected_ids.duplicate()
-	await shot("marginalia")
-	stage.hotspots.append({"kind":"npc","x":stage.player_x,"id":"test_npc"})
-	await create_timer(.55).timeout
-	check(layer.labels.is_empty() and not layer.evaluate(stage).eligible,"NPC arrival clears comments")
-	stage.hotspots.clear()
-	state.current_minute=1260
-	await create_timer(.25).timeout
-	check(not layer.evaluate(stage).eligible,"Open business suppresses comments")
-	state.current_minute=1000
-	layer.begin_burst()
-	check(layer.selected_ids!=old_ids,"Return visit chooses a new comment set")
-	layer._clear()
+	check(get_nodes_in_group("marginalia_layers").is_empty(),"Barrage removed from exploration")
+	check(not meta.enabled("marginalia"),"Barrage has no enabled feature toggle")
 	stage.enabled=false
 	await create_timer(meta.voice_cooldown_remaining()+.1).timeout
 	meta.deterministic_test_mode=true

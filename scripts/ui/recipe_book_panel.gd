@@ -70,7 +70,7 @@ func _build() -> void:
 	P.words(body,"这一页的味道",Vector2(225,142),475,29)
 	var entries := BOOK.entries(section)
 	if chosen.is_empty() and not entries.is_empty(): chosen=entries[0]
-	var scroll := ScrollContainer.new(); scroll.position=Vector2(221,209); scroll.size=Vector2(490,377); body.add_child(scroll)
+	var scroll := ScrollContainer.new(); scroll.position=Vector2(221,209); scroll.size=Vector2(490,280); body.add_child(scroll)
 	var rows := VBoxContainer.new(); rows.size_flags_horizontal=SIZE_EXPAND_FILL; rows.add_theme_constant_override("separation",22); scroll.add_child(rows)
 	for row in entries:
 		var button := preload("res://scripts/ui/components/solmere_button.gd").new()
@@ -89,11 +89,11 @@ func _build() -> void:
 		_btn("照着这一页做",Vector2(844,752),Vector2(290,48),func(): follow_recipe.emit(chosen); queue_free(),"camera")
 		_btn("导出给朋友",Vector2(1150,752),Vector2(255,48),func(): _file(false),"camera")
 		if section=="mine":
-			_btn("编辑这一页",Vector2(225,590),Vector2(225,43),func():
+			_btn("编辑这一页",Vector2(225,494),Vector2(225,43),func():
 				if not GameState.artifacts.get("recipe_draft",{}).is_empty():
 					message.text="先继续并保存已有草稿，再编辑另一页。"; return
 				ingredients=chosen.ingredients.duplicate(); heat=float(chosen.heat); editing=true; _build())
-			_btn("放进公共菜谱",Vector2(454,590),Vector2(256,43),func(): message.text=str(BOOK.save_recipe(chosen,true).message))
+			_btn("放进公共菜谱",Vector2(454,494),Vector2(256,43),func(): message.text=str(BOOK.save_recipe(chosen,true).message))
 	var new_label := "继续未写完的草稿" if not GameState.artifacts.get("recipe_draft",{}).is_empty() else "记下手边这道菜"
 	_btn(new_label,Vector2(223,752),Vector2(340,48),_begin_draft,"camera")
 
@@ -101,7 +101,8 @@ func _editor() -> void:
 	P.words(body,"把这道菜留下来",Vector2(225,143),475,31)
 	title_field=LineEdit.new(); title_field.placeholder_text="菜名"; title_field.text=str(chosen.get("title","")); title_field.position=Vector2(225,212); title_field.size=Vector2(475,50); title_field.max_length=48; body.add_child(title_field)
 	author_field=LineEdit.new(); author_field.placeholder_text="署名"; author_field.text=str(chosen.get("author",GameState.current_role)); author_field.position=Vector2(225,280); author_field.size=Vector2(475,50); author_field.max_length=40; body.add_child(author_field)
-	notes_field=TextEdit.new(); notes_field.placeholder_text="食材顺序、火候、想留给做菜人的话……"; notes_field.text=str(chosen.get("notes","")); notes_field.position=Vector2(225,350); notes_field.size=Vector2(475,205); body.add_child(notes_field)
+	# Leave the printed botanical corner below y=525 unobstructed.
+	notes_field=TextEdit.new(); notes_field.name="RecipeNotes"; notes_field.placeholder_text="食材顺序、火候、想留给做菜人的话……"; notes_field.text=str(chosen.get("notes","")); notes_field.position=Vector2(225,350); notes_field.size=Vector2(475,165); notes_field.wrap_mode=TextEdit.LINE_WRAPPING_BOUNDARY; body.add_child(notes_field)
 	notes_field.text_changed.connect(func():
 		if notes_field.text.length()>1600: notes_field.text=notes_field.text.left(1600))
 	for i in ingredients.size(): ART.picture(body,str(ingredients[i]),Vector2(851+i*165,150),Vector2(145,110))

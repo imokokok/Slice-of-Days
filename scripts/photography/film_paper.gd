@@ -61,6 +61,7 @@ func rebuild() -> void:
 	button(paper,"返回",Vector2(1080,25),Vector2(120,40),queue_free)
 	status=label(paper,note,Vector2(38,703),Vector2(1160,58),19)
 	if mode=="counter": _counter()
+	elif mode=="receipts": _receipt_history()
 	else: _photo_actions()
 
 func _counter() -> void:
@@ -93,6 +94,7 @@ func _counter() -> void:
 			label(paper,str(FilmSystem.config.types[kind].name)+"\n24 张",Vector2(155+i*288,155),Vector2(175,62),20)
 			button(paper,"$%d · 买一卷" % price,Vector2(150+i*288,224),Vector2(155,36),func()->void:_act("buy",kind),GameState.money<price)
 	label(paper,"胶卷与取片凭条",Vector2(38,300),Vector2(600,35),24)
+	button(paper,"付款小票",Vector2(950,294),Vector2(245,43),func(): mode="receipts"; rebuild())
 	var scroll:=ScrollContainer.new()
 	scroll.position=Vector2(38,343)
 	scroll.size=Vector2(1165,343)
@@ -150,6 +152,30 @@ func _execute(action: String, id := "") -> void:
 	note=str(result.get("message",""))
 	working=false
 	rebuild()
+	if bool(result.get("ok",false)) and not result.get("receipt",{}).is_empty():
+		_show_receipt(result.receipt,str(result.get("ticket",{}).get("text","")))
+
+func _show_receipt(value: Dictionary, collection_note := "") -> void:
+	var view := preload("res://scripts/ui/components/receipt_view.gd").new()
+	view.receipt=value; view.collection_note=collection_note; add_child(view)
+
+func _receipt_history() -> void:
+	label(paper,"摄影柜台 · 付款小票",Vector2(38,100),Vector2(820,50),27)
+	button(paper,"回到柜台",Vector2(955,99),Vector2(235,43),func(): mode="counter"; rebuild())
+	var scroll := ScrollContainer.new(); scroll.position=Vector2(38,174); scroll.size=Vector2(1157,496)
+	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; paper.add_child(scroll)
+	var list := VBoxContainer.new(); list.size_flags_horizontal=SIZE_EXPAND_FILL; list.add_theme_constant_override("separation",12); scroll.add_child(list)
+	var receipts: Array=EconomySystem.state().receipts.values().duplicate(); receipts.reverse()
+	var handover: Dictionary=FilmSystem.state().get("camera_handover",{})
+	if not handover.is_empty(): receipts.append(handover)
+	var count := 0
+	for entry in receipts:
+		if str(entry.get("category",""))!="photography" and str(entry.get("kind",""))!="handover": continue
+		count+=1
+		var b := preload("res://scripts/ui/components/solmere_button.gd").new(); b.alignment=HORIZONTAL_ALIGNMENT_LEFT
+		b.text="DAY %02d · %s · %s  ›" % [int(entry.day),str(entry.line_items[0].name),"交换凭条" if entry.get("kind","")=="handover" else "%d 元" % int(entry.total)]
+		b.custom_minimum_size.y=58; b.pressed.connect(_show_receipt.bind(entry,"")); list.add_child(b)
+	if count==0: label(list,"付款后，小票会留在这里，也会收进生活记录。",Vector2.ZERO,Vector2(1030,80),22)
 
 func _disable_buttons(parent: Node) -> void:
 	for child in parent.get_children():

@@ -52,8 +52,8 @@ func run() -> void:
 	town.street.set_process(false)
 	town._refresh()
 	check(walk_to(town, "beetman"), "The scheduled real vendor has a person hotspot")
-	check(not town.street.hotspots.any(func(p: Dictionary) -> bool: return str(p.get("kind", "")) == "shop" and str(p.get("id", "")) == "produce_stall"), "The produce counter cannot bypass conversation")
-	check(str(town.get_node("GameplayShell")._context().text).begins_with("W  聊一会"), "Nearby person hint advertises W for conversation")
+	check(town.street.hotspots.any(func(p: Dictionary) -> bool: return str(p.get("kind", "")) == "shop" and str(p.get("id", "")) == "produce_stall"), "Shopping remains independently available without forcing conversation")
+	check(str(town.get_node("GameplayShell")._context().text).contains(root.get_node("SettingsSystem").binding_text("talk")), "Nearby person hint uses the actual conversation binding")
 	var before_minute: int = state.current_minute
 	var before_money: int = state.money
 	press(town, KEY_E)
@@ -119,25 +119,27 @@ func run() -> void:
 	check(bool(dialogue.argument_state().seen) and bool(dialogue.argument_state().finished), "Seen and finished flags are both recorded")
 	check(not town.street.hotspots.any(func(p: Dictionary) -> bool: return p.kind == "argument"), "A completed argument does not restart")
 	check(town.street.hotspots.any(func(p: Dictionary) -> bool: return p.kind == "argument_observation"), "Afterward the real scene exposes an observation trigger")
-	for person in ["ahe", "chen_chuan"]:
+	for person in ["wu_wu", "chenyuan"]:
 		check(walk_to(town, person), "Each original shopper remains individually reachable: " + person)
 		press(town, KEY_W)
 		check(is_instance_valid(town.conversation) and town.conversation.npc == person, "W opens an individual post-event dialogue: " + person)
 		check(town.conversation.dialogue_id.contains("post_argument"), "Post-event pool is selected: " + person)
 		check(not " ".join(town.conversation.lines).contains("争吵"), "Ordinary post-event smalltalk has no task or demand to judge: " + person)
 		drain(town.conversation)
+		if is_instance_valid(town.conversation): town.conversation._close()
 		await process_frame
+	var saved_cici_lines: Array=dialogue.linear_conversation("wu_wu")
 	check(save.save_or_report("NPC patch test save"), "Post-event state saves")
 	state.shared_state.clear()
 	check(save.load_slot(1), "NPC patch save loads")
 	check(bool(dialogue.argument_state().finished), "Finished state survives real Save / Load")
-	check(dialogue.linear_conversation("ahe")[0][1].contains("薄荷"), "Post-event chat progress also survives Save / Load")
+	check(dialogue.linear_conversation("wu_wu")==saved_cici_lines, "Post-event chat progress also survives Save / Load")
 	var ended: Dictionary = dialogue.argument_state()
 	state.current_minute = int(ended.minute) + dialogue.ARGUMENT_LINGER_MINUTES + 1
 	check(not dialogue.argument_lingering(), "The immediate chat window has a finite duration")
-	state.current_minute = 850
-	check(dialogue.people_at("library").has("ahe") and dialogue.people_at("cafe").has("chen_chuan"), "Both shoppers resume separate real schedules")
-	check(not dialogue.people_at("produce_stall").has("ahe"), "Schedule departure removes the temporary market presence")
-	check(dialogue.linear_conversation("chen_chuan")[0][1].contains("明信片"), "Later encounters retain post-event ordinary conversation")
+	state.current_minute = 1160
+	check(dialogue.people_at("bus_stop").has("wu_wu") and dialogue.people_at("town_entrance").has("chenyuan"), "Both shoppers resume separate real schedules")
+	check(not dialogue.people_at("produce_stall").has("wu_wu"), "Schedule departure removes the temporary market presence")
+	check(dialogue.linear_stories.chenyuan.post_argument_smalltalk.has(dialogue.linear_conversation("chenyuan")), "Later encounters retain post-event ordinary conversation")
 	print("PATCH NPCS PASS: %d checks" % checks if failures == 0 else "PATCH NPCS FAIL: %d / %d" % [failures, checks])
 	quit(failures)

@@ -23,24 +23,33 @@ var sea_clock := 0.0
 var anim: Tween
 var ui: Control
 var meter: Control
+var sea_view: TextureRect
+var journal: Control
 func _ready() -> void:
 	add_to_group("meta_modal"); theme=P.theme_for_tools()
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	var shade := ColorRect.new(); shade.color=Color("315e79",.24); shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(shade)
-	P.words(self,"海边 · 垂钓",Vector2(76,54),800,31,P.CREAM)
-	rod=ART.picture(self,"rod_clean",Vector2(60,280),Vector2(480,360))
-	bobber=ART.picture(self,"float",Vector2(485,605),Vector2(42,74))
+	sea_view=TextureRect.new(); sea_view.name="OpenWater"
+	sea_view.texture=preload("res://art/ui/handmade/fishing_sea.jpg")
+	sea_view.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; sea_view.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	sea_view.set_anchors_and_offsets_preset(PRESET_FULL_RECT); sea_view.mouse_filter=MOUSE_FILTER_IGNORE; add_child(sea_view)
+	sea_view.modulate=preload("res://scripts/ui/street_composition.gd").daylight(GameState.current_minute)
+	var caption := Panel.new(); caption.position=Vector2(54,43); caption.size=Vector2(420,62)
+	caption.add_theme_stylebox_override("panel",P.face(P.CREAM,7,0)); caption.mouse_filter=MOUSE_FILTER_IGNORE; add_child(caption)
+	P.words(self,("港湾" if GameState.current_location=="port" else "观景台下")+" · 海边钓位",Vector2(76,54),800,31,P.INK)
+	rod=ART.picture(self,"rod_clean",Vector2(60,270),Vector2(600,397))
+	bobber=ART.picture(self,"float",Vector2(855,510),Vector2(30,50))
 	ui=Control.new(); add_child(ui)
-	ART.picture(ui,"tackle_mat",Vector2(590,505),Vector2(930,370),true)
-	status=P.words(ui,"留一点时间给海。",Vector2(638,555),805,28)
-	guide=P.words(ui,"每次抛竿用 10 分钟。浮漂下沉时提竿，再趁指针进入黄色区间收线。",Vector2(638,604),800,20,P.MUTED)
+	var reading := Panel.new(); reading.position=Vector2(600,563); reading.size=Vector2(900,276)
+	reading.add_theme_stylebox_override("panel",P.face(P.CREAM,10,0)); reading.mouse_filter=MOUSE_FILTER_IGNORE; ui.add_child(reading)
+	status=P.words(ui,"留一点时间给海。",Vector2(638,585),805,28)
+	guide=P.words(ui,"每次抛竿用 10 分钟。浮漂下沉时提竿，再趁指针进入黄色区间收线。",Vector2(638,633),800,20,P.MUTED)
 	cast_button=_button("抛竿 · 10 分钟",Vector2(635,748),Vector2(460,44),_act)
 	_button("收竿 · "+SettingsSystem.binding_text("ui_cancel"),Vector2(1175,748),Vector2(279,44),_leave)
 	keep_button=_button("带回厨房",Vector2(633,689),Vector2(370,50),func():_resolve(true))
 	release_button=_button("放回海里",Vector2(1040,689),Vector2(370,50),func():_resolve(false))
 	var relaxed := preload("res://scripts/ui/components/solmere_button.gd").new()
 	relaxed.text="从容收线：开" if bool(FISH.state().relaxed) else "从容收线：关"
-	relaxed.position=Vector2(1205,56); relaxed.size=Vector2(275,48); relaxed.variant="camera"; relaxed.toggle_mode=true
+	relaxed.position=Vector2(1205,56); relaxed.size=Vector2(275,48); relaxed.variant="paper"; relaxed.toggle_mode=true
 	relaxed.button_pressed=bool(FISH.state().relaxed); add_child(relaxed)
 	relaxed.toggled.connect(func(value: bool):
 		var previous: bool=FISH.state().relaxed; FISH.state().relaxed=value; GameState.commit_active_role_state()
@@ -50,6 +59,7 @@ func _ready() -> void:
 	meter=Control.new(); meter.mouse_filter=MOUSE_FILTER_IGNORE; meter.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(meter); meter.draw.connect(_draw_meter)
 	if not FISH.state().pending.is_empty(): fish=FISH.state().pending.duplicate(true); phase=Phase.LANDED; _show_fish()
 	_refresh(); cast_button.grab_focus()
+	_button("鱼获与海边笔记",Vector2(76,140),Vector2(310,48),_open_journal).name="OpenFishJournal"
 func _button(text: String, at: Vector2, extent: Vector2, action: Callable) -> Button:
 	var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.text=text; button.position=at; button.size=extent; button.pressed.connect(action); ui.add_child(button); return button
 func _act() -> void:
@@ -76,9 +86,10 @@ func _act() -> void:
 			if progress>=1: _land()
 	_refresh()
 func _process(delta: float) -> void:
+	if is_instance_valid(journal): return
 	sea_clock+=delta
 	if is_instance_valid(bobber):
-		var y := 641.0 if phase==Phase.BITE else 605.0+sin(sea_clock*2.4)*4.0
+		var y := 538.0 if phase==Phase.BITE else 510.0+sin(sea_clock*2.4)*3.0
 		bobber.position.y=lerpf(bobber.position.y,y,minf(1,delta*9))
 		bobber.modulate.a=.6 if phase==Phase.BITE else 1.0
 		bobber.visible=phase!=Phase.LANDED
@@ -105,9 +116,10 @@ func _land() -> void:
 	_refresh()
 func _show_fish() -> void:
 	if is_instance_valid(catch_art): catch_art.queue_free()
-	catch_art=ART.picture(self,str(fish.id),Vector2(620,190),Vector2(650,265))
-	status.text="%s · %.1f cm" % [fish.name,float(fish.length_cm)]
-	guide.text="收下可以做料理；放生也会留下一笔海边记录。"
+	catch_art=ART.picture(self,str(fish.id),Vector2(850,295),Vector2(450,220))
+	var row := FISH.species(str(fish.id))
+	status.text="%s · %.1f 厘米 · %s" % [row.get("name",fish.name),float(fish.length_cm),FISH.size_description(fish)]
+	guide.text="常见 %.0f–%.0f 厘米。收下可做料理；放生同样留下观察记录。" % [float(row.get("common_min_cm",0)),float(row.get("common_max_cm",0))]
 	keep_button.call_deferred("grab_focus")
 func _resolve(keep: bool) -> void:
 	if FISH.state().pending.is_empty():
@@ -128,30 +140,44 @@ func _refresh() -> void:
 func _rod_motion(angle: float) -> void:
 	if SettingsSystem.reduced_motion(): return
 	if anim: anim.kill()
-	rod.pivot_offset=Vector2(45,325); anim=create_tween()
+	rod.pivot_offset=Vector2(30,370); anim=create_tween()
 	anim.tween_property(rod,"rotation",angle,.15); anim.tween_property(rod,"rotation",0.0,.45)
 func _draw_meter() -> void:
 	if is_instance_valid(bobber) and bobber.visible:
-		var tip := rod.get_transform()*Vector2(442,16)
-		var end := bobber.position+Vector2(21,4)
+		# Account for KEEP_ASPECT_CENTERED padding, so the line meets the rod.
+		var ratio := minf(rod.size.x/rod.texture.get_width(),rod.size.y/rod.texture.get_height())
+		var padding := (rod.size-rod.texture.get_size()*ratio)*.5
+		var tip := rod.get_transform()*(padding+Vector2(817,30)*ratio)
+		var end := bobber.position+Vector2(15,4)
 		var points := PackedVector2Array()
 		for step in 21:
 			var t := step/20.0
 			points.append(tip.lerp(end,t)+Vector2(sin(t*PI)*27,0))
 		meter.draw_polyline(points,P.SEA,1.5,true)
+		var ripple := PackedVector2Array()
+		for step in 33:
+			var angle := step*TAU/32
+			ripple.append(bobber.position+Vector2(15,43)+Vector2(cos(angle)*(21+sin(sea_clock*2)*3),sin(angle)*5))
+		meter.draw_polyline(ripple,Color(P.CREAM,.5),1.3,true)
 	if phase!=Phase.REELING: return
 	var width: float=float(fish.window)*(1.55 if bool(FISH.state().relaxed) else 1.0)
-	var lane := Rect2(641,683,790,14)
+	var lane := Rect2(641,706,790,10)
 	meter.draw_style_box(P.face(Color("c9d9dc"),7,0),lane)
 	meter.draw_style_box(P.face(P.LEMON,5,0),Rect2(lane.position+Vector2((target-width*.5)*lane.size.x,0),Vector2(width*lane.size.x,14)))
-	meter.draw_circle(Vector2(lane.position.x+cursor*lane.size.x,690),9,P.SEA)
-	meter.draw_line(Vector2(642,720),Vector2(642+progress*790,720),P.SAGE,4,true)
+	meter.draw_circle(Vector2(lane.position.x+cursor*lane.size.x,711),9,P.SEA)
+	meter.draw_line(Vector2(642,730),Vector2(642+progress*790,730),P.SAGE,4,true)
 func _leave() -> void:
 	if phase==Phase.LANDED and FISH.state().pending.is_empty() and not FISH.land(fish):
 		status.text="魚获还没能存好，请稍后收竿。"; return
 	queue_free()
 func _unhandled_input(event: InputEvent) -> void:
+	if is_instance_valid(journal): return
 	if event.is_action_pressed("ui_cancel"): _leave(); get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("fishing_action"):
 		if phase!=Phase.LANDED: _act()
 		get_viewport().set_input_as_handled()
+
+func _open_journal() -> void:
+	if is_instance_valid(journal): return
+	journal=preload("res://scripts/ui/fish_journal.gd").new(); add_child(journal)
+	journal.tree_exited.connect(func(): cast_button.grab_focus())

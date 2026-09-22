@@ -1,0 +1,35 @@
+{
+  "source_sha256": "b20f87bec5ecda9925344c1bfa31caced700d08298fefe26d1aa0970ddcfe03d",
+  "geometry_policy": "Source positions and inter-layer alignment unchanged. No inferred photo depth. Uniform viewing normalization happens in runtime.",
+  "colour_policy": "Schematic layer identity, not natural colour or temperature.",
+  "components": {
+    "cco": {
+      "vertices": 78,
+      "triangles": 112
+    },
+    "fekcorr": {
+      "vertices": 37595,
+      "triangles": 74134
+    },
+    "newar": {
+      "vertices": 34725,
+      "triangles": 66418
+    },
+    "newhetg": {
+      "vertices": 1330,
+      "triangles": 1916
+    },
+    "newjets": {
+      "vertices": 4072,
+      "triangles": 6382
+    },
+    "newopt": {
+      "vertices": 6603,
+      "triangles": 12788
+    },
+    "newsi": {
+      "vertices": 58571,
+      "triangles": 117120
+    }
+  }
+}

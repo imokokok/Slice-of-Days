@@ -97,15 +97,15 @@
           "results_by_role": {
             "A": {
               "encounters": [
-                "restaurant_owner",
-                "a_meng",
+                "shi_yongqi",
+                "xanni",
                 "zhou_xiaoliu"
               ],
               "relationship_flags": {
-                "restaurant_owner": [
+                "shi_yongqi": [
                   "在忙乱的饭店时段可靠补位"
                 ],
-                "a_meng": [
+                "xanni": [
                   "一起把积压的碗送回后场"
                 ],
                 "zhou_xiaoliu": [
@@ -113,17 +113,17 @@
                 ]
               },
               "confirmations": {
-                "restaurant_owner": "granted",
-                "a_meng": "granted",
+                "shi_yongqi": "granted",
+                "xanni": "granted",
                 "zhou_xiaoliu": "granted"
               }
             },
             "B": {
               "encounters": [
-                "restaurant_owner"
+                "shi_yongqi"
               ],
               "relationship_flags": {
-                "restaurant_owner": [
+                "shi_yongqi": [
                   "认真核对过分成与时间"
                 ]
               }
@@ -142,20 +142,20 @@
           "results_by_role": {
             "A": {
               "encounters": [
-                "restaurant_owner"
+                "shi_yongqi"
               ],
               "relationship_flags": {
-                "restaurant_owner": [
+                "shi_yongqi": [
                   "完成过一次稳定菜单"
                 ]
               }
             },
             "B": {
               "encounters": [
-                "restaurant_owner"
+                "shi_yongqi"
               ],
               "confirmations": {
-                "restaurant_owner": "granted"
+                "shi_yongqi": "granted"
               }
             }
           }
@@ -175,7 +175,7 @@
         "progress_steps": [
           "委托人：先别替我写得像一封信。先听我实际会说什么。",
           "第一块句子放下以后，他没有点头，只把它按自己的语气读了一遍。",
-          "第二块句子接上时，Sunniva把被删掉的纸条留在桌边，没有扔掉。",
+          "第二块句子接上时，Mossner把被删掉的纸条留在桌边，没有扔掉。",
           "三块句子已经排好。它们表达了他的意思，是否像他的声音还要经过一次删改。"
         ],
         "tokens": [
@@ -231,19 +231,19 @@
           "results_by_role": {
             "A": {
               "confirmations": {
-                "letter_client": "granted"
+                "mingming": "granted"
               }
             },
             "B": {
               "encounters": [
-                "letter_client",
-                "sunniva"
+                "mingming",
+                "mossner"
               ],
               "relationship_flags": {
-                "letter_client": [
+                "mingming": [
                   "先听完整再组成初稿"
                 ],
-                "sunniva": [
+                "mossner": [
                   "一起保留了被删下的纸条"
                 ]
               }
@@ -257,17 +257,17 @@
           "cost": {
             "minutes": 60
           },
-          "result_text": "信按时写完，也比委托人自己会说的话更清楚。他请B先不要装进信封。",
+          "result_text": "信按时写完，也比委托人自己会说的话更清楚。她请B先不要装进信封。",
           "results": {
             "money": 22,
             "facts": [
               "代写选择：在限定时间内完成清楚版本。"
             ],
             "encounters": [
-              "letter_client"
+              "mingming"
             ],
             "relationship_flags": {
-              "letter_client": [
+              "mingming": [
                 "按时完成过一版过于清楚的代写"
               ]
             }
@@ -318,20 +318,20 @@
           "result_text": "争论没有被漂亮地解决，但两个人都愿意再听一遍。",
           "results": {
             "encounters": [
-              "jiu",
-              "abyssia"
+              "wu_wu",
+              "chenyuan"
             ],
             "relationship_flags": {
-              "jiu": [
+              "wu_wu": [
                 "被认真转译过"
               ],
-              "abyssia": [
+              "chenyuan": [
                 "被认真转译过"
               ]
             },
             "confirmations": {
-              "jiu": "granted",
-              "abyssia": "granted"
+              "wu_wu": "granted",
+              "chenyuan": "granted"
             }
           }
         },
@@ -345,7 +345,7 @@
           "result_text": "最尖锐的误会先被拆开了，剩下的话仍需要时间。",
           "results": {
             "relationship_flags": {
-              "jiu": [
+              "wu_wu": [
                 "帮助澄清过误会"
               ]
             }
@@ -364,7 +364,7 @@
         "min_select": 3,
         "max_select": 3,
         "progress_steps": [
-          "声音师：先听来源，不要先找节拍。",
+          "Xanni：先听来源，不要先找节拍。",
           "第一段被放进时间线；来源标记仍和它一起移动。",
           "第二段接上以后，雨里的空白开始像一个可以剪开的停顿。",
           "三段声音已经排好。现在决定它是可交付短曲，还是只属于这次漫游的私人采样。"
@@ -383,7 +383,7 @@
           {
             "id": "distant_flute",
             "label": "公园里的声音",
-            "detail": "阿锰明确授权的竹笛演奏段"
+            "detail": "Xanni明确授权的竹笛演奏段"
           },
           {
             "id": "cafe_cups",
@@ -431,15 +431,15 @@
           "results_by_role": {
             "B": {
               "encounters": [
-                "a_meng"
+                "xanni"
               ],
               "relationship_flags": {
-                "a_meng": [
+                "xanni": [
                   "按授权范围交付了公园演奏段"
                 ]
               },
               "confirmations": {
-                "a_meng": "granted"
+                "xanni": "granted"
               }
             }
           }
@@ -511,15 +511,15 @@
           "result_text": "棋局结束时，对手说你下棋时比说话时放松。",
           "results": {
             "encounters": [
-              "jian_zhaoxiang"
+              "naonao"
             ],
             "relationship_flags": {
-              "jian_zhaoxiang": [
+              "naonao": [
                 "一起下完一盘棋"
               ]
             },
             "confirmations": {
-              "jian_zhaoxiang": "granted"
+              "naonao": "granted"
             }
           }
         },
@@ -758,7 +758,7 @@
               }
             ],
             "relationship_flags": {
-              "stagehand": [
+              "xanni": [
                 "一起保留了矛盾的空间记录"
               ]
             }

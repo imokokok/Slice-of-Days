@@ -159,7 +159,7 @@ func _exchange_callback(c: Dictionary, npc: String) -> String:
 	return str(detail.get("return_reply","原来那件小事还留在对方心里。谢谢你特意带回来。"))
 
 func npc_place(npc: String, fallback := "") -> String:
-	if npc=="grocery": return "cafe"
+	if not ResidentProfileSystem.is_core(npc): return fallback
 	# The street's real population includes post-argument lingering overrides.
 	for location in ResidencySystem.locations:
 		if DialogueSystem.people_at(str(location)).has(npc): return str(location)

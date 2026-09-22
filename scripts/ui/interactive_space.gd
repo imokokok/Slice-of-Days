@@ -32,7 +32,6 @@ var roster_minute := -1
 
 func _ready() -> void:
 	_load_active_space()
-	add_child(preload("res://scripts/meta/place_layer.gd").new())
 	if space.is_empty():
 		SceneRouter.leave_space()
 		return
@@ -480,15 +479,12 @@ func _style_button(button: Button, kind: String) -> void:
 	button.add_theme_color_override("font_focus_color", text_color)
 
 func _start_conversation(resident_id: String, topic := "greeting") -> void:
+	if not ResidentProfileSystem.is_core(resident_id): return
 	if is_instance_valid(conversation): return
 	if not MetaExperience.pay_conversation(topic): return
 	conversation = preload("res://scripts/ui/conversation_panel.gd").new()
 	conversation.npc = resident_id
 	conversation.starting_topic = topic
-	if resident_id == "grocery":
-		conversation.shop_id = "grocery"
-		conversation.shop_name = "杂货店老板"
-		conversation.purchase_requested.connect(_open_shop.bind("grocery"))
 	for item in stage.hotspots:
 		if str(item.get("id","")) == resident_id and absf(float(item.x)-stage.player_x) > 1.0: stage.facing = signf(float(item.x)-stage.player_x)
 	stage.velocity = 0.0

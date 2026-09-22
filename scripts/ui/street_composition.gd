@@ -13,7 +13,13 @@ const CUTOUTS := {
 const SCENE_WIDTHS := {"bus_stop":620.0, "chess_stall":660.0, "tarot_stall":650.0}
 
 static func center_local(location: String) -> float:
-	return 710.0 if location == "produce_stall" else 780.0 if location == "tarot_stall" else 800.0
+	# Offset each frontage to leave a small social pocket on the open side.
+	return float({"produce_stall":710,"tarot_stall":760,"bus_stop":750,"chess_stall":730,"print_shop":770,"night_market":770,"residence":820,"dorm":760}.get(location,800))
+
+static func resident_feet(resident: String) -> float:
+	# Residents occupy a shallow second plane, entirely on the paving, while
+	# the continuous player path stays clear in the foreground.
+	return FEET - 16.0 - float(absi(resident.hash()) % 3) * 4.0
 
 static func cutout_rect(location: String, source: Vector2, center: float) -> Rect2:
 	var layout: Dictionary = CUTOUTS[location]
@@ -39,10 +45,12 @@ static func npc_offset(location: String, resident: String, index: int) -> float:
 			"chenyuan": return 380.0
 			"wu_wu": return 520.0
 		return [-530.0,-390.0,-220.0][mini(index,2)]
-	if location == "bus_stop": return [-210.0,190.0,-410.0][mini(index,2)]
-	if location == "chess_stall": return [175.0,370.0,-240.0][mini(index,2)]
+	if location == "bus_stop": return [-180.0,170.0,-440.0][mini(index,2)]
+	if location == "chess_stall": return [150.0,360.0,-290.0][mini(index,2)]
 	if location == "tarot_stall": return [350.0,-360.0,515.0][mini(index,2)]
 	if location == "cafe": return [350.0,515.0,-360.0][mini(index,2)]
+	if location == "print_shop": return [-270.0,400.0,555.0][mini(index,2)]
+	if location == "night_market": return [265.0,-320.0,480.0][mini(index,2)]
 	return [-355.0,350.0,515.0][mini(index,2)]
 
 static func argument_offset() -> float:

@@ -10,6 +10,7 @@ const OUTDOOR_ACTOR_HEIGHT := 184.0
 const INDOOR_ACTOR_HEIGHT := 320.0
 const CURB_Y := 718.0
 const Composition = preload("res://scripts/ui/street_composition.gd")
+const ActorMotion = preload("res://scripts/ui/actor_motion.gd")
 const COASTAL_GRADE = preload("res://scripts/ui/coastal_grade.gdshader")
 const Atlas = preload("res://scripts/ui/scene_atlas.gd")
 const COAST_ART = preload("res://art/user_scenes/lookout_approach.png")
@@ -47,6 +48,9 @@ var visual_phase := -1
 var lookout_was_open := false
 var dialogue_scenery: Array[Rect2] = []
 var world_labels: Dictionary = {}
+var idle_time := 0.0
+var idle_redraw := 0.0
+var resident_directions: Dictionary = {}
 
 func _ready() -> void:
 	var finish := ShaderMaterial.new()
@@ -60,6 +64,12 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func _process(delta: float) -> void:
+	idle_time += delta
+	idle_redraw += delta
+	# Limited to 15 Hz for the quiet paper-puppet idle; walking redraws normally.
+	if idle_redraw >= 1.0 / 15.0:
+		idle_redraw = 0.0
+		queue_redraw()
 	_sync_original_resident()
 	var phase_now := Atlas.phase(GameState.current_minute)
 	var lookout_open := GameState.current_minute >= WorldGraph.LOOKOUT_OPEN
@@ -181,13 +191,16 @@ func _draw() -> void:
 			if str(item.get("id", "")) == "zhou_xiaoliu": continue
 			var shades := [Color("68868c"),Color("8b9d80"),Color("b9876e"),Color("c5b67f")]
 			var shade: Color = shades[absi(str(item.get("id", "")).hash()) % shades.size()]
-			if _draw_authored_npc(str(item.get("id", "")), Vector2(x, _actor_ground_at(float(item.x))), -1.0):
+			var resident := str(item.get("id", ""))
+			var at := Vector2(x, _npc_ground(resident, float(item.x)))
+			var look := _resident_direction(resident, float(item.x))
+			if _draw_authored_npc(resident, at, look):
 				continue
-			_draw_person(Vector2(x, _actor_ground_at(float(item.x))), shade, 0.0, 0.0, -1.0)
+			_draw_person(at, shade, idle_time, 0.0, look, false, "", absi(resident.hash()) % 3)
 		elif kind == "argument":
 			# 尘缘坚持吃肉，CICI 则坚持素食；两位都用用户提供的形象。
-			_draw_authored_npc("chenyuan", Vector2(x-70,ground), 1.0)
-			_draw_authored_npc("wu_wu", Vector2(x+70,ground), -1.0)
+			_draw_authored_npc("chenyuan", Vector2(x-70,_npc_ground("chenyuan",float(item.x))), 1.0)
+			_draw_authored_npc("wu_wu", Vector2(x+70,_npc_ground("wu_wu",float(item.x))), -1.0)
 		elif kind == "event":
 			# An event is a notice at its place, never an extra anonymous resident.
 			_draw_event_notice(x)
@@ -269,6 +282,16 @@ func _actor_ground_at(world_x: float) -> float:
 	# A shared foreground walk line keeps feet away from the planted curb.
 	return Composition.FEET if not indoor else _ground_at(world_x)
 
+func _npc_ground(resident: String, world_x: float) -> float:
+	return _actor_ground_at(world_x) if indoor else Composition.resident_feet(resident)
+
+func _resident_direction(resident: String, world_x: float) -> float:
+	var gap := player_x - world_x
+	# Hysteresis avoids repeated mirroring while the player stands beside them.
+	if not resident_directions.has(resident): resident_directions[resident] = 1.0 if absi(resident.hash()) % 2 else -1.0
+	if absf(gap) > 100 and absf(gap) < 360: resident_directions[resident] = signf(gap)
+	return float(resident_directions[resident])
+
 func _draw_lookout_approach() -> void:
 	# One full-height original panorama. Horizontal camera movement reveals it;
 	# no replacement sky, road patch, stretched proportions, or overlaid plates.
@@ -294,7 +317,7 @@ func _sync_original_resident() -> void:
 	original_resident.hide()
 	for item in hotspots:
 		if str(item.get("id","")) != "zhou_xiaoliu": continue
-		var at := Vector2(float(item.x)-camera_x,_actor_ground_at(float(item.x)))
+		var at := Vector2(float(item.x)-camera_x,_npc_ground("zhou_xiaoliu",float(item.x)))
 		original_resident.stand_at(at,_actor_height(),player_x > float(item.x),_scene_art_tint())
 		original_resident.visible = at.x > -120 and at.x < 1720
 		break
@@ -607,14 +630,14 @@ func dialogue_obstacles(npc_id := "") -> Dictionary:
 		var kind := str(item.get("kind",""))
 		if kind not in ["person","shopkeeper","argument"]: continue
 		var x := float(item.get("x",0))-camera_x
-		var ground := _actor_ground_at(float(item.get("x",0)))
+		var ground := _npc_ground(str(item.get("id","")),float(item.get("x",0)))
 		var half_width := height*.32+(70 if kind=="argument" else 0)
 		actors.append(Rect2(x-half_width,ground-height,half_width*2,height+12).grow(18))
 		if str(item.get("id",""))==npc_id: anchor=Vector2(x,ground-height*.7)
 		# The market pair shares one interaction hotspot, but each supplied
 		# portrait still has its own speaking position within that pair.
 		if kind=="argument" and npc_id in ["chenyuan","wu_wu"]:
-			anchor=Vector2(x+(-70 if npc_id=="chenyuan" else 70),ground-height*.7)
+			anchor=Vector2(x+(-70 if npc_id=="chenyuan" else 70),_npc_ground(npc_id,float(item.x))-height*.7)
 	var scenery: Array=dialogue_scenery.duplicate()
 	if indoor:
 		# Authored room plates have a central work counter and side windows.
@@ -629,17 +652,18 @@ func dialogue_obstacles(npc_id := "") -> Dictionary:
 	return {"actors":actors,"scenery":scenery,"anchor":transform*anchor}
 
 func _draw_protagonist(at: Vector2, gait_phase: float, gait_strength: float, direction: float) -> void:
-	# The protagonist uses the supplied character design instead of the generic
-	# street silhouette.  A small gait bob keeps the authored line art alive
-	# while preserving its full-body proportions.
+	# Four temporary drawn contact/passing frames, driven by travelled distance.
+	# Preserve the user's original standing artwork until final animation arrives.
+	var art: Texture2D = ActorMotion.WALK[ActorMotion.frame_at(gait_phase)] if gait_strength > .08 else PROTAGONIST_ART
 	var height := _actor_height() * 1.08
-	var width := height * float(PROTAGONIST_ART.get_width()) / float(PROTAGONIST_ART.get_height())
-	var bob := (1.0 - absf(cos(gait_phase))) * 2.0 * clampf(gait_strength, 0.0, 1.0)
+	var width := height * float(art.get_width()) / float(art.get_height())
 	draw_colored_polygon(PackedVector2Array([at + Vector2(-width * 0.32, 2), at + Vector2(width * 0.32, 2), at + Vector2(width * 0.42, 6), at + Vector2(-width * 0.42, 6)]), Color("112630", 0.20))
 	# The reference pose faces left in its source image, so mirror it for
 	# rightward travel and keep the visible direction aligned with input.
 	draw_set_transform(at, 0.0, Vector2(-1.0 if direction >= 0.0 else 1.0, 1.0))
-	draw_texture_rect(PROTAGONIST_ART, Rect2(-width * 0.5, -height - bob, width, height), false)
+	# Generated cells have an eight-pixel transparent bottom margin.
+	var margin := height * 8.0 / 616.0 if gait_strength > .08 else 0.0
+	draw_texture_rect(art, Rect2(-width * 0.5, -height + margin, width, height), false)
 	draw_set_transform(Vector2.ZERO)
 
 func _draw_authored_npc(npc_id: String, at: Vector2, direction := -1.0) -> bool:
@@ -657,12 +681,12 @@ func _draw_authored_npc(npc_id: String, at: Vector2, direction := -1.0) -> bool:
 		_: return false
 	var width := height * float(art.get_width()) / float(art.get_height())
 	draw_colored_polygon(PackedVector2Array([at + Vector2(-width * 0.30, 2), at + Vector2(width * 0.30, 2), at + Vector2(width * 0.40, 6), at + Vector2(-width * 0.40, 6)]), Color("112630", 0.20))
-	draw_set_transform(at, 0.0, Vector2(1.0 if direction >= 0.0 else -1.0, 1.0))
-	draw_texture_rect(art, Rect2(-width * 0.5, -height, width, height), false)
+	draw_set_transform(at, 0.0, Vector2(-1.0 if direction >= 0.0 else 1.0, 1.0))
+	ActorMotion.draw_standing(self,art,Vector2(width,height),idle_time,absi(npc_id.hash()))
 	draw_set_transform(Vector2.ZERO)
 	return true
 
-func _draw_person(at: Vector2, coat: Color, gait_phase: float, gait_strength: float, direction: float, seated := false, role := "") -> void:
+func _draw_person(at: Vector2, coat: Color, gait_phase: float, gait_strength: float, direction: float, seated := false, role := "", stance := 0) -> void:
 	var actor_scale := _actor_height() / ACTOR_BASE_HEIGHT
 	var strength := clampf(gait_strength, 0.0, 1.0)
 	var bob := (1.0 - absf(cos(gait_phase))) * 0.7 * strength
@@ -683,8 +707,16 @@ func _draw_person(at: Vector2, coat: Color, gait_phase: float, gait_strength: fl
 		_draw_jointed_limb(Vector2(4,-49),Vector2(29,-43),Vector2(34,-16),7,trousers)
 		_draw_shoe(Vector2(34,-15),1,Color("223137"))
 	else:
-		_draw_walking_leg(gait_phase + PI,strength,-4,trousers.darkened(0.12),Color("223137"))
-		_draw_walking_leg(gait_phase,strength,4,trousers,Color("223137"))
+		if strength > .01:
+			_draw_walking_leg(gait_phase + PI,strength,-4,trousers.darkened(0.12),Color("223137"))
+			_draw_walking_leg(gait_phase,strength,4,trousers,Color("223137"))
+		else:
+			# One supporting leg, one relaxed knee. Different stances share feet.
+			_draw_jointed_limb(Vector2(-4,-49),Vector2(-6,-25),Vector2(-7,0),7,trousers.darkened(.12))
+			_draw_shoe(Vector2(-7,0),1,Color("223137"))
+			_draw_jointed_limb(Vector2(4,-49),Vector2(9+stance*2,-24),Vector2(12+stance*2,0),7,trousers)
+			_draw_shoe(Vector2(12+stance*2,0),1,Color("223137"))
+			draw_set_transform(origin + Vector2(sin(idle_time*.8+stance)*actor_scale,0),0,Vector2(facing_sign,1.0+sin(idle_time*1.3+stance)*.002)*actor_scale)
 	var swing := sin(gait_phase) * 8.0 * strength if not seated else -10.0
 	_draw_jointed_limb(Vector2(-7,-88),Vector2(-8-swing*0.4,-69),Vector2(-5-swing,-51),5.5,shadow)
 	draw_rect(Rect2(-4,-103,6,13),skin.darkened(0.16))
@@ -697,7 +729,10 @@ func _draw_person(at: Vector2, coat: Color, gait_phase: float, gait_strength: fl
 	elif role == "B":
 		draw_colored_polygon(PackedVector2Array([Vector2(-13,-88),Vector2(-20,-83),Vector2(-20,-63),Vector2(-11,-59)]),Color("34474c"))
 	var hand := Vector2(8+swing,-52)
-	_draw_jointed_limb(Vector2(6,-88),Vector2(7+swing*0.35,-70),hand,5.8,cloth.lightened(0.035))
+	var elbow := Vector2(7+swing*.35,-70)
+	if strength < .01 and stance == 1: hand=Vector2(5,-64); elbow=Vector2(17,-70)
+	if strength < .01 and stance == 2: hand=Vector2(-5,-70); elbow=Vector2(15,-60)
+	_draw_jointed_limb(Vector2(6,-88),elbow,hand,5.8,cloth.lightened(0.035))
 	draw_line(hand,hand+Vector2(0,4),skin,3.5,true)
 	draw_colored_polygon(PackedVector2Array([Vector2(-7,-117),Vector2(-2,-121),Vector2(5,-119),Vector2(8,-112),Vector2(7,-104),Vector2(2,-100),Vector2(-5,-104),Vector2(-8,-111)]),skin)
 	draw_colored_polygon(PackedVector2Array([Vector2(-8,-111),Vector2(-7,-118),Vector2(-2,-122),Vector2(5,-120),Vector2(7,-116),Vector2(-1,-117),Vector2(-3,-108),Vector2(-5,-104)]),hair)

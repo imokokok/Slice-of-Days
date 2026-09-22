@@ -8,9 +8,10 @@ const BottleClient = preload("../scripts/bottle_client.gd")
 const BottleDock = preload("../scripts/bottle_dock.gd")
 const TypeLayout = preload("typewriter_layout.gd")
 const SIZE := Vector2(1600,900)
-const INK := Color("443f32")
-const CREAM := Color("f6ebd5")
+const INK := Color("28546b")
+const CREAM := Color("fffaf0")
 const ASSETS := "res://extensions/collage_letter/workshop/assets/"
+const HANDMADE := "res://art/ui/handmade/workshop/"
 enum Mode { DESK, MATERIAL_BROWSER, SCISSOR_CUTTING, CUTTING_MAT, KNIFE_CUTTING, TYPEWRITER, DRAWING, TAPE, FOLDING, ENVELOPE, WAX_SEALING, SENT }
 
 var mode := Mode.DESK
@@ -51,7 +52,7 @@ var ink_target: Node2D
 var pen_width := 1.3
 var pen_color := Color("34464a")
 var tool := "move"
-var hint := "翻开左边的纸张，或者从打字机开始。"
+var hint := "从左侧素材挑一张纸，或者点一下打字机。"
 var hovered_title := ""
 var elapsed := 0.0
 var save_clock := 0.0
@@ -133,11 +134,11 @@ func _ready() -> void:
 	add_child(audio)
 	bottle = BottleClient.new()
 	add_child(bottle)
-	reference = load(ASSETS + "reference-desk.png")
-	backdrop = load(ASSETS + "desk-clean.png") if ResourceLoader.exists(ASSETS + "desk-clean.png") else reference
+	backdrop = load(HANDMADE + "desk.png")
+	reference = backdrop
 	for id in ["typewriter", "scissors", "knife", "tape", "mat", "pen", "envelope", "wax-tray", "candle", "spoon", "stamp", "matchbox"]:
-		if ResourceLoader.exists(ASSETS + id + ".png"):
-			var source: Texture2D = load(ASSETS + id + ".png")
+		if ResourceLoader.exists(HANDMADE + id + ".png"):
+			var source: Texture2D = load(HANDMADE + id + ".png")
 			var atlas := AtlasTexture.new()
 			atlas.atlas = source
 			atlas.region = source.get_image().get_used_rect()
@@ -145,11 +146,11 @@ func _ready() -> void:
 	tools_root = Node2D.new()
 	add_child(tools_root)
 	_make_tool("mat", "刻板 · 先铺好，再用刻刀", Rect2(10,582,360,210))
-	_make_tool("typewriter", "打字机 · 写一句自己的话", Rect2(940,180,405,325))
+	_make_tool("typewriter", "打字机 · 写一句自己的话", Rect2(1090,414,350,260))
 	_make_tool("tape", "纸胶带 · 拉出后用剪刀剪断", Rect2(405,480,110,93))
 	_make_tool("pen", "钢笔 · 写字与涂鸦", Rect2(330,612,65,172))
-	_make_tool("envelope", "信封 · 先把信折好", Rect2(1090,680,310,152))
-	_make_tool("wax-tray", "火漆工具盘 · 封存这封信", Rect2(1140,468,400,190))
+	_make_tool("envelope", "信封 · 先把信折好", Rect2(1090,710,310,134))
+	_make_tool("wax-tray", "火漆工具盘 · 封存这封信", Rect2(1405,660,170,82))
 	_make_tool("knife", "刻刀 · 只能在刻板上使用", Rect2(218,625,82,170))
 	_make_tool("scissors", "剪刀 · 沿虚线剪成两片", Rect2(35,606,195,150))
 	papers = Node2D.new()
@@ -273,10 +274,9 @@ func _draw_overlay() -> void:
 
 func _paper_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(CREAM,0.95)
+	style.bg_color = CREAM
 	style.set_corner_radius_all(2)
-	style.shadow_color = Color(0.15,0.10,0.05,0.2)
-	style.shadow_size = 4
+	style.shadow_size = 0
 	return style
 
 func _label(text: String, rect: Rect2, size: int = 18) -> Label:
@@ -288,6 +288,7 @@ func _label(text: String, rect: Rect2, size: int = 18) -> Label:
 	label.add_theme_font_override("font",font)
 	label.add_theme_font_size_override("font_size",size)
 	label.add_theme_color_override("font_color",INK)
+	label.add_theme_stylebox_override("normal",_paper_style())
 	ui.add_child(label)
 	return label
 
@@ -337,7 +338,7 @@ func build_ui() -> void:
 		if mode == Mode.TYPEWRITER:
 			var save_button := _button("正在逐字打完…" if type_save_requested else "SAVE · 抽出纸张",Rect2(1160,715,212,46),save_typed_paper)
 			save_button.disabled = type_save_requested
-			_label("直接敲键盘 · Enter 换行 · Backspace 退格",Rect2(555,155,660,32),16)
+			_label("直接敲键盘\nEnter 换行\nBackspace 退格",Rect2(1130,185,240,76),16)
 		if mode == Mode.WAX_SEALING and wax_step == 6:
 			_button("SEND · 寄出",Rect2(1120,750,210,52),send_letter)
 	if notes_open or settings_open: _build_note_panel()
@@ -612,7 +613,8 @@ func _press() -> void:
 			var objects=tools_root.get_children();objects.reverse()
 			for object in objects:
 				if object.contains_point(pointer): use_tool(object.action);return
-			if Rect2(5,280,400,280).has_point(pointer): open_browser()
+			# The visible Materials button opens the browser. The painted wall is
+			# decoration, not an invisible full-background interaction region.
 		Mode.DRAWING:
 			var paper=paper_at(pointer)
 			if paper: checkpoint();ink_target=paper
@@ -879,25 +881,31 @@ func _ensure_type_page() -> void:
 
 func _draw_typewriter() -> void:
 	var zoom:=lerpf(0.90,1.0,focus_amount)
-	var box:=Rect2(Vector2(365,198)+Vector2(carriage,0),Vector2(870,600)*zoom)
-	_sprite("typewriter",box)
-	draw_set_transform(box.position,0,Vector2.ONE*zoom)
+	# The paper is a real separate layer. Keeping its original aspect ratio
+	# makes seven lines legible instead of squeezing the ink into a photo plane.
+	var paper_at := Vector2(570,185)+Vector2(carriage,0)
+	draw_style_box(_paper_style(),Rect2(paper_at,TypeLayout.PAGE_SIZE))
 	if is_instance_valid(type_viewport):
-		# Ink follows the perspective of the actual paper and cannot reach the keys.
-		var paper_quad:=PackedVector2Array([Vector2(313,48),Vector2(755,80),Vector2(723,207),Vector2(281,177)])
-		draw_polygon(paper_quad,PackedColorArray([Color.WHITE]),PackedVector2Array([Vector2.ZERO,Vector2(1,0),Vector2.ONE,Vector2(0,1)]),type_viewport.get_texture())
+		draw_texture_rect(type_viewport.get_texture(),Rect2(paper_at,TypeLayout.PAGE_SIZE),false)
+	var machine: AtlasTexture=sprites.typewriter
+	var source := machine.region
+	source.position.y += source.size.y*.32
+	source.size.y *= .68
+	var box := Rect2(Vector2(365,465)+Vector2(carriage,0),Vector2(870,335)*zoom)
+	draw_texture_rect_region(machine.atlas,box,source)
+	draw_set_transform(box.position,0,Vector2.ONE*zoom)
 	var rows := ["QWERTYUIOP","ASDFGHJKL","ZXCVBNM"]
 	for row in rows.size():
 		for i in rows[row].length():
 			var key: String=rows[row][i]
-			var at:=Vector2(174+i*42+row*16,346+row*33)
+			var at:=Vector2(149+i*43-row*8,145+row*32+i*1.7)
 			var down:=key_age<0.16 and type_key.to_upper()==key
 			if down:
-				draw_circle(at+Vector2(0,5),14,Color("988566"))
+				draw_circle(at+Vector2(0,2),11,Color("e6c25b"))
 			draw_string(mono,at+Vector2(-5,5 if not down else 10),key,HORIZONTAL_ALIGNMENT_LEFT,-1,13,INK)
 	if key_age<0.12:
-			draw_line(Vector2(425,275),Vector2(440,238),Color("6b6250"),4,true)
-	if type_key=="Space" and key_age<0.15: draw_line(Vector2(260,490),Vector2(580,515),Color(0.2,0.17,0.13,0.3),10,true)
+			draw_line(Vector2(425,85),Vector2(440,48),INK,4,true)
+	if type_key=="Space" and key_age<0.15: draw_line(Vector2(260,275),Vector2(580,291),Color("e6c25b"),6,true)
 	draw_set_transform(Vector2.ZERO)
 	if eject_amount>0 and typed_preview:
 		draw_texture_rect(typed_preview,Rect2(665,265-eject_amount*175,340,220),false)
@@ -998,10 +1006,10 @@ func _draw_envelope() -> void:
 
 func _envelope_regions() -> Array[Rect2]:
 	var texture: AtlasTexture = sprites.envelope
-	var region := Rect2(280,20,976,960)
-	# The source artwork's horizontal fold is at y=432. Keep its painted
-	# edge, grain and alpha; split only the rendering, never paint over it.
-	var hinge := 432.0
+	var region := texture.region
+	# The generated open flap occupies 35% of this cutout, independent of
+	# resolution. Both folding and sealing use exactly this painted hinge.
+	var hinge := region.position.y + region.size.y * .35
 	return [Rect2(region.position,Vector2(region.size.x,hinge-region.position.y)),
 		Rect2(region.position.x,hinge,region.size.x,region.end.y-hinge)]
 
@@ -1012,7 +1020,7 @@ func _draw_envelope_body(body: Rect2) -> void:
 func _draw_envelope_flap(body: Rect2, closure: float) -> void:
 	var texture: AtlasTexture = sprites.envelope
 	var source := _envelope_regions()[0]
-	var height := source.size.y * body.size.x / source.size.x
+	var height := body.size.y * .75
 	var tilt := cos(clampf(closure,0,1) * PI)
 	if absf(tilt) < 0.002: return
 	draw_set_transform(body.position,0,Vector2(1,tilt))
@@ -1027,15 +1035,16 @@ func _draw_wax() -> void:
 	_draw_envelope_body(envelope_body)
 	_draw_envelope_flap(envelope_body,1.0)
 	_sprite("matchbox",Rect2(300,595,190,100))
-	# Candle and animated, layered translucent flame.
-	_sprite("candle",Rect2(440,370,142,210))
+	# Crop away the static painted flame. Ignition comes only from gameplay.
+	var candle: AtlasTexture=sprites.candle
+	var candle_body := candle.region
+	candle_body.position.y += candle_body.size.y*.30
+	candle_body.size.y *= .70
+	draw_texture_rect_region(candle.atlas,Rect2(440,382,142,198),candle_body)
 	if candle_lit:
 		_flame(Vector2(509,382),1.0)
 	# The box contains actual visible pellets; the spoon changes through 4 phases.
-	draw_rect(Rect2(319,292,150,78),Color("684b33"))
-	for i in 17:
-		var at:=Vector2(331+(i%6)*23,309+(i/6)*19)
-		draw_circle(at,8,Color("a74835"));draw_circle(at+Vector2(-2,-2),3,Color("c36c45"))
+	_sprite("wax-tray",Rect2(300,285,200,100))
 	var spoon:=pointer if wax_drag=="spoon" else Vector2(600,322)
 	if wax_step==2 and wax_drag!="spoon" and spoon_on_fire: spoon=Vector2(509,350)
 	if wax_step==3 and wax_drag!="spoon": spoon=Vector2(600,322)
@@ -1045,20 +1054,20 @@ func _draw_wax() -> void:
 	draw_set_transform(Vector2.ZERO)
 	if spoon_filled:
 		if wax_heat<2.8:
-			for i in 5: draw_circle(spoon+Vector2(-19+i*9,sin(i)*5),maxf(3,7-wax_heat),Color("b44d36"))
-		else: draw_ellipse_custom(spoon,Vector2(31,13),Color("b6452c").lerp(Color("da6846"),clampf((wax_heat-2.8)/3.2,0,1)))
+			for i in 5: draw_circle(spoon+Vector2(-19+i*9,sin(i)*5),maxf(3,7-wax_heat),Color("dfb746"))
+		else: draw_ellipse_custom(spoon,Vector2(31,13),Color("dfb746").lerp(Color("f3d56a"),clampf((wax_heat-2.8)/3.2,0,1)))
 	if wax_pour>0:
-		if wax_drag=="spoon" and wax_step==3: draw_line(spoon+Vector2(-5,5),Vector2(1000,473),Color("be4a30"),5,true)
+		if wax_drag=="spoon" and wax_step==3: draw_line(spoon+Vector2(-5,5),Vector2(1000,473),Color("dfb746"),5,true)
 		var pool:=PackedVector2Array()
 		for i in 48:
 			var angle:=i*TAU/48
 			var radius: float=(41+sin(i*2.7)*3)*minf(wax_pour,1.0)
 			pool.append(Vector2(1000,477)+Vector2(cos(angle),sin(angle))*radius)
-		draw_colored_polygon(pool,Color("d36742").lerp(Color("944333"),clampf(wax_cool/2.5,0,1)))
+		draw_colored_polygon(pool,Color("f3d56a").lerp(Color("d4b150"),clampf(wax_cool/2.5,0,1)))
 		if stamp_imprint:
-			draw_arc(Vector2(1000,477),25,0,TAU,40,Color("783529"),2,true)
-			draw_ellipse_custom(Vector2(1000,477),Vector2(14,9),Color("80372b"))
-			draw_line(Vector2(1008,470),Vector2(1016,461),Color("80372b"),3,true)
+			draw_arc(Vector2(1000,477),25,0,TAU,40,INK,2,true)
+			draw_ellipse_custom(Vector2(1000,477),Vector2(14,9),INK)
+			draw_line(Vector2(1008,470),Vector2(1016,461),INK,3,true)
 	var stamp:=pointer if wax_drag=="stamp" else Vector2(1360,468)
 	if wax_hold>0 and wax_hold<1.0: stamp=Vector2(1000,445)
 	_sprite("stamp",Rect2(stamp+Vector2(-41,-121),Vector2(82,165)))
@@ -1068,7 +1077,7 @@ func _draw_wax() -> void:
 	if match_lit and wax_drag=="match": _flame(match_at,0.55)
 	elif wax_drag=="match" and match_heat>0:
 		for i in 4: draw_circle(match_at+Vector2(sin(elapsed*30+i)*12,-7-i*3),1.7,Color("ffd189"))
-	var steps: Array=["划燃火柴，再点亮灯芯","把勺子移到红蜡粒上，舀一勺","放到火焰上方，慢慢等蜡融化","把勺子拖到封口，停留倾倒","按住印章，在蜡池停留一秒","让火漆慢慢凝固","封好了。现在可以寄出。"]
+	var steps: Array=["划燃火柴，再点亮灯芯","把勺子移到蜡粒上，舀一勺","放到火焰上方，慢慢等蜡融化","把勺子拖到封口，停留倾倒","按住印章，在蜡池停留一秒","让火漆慢慢凝固","封好了。现在可以寄出。"]
 	_caption(steps[clampi(wax_step,0,6)],Vector2(450,175),25,CREAM)
 	if wax_step==2: _caption("融蜡  %.1f / 6 秒" % wax_heat,Vector2(420,225),17,CREAM)
 

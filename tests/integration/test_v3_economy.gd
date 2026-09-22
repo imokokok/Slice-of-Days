@@ -103,7 +103,7 @@ func run() -> void:
 	check(bool(delivery.ok) and state.money == 1600, "Delivery reimburses actual purchase cost")
 	check(economy.state().receipts.keys() == receipt_ids, "Reimbursement stamps the same receipts without duplicates")
 	for receipt in economy.state().receipts.values():
-		check(bool(receipt.reimbursed) and str(receipt.stamp).contains("REIMBURSED"), "Every covered original receipt receives its reimbursement stamp")
+		check(bool(receipt.reimbursed) and int(receipt.reimbursed_amount) == int(receipt.total) and str(receipt.stamp).contains("已报销"), "Every covered original receipt receives its reimbursement stamp")
 	check(not bool(economy.deliver_procurement().ok) and state.money == 1600, "Repeated delivery cannot create a second reimbursement")
 	check(residency.state().materials.values().filter(func(row: Dictionary) -> bool: return str(row.get("proof_kind","")) == "income").is_empty(), "Reimbursement does not create work income proof")
 	check(economy.cooking_check(["tomato","herbs","sea_beans"]).ok, "Delivered purchased materials are available at the kitchen")

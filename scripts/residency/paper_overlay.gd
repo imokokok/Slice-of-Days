@@ -60,7 +60,7 @@ func panel(parent: Node, at: Vector2, dimensions: Vector2, color := PAPER) -> Pa
 	style.set_border_width_all(1)
 	style.shadow_color = Color(0.12,0.1,0.08,0.13)
 	style.shadow_size = 6
-	node.add_theme_stylebox_override("panel",style)
+	node.add_theme_stylebox_override("panel",preload("res://scripts/ui/production_assets.gd").paper("paper_large",color,14))
 	parent.add_child(node)
 	return node
 
@@ -164,6 +164,7 @@ func build() -> void:
 		"counter": _counter()
 		"proofs": _proofs()
 		"notebook": _notebook()
+	preload("res://scripts/ui/solmere_motion.gd").page_turn(body,SettingsSystem.reduced_motion())
 
 func close() -> void:
 	if not ResidencySystem.persist():

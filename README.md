@@ -10,6 +10,10 @@ Godot 4.7.2 · 海边小镇探索、双主角的五日生活与公共作品。
 
 用 Godot 4.7.2 打开 project.godot 后运行并选择新游戏。新版窗口标题为「Solmere · 五日旅程」。
 
+首次克隆后先运行 `python tools/import_solmere_resources.py`，从四位作者的官方免费入口安装选用的 84 个美术/音频文件，再由 Godot 导入。无需第三方 Python 库。用 `python tools/import_solmere_resources.py --verify-only` 检查安装完整性。受原文件再分发限制的媒体在 `art/licensed/`，不作为公开源码附件上传；完整可玩打包版包含这些游戏内资源，离线运行不需要 Python 或联网。
+
+本轮实际改造、来源与验收见 [资源接入交付](docs/resource_integration_delivery_20260924.md)。这是素材/UI/音频接入，不代表候选文档中所有新增玩法均已完成。
+
 ## 操作
 
 A / D 走动；W 交谈；E 与物件互动；Space 继续对话；C 相机；R 录音；G 相册；Tab 地图；B / I 随身物品；F 档案；J 随身本。Esc 退出当前对话或逐层收起。第五天见面后，通过「日程与视角」按钮选择角色；不再使用街上即时切换快捷键。其他实际提示读取 Input Map。

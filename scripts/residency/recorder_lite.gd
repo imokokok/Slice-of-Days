@@ -70,6 +70,7 @@ func _ready() -> void:
 		queue_redraw())
 	recorder.failed.connect(func(message: String): status.text=LocalizationSystem.text(message); close_after=false; record_button.text="● 重新录音"; mark_button.disabled=true)
 	recorder.completed.connect(_complete)
+	preload("res://scripts/ui/solmere_motion.gd").paper_open(face,SettingsSystem.reduced_motion())
 
 func _button(words: String, at: Vector2, extent: Vector2, action: Callable) -> Button:
 	var b=preload("res://scripts/ui/components/solmere_button.gd").new(); b.text=words; b.position=at; b.size=extent; b.variant="outlined"; face.add_child(b); b.pressed.connect(action); return b
@@ -77,6 +78,7 @@ func _button(words: String, at: Vector2, extent: Vector2, action: Callable) -> B
 func _toggle_compact() -> void:
 	face.visible=not face.visible; compact_button.visible=not face.visible
 	focus_active=face.visible
+	if face.visible: preload("res://scripts/ui/solmere_motion.gd").paper_open(face,SettingsSystem.reduced_motion())
 	if not face.visible: get_viewport().gui_release_focus()
 	queue_redraw()
 
@@ -129,6 +131,7 @@ func finish_for_exit() -> bool:
 	return true
 
 func toggle_recording() -> void:
+	WorldSound.play_ui("record_stop" if recorder.capturing else "record_start")
 	if pending_wav!=null: _save()
 	elif recorder.capturing: recorder.stop()
 	else: playback.stop(); play_button.text="试听"; saved=false; marks.clear(); levels.clear(); recorder.start("","game")

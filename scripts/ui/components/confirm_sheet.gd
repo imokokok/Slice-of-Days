@@ -13,6 +13,8 @@ func _ready() -> void:
 	var shade := ColorRect.new(); shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT); shade.color=Color("16334b",.55); add_child(shade)
 	var panel := Panel.new(); add_child(panel); panel.set_anchors_preset(PRESET_CENTER); panel.position=size*.5-Vector2(270,205); panel.size=Vector2(540,410)
 	var face := StyleBoxFlat.new(); face.bg_color=Color("f3f5f3"); face.set_corner_radius_all(12); panel.add_theme_stylebox_override("panel",face)
+	panel.add_theme_stylebox_override("panel",preload("res://scripts/ui/production_assets.gd").paper("paper_wide",Color("faf4e5"),18))
+	preload("res://scripts/ui/solmere_motion.gd").paper_open(panel,SettingsSystem.reduced_motion())
 	var title := Label.new(); title.text=LocalizationSystem.text(heading); title.position=Vector2(36,31); title.size=Vector2(468,74); title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; title.add_theme_font_size_override("font_size",28); panel.add_child(title)
 	var body := Label.new(); body.text=LocalizationSystem.text(description); body.position=Vector2(36,123); body.size=Vector2(468,166); body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; body.add_theme_font_size_override("font_size",21); panel.add_child(body)
 	for i in 2:

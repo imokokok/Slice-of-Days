@@ -22,7 +22,7 @@ func _cut() -> void:
 		if cuts.has(id): continue
 		cuts[id]=true
 		prepared.emit(id)
-		WorldSound.play_ui("paper")
+		WorldSound.play_ui("cut")
 		if motion: motion.kill()
 		knife_drop=0
 		motion=create_tween(); motion.tween_method(func(v: float): knife_drop=v; queue_redraw(),0.0,1.0,.1)

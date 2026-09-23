@@ -6,3 +6,7 @@ captures/
 .DS_Store
 
 .runtime/
+
+# Project-use licensed source files are installed from the authors, not shared
+# as standalone downloadable art/audio. See tools/import_solmere_resources.py.
+art/licensed/

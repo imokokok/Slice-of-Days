@@ -4,6 +4,7 @@ var source: Control
 var energy := 0.0
 var motion := 0.0
 var frames_seen := 0
+var bands := PackedFloat32Array([0,0,0,0,0,0])
 func _ready() -> void:
 	mouse_filter=MOUSE_FILTER_IGNORE
 	clip_contents=true
@@ -22,10 +23,28 @@ func _process(delta: float) -> void:
 		var start := int(source.playback.get_playback_position()*wav.mix_rate)*2
 		for i in range(start,mini(start+1024,wav.data.size()-1),8): peak=maxf(peak,absf(wav.data.decode_s16(i)/32768.0))
 	energy=lerpf(energy,clampf(peak*6,0,1),1-exp(-delta*14))
+	var next := PackedFloat32Array([0,0,0,0,0,0])
+	if source.recorder.capturing: next=source.recorder.spectrum_levels()
+	elif source.playback.playing and source.playback.stream is AudioStreamWAV:
+		next=preload("res://scripts/town_sound/audio/SignalSpectrum.gd").from_wav(source.playback.stream,source.playback.get_playback_position())
+	for i in 6: bands[i]=lerpf(bands[i],next[i],1-exp(-delta*12))
 	if energy>.002: motion+=delta*energy*3
 	frames_seen+=1; queue_redraw()
 func _draw() -> void:
 	if not is_instance_valid(source): return
+	# Six translucent cut-paper forms follow actual low-to-high frequency energy.
+	# Silence settles them; there is no random playback or semantic AI claim.
+	var colors := [Color("a9c6bd"),Color("719b9b"),Color("c7c6a1"),Color("ead6a9"),Color("d89c74"),Color("bf785e")]
+	for band in 6:
+		if bands[band]<.025: continue
+		var points := PackedVector2Array()
+		var center := Vector2(size.x*(.15+band*.14),size.y*(.54-.04*(band%2)))
+		var radius := 12+bands[band]*48
+		for i in 9:
+			var a := TAU*i/9.0
+			points.append(center+Vector2(cos(a),sin(a))*(radius+sin(a*3+motion)*bands[band]*5))
+		var color: Color=colors[band]; color.a=.22+bands[band]*.55
+		draw_colored_polygon(points,color)
 	# Ink ripples expand only when the captured signal has energy.
 	if energy>.003:
 		var center := Vector2(size.x*.5,size.y*.48)

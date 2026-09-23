@@ -6,6 +6,7 @@ var selected := false:
 	set(value):
 		selected=value
 		if is_inside_tree(): refresh()
+const Production = preload("res://scripts/ui/production_assets.gd")
 func _ready() -> void:
 	text=LocalizationSystem.text(text)
 	focus_mode=FOCUS_ALL
@@ -48,6 +49,13 @@ func refresh() -> void:
 		if state=="disabled": face.bg_color=Color("73828a",.07)
 		if state=="disabled" and variant in ["choice","guidance"]: face.bg_color=Color("dce4e6")
 		add_theme_stylebox_override(state,face)
+		if not dark and state!="focus" and Production.available("paper_label"):
+			var tint := Color("f8eedb")
+			if variant in ["archive","goods","tab"]: tint=Color("e7e3cd")
+			if state=="hover": tint=Color("f1dfb8")
+			if state=="pressed" or selected: tint=Color("d7ddba")
+			if state=="disabled": tint=Color("e5e0d5")
+			add_theme_stylebox_override(state,Production.paper("paper_tab" if variant=="tab" else "paper_label",tint,10))
 	add_theme_color_override("font_color",PaperLanguage.WHITE if dark and not selected else Color("4b493b"))
 	add_theme_color_override("font_hover_color",PaperLanguage.BLUE)
 	add_theme_color_override("font_pressed_color",PaperLanguage.BLUE)
@@ -56,6 +64,9 @@ func refresh() -> void:
 	add_theme_font_override("font",PaperLanguage.body_font)
 	if not has_theme_font_size_override("font_size"): add_theme_font_size_override("font_size",20)
 func _draw() -> void:
+	if Production.available("paper_label") and variant not in ["choice","pause","camera","guidance"]:
+		if selected or has_focus(): draw_line(Vector2(14,size.y-5),Vector2(size.x-14,size.y-5),Color("5b716c"),2,true)
+		return
 	if variant not in ["choice","pause","camera","guidance"]:
 		# A stable drawn edge, not random per-frame jitter or a second hit target.
 		var ink := Color("665840",.16 if disabled else .82 if selected or has_focus() else .55 if is_hovered() else .28)

@@ -1,0 +1,64 @@
+{
+  "date": "2026-09-24",
+  "engine": "Godot 4.7.2",
+  "audio": "WASAPI",
+  "isolated_save": true,
+  "results": [
+    {
+      "test": "Resource integration",
+      "result": "RESOURCE_INTEGRATION: 204 checks, 0 failures",
+      "checks": 204,
+      "log": "presentation-integration.log",
+      "sha256": "78aef7a6110fbc6d718484995d0a42b18a4635e299c3560e835d52e5e3f47e24"
+    },
+    {
+      "test": "Exported PCK resources",
+      "result": "RESOURCE_INTEGRATION: 204 checks, 0 failures",
+      "checks": 204,
+      "log": "presentation-packed-resource-test.log",
+      "sha256": "78aef7a6110fbc6d718484995d0a42b18a4635e299c3560e835d52e5e3f47e24"
+    },
+    {
+      "test": "Five-day production flow",
+      "result": "FIVE_DAY_FLOW: PASS checks=218 failures=0",
+      "checks": 218,
+      "log": "presentation-five-day.log",
+      "sha256": "da6b04cc1ac741571738296bd54fca89a37a0451994662636a8ceb887c9a0a68"
+    },
+    {
+      "test": "Shopping, recipes, fishing and kitchen",
+      "result": "HANDMADE LIFE: 55 checks, 0 failures",
+      "checks": 55,
+      "log": "presentation-handmade.log",
+      "sha256": "93525f9eaa6c7731dccefc682a81ba8812016459ad8ed35e845eb8972e81bf7f"
+    },
+    {
+      "test": "Collage, map and live recorder UI",
+      "result": "UI_REVIEW: 20 checks / 0 failures",
+      "checks": 20,
+      "log": "presentation-ui-review.log",
+      "sha256": "f451be38e324a61c79b76e55f79e11e483481a89785ff45271dd995557504191"
+    },
+    {
+      "test": "Fresh-process UI reload",
+      "result": "UI_REVIEW_RELOAD: 4 checks / 0 failures",
+      "checks": 4,
+      "log": "presentation-ui-reload.log",
+      "sha256": "bc79ff3ce5bad79e752eca7f76ba9ac8711dca58b6c652120d48f9848a32de89"
+    },
+    {
+      "test": "Recording failed-save retry",
+      "result": "RECORDING_RETRY failures=0",
+      "checks": null,
+      "log": "presentation-recording-real.log",
+      "sha256": "1cb5ade5148fba8f2304ae4f866627914bfa8cf08e40a571facbf3fc0139bfc8"
+    },
+    {
+      "test": "Actual audio bus isolation",
+      "result": "WORLD_CAPTURE_TESTS: PASS",
+      "checks": null,
+      "log": "presentation-world-capture.log",
+      "sha256": "4a1d2b178637ca92826928ebcfb0d4dc470096f551d605d5a9b00a0da557ea09"
+    }
+  ]
+}

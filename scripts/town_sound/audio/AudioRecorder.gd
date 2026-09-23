@@ -22,6 +22,8 @@ var discarded_start := 0
 var source_mode := "microphone"
 var capture_bus := ""
 var input_gain := 1.0
+var spectrum_effect: AudioEffectSpectrumAnalyzer
+var spectrum_instance: AudioEffectSpectrumAnalyzerInstance
 
 func _ready() -> void:
 	bus_index = AudioServer.bus_count
@@ -30,6 +32,8 @@ func _ready() -> void:
 	AudioServer.set_bus_mute(bus_index, true)
 	capture = AudioEffectCapture.new()
 	capture.buffer_length = 0.5
+	spectrum_effect=AudioEffectSpectrumAnalyzer.new()
+	spectrum_effect.fft_size=AudioEffectSpectrumAnalyzer.FFT_SIZE_1024
 
 	microphone = AudioStreamPlayer.new()
 	microphone.bus = "TownSoundMicrophone"
@@ -53,6 +57,8 @@ func start(device: String, source: String = "microphone") -> bool:
 		failed.emit("游戏声景尚未就绪，请返回小镇重试。")
 		return false
 	AudioServer.add_bus_effect(target, capture)
+	AudioServer.add_bus_effect(target,spectrum_effect)
+	spectrum_instance=AudioServer.get_bus_effect_instance(target,AudioServer.get_bus_effect_count(target)-1) as AudioEffectSpectrumAnalyzerInstance
 	if source == "microphone": AudioServer.input_device = device
 	sample_rate = int(AudioServer.get_mix_rate())
 	frame_count = 0
@@ -125,12 +131,16 @@ func _cancel() -> void:
 	_detach_capture()
 
 func _detach_capture() -> void:
+	spectrum_instance=null
 	var target := AudioServer.get_bus_index(capture_bus)
 	if target < 0: return
 	for index in range(AudioServer.get_bus_effect_count(target) - 1, -1, -1):
-		if AudioServer.get_bus_effect(target, index) == capture:
+		if AudioServer.get_bus_effect(target, index) in [capture,spectrum_effect]:
 			AudioServer.remove_bus_effect(target, index)
 	capture_bus = ""
+
+func spectrum_levels() -> PackedFloat32Array:
+	return preload("res://scripts/town_sound/audio/SignalSpectrum.gd").read(spectrum_instance,input_gain) if capturing else PackedFloat32Array([0,0,0,0,0,0])
 
 func _exit_tree() -> void:
 	if is_instance_valid(microphone):

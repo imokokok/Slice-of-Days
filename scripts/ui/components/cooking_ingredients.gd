@@ -5,6 +5,8 @@ const ART = preload("res://scripts/ui/components/handmade_assets.gd")
 static var cache: Dictionary={}
 static func can_cut(id: String) -> bool: return id not in ["sea_beans","star_salt"]
 static func texture(id: String, prepared := false) -> Texture2D:
+	if id=="cheese" or (id=="bread" and not prepared):
+		return ART.texture(id)
 	var index := int({"sea_beans":0,"lemon":1,"star_salt":2}.get(id,-1))
 	if prepared: index=int({"tomato":3,"herbs":4,"bread":5}.get(id,index))
 	if index<0: return ART.texture(id)

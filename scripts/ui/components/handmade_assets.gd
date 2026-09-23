@@ -4,6 +4,8 @@ const ROOT := "res://art/ui/handmade/"
 const IDS := ["tomato","lemon","herbs","sea_beans","bread","cheese","soap","matches","star_salt","crooked_cup","hotel_307_tag","misprint_postcard","ticket_bundle","blue_stamp","sardine","sea_bream","shelf","crates","worktop","basket","receipt","tag","recipe_book","rod"]
 static var cache: Dictionary = {}
 static func texture(id: String) -> Texture2D:
+	var licensed := preload("res://scripts/ui/production_assets.gd").texture({"bread":"food_bread","cheese":"food_cheese"}.get(id,""))
+	if licensed != null: return licensed
 	if id=="recipe_book":
 		if not cache.has("doodle_book"):
 			var book := AtlasTexture.new(); book.atlas=preload("res://art/ui/pocket_doodles/book.png"); book.region=Rect2(35,88,1465,872); cache["doodle_book"]=book

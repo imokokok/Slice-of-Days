@@ -9,6 +9,8 @@ const TEAL := Color("4f7d83")
 const SAGE := Color("7d8f59")
 const LINE := Color("b88963")
 const COVER_BLUE := Color("3f78a4")
+const Production = preload("res://scripts/ui/production_assets.gd")
+const Motion = preload("res://scripts/ui/solmere_motion.gd")
 const NAVIGATION_TITLES := {
 	"Continue": "继续旅程",
 	"NewGame": "新游戏",
@@ -53,18 +55,29 @@ func _build_living_cover() -> void:
 	blue.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	blue.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(blue)
+	var menu_paper := Panel.new(); menu_paper.name="JourneyPaper"
+	menu_paper.position=Vector2(898,140); menu_paper.size=Vector2(545,592)
+	menu_paper.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	menu_paper.add_theme_stylebox_override("panel",Production.paper("paper_tall",Color("f8efdc"),24))
+	add_child(menu_paper)
+	var map := TextureRect.new(); map.name="TownPostcard"
+	map.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; map.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	map.texture=preload("res://art/ui/pocket_doodles/folded_map.png")
+	map.position=Vector2(48,162); map.size=Vector2(810,520)
+	map.mouse_filter=Control.MOUSE_FILTER_IGNORE; add_child(map)
+	_make_label(self,"海风、日常，和一些值得留下的小事。",Vector2(116,710),Vector2(710,38),21,Color("f6eddb"))
 	var title := Label.new()
 	title.text = "Solmere"
-	title.position = Vector2(0, 165)
-	title.size = Vector2(1600, 150)
+	title.position = Vector2(930, 192)
+	title.size = Vector2(470, 126)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	var title_font := SystemFont.new()
 	title_font.font_names = PackedStringArray(["Segoe Print", "Bradley Hand ITC", "Comic Sans MS", "Microsoft YaHei UI"])
 	title_font.font_weight = 300
 	title.add_theme_font_override("font", title_font)
-	title.add_theme_font_size_override("font_size", 92)
-	title.add_theme_color_override("font_color", Color.WHITE)
+	title.add_theme_font_size_override("font_size", 76)
+	title.add_theme_color_override("font_color", Color("415e68"))
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(title)
 
@@ -80,7 +93,7 @@ func _process(_delta: float) -> void:
 
 func _build_navigation() -> void:
 	navigation = Control.new()
-	navigation.position = Vector2(635,545)
+	navigation.position = Vector2(1005,358)
 	navigation.size = Vector2(330,182)
 	navigation.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(navigation)
@@ -88,7 +101,7 @@ func _build_navigation() -> void:
 		var rule := ColorRect.new()
 		rule.position = Vector2(0,y)
 		rule.size = Vector2(330,1)
-		rule.color = Color(1,1,1,.88)
+		rule.color = Color("8e8268",.34)
 		rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		navigation.add_child(rule)
 	var titles := ["新游戏","章节","设置"]
@@ -119,6 +132,10 @@ func _build_navigation() -> void:
 		button.add_theme_color_override("font_pressed_color",Color("f4dfb0"))
 		button.add_theme_color_override("font_shadow_color",Color("183e4e",.8))
 		button.add_theme_constant_override("shadow_offset_y",1)
+		for state in ["normal","hover","pressed","disabled"]:
+			button.add_theme_stylebox_override(state,Production.paper("paper_label",Color("e6e0c8") if state=="normal" else Color("d5ddc4") if state=="pressed" else Color("edddb6"),8))
+		for state in ["font_color","font_hover_color","font_focus_color","font_pressed_color"]: button.add_theme_color_override(state,Color("415e68"))
+		button.add_theme_color_override("font_shadow_color",Color.TRANSPARENT)
 		navigation.add_child(button)
 		button.pressed.connect(actions[i])
 	for i in 2:
@@ -171,7 +188,7 @@ func _build_modal_shell() -> void:
 	style.shadow_color = Color(INK, 0.30)
 	style.shadow_size = 0
 	style.shadow_offset = Vector2(0, 8)
-	modal_panel.add_theme_stylebox_override("panel", style)
+	modal_panel.add_theme_stylebox_override("panel", Production.paper("paper_large",Color("faf4e5"),20))
 	modal_overlay.add_child(modal_panel)
 	modal_overlay.visible = false
 
@@ -273,9 +290,24 @@ func _add_settings_volume_slider(title: String, y: float, value: int, setter: Ca
 
 func _show_credits() -> void:
 	_prepare_modal()
-	_make_label(modal_panel, "制作人员", Vector2(34, 28), Vector2(522, 42), 27, INK)
-	_make_label(modal_panel, "SOLMERE\n\n策划、叙事与开发：Solmere 创作团队\n美术方向：温暖海边小镇手绘风格", Vector2(34, 88), Vector2(522, 130), 16, MUTED)
-	var close := _make_button(modal_panel, "返回", Vector2(200, 254), Vector2(190, 46), "primary")
+	modal_panel.position=Vector2(360,83); modal_panel.size=Vector2(880,734)
+	_make_label(modal_panel,"制作与素材鸣谢",Vector2(42,32),Vector2(792,44),29,INK)
+	var scroll:=ScrollContainer.new(); scroll.position=Vector2(42,102); scroll.size=Vector2(792,516); modal_panel.add_child(scroll)
+	var column:=VBoxContainer.new(); column.size_flags_horizontal=Control.SIZE_EXPAND_FILL; column.add_theme_constant_override("separation",19); scroll.add_child(column)
+	for entry in [
+		["Solmere 创作团队","策划、叙事、角色与场景，以及游戏中的原有手绘美术。"],
+		["hello erika · Little Chef","料理锅、厨房器具、面包与奶酪插画。hello-erika.itch.io"],
+		["Cila","纸质控件底形及操作符号。nacila.itch.io"],
+		["R4orce","柔和的按钮、菜单、录音及通知音效。r4orce.itch.io"],
+		["HuntSounds","环境、雨声、脚步与物件音效。huntsounds.itch.io"],
+		["Rock Gementiza","Godot UI Animation Library · MIT；动效已为本作适配。"],
+		["Godot Engine contributors","引擎与官方频谱示例 · MIT。"],
+		["Kenney Vleugels","纸牌动作采样 · Casino Audio · CC0。"],
+		["NASA / ESA / Hubble / Chandra","望远镜中的天文素材；逐项来源与署名保留在观测介绍中。"]
+	]:
+		var heading:=Label.new(); heading.text=LocalizationSystem.text(entry[0]); heading.add_theme_font_size_override("font_size",22); heading.add_theme_color_override("font_color",INK); column.add_child(heading)
+		var description:=Label.new(); description.text=LocalizationSystem.text(entry[1]); description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; description.add_theme_font_size_override("font_size",18); description.add_theme_color_override("font_color",MUTED); column.add_child(description)
+	var close := _make_button(modal_panel,"返回",Vector2(345,650),Vector2(190,46),"primary")
 	close.pressed.connect(_hide_modal)
 
 
@@ -296,10 +328,13 @@ func _prepare_modal() -> void:
 		modal_panel.remove_child(child)
 		child.queue_free()
 	modal_overlay.visible = true
+	Motion.paper_open.call_deferred(modal_panel,SettingsSystem.reduced_motion())
+	WorldSound.play_ui("open")
 
 
 func _hide_modal() -> void:
 	modal_overlay.visible = false
+	WorldSound.play_ui("close")
 
 
 func _toggle_fullscreen() -> void:

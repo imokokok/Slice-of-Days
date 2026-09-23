@@ -38,9 +38,6 @@ func _exit_tree() -> void:
 
 func panel(parent: Node, at: Vector2, dimensions: Vector2, color := Color("faf7ee")) -> Panel:
 	var result := super.panel(parent,at,dimensions,color)
-	var style: StyleBoxFlat = result.get_theme_stylebox("panel").duplicate()
-	style.shadow_size=0; style.border_color=BLUE.lightened(.5)
-	result.add_theme_stylebox_override("panel",style)
 	return result
 
 func build() -> void:

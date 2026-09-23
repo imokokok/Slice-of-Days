@@ -6984,5 +6984,17 @@
   "黑白   无声   重映" : "Black and white, silent, re-screening",
   "黑白双方都少了几枚，仍没有谁愿意先收棋。" : "Both black and white are missing a few cards, and no one is willing to collect the chess first.",
   "黑白柱" : "Black and white column",
-  "鼠标点击 / 空格：继续    ·    拖动头顶的记忆给对方    ·    Esc：取消    ·    R：重来" : "Mouse click / Space: Continue · Drag the memory above the head to the other party · Esc: Cancel · R: Redo"
+  "鼠标点击 / 空格：继续    ·    拖动头顶的记忆给对方    ·    Esc：取消    ·    R：重来" : "Mouse click / Space: Continue · Drag the memory above the head to the other party · Esc: Cancel · R: Redo",
+  "海风、日常，和一些值得留下的小事。" : "Sea air, everyday life, and little things worth keeping.",
+  "制作与素材鸣谢" : "Credits & acknowledgements",
+  "Solmere 创作团队" : "The Solmere team",
+  "策划、叙事、角色与场景，以及游戏中的原有手绘美术。" : "Design, writing, characters, environments and the original hand-drawn art.",
+  "料理锅、厨房器具、面包与奶酪插画。hello-erika.itch.io" : "Cooking pot, utensils, bread and cheese illustrations. hello-erika.itch.io",
+  "纸质控件底形及操作符号。nacila.itch.io" : "Paper control shapes and interface symbols. nacila.itch.io",
+  "柔和的按钮、菜单、录音及通知音效。r4orce.itch.io" : "Soft button, menu, recording and notification sounds. r4orce.itch.io",
+  "环境、雨声、脚步与物件音效。huntsounds.itch.io" : "Ambience, rain, footsteps and object sounds. huntsounds.itch.io",
+  "Godot UI Animation Library · MIT；动效已为本作适配。" : "Godot UI Animation Library · MIT; motion adapted for Solmere.",
+  "引擎与官方频谱示例 · MIT。" : "Engine and official spectrum example · MIT.",
+  "纸牌动作采样 · Casino Audio · CC0。" : "Card movement samples · Casino Audio · CC0.",
+  "望远镜中的天文素材；逐项来源与署名保留在观测介绍中。" : "Astronomy imagery; individual sources and credits remain in the telescope guide."
 }

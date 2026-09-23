@@ -18,7 +18,7 @@ func _ready() -> void:
 	style.bg_color = Color("eef3f4")
 	style.set_content_margin_all(32)
 	style.set_corner_radius_all(12)
-	paper.add_theme_stylebox_override("panel",style)
+	paper.add_theme_stylebox_override("panel",preload("res://scripts/ui/production_assets.gd").paper("paper_large",Color("faf4e5"),32))
 	add_child(paper)
 	var scroll := ScrollContainer.new()
 	paper.add_child(scroll)
@@ -27,6 +27,7 @@ func _ready() -> void:
 	body.add_theme_constant_override("separation",15)
 	scroll.add_child(body)
 	build()
+	preload("res://scripts/ui/solmere_motion.gd").paper_open(paper,SettingsSystem.reduced_motion())
 
 func label(text: String, size := 21, color := Color("31658b")) -> Label:
 	var item := Label.new()

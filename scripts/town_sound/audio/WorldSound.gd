@@ -5,6 +5,7 @@ const BUS := "TownWorld"
 const MUSIC_BUS := "TownWorldMusic"
 const SOUND_EFFECTS_BUS := "TownWorldSoundEffects"
 const RATE := 22050
+const Production = preload("res://scripts/ui/production_assets.gd")
 var ambience: AudioStreamPlayer
 var foley: AudioStreamPlayer
 var coast: AudioStreamPlayer
@@ -21,6 +22,17 @@ var ambience_thread: Thread
 var generating_location := ""
 var requested_location := ""
 var weather := "clear"
+var natural: AudioStreamPlayer
+var natural_previous: AudioStreamPlayer
+var steps: AudioStreamPlayer
+var birds: AudioStreamPlayer
+var natural_profile := ""
+var nature_transition: Tween
+var next_bird := 12.0
+var bird_index := 0
+var detail_index := 0
+var last_ui_msec := -1000
+var last_ui_key := ""
 
 func _ready() -> void:
 	_ensure_bus(BUS, "Master")
@@ -47,6 +59,10 @@ func _ready() -> void:
 	add_child(ui)
 	for player in [ambience, foley]:
 		add_child(player)
+	natural=AudioStreamPlayer.new(); natural_previous=AudioStreamPlayer.new()
+	steps=AudioStreamPlayer.new(); birds=AudioStreamPlayer.new()
+	for player in [natural,natural_previous,birds]: player.bus=MUSIC_BUS; add_child(player)
+	steps.bus=SOUND_EFFECTS_BUS; add_child(steps)
 
 
 func _ensure_bus(bus_name: String, send_name: String) -> void:
@@ -64,9 +80,13 @@ func set_active(value: bool) -> void:
 		ambience.stop()
 		foley.stop()
 		weather_player.stop()
+		natural.stop(); natural_previous.stop(); birds.stop(); steps.stop()
+		natural_profile=""
 	elif ambience.stream != null and not ambience.playing and AudioServer.get_driver_name() != "Dummy":
 		ambience.play()
 	if active and not coast.playing and AudioServer.get_driver_name() != "Dummy": coast.play()
+	if active: _refresh_nature()
+	if active and weather=="rain" and not weather_player.playing: _refresh_rain()
 
 func set_location(value: String) -> void:
 	if location == value: return
@@ -86,9 +106,31 @@ func set_weather(value: String) -> void:
 	if weather == "clear":
 		weather_player.stop()
 		return
-	weather_player.stream = make_weather_rain()
-	weather_player.volume_db = -18.0
-	if active and AudioServer.get_driver_name() != "Dummy": weather_player.play()
+	_refresh_rain()
+
+func _refresh_rain() -> void:
+	var sample := Production.sound("ambience_indoor_rain" if indoors else "ambience_rain")
+	weather_player.stream=sample if sample!=null else make_weather_rain()
+	weather_player.volume_db=-24.0 if indoors else -20.0
+	if active and weather=="rain" and AudioServer.get_driver_name()!="Dummy": weather_player.play()
+
+func _refresh_nature() -> void:
+	if not active or natural==null: return
+	var minute := GameState.current_minute
+	var profile := "ambience_room" if indoors else "ambience_night" if minute>=19*60 or minute<6*60 else "ambience_wind" if minute>=17*60 else "ambience_day"
+	if profile==natural_profile: return
+	var sample := Production.sound(profile)
+	if sample==null: return
+	natural_profile=profile
+	if nature_transition and nature_transition.is_valid(): nature_transition.kill()
+	var old := natural_previous; natural_previous=natural; natural=old
+	natural.stop(); natural.stream=sample; natural.volume_db=-55
+	if AudioServer.get_driver_name()=="Dummy": return
+	natural.play()
+	nature_transition=create_tween().set_parallel(true)
+	nature_transition.tween_property(natural,"volume_db",-26.0 if indoors else -23.0,.7)
+	nature_transition.tween_property(natural_previous,"volume_db",-55.0,.7)
+	nature_transition.chain().tween_callback(natural_previous.stop)
 
 
 func _start_ambience_job(place: String) -> void:
@@ -102,6 +144,14 @@ func _start_ambience_job(place: String) -> void:
 
 
 func _process(_delta: float) -> void:
+	_refresh_nature()
+	if active and not indoors and weather!="rain" and GameState.current_minute>=6*60 and GameState.current_minute<18*60:
+		next_bird-=_delta
+		if next_bird<=0:
+			bird_index+=1; next_bird=17.0+float(bird_index%4)*7.0
+			birds.stream=Production.sound("bird_%d" % (bird_index%4+1))
+			birds.volume_db=-27.0
+			if birds.stream!=null and AudioServer.get_driver_name()!="Dummy": birds.play()
 	if ambience_thread == null or ambience_thread.is_alive():
 		return
 	var completed_location := generating_location
@@ -139,15 +189,26 @@ func detail_label() -> String:
 
 func play_detail(footsteps := false) -> void:
 	if not active or AudioServer.get_driver_name() == "Dummy": return
-	foley.volume_db = 0.0
+	if footsteps: play_footstep(); return
+	detail_index+=1
+	var kind := "water" if location in ["port","town_entrance"] else "leaf" if location=="park" else "paper" if location in ["library","handcraft_shop","print_shop"] else "wood"
+	var sample := Production.sound("foley_%s_%d" % [kind,detail_index%3+1])
+	foley.volume_db = -15.0 if sample!=null else 0.0
 	foley.pitch_scale = 1.0
-	foley.stream = make_detail(location, footsteps)
+	foley.stream = sample if sample!=null else make_detail(location, footsteps)
 	foley.play()
 
 func play_ui(cue: String) -> void:
 	if AudioServer.get_driver_name() == "Dummy": return
-	ui.stream = make_ui(cue)
-	ui.volume_db = -5.0
+	var now := Time.get_ticks_msec()
+	# Specific action feedback wins over the global generic button callback.
+	if cue=="click" and now-last_ui_msec<85: return
+	if cue=="focus" and now-last_ui_msec<120: return
+	var key := str({"focus":"ui_focus","dialogue":"ui_click","coin":"ui_success","error":"ui_error","record_start":"ui_record_start","record_stop":"ui_record_stop","paper":"ui_slide","open":"ui_open","close":"ui_close","notification":"ui_notice","check":"ui_check","drag":"ui_drag","drop":"ui_drop","snap":"ui_snap","cut":"foley_wood_1","water":"foley_water_1"}.get(cue,"ui_click"))
+	var sample := Production.sound(key) if cue!="shutter" else null
+	ui.stream = sample if sample!=null else make_ui(cue)
+	ui.volume_db = -19.0 if sample!=null else -5.0
+	last_ui_msec=now; last_ui_key=key
 	ui.play()
 
 static func make_ui(cue: String) -> AudioStreamWAV:
@@ -249,20 +310,29 @@ static func make_detail(place: String, footsteps := false) -> AudioStreamWAV:
 
 func play_footstep() -> void:
 	if not active or AudioServer.get_driver_name() == "Dummy": return
+	step_index += 1
+	var surface := "wood" if indoors else "grass" if location=="park" else "gravel" if location in ["port","viewpoint"] else "stone"
+	var sample := Production.sound("step_%s_%d" % [surface,step_index%5+1])
+	if sample!=null:
+		steps.stream=sample; steps.volume_db=-21.0 if indoors else -19.0
+		steps.pitch_scale=1.0; steps.play(); return
 	if not footstep_cache.has(location):
 		var wav := make_detail(location,true)
 		wav.data = wav.data.slice(0,int(RATE*0.16)*2)
 		footstep_cache[location] = wav
 	foley.stream = footstep_cache[location]
-	step_index += 1
 	foley.pitch_scale = 0.95 if step_index % 2 == 0 else 1.04
 	foley.volume_db = -10.0 if indoors else -8.0
 	foley.play()
 
 func set_indoor(value: bool) -> void:
+	var changed := indoors!=value
 	indoors = value
 	if coast != null: coast.volume_db = -30.0 if indoors else -12.0
 	if weather_player != null: weather_player.volume_db = -27.0 if indoors else -18.0
+	if changed:
+		_refresh_nature()
+		if weather=="rain": _refresh_rain()
 
 static func make_weather_rain() -> AudioStreamWAV:
 	var rng := RandomNumberGenerator.new()

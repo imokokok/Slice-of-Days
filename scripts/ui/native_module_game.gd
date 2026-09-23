@@ -11,6 +11,7 @@ const GOLD := Color("eed577")
 const BOARD := Rect2(42, 122, 920, 610)
 
 var cooking_pan: Texture2D=preload("res://art/ui/enamel-cooking-pan.png")
+var illustrated_pot: Button
 var ingredient_art: Control
 var prep_board: Button
 var prepared_food: Dictionary={}
@@ -116,8 +117,14 @@ func _build_cooking_ui() -> void:
 	prep_board.prepared.connect(func(id: String):
 		prepared_food[id]=true; stage_ready=false; _update_state()
 		status_label.text=("已切好" if preload("res://scripts/ui/components/cooking_ingredients.gd").can_cut(id) else "已取出")+_token_label(id)+"。可以继续准备，或放入锅里拌匀。")
-	_kitchen_picture(1,Vector2(480,197),Vector2(390,390))
-	_kitchen_picture(2,Vector2(485,218),Vector2(422,342))
+	if preload("res://scripts/ui/production_assets.gd").available("pot_body"):
+		illustrated_pot=preload("res://scripts/ui/components/cooking_pot.gd").new()
+		illustrated_pot.position=Vector2(480,170); illustrated_pot.size=Vector2(422,390); add_child(illustrated_pot)
+		illustrated_pot.pressed.connect(_perform_primary_action)
+		preload("res://scripts/ui/production_assets.gd").picture(self,"kitchen_salt",Vector2(312,174),Vector2(56,76))
+	else:
+		_kitchen_picture(1,Vector2(480,197),Vector2(390,390))
+		_kitchen_picture(2,Vector2(485,218),Vector2(422,342))
 	_kitchen_picture(5,Vector2(75,158),Vector2(184,115))
 	art.picture(self,"recipe_book",Vector2(940,176),Vector2(592,426),true)
 	instruction_label=p.words(self,"从下面取三样食材。\n\n点击砧板切菜，或保留整块口感。",Vector2(994,219),209,21)
@@ -205,6 +212,7 @@ func _toggle_token(token_id: String) -> void:
 	food_in_pan=false
 	stage_ready = false
 	_update_state()
+	if token_buttons.has(token_id): preload("res://scripts/ui/solmere_motion.gd").ingredient_pickup(token_buttons[token_id],SettingsSystem.reduced_motion())
 
 
 func _on_value_changed(_value: float) -> void:
@@ -229,6 +237,7 @@ func _perform_primary_action() -> void:
 				return
 			stage_ready = true
 			food_in_pan = true
+			if is_instance_valid(illustrated_pot): illustrated_pot.stir()
 			status_label.text = LocalizationSystem.text("火候稳定，三样材料已经完成同一轮处理。现在决定怎样出餐。")
 		"sound_sampling":
 			playback_active = true
@@ -284,7 +293,7 @@ func _update_state() -> void:
 		prep_board.queue_redraw()
 	if is_instance_valid(ingredient_art):
 		for old in ingredient_art.get_children(): ingredient_art.remove_child(old); old.queue_free()
-		for index in (selected_tokens.size() if food_in_pan else 0):
+		for index in (selected_tokens.size() if food_in_pan and not is_instance_valid(illustrated_pot) else 0):
 			var sketch := TextureRect.new()
 			sketch.texture=preload("res://scripts/ui/components/cooking_ingredients.gd").texture(selected_tokens[index],prepared_food.has(selected_tokens[index]))
 			sketch.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; sketch.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED; sketch.mouse_filter=MOUSE_FILTER_IGNORE
@@ -303,6 +312,11 @@ func _update_state() -> void:
 			token_buttons[token_id].disabled = completed or not EconomySystem.ingredient_available(str(token_id))
 	_update_module_value()
 	primary_button.disabled = completed or playback_active or selected_tokens.size() < minimum
+	if is_instance_valid(illustrated_pot):
+		var in_pot: Array[String]=[]
+		if food_in_pan: in_pot.assign(selected_tokens)
+		illustrated_pot.update_recipe(in_pot,prepared_food,float(value_slider.value))
+		illustrated_pot.disabled=primary_button.disabled
 	var record := _interaction_record()
 	for choice_id in choice_buttons:
 		var check := GameplayModuleSystem.choice_interaction_check(module_id, str(choice_id), record)

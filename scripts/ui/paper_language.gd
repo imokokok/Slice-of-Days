@@ -6,19 +6,28 @@ const YELLOW := Color("eed577")
 const MUTED := Color("698594")
 var handwriting := SystemFont.new()
 var body_font := SystemFont.new()
+const Production = preload("res://scripts/ui/production_assets.gd")
+const Motion = preload("res://scripts/ui/solmere_motion.gd")
 
 func _ready() -> void:
 	handwriting.font_names=PackedStringArray(["KaiTi","Microsoft YaHei","Noto Sans CJK SC"])
 	body_font.font_names=PackedStringArray(["Microsoft YaHei","Noto Sans CJK SC","Arial"])
+	Production.apply_theme(preload("res://art/ui/solmere_ui.tres"))
 	get_tree().node_added.connect(_added)
 
 func _added(node: Node) -> void:
+	if node is BaseButton: Motion.attach_id.call_deferred(node.get_instance_id())
 	if node is Control and not _context(node,["workshop.gd"]):
 		_style_id.call_deferred(node.get_instance_id())
 
 func _style_id(instance_id: int) -> void:
 	var node=instance_from_id(instance_id)
-	if node is Control: _style(node)
+	if node is Control:
+		_style(node)
+		if not is_instance_valid(node) or node.is_queued_for_deletion(): return
+		if node.get_script()!=null and node.get_script().resource_path.get_file() in ["shop_panel.gd","recipe_book_panel.gd","film_paper.gd","map_paper.gd","fish_journal.gd","transport_panel.gd"]:
+			Motion.paper_open(node,SettingsSystem.reduced_motion())
+			WorldSound.play_ui("open")
 
 func _context(node: Node, names: Array) -> bool:
 	var at := node
@@ -48,6 +57,9 @@ func button_style(button: Button, in_scene := false) -> void:
 		style.content_margin_left=10; style.content_margin_right=10
 		style.content_margin_top=5; style.content_margin_bottom=5
 		button.add_theme_stylebox_override(state,style)
+		if not in_scene and state in ["normal","hover","pressed","disabled"] and Production.available("paper_label"):
+			var tint: Color={"normal":Color("f5ead7"),"hover":Color("f0e0ba"),"pressed":Color("d8dcbc"),"disabled":Color("e5e0d6")}[state]
+			button.add_theme_stylebox_override(state,Production.paper("paper_label",tint,10))
 	for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:
 		button.add_theme_color_override(state,WHITE if in_scene else BLUE)
 	button.add_theme_color_override("font_disabled_color",Color(MUTED,.55))
@@ -78,7 +90,7 @@ func _style(node: Control) -> void:
 		paper.set_corner_radius_all(10); paper.set_border_width_all(0)
 		paper.border_color=Color(BLUE,.32)
 		paper.bg_color=WHITE if _context(node,["journal.gd","economy_paper.gd"]) else Color("edf3f4")
-		node.add_theme_stylebox_override("panel",paper)
+		node.add_theme_stylebox_override("panel",Production.paper("paper_large",WHITE,14) if Production.available("paper_large") else paper)
 
 	elif node is LineEdit or node is TextEdit:
 		for state in ["normal","focus","read_only"]:

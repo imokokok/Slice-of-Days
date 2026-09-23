@@ -42,4 +42,5 @@ static func theme_for_tools() -> Theme:
 		result.set_stylebox("scroll",type,face(Color("315e79",.08),3,3))
 		for style in ["grabber_area","grabber_area_highlight","grabber","grabber_highlight","grabber_pressed"]:
 			result.set_stylebox(style,type,face(LEMON if "highlight" in style or "pressed" in style else SAGE,3,3))
+	preload("res://scripts/ui/production_assets.gd").apply_theme(result)
 	return result

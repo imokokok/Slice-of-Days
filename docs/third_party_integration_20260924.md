@@ -1,4 +1,6 @@
-# 第三方资源与代码融合 V1：接入前核对
+# 第三方资源与代码融合 V1：历史接入前核对
+
+> 此页记录最初的审计阶段，已由随后执行的 [实际接入交付](resource_integration_delivery_20260924.md) 更新。下文的“未导入/0 个”只描述该历史阶段，不能用来判断当前工程。当前包含资源见 `THIRD_PARTY_LICENSES.md` 与 `data/presentation/resource_manifest.json`。
 
 核对日期：2026-09-24。代码基线：`372e7b521214fdb8f935df46b7ac524266abc50f`。
 

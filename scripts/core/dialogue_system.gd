@@ -17,6 +17,7 @@ var content: Dictionary = {}
 var invitations: Array = []
 var linear_stories: Dictionary = {}
 var relationship_notes: Array = []
+var identity_reactions: Dictionary = {}
 const ARGUMENT_PEOPLE := ["wu_wu", "chenyuan"]
 const ARGUMENT_LINGER_MINUTES := 90
 
@@ -65,6 +66,11 @@ func conversation_id(npc: String, topic: String) -> String:
 	return "%s.%s.%d" % [npc, state, count]
 func _ready() -> void:
 	linear_stories = JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs/linear_conversations.json"))
+	var reaction_data=JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs/identity_reactions.json"))
+	if reaction_data is Dictionary:
+		identity_reactions=reaction_data
+	else:
+		push_error("Invalid identity reaction data")
 	var invitation_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/npcs/minigame_invitations.json"))
 	if invitation_data is Dictionary:
 		invitations = invitation_data.get("invitations", [])
@@ -143,6 +149,33 @@ func _relationship_lines(npc: String) -> Array[String]:
 	var result: Array[String] = []
 	result.assign(notes[count % notes.size()].get("lines_by_npc", {}).get(npc, []))
 	return result
+
+func identity_reaction_key(npc: String) -> String:
+	var stage := RelationshipSystem.identity_stage(npc)
+	if stage=="unseen": return ""
+	var response := ChapterSystem.identity_response(npc)
+	return "%s:%s:%s:%s"%[npc,GameState.current_role,stage,response]
+
+func identity_reaction_lines(npc: String) -> Array:
+	if not identity_reactions.has(npc): return []
+	var key := identity_reaction_key(npc)
+	if key.is_empty() or GameState.shared_state.get("identity_reactions_seen",[]).has(key): return []
+	var stage := RelationshipSystem.identity_stage(npc)
+	var response := ChapterSystem.identity_response(npc)
+	var content_key := stage+"_"+response if stage=="identity_confirmed" and not response.is_empty() else stage
+	var lines: Array=identity_reactions[npc].get(content_key,identity_reactions[npc].get(stage,[]))
+	var beats: Array=[]
+	for line in lines: beats.append(["npc",str(line)])
+	return beats
+
+func complete_identity_reaction(npc: String) -> void:
+	var key := identity_reaction_key(npc)
+	if key.is_empty(): return
+	var seen: Array=GameState.shared_state.get("identity_reactions_seen",[])
+	if seen.has(key): return
+	seen.append(key)
+	GameState.shared_state["identity_reactions_seen"]=seen
+	GameState.commit_active_role_state()
 
 func linear_conversation(npc: String) -> Array:
 	if not ResidentProfileSystem.is_core(npc): return []

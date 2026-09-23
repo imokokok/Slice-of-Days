@@ -42,8 +42,16 @@ func possibility() -> Dictionary:
 	if not block_message.is_empty() and block_age<15:
 		base.text=block_message; base.priority="critical"; return base
 	if day==5 and CharacterSystem.switch_unlocked():
-		base.text="可以安排两个人接下来的一段时间。"; base.location=GameState.current_location; base.action="day_schedule"
-		base.context=GameState.current_time_guidance(); return base
+		var cross_domain := ChapterSystem.next_cross_domain_activity()
+		if not cross_domain.is_empty():
+			var labels := {"sound_sampling":"试着做一段声音","cooking":"试着完成一道料理","ghostwriting":"试着做一封拼贴信","chess":"试着坐下来完成一局棋"}
+			base.text=str(labels.get(str(cross_domain.module_id),"试试对方熟悉的生活方式"))
+			base.location=str(cross_domain.location); base.action="map"
+			base.context="这是可选尝试，不影响结束旅程；日程页仍可切换视角。"
+		else:
+			base.text="可以安排两个人接下来的一段时间。"; base.location=GameState.current_location; base.action="day_schedule"
+			base.context=GameState.current_time_guidance()
+		return base
 	if not main:
 		var suggestions := ["唱片店今天开着，可以去听听、做一段声音。","饭店有一份今天的工作，可以去问问。","书信事务所开着，今天可以做一封信。","棋摊已经摆好，可以坐下来下一局。","约好的人在社区中心等着。"]
 		base.text=suggestions[clampi(day-1,0,4)]

@@ -1,12 +1,26 @@
 extends Node
 
 const SCHEDULE_PATH := "res://data/npcs/demo_npcs.json"
+const STAGING_PATH := "res://data/npcs/resident_staging.json"
 
 var residents: Dictionary = {}
+var staging: Dictionary = {}
 
 
 func _ready() -> void:
 	load_schedule_data(SCHEDULE_PATH)
+	staging = JSON.parse_string(FileAccess.get_file_as_string(STAGING_PATH))
+
+
+func staging_for(resident_id: String, activity: Dictionary) -> Dictionary:
+	var location := str(activity.get("location", ""))
+	var layout: Dictionary = staging.get("locations", {}).get(location, {})
+	if layout.is_empty(): return {}
+	var space := str(staging.get("activities", {}).get(str(activity.get("id", "")), {}).get("space", layout.get("space", "")))
+	var slots: Dictionary = layout.get("outdoor" if space.is_empty() else "indoor", {})
+	# Missing staging is not permission to spawn at an arbitrary fallback point.
+	if not slots.has(resident_id): return {}
+	return {"location":location, "space":space, "x":float(slots[resident_id]), "activity_id":str(activity.get("id", ""))}
 
 
 func load_schedule_data(path: String) -> void:

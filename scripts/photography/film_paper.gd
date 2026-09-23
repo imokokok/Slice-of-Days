@@ -211,7 +211,7 @@ func _photo_actions() -> void:
 		var result: Dictionary=ResidencySystem.accept_contribution(photo_id,"print_shop",{"accepted":true,"source":"public_photo_display"})
 		note=str(result.get("message","")); rebuild(),GameState.current_location!="print_shop")
 	label(paper,"给在附近的人看看",Vector2(800,394),Vector2(385,34),22)
-	var people:=DialogueSystem.people_at(GameState.current_location)
+	var people:=DialogueSystem.people_at(GameState.current_location, SceneRouter.active_space_id)
 	for i in mini(3,people.size()):
 		var npc:=str(people[i])
 		var name:=str(ScheduleSystem.residents.get(npc,{}).get("display_name",npc))

@@ -106,10 +106,7 @@ func run() -> void:
 	var menu=current_scene
 	menu._launch_new_game()
 	await create_timer(2.5).timeout
-	check(is_instance_valid(menu.intro_background) and menu.intro_background.color==Color.WHITE,"Opening has white background")
-	check(menu.intro_video.size.x<=menu.size.x*.801 and absf(menu.intro_video.size.x/menu.intro_video.size.y-16.0/9.0)<.001,"Opening is smaller and 16:9")
-	await shot("intro_white")
-	await create_timer(12).timeout
-	check(is_instance_valid(current_scene) and current_scene.scene_file_path=="res://scenes/town_day.tscn","Animation still hands off into playable town")
+	check(is_instance_valid(current_scene) and current_scene.scene_file_path=="res://scenes/town_day.tscn","New Game enters playable town without an opening movie")
+	await shot("direct_new_game")
 	print("V2_RUNTIME ",checks," CHECKS / ",failures," FAILURES")
 	quit(1 if failures else 0)

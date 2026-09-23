@@ -1,0 +1,23 @@
+{
+  "note": "One physical surface per scheduled appearance. Empty space means the street. Coordinates are keyed by resident, never roster order.",
+  "locations": {
+    "tarot_stall": {"space": "tarot_shop", "indoor": {"xia_touming": 1080}, "outdoor": {"xia_touming": 350}},
+    "handcraft_shop": {"space": "letter_office", "indoor": {"mossner": 1110}, "outdoor": {"mossner": -355}},
+    "record_store": {"space": "record_shop", "indoor": {"xanni": 1080, "naonao": 470}, "outdoor": {"xanni": -355, "naonao": 350}},
+    "night_market": {"space": "restaurant", "indoor": {"shi_yongqi": 1130}, "outdoor": {"shi_yongqi": 265}},
+    "print_shop": {"space": "print_studio", "indoor": {"zhou_xiaoliu": 390, "mingming": 1100, "xanni": 740}, "outdoor": {"zhou_xiaoliu": -270, "mingming": 400, "xanni": 555}},
+    "library": {"space": "public_archive", "indoor": {"maya": 1010, "mossner": 300, "mingming": 650, "yuxingqing": 1360}, "outdoor": {"maya": -355, "mossner": 350, "mingming": 515, "yuxingqing": -520}},
+    "cafe": {"space": "", "outdoor": {"mossner": 350, "chenyuan": 515}},
+    "town_entrance": {"space": "", "outdoor": {"xia_touming": -355, "zhou_xiaoliu": 350, "maya": 515, "wu_wu": -520, "chenyuan": -100}},
+    "bus_stop": {"space": "", "outdoor": {"zhou_xiaoliu": -180, "wu_wu": 170}},
+    "produce_stall": {"space": "", "outdoor": {"beetman": 190, "chenyuan": 380, "wu_wu": 520}},
+    "chess_stall": {"space": "", "outdoor": {"naonao": 150}},
+    "park": {"space": "", "outdoor": {"yuxingqing": -355, "xia_touming": 350, "naonao": 515}},
+    "port": {"space": "", "outdoor": {"wu_wu": -355}},
+    "residence": {"space": "", "outdoor": {}},
+    "dorm": {"space": "", "outdoor": {}}
+  },
+  "activities": {
+    "xanni_late_walk": {"space": ""}
+  }
+}

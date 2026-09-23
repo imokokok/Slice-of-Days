@@ -47,21 +47,6 @@ static func entry_offset(location: String) -> float:
 		"produce_stall": return -65.0
 	return 0.0
 
-static func npc_offset(location: String, resident: String, index: int) -> float:
-	if location == "produce_stall":
-		match resident:
-			"beetman": return 190.0
-			"chenyuan": return 380.0
-			"wu_wu": return 520.0
-		return [-530.0,-390.0,-220.0][mini(index,2)]
-	if location == "bus_stop": return [-180.0,170.0,-440.0][mini(index,2)]
-	if location == "chess_stall": return [150.0,360.0,-290.0][mini(index,2)]
-	if location == "tarot_stall": return [350.0,-360.0,515.0][mini(index,2)]
-	if location == "cafe": return [350.0,515.0,-360.0][mini(index,2)]
-	if location == "print_shop": return [-270.0,400.0,555.0][mini(index,2)]
-	if location == "night_market": return [265.0,-320.0,480.0][mini(index,2)]
-	return [-355.0,350.0,515.0][mini(index,2)]
-
 static func argument_offset() -> float:
 	return 450.0
 

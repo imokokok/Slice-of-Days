@@ -79,7 +79,7 @@ func possibility() -> Dictionary:
 			base.context="营业时间 "+str(available.hours)
 			base.location=CoreLoopSystem.home(); base.action="map"
 	if GameState.current_minute>=1200: base.context+="\n天色晚了，回程也需要留一点时间。"
-	if help_level==1 and not main: base.context="现在是 "+time_text(GameState.current_minute)+"，可以去"+TravelSystem.location_name(str(base.location))+"看看。"
+	if help_level==1 and not main and bool(available.open): base.context="现在是 "+time_text(GameState.current_minute)+"，可以去"+TravelSystem.location_name(str(base.location))+"看看。"
 	return base
 
 func time_text(minute: int) -> String:

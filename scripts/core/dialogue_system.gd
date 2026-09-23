@@ -51,13 +51,30 @@ func argument_lingering() -> bool:
 	var state := argument_state()
 	return bool(state.get("finished", false)) and int(state.get("day", 0)) == GameState.current_day and GameState.current_minute < int(state.get("minute", 0)) + ARGUMENT_LINGER_MINUTES
 
-func people_at(location: String) -> Array[String]:
-	var people := ScheduleSystem.residents_at(location,GameState.current_day,GameState.current_minute)
-	# Daily collaborator remains reachable until the main activity and conversation finish.
+func resident_activity(npc: String) -> Dictionary:
+	var activity := ScheduleSystem.activity_at(npc, GameState.current_day, GameState.current_minute).duplicate(true)
 	var p := ChapterSystem.plan()
-	if str(p.location)==location and not str(p.npc).is_empty() and not bool(ChapterSystem.day_state().narrative_completed):
-		people.erase(str(p.npc))
-		people.push_front(str(p.npc))
+	# The day's host works at one fixed place throughout its opening hours.
+	# Completing dialogue cannot move them, nor can querying another scene clone them.
+	var hours := WorldGraph.location_status(str(p.location))
+	if str(p.npc)==npc and bool(hours.open):
+		if str(activity.get("location", "")) != str(p.location):
+			activity = {"id":"day_%d_host_%s" % [GameState.current_day,npc], "activity":"在工作台旁", "mood":"relaxed"}
+		activity.merge({"location":str(p.location), "start":int(hours.opens), "end":int(hours.closes)}, true)
+	return activity
+
+func resident_placement(npc: String) -> Dictionary:
+	return ScheduleSystem.staging_for(npc, resident_activity(npc))
+
+func people_at(location: String, space_id := "*") -> Array[String]:
+	var people: Array[String] = []
+	for npc in ScheduleSystem.residents:
+		var placement := resident_placement(str(npc))
+		if str(placement.get("location", "")) != location: continue
+		if space_id != "*" and str(placement.get("space", "")) != space_id: continue
+		people.append(str(npc))
+	var host := str(ChapterSystem.plan().npc)
+	if people.has(host): people.erase(host); people.push_front(host)
 	return people
 
 func conversation_id(npc: String, topic: String) -> String:
@@ -87,7 +104,7 @@ func _ready() -> void:
 func reply(npc: String, topic: String) -> Array[String]:
 	if not ResidentProfileSystem.is_core(npc): return []
 	var row: Dictionary = content.get(npc,{})
-	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
+	var activity := resident_activity(npc)
 	if npc in ARGUMENT_PEOPLE and argument_lingering():
 		activity = {"location":"produce_stall","end":int(argument_state().get("minute",0))+ARGUMENT_LINGER_MINUTES,"activity":"收好刚买的菜"}
 	var mood := ScheduleSystem.mood_at(npc,GameState.current_day,GameState.current_minute)
@@ -197,7 +214,7 @@ func linear_conversation(npc: String) -> Array:
 			remembered="你去过唱片店了？我就知道，你们能聊到一块儿。下回路过，可以把新录的声音带上。"
 		if not remembered.is_empty(): beats.push_front(["npc", remembered])
 		return beats
-	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
+	var activity := resident_activity(npc)
 	var authored: Array = activity.get("dialogue",{}).get("greeting",[])
 	if authored.is_empty():
 		var personal := ResidentProfileSystem.ambient_line(npc,GameState.current_role,GameState.current_day+count)
@@ -220,12 +237,12 @@ func complete_linear_conversation(npc: String) -> void:
 		GameState.mark_event(encounter_id)
 
 func invitation_for(npc: String) -> Dictionary:
-	var activity := ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute)
+	var activity := resident_activity(npc)
 	if not bool(activity.get("allows_invitation", true)): return {}
 	for offer in invitations:
 		if not ChapterSystem.module_available(str(offer.module)): continue
 		if bool(offer.get("encounter",false)): continue
-		if str(offer.npc) == npc and str(offer.location) == GameState.current_location and str(ScheduleSystem.activity_at(npc,GameState.current_day,GameState.current_minute).get("location","")) == GameState.current_location: return offer
+		if str(offer.npc) == npc and str(offer.location) == GameState.current_location and str(resident_activity(npc).get("location","")) == GameState.current_location: return offer
 	return {}
 func invitation_for_module(module_id: String) -> Dictionary:
 	for offer in invitations:

@@ -35,8 +35,27 @@ func travel(location: String) -> void:
 	router.town_day()
 	await settle()
 func talk(npc: String) -> void:
-	current_scene._talk_nearby(npc)
+	var placement: Dictionary=root.get_node("DialogueSystem").resident_placement(npc)
+	check(not placement.is_empty(),"conversation partner has a real scene placement")
+	if not str(placement.get("space", "")).is_empty() and router.active_space_id!=str(placement.space):
+		var door: Array=current_scene.street.hotspots.filter(func(h): return str(h.get("kind",""))=="door" and str(h.get("id",""))==str(placement.space))
+		check(door.size()==1,"reach the actual door before speaking to an indoor resident")
+		if door.is_empty(): return
+		current_scene.street.player_x=float(door[0].x)
+		current_scene._interact()
+		await settle()
+	var stage=current_scene.stage if not router.active_space_id.is_empty() else current_scene.street
+	var points: Array=stage.hotspots.filter(func(h): return str(h.get("kind",""))=="person" and str(h.get("id",""))==npc)
+	check(points.size()==1,"partner exists once in the active scene")
+	if points.is_empty(): return
+	stage.player_x=float(points[0].x)-50
+	var input_was_disabled := root.gui_disable_input
+	root.gui_disable_input=false
+	var key:=InputEventKey.new(); key.keycode=KEY_W; key.physical_keycode=KEY_W; key.pressed=true
+	root.push_input(key); await process_frame
+	key.pressed=false; root.push_input(key)
 	await process_frame
+	root.gui_disable_input=input_was_disabled
 	var panel=current_scene.conversation
 	check(is_instance_valid(panel),"real conversation opens for "+npc)
 	if not is_instance_valid(panel): return

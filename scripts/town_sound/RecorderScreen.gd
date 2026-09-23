@@ -457,7 +457,7 @@ func _capture_context(source_mode: String) -> Dictionary:
 	context["game_day"] = GameState.current_day
 	context["game_minute"] = GameState.current_minute
 	context["location"] = GameState.current_location
-	context["nearby_npcs"] = ScheduleSystem.residents_at(GameState.current_location, GameState.current_day, GameState.current_minute)
+	context["nearby_npcs"] = DialogueSystem.people_at(GameState.current_location, SceneRouter.active_space_id)
 	if not context["nearby_npcs"].is_empty():
 		context["usage_scope"] = "local_only"
 		context["consent_status"] = "contains_nearby_residents"

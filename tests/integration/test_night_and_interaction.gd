@@ -25,6 +25,12 @@ func run() -> void:
 		check(not graph.location_status(place,int(hours[0])-1).open,place+" closes before opening")
 		check(graph.location_status(place,int(hours[0])).open,place+" opens exactly on time")
 		check(not graph.location_status(place,int(hours[1])).open,place+" closes exactly on time")
+	var guidance=root.get_node("GuidanceSystem")
+	gs.current_minute=490
+	for level in range(4):
+		guidance.help_level=level
+		check(str(guidance.next_step().context).contains("营业时间"),"Idle help preserves the closed shop's opening hours at level "+str(level))
+	guidance.help_level=0
 	gs.current_minute=1260
 	check(not root.get_node("GameplayModuleSystem").entry_check("sound_sampling").ok,"Closed record shop cannot start music")
 	check(root.get_node("GuidanceSystem").next_step().location!="record_store","Night guidance never sends player to closed record shop")

@@ -617,6 +617,21 @@ func _remember_position() -> void:
 	positions["%s_%d_%s" % [GameState.current_role, GameState.current_day, segment_id]] = street.player_x
 	GameState.shared_state["street_positions"] = positions
 
+func _transport_sign_positions() -> Array[float]:
+	var result: Array[float] = [110.0, street.world_width-110.0]
+	if street.world_width<6400: return result
+	var doors: Array[float] = []
+	for i in street_order.size():
+		if not _spaces_at(street_order[i]).is_empty():
+			doors.append(_world_x(i,Composition.center_local(street_order[i]))+Composition.entry_offset(street_order[i]))
+	# Keep the middle sign near the midpoint, but give door and sign separate reach zones.
+	for offset in [0.0,260.0,-260.0,420.0,-420.0]:
+		var candidate: float = street.world_width*.5+offset
+		if doors.all(func(x: float) -> bool: return absf(candidate-x)>street.DOOR_REACH+130.0):
+			result.insert(1,candidate)
+			break
+	return result
+
 func _rebuild_hotspots() -> void:
 	# Snapshot the rendered people before replacing schedule/interaction data.
 	street.presented_residents()
@@ -625,8 +640,7 @@ func _rebuild_hotspots() -> void:
 	street.queue_redraw()
 	var building_center := _place_center()
 	var center := building_center + Composition.entry_offset(GameState.current_location)
-	var sign_positions := [110.0,street.world_width-110.0]
-	if street.world_width>=6400: sign_positions.insert(1,street.world_width*.5)
+	var sign_positions := _transport_sign_positions()
 	for sign_x in sign_positions:
 		var sign_location := street_order[clampi(_index_at(sign_x),0,street_order.size()-1)]
 		street.hotspots.append({"x":sign_x,"reach":110.0,"kind":"transport","id":sign_location,"label":"小镇站牌 · 查看路线与出行方式"})
@@ -634,20 +648,20 @@ func _rebuild_hotspots() -> void:
 		var place := street_order[i]
 		# Adjacent blocks are already visible before the player crosses a boundary.
 		if place != GameState.current_location:
-			var neighbors := DialogueSystem.people_at(place)
+			var neighbors := DialogueSystem.people_at(place, "")
 			var at := _world_x(i,Composition.center_local(place))
-			for n in mini(neighbors.size(),3):
-				street.neighboring_residents.append({"kind":"person","id":neighbors[n],"x":at+Composition.npc_offset(place,neighbors[n],n)})
+			for npc in neighbors:
+				street.neighboring_residents.append({"kind":"person","id":npc,"x":at+float(DialogueSystem.resident_placement(npc).x)})
 	if preload("res://scripts/core/coastal_fishing.gd").LOCATIONS.has(GameState.current_location):
 		street.hotspots.append({"x":_world_x(current_index,720 if GameState.current_location=="park" else 1190),"kind":"fishing","label":"走到海边钓位 · 每竿 10 分钟"})
 	if GameState.current_location == "park" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
 		street.hotspots.append({"x":_world_x(current_index, 1060), "kind":"closed", "label":"观景台 · 21:00 开放"})
 		return
 	# Outdoor residents remain available even after the shop closes.
-	var people := DialogueSystem.people_at(GameState.current_location)
-	for index in mini(people.size(), 3):
+	var people := DialogueSystem.people_at(GameState.current_location, "")
+	for index in people.size():
 		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
-		var person_x := building_center + Composition.npc_offset(GameState.current_location,str(people[index]),index)
+		var person_x := building_center + float(DialogueSystem.resident_placement(people[index]).x)
 		street.hotspots.append({"x":person_x, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
 	if GameState.current_location in ["residence", "dorm"]:
 		var own_home := "residence" if GameState.current_role == "A" else "dorm"
@@ -710,6 +724,7 @@ func _talk_to_nearest() -> void:
 
 func _talk_nearby(resident_id: String, topic := "greeting") -> void:
 	if not ResidentProfileSystem.is_core(resident_id): return
+	if not DialogueSystem.people_at(GameState.current_location, "").has(resident_id): return
 	if is_instance_valid(conversation): return
 	if not MetaExperience.pay_conversation(topic): return
 	conversation = preload("res://scripts/ui/conversation_panel.gd").new()

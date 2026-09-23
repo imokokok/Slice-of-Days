@@ -24,9 +24,6 @@ var pending_slot := 1
 var entering := false
 var navigation: Control
 var navigation_ready := false
-var intro_video: VideoStreamPlayer
-var intro_wash: ColorRect
-var intro_background: ColorRect
 
 
 func _ready() -> void:
@@ -72,12 +69,6 @@ func _build_living_cover() -> void:
 	add_child(title)
 
 func _process(_delta: float) -> void:
-	if is_instance_valid(intro_video):
-		var ending := smoothstep(10.9,11.75,intro_video.stream_position)
-		if ending > 0:
-			intro_wash.color.a = ending
-			intro_video.volume_db = linear_to_db(maxf(.0001,1.0-ending))
-		return
 	if entering: return
 	if not navigation_ready:
 		navigation_ready = true
@@ -146,66 +137,9 @@ func _refresh_navigation_language(_locale := "") -> void:
 func _launch_new_game() -> void:
 	if entering: return
 	entering = true
-	intro_wash = ColorRect.new()
-	intro_wash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	intro_wash.color = Color(1,1,1,0)
-	intro_wash.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(intro_wash)
-	var fade := create_tween().set_parallel(true)
-	fade.tween_property(navigation,"modulate:a",0.0,.4)
-	fade.tween_property(intro_wash,"color:a",1.0,.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	await fade.finished
-	navigation.hide()
-	WorldSound.set_active(false)
-	await _play_opening_animation()
 	_on_new_game_pressed()
-	if not SceneRouter.transitioning:
-		entering = false
-		if is_instance_valid(intro_background): intro_background.queue_free()
-		intro_video = null
-		intro_wash.queue_free()
-		navigation.show()
-		navigation.modulate.a = 1.0
+	if not SceneRouter.transitioning: entering = false
 
-func _play_opening_animation() -> void:
-	if DisplayServer.get_name()=="headless": return
-	# The encoded stream contains only the newly authored sound design.
-	intro_background = ColorRect.new()
-	intro_background.color = Color.WHITE
-	intro_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(intro_background)
-	intro_video = VideoStreamPlayer.new()
-	intro_video.name = "OpeningAnimation"
-	intro_video.stream = preload("res://art/ui/new-game-intro.ogv")
-	intro_video.bus = "Music"
-	intro_video.expand = true
-	intro_video.loop = false
-	intro_video.mouse_filter = Control.MOUSE_FILTER_STOP
-	intro_background.add_child(intro_video)
-	_layout_opening_animation()
-	resized.connect(_layout_opening_animation)
-	move_child(intro_wash,get_child_count()-1)
-	intro_video.volume_db = -60.0
-	intro_video.play()
-	await RenderingServer.frame_post_draw
-	var reveal := create_tween().set_parallel(true)
-	reveal.tween_property(intro_wash,"color:a",0.0,.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	reveal.tween_property(intro_video,"volume_db",0.0,.85)
-	# Some platform decoders can leave VideoStreamPlayer playing without emitting
-	# `finished`. Never strand a new journey on the opening film: wait for normal
-	# completion, with a wall-clock fallback slightly beyond the encoded length.
-	var deadline_msec := Time.get_ticks_msec() + int((intro_video.get_stream_length() + 2.0) * 1000.0)
-	while is_instance_valid(intro_video) and intro_video.is_playing() and Time.get_ticks_msec() < deadline_msec:
-		await get_tree().process_frame
-	if is_instance_valid(intro_video): intro_video.stop()
-	intro_wash.color.a = 1.0
-	await get_tree().create_timer(.15).timeout
-
-func _layout_opening_animation() -> void:
-	if not is_instance_valid(intro_video): return
-	var frame_width := minf(size.x*.8,size.y*.8*16.0/9.0)
-	intro_video.size = Vector2(frame_width,frame_width*9.0/16.0)
-	intro_video.position = (size-intro_video.size)*.5
 
 func _show_chapters() -> void:
 	_prepare_modal()

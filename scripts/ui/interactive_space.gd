@@ -38,8 +38,7 @@ func _ready() -> void:
 	objects = space.get("objects", [])
 	if SceneRouter.active_space_id in ["home_a","home_b"]:
 		objects.append({"id":"everyday_shelf","name":"起居角的唱片与纸张","kind":"everyday","x":850 if SceneRouter.active_space_id=="home_a" else 310})
-	people = DialogueSystem.people_at(GameState.current_location)
-	if SceneRouter.active_space_id in ["home_a", "home_b"]: people.clear()
+	people = DialogueSystem.people_at(GameState.current_location, SceneRouter.active_space_id)
 	_build_theme()
 	stage = preload("res://scripts/ui/walk_stage.gd").new()
 	stage.indoor = true
@@ -57,9 +56,7 @@ func _ready() -> void:
 	for index in objects.size():
 		var object_kind := str(objects[index].get("kind", ""))
 		stage.hotspots.append({"x":_hotspot_x(index), "kind":"object", "index":index, "prop":"bed" if object_kind == "sleep" else ("computer" if object_kind == "work" else "table"), "label":_object_hint(index)})
-	for index in mini(people.size(), 3):
-		var person: Dictionary = ScheduleSystem.residents.get(people[index], {})
-		stage.hotspots.append({"x":920 + index * 180, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", "居民"))})
+	_refresh_people()
 	for echo in EchoSystem.at_location(GameState.current_location):
 		stage.hotspots.append({"x":700,"kind":"echo","label":"看黑板上的字","text":str(echo.text)})
 	WorldSound.set_active(true)
@@ -490,6 +487,7 @@ func _style_button(button: Button, kind: String) -> void:
 
 func _start_conversation(resident_id: String, topic := "greeting") -> void:
 	if not ResidentProfileSystem.is_core(resident_id): return
+	if not DialogueSystem.people_at(GameState.current_location, str(space.id)).has(resident_id): return
 	if is_instance_valid(conversation): return
 	if not MetaExperience.pay_conversation(topic): return
 	conversation = preload("res://scripts/ui/conversation_panel.gd").new()
@@ -502,11 +500,10 @@ func _start_conversation(resident_id: String, topic := "greeting") -> void:
 	SaveManager.save_or_report("谈话计时后保存失败")
 func _refresh_people() -> void:
 	stage.queue_redraw()
-	people = DialogueSystem.people_at(GameState.current_location)
-	if SceneRouter.active_space_id in ["home_a","home_b"]: people.clear()
+	people = DialogueSystem.people_at(GameState.current_location, str(space.id))
 	stage.hotspots = stage.hotspots.filter(func(item: Dictionary) -> bool: return str(item.get("kind","")) != "person")
-	for i in mini(people.size(),3):
-		stage.hotspots.append({"x":920+i*180,"kind":"person","id":people[i],"label":"和%s交谈" % str(ScheduleSystem.residents[people[i]].display_name)})
+	for npc in people:
+		stage.hotspots.append({"x":float(DialogueSystem.resident_placement(npc).x),"kind":"person","id":npc,"label":"和%s交谈" % str(ScheduleSystem.residents[npc].display_name)})
 
 func _object_hint(index: int) -> String:
 	var item: Dictionary = objects[index]

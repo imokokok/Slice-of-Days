@@ -20,13 +20,15 @@ func run() -> void:
 	root.get_node("ChapterSystem").start_new_game()
 	for role in ["A","B"]:
 		gs.switch_to_role(role,1 if role=="A" else 2,true); gs.current_minute=720
-		gs.current_location="residence" if role=="A" else "dorm"
+		gs.current_location=root.get_node("CoreLoopSystem").home()
 		gs.shared_state.map_arrival=gs.current_location; router.town_day(.01); await settle()
 		var doors: Array=current_scene.street.hotspots.filter(func(h):return str(h.kind)=="home")
 		check(doors.size()==1,role+" owns one actual street doorway")
 		if doors.is_empty(): quit(1); return
 		current_scene.street.player_x=doors[0].x
 		await interact()
+		check(is_instance_valid(current_scene.pocket_panel),role+" enters the shared landing before the private room")
+		current_scene.pocket_panel.find_child("EnterPrivateRoom",true,false).pressed.emit(); await settle()
 		check(router.active_space_id=="home_"+role.to_lower() and current_scene.stage.indoor,role+" enters real indoor scene via E")
 		if not current_scene.has_method("_hotspot_x"): quit(1); return
 		var room=current_scene; var stage=room.stage; var shell=room.get_node("GameplayShell")

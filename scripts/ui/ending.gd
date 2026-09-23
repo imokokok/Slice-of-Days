@@ -31,6 +31,9 @@ func _ready() -> void:
 	else:
 		for practice in reflections.practices:
 			_line(rows,LocalizationSystem.text_with_values("%s 用自己的方式尝试了%s。",[str(practice.role),str(practice.name)]))
+	_section(rows,"留给下一次选择")
+	_line(rows,"A 想为一个选中的创意留出完整空间，其他同样喜欢的想法先等一等。B 想带着自己的音乐，走进一次尚未准备齐全的机会。")
+	_line(rows,"她们回到自己的生活，把喜欢的部分带回来。下一次会做什么、还会怎样相遇，都没有在今天定下来。")
 	_label(self,"滚动查看完整回响",Vector2(220,716),Vector2(390,32),17,MUTED)
 	var back:=preload("res://scripts/ui/components/solmere_button.gd").new()
 	back.text=LocalizationSystem.text("返回主菜单")

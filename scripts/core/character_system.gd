@@ -45,7 +45,9 @@ func portrait_path(role := "") -> String:
 func switch_unlocked() -> bool:
 	return GameState.current_day==5 and bool(ChapterSystem.story().reveal_completed) and bool(GameState.shared_state.get("character_switch_enabled",false))
 func can_switch() -> bool:
-	if not switch_unlocked() or SceneRouter.transitioning or not SceneRouter.active_space_id.is_empty(): return false
+	return switch_unlocked() and can_manage_schedule()
+func can_manage_schedule() -> bool:
+	if SceneRouter.transitioning or not SceneRouter.active_space_id.is_empty(): return false
 	if not GameplayModuleSystem.pending_module_id().is_empty(): return false
 	if not get_tree().get_nodes_in_group("world_tool").is_empty(): return false
 	var scene := get_tree().current_scene
@@ -80,15 +82,18 @@ func switch_character() -> bool:
 	return true
 
 func next_window(role: String) -> int:
-	for block in GameState.schedule_for(role,5).get("blocks",[]):
+	for block in GameState.schedule_for(role,GameState.current_day).get("blocks",[]):
 		if int(block[0])>GameState.current_minute: return int(block[0])
 	return -1
 
 func wait_for_window() -> bool:
-	if not can_switch(): return false
+	if not can_manage_schedule(): return false
 	var minute := next_window(GameState.current_role)
 	if minute<0: return false
 	var snapshot := GameState.to_save_data()
+	for commitment in GameState.commitments_for_day():
+		if int(commitment.end)>GameState.current_minute and int(commitment.start)<minute:
+			GameState._miss_commitment(commitment)
 	GameState.spend_time(minute-GameState.current_minute)
 	GameState.shared_state.erase("pending_commitment")
 	if not SaveManager.save_or_report("等待未能保存"):

@@ -27,6 +27,13 @@
           "kind": "restaurant_counter",
           "x": 370,
           "icon": "单"
+        },
+        {
+          "id": "service_shift",
+          "name": "查看固定班次",
+          "kind": "work",
+          "detail": "14:00开始，18:00结束。料理操作仍需亲手完成。",
+          "x": 1100
         }
       ]
     },
@@ -182,7 +189,7 @@
     {
       "id": "home_a",
       "location_id": "residence",
-      "name": "海边住处",
+      "name": "住处 · 楼上",
       "objects": [
         {
           "id": "memory_entry",
@@ -212,16 +219,22 @@
           "kind": "collections",
           "x": 365,
           "icon": "物"
+        },
+        {
+          "id": "shared_landing",
+          "name": "门口 · 楼梯与信箱",
+          "kind": "household",
+          "x": 245
         }
       ],
-      "sign": "HOME_A",
-      "tagline": "海边住处",
-      "interior_note": "便签和照片散落在桌面。 关灯，让今天结束。"
+      "sign": "HOME",
+      "tagline": "海风路17号",
+      "interior_note": "门外是共用楼梯与信箱；房间里的物件由自己保管。"
     },
     {
       "id": "home_b",
-      "location_id": "dorm",
-      "name": "街角住处",
+      "location_id": "residence",
+      "name": "住处 · 楼下",
       "objects": [
         {
           "id": "memory_entry",
@@ -238,23 +251,22 @@
           "x": 625
         },
         {
-          "id": "work_computer",
-          "name": "桌前处理工作",
-          "kind": "work",
-          "detail": "在书桌前查看今天的工作安排。",
-          "x": 790
-        },
-        {
           "id": "bed",
           "name": "躺下睡觉",
           "kind": "sleep",
           "detail": "关灯，让今天结束。",
           "x": 1290
+        },
+        {
+          "id": "shared_landing",
+          "name": "门口 · 楼梯与信箱",
+          "kind": "household",
+          "x": 175
         }
       ],
-      "sign": "HOME_B",
-      "tagline": "街角住处",
-      "interior_note": "笔记本整齐地放在地图旁。 关灯，让今天结束。"
+      "sign": "HOME",
+      "tagline": "海风路17号",
+      "interior_note": "门外是共用楼梯与信箱；房间里的物件由自己保管。"
     }
   ]
 }

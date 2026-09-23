@@ -352,7 +352,7 @@ func _official(text: String, at: Vector2, dimensions: Vector2, point: int) -> La
 func _requirements_sheet() -> void:
 	_hand("Solmere · 为有梦的人而生",Vector2(110,155),Vector2(1130,75),42)
 	_official("在海边走走，认识居民，做一点喜欢的事。\n留下的声音、料理、信和对局，会成为小镇生活的一部分。",Vector2(110,280),Vector2(1070,115),27)
-	_official("记录由你决定。照片、纸片和随笔可以慢慢收集，\n不需要填满页面，也不需要集齐居民的认可。",Vector2(110,445),Vector2(1070,115),25)
+	_official("照片、纸片和随笔可以慢慢收集，页面不必填满。\n旅居申请需要自己取得12位居民的认可；到住处信箱查看和投递。",Vector2(110,445),Vector2(1070,115),25)
 	button(body,"查看今天想做的事",Vector2(110,600),Vector2(470,56),_switch_object.bind("today"))
 
 func _browser(kind: String) -> void:

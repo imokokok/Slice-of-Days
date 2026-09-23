@@ -28,6 +28,7 @@ func capture(name: String) -> void:
 func travel(location: String) -> void:
 	# Exercise the existing travel service. Omit only the transit-card animation.
 	if gs.current_location!=location:
+		await ensure_time(root.get_node("TravelSystem")._shortest_walk_minutes(gs.current_location,location))
 		var result: Dictionary=root.get_node("TravelSystem").travel(location,"walk")
 		check(bool(result.get("ok",false)),"travel to "+location)
 	router.active_space_id=""
@@ -126,6 +127,8 @@ func switch_at_planner() -> void:
 
 func ensure_time(minutes: int) -> void:
 	while not gs.can_fit_now(minutes):
+		if not router.active_space_id.is_empty():
+			router.leave_space(); await settle()
 		var shell=current_scene.get_node("GameplayShell")
 		shell.open_paper("day_schedule"); await process_frame
 		var button=shell.overlay.find_child("WaitForWindow",true,false)
@@ -137,6 +140,7 @@ func ensure_time(minutes: int) -> void:
 		check(gs.current_minute>before,"confirmed wait consumes shared world time")
 		shell.overlay.close(); await process_frame
 func native(module: String, tokens: Array, choice: String) -> void:
+	await ensure_time(90 if module=="cooking" else 60)
 	check(router.gameplay_module(module,"street:"+gs.current_location),"start production module "+module)
 	await settle()
 	var scene=current_scene
@@ -152,7 +156,7 @@ func native(module: String, tokens: Array, choice: String) -> void:
 	await settle()
 func end_day() -> void:
 	var before: int=gs.current_day
-	var home: String="residence" if gs.current_role=="A" else "dorm"
+	var home: String=root.get_node("CoreLoopSystem").home()
 	await travel(home)
 	router.enter_space("home_a" if gs.current_role=="A" else "home_b")
 	await settle()
@@ -233,6 +237,7 @@ func motion(game: Node, at: Vector2) -> void:
 	game._motion(InputEventMouseMotion.new())
 func chess() -> void:
 	await wait_for_opening("chess_stall")
+	await ensure_time(60)
 	check(router.gameplay_module("chess","street:chess_stall"),"same production chess host starts")
 	await settle()
 	var host=current_scene
@@ -401,6 +406,11 @@ func run() -> void:
 			if not modules.entry_check(module).ok: continue
 			check(router.gameplay_module(module,"street:"+gs.current_location),"Day 5 "+role+" can enter "+module)
 			await settle()
+			if module=="sound_sampling":
+				var workspaces=get_nodes_in_group("town_sound_workspace")
+				check(workspaces.size()==1 and workspaces[0].shop_mode and modules.pending_module_id().is_empty(),"music reopens real recorder without inventing a completion session")
+				check(not root.get_node("CharacterSystem").can_switch(),"recording workspace owns the current role")
+				workspaces[0].request_close(); await settle(); continue
 			check(modules.session_context().current_character==role,"minigame reads correct character context")
 			check(not root.get_node("CharacterSystem").can_switch(),"switching is disabled while a minigame owns the context")
 			if module in ["ghostwriting","chess"]:
@@ -412,6 +422,6 @@ func run() -> void:
 			await settle()
 	var old: Dictionary=gs.to_save_data(); old.save_version=6
 	check(not gs.compatible_save(old),"old seven-day save explicitly rejected")
-	check(gs.artifacts.get("residency",{}).get("submitted",{}).is_empty(),"no portfolio or application submission required")
+	check(gs.artifacts.get("residency",{}).get("submitted",{}).is_empty(),"story completion does not silently submit a residency application")
 	print("FIVE_DAY_FLOW: ","PASS" if failures==0 else "FAIL"," checks=",checks," failures=",failures)
 	quit(failures)

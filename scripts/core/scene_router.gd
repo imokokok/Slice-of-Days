@@ -68,6 +68,9 @@ func enter_space(space_id: String) -> void:
 	if transitioning: return
 	var hours := WorldGraph.location_status(GameState.current_location)
 	if not bool(hours.open): GuidanceSystem.blocked(str(hours.reason)); return
+	if space_id in ["home_a","home_b"]:
+		if space_id != ("home_a" if GameState.current_role=="A" else "home_b"): return
+		if GameState.current_location!=CoreLoopSystem.home(): return
 	active_space_id = space_id
 	go_to(INTERACTIVE_SPACE)
 
@@ -116,7 +119,7 @@ func request_gameplay(module_id: String, source := "") -> bool:
 	if not bool(check.ok): GuidanceSystem.blocked(str(check.reason)); return false
 	var confirmation := preload("res://scripts/ui/components/confirm_sheet.gd").new()
 	confirmation.heading=str(GameplayModuleSystem.modules.get(module_id,{}).get("name","开始活动"))
-	confirmation.description=("当前视角 "+GameState.current_role+"\n" if CharacterSystem.switch_unlocked() else "")+"预计最多 %d 分钟，完成时结算实际耗时。\n取消可以保留原来的时间。"%int(check.minutes)
+	confirmation.description=("当前视角 "+GameState.current_role+"\n"+ChapterSystem.exchange_motivation(module_id)+"\n" if CharacterSystem.switch_unlocked() else "")+"预计最多 %d 分钟，完成时结算实际耗时。\n取消可以保留原来的时间。"%int(check.minutes)
 	confirmation.confirm_text="开始"; get_tree().current_scene.add_child(confirmation)
 	confirmation.accepted.connect(func():
 		if gameplay_module(module_id,source): confirmation.queue_free()

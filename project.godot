@@ -52,6 +52,7 @@ FilmSystem="*res://scripts/photography/film_system.gd"
 GuidanceSystem="*res://scripts/core/guidance_system.gd"
 CoreLoopSystem="*res://scripts/core/core_loop_system.gd"
 UIStateSystem="*res://scripts/core/ui_state_system.gd"
+HouseholdSystem="*res://scripts/core/household_system.gd"
 
 [display]
 

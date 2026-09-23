@@ -18,7 +18,7 @@ func day_state() -> Dictionary:
 	var days: Dictionary=state().days; var key := str(GameState.current_day)
 	if not days.has(key): days[key]={"connected":[],"participated":[],"reviewed":false,"reflection":"","brief_seen":false}
 	return days[key]
-func home() -> String: return "residence" if GameState.current_role=="A" else "dorm"
+func home() -> String: return "residence"
 func day_stamp() -> String: return "DAY %02d"%GameState.current_day
 
 func contract(module: String) -> Dictionary: return catalog.get("modules",{}).get(module,{})
@@ -217,6 +217,15 @@ func _check_recognition(npc: String) -> void:
 		if str(c.npc)==npc and bool(c.acknowledged): meaningful=true
 	for item in ResidencySystem.state().materials.values():
 		if str(item.get("source","")).begins_with("module:"+module+":"): meaningful=true
+	# A different role need not repeat the resident's entire main minigame.
+	# Two personally held, relevant kinds of material shared in conversation
+	# also establish a relationship. Re-showing one item cannot advance this.
+	var kinds: Array[String]=[]
+	for id in state().shared.get(npc,[]):
+		var item: Dictionary=ResidencySystem.state().materials.get(str(id),{})
+		var kind := str(item.get("kind",""))
+		if not kind.is_empty() and not kinds.has(kind): kinds.append(kind)
+	if kinds.size()>=2: meaningful=true
 	if state().introduced.has(npc) and not state().shared.get(npc,[]).is_empty() and (meaningful or RelationshipSystem.has_flag(npc,"participated_"+module)):
 		RelationshipSystem.set_confirmation(npc,"granted")
 func opportunities() -> Array:

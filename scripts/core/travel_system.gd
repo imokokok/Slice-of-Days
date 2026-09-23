@@ -101,7 +101,7 @@ func route(from_id: String, to_id: String, method: String, role: String, minute:
 			duration = maxi(int(transport.get("friend_minimum", 8)), int(ceil(walking * float(transport.get("friend_factor", 0.45))))) + wait
 			label = "找人借车"
 		_: return {"available":false, "reason":"没有这种交通方式。"}
-	var homeward := to_id==("residence" if role=="A" else "dorm") and minute>=1320 and minute+duration<=1439
+	var homeward := to_id=="residence" and minute>=1320 and minute+duration<=1439
 	if not homeward and not GameState.can_fit_at(role, GameState.current_day, minute, duration):
 		return {"available":false, "reason":"当前空闲时段不足以完成这段路程。"}
 	var conflicts: Array[String] = []

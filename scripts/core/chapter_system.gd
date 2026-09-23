@@ -84,6 +84,7 @@ func start_new_game(_start_role := "A") -> void:
 	GameState.begin_new_game("A")
 	GameState.shared_state["journey_id"]=Crypto.new().generate_random_bytes(12).hex_encode()
 	GameState.shared_state["character_switch_enabled"]=false
+	GameState.shared_state["architecture_version"]=2
 	GameState.shared_state["public_traces"]={}
 	GameState.shared_state["npc_memory"]={}
 	story()
@@ -112,6 +113,10 @@ func module_perspective(module_id: String, role := "") -> String:
 	var active_role := GameState.current_role if role.is_empty() else role
 	if not MAIN_OWNERS.has(module_id): return "shared"
 	return "home_domain" if str(MAIN_OWNERS[module_id])==active_role else "cross_domain"
+
+func exchange_motivation(module_id: String) -> String:
+	if not CharacterSystem.switch_unlocked() or module_perspective(module_id)!="cross_domain": return ""
+	return str({"A":{"cooking":"原来她就在我常来的饭店工作。想亲手试试喜欢的味道，也照顾到客人的需要。","chess":"这一局有很多可能，我得选一步，再看看它会把局面带到哪里。"},"B":{"sound_sampling":"她介绍我走进唱片店。声音和作品仍由我自己完成，这次先试一次。","ghostwriting":"不必先想好成品。先剪下一片纸，看看接下来会出现什么。"}}.get(GameState.current_role,{}).get(module_id,""))
 
 func register_cross_domain_result(module_id: String, result: Dictionary) -> void:
 	result["craft_perspective"]=module_perspective(module_id)
@@ -179,7 +184,7 @@ func narrative_lines(npc: String) -> Array:
 		4:
 			if bool(story().B_noticing):
 				var found_b := _observation_title_text("B")
-				return [["player","%s都不是我留下的，可镇上的人一直把它们算在我身上。"%found_b],["npc","如果不是记错一件东西，而是一直把两个人记成了一个人呢？"],["npc","明天在社区中心见面吧。让留下这些东西的人自己说明。"]]
+				return [["player","%s都不是我留下的，可镇上的人一直把它们算在我身上。"%found_b],["npc","如果不是记错一件东西，而是一直把两个人记成了一个人呢？"],["npc","明天是你的轮休日，在社区中心见面吧。让留下这些东西的人自己说明。"]]
 	return []
 func on_conversation_completed(npc: String) -> void:
 	if narrative_lines(npc).is_empty(): return
@@ -312,7 +317,9 @@ func mark_opening_seen(id := "") -> void:
 func residency_audit(role: String) -> Dictionary:
 	GameState.commit_active_role_state()
 	var state: Dictionary=GameState.role_states.get(role,{})
-	return {"role":role,"passed":bool(story().reveal_completed),"completed_events":state.get("completed_events",[]).size(),"journal_entries":state.get("journal_entries",[]).size(),"choices":state.get("choice_history",[]).size(),"confirmed":state.get("confirmed_residents",[]).size(),"required":0}
+	var audit := HouseholdSystem.application(role)
+	audit.merge({"completed_events":state.get("completed_events",[]).size(),"journal_entries":state.get("journal_entries",[]).size(),"choices":state.get("choice_history",[]).size()})
+	return audit
 func journey_audit() -> Dictionary: return {"A":residency_audit("A"),"B":residency_audit("B"),"cross_domain_practice":story().cross_domain_practice.duplicate(true),"identity_responses":story().identity_responses.duplicate(true),"game_complete":bool(GameState.shared_state.get("game_complete",false))}
 
 func ending_reflections() -> Dictionary:
@@ -440,4 +447,8 @@ func meeting_lines() -> Array[String]:
 		"是我。我也翻到%s。原来我们一直在同一座小镇生活。"%b_text,
 		"%s已经察觉记录对不上，只是还不知道该怎样称呼这件事。"%witnesses,
 		"把各自留下的东西放在一起，才看清：这是两个人的生活，不是一个人漏掉的记忆。",
+		"等一下，你也住海风路17号？我一直住楼上。原来楼下的灯、放回信箱的通知，都是你留下的。",
+		"我住楼下。我的饭店班次总与你错开。我还偷偷做过一些音乐，想带自己的东西去唱片店试试。",
+		"我可以介绍你去。那家饭店原来是你工作的地方！我一直喜欢那里的味道，也想试试做菜，再和你下一局棋。",
+		"借一下彼此熟悉的入口吧。作品要自己做，人也要自己认识。做完以后，我们再交换一点心得。",
 	]

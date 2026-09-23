@@ -8,71 +8,60 @@
     "A": {
       "wake": 420,
       "start": 480,
-      "sleep_at": 1320,
+      "sleep_at": 1439,
       "blocks": [
         [
           480,
+          630
+        ],
+        [
+          660,
+          810
+        ],
+        [
+          840,
+          1020
+        ],
+        [
+          1050,
+          1200
+        ],
+        [
+          1230,
           1440
         ]
       ],
-      "rhythm_note": "07:00起床 · 07:00—08:00晨跑 · 19:00—20:00夜跑 · 22:00休息",
-      "commitments": [
-        {
-          "id": "a_night_run",
-          "label": "沿海边完成夜跑",
-          "kind": "routine",
-          "start": 1140,
-          "end": 1200,
-          "return_by": 1140,
-          "auto_advance": true,
-          "location_label": "沿海跑道",
-          "pay": 0
-        }
-      ],
+      "rhythm_note": "零散空档可重组：把相邻的私人安排延后，留出更长的创作时间。",
+      "commitments": [],
       "starting_money": 12000,
       "opening_facts": []
     },
     "B": {
       "wake": 420,
       "start": 420,
-      "sleep_at": 1320,
+      "sleep_at": 1439,
       "blocks": [
         [
           420,
+          840
+        ],
+        [
+          1080,
           1440
         ]
       ],
-      "rhythm_note": "07:00起床即可行动 · 三段远程工作会切开白天 · 22:00休息",
+      "rhythm_note": "07:00—14:00可安排 · 14:00—18:00饭店固定班次 · 18:00后可安排。",
       "commitments": [
         {
-          "id": "b_morning_remote_work",
-          "label": "在电脑前处理上午工作",
-          "start": 600,
-          "end": 660,
-          "return_by": 600,
-          "location": "dorm",
-          "location_label": "家",
-          "pay": 45
-        },
-        {
-          "id": "b_afternoon_work",
-          "label": "处理下午项目",
-          "start": 720,
-          "end": 840,
-          "return_by": 720,
-          "location": "dorm",
-          "location_label": "家",
-          "pay": 70
-        },
-        {
-          "id": "b_evening_delivery",
-          "label": "完成傍晚交付",
-          "start": 960,
+          "id": "b_restaurant_service",
+          "label": "饭店固定班次",
+          "kind": "work",
+          "start": 840,
           "end": 1080,
-          "return_by": 960,
-          "location": "dorm",
-          "location_label": "家",
-          "pay": 80
+          "return_by": 840,
+          "location": "night_market",
+          "location_label": "饭店",
+          "pay": 195
         }
       ],
       "starting_money": 1600,
@@ -80,7 +69,23 @@
       "opening_facts": []
     }
   },
-  "day_overrides": [{"day":5,"roles":{"A":{"blocks":[[480,1140],[1200,1320]]},"B":{"blocks":[[420,600],[660,720],[840,960],[1080,1320]]}}}],
+  "day_overrides": [
+    {
+      "day": 5,
+      "roles": {
+        "B": {
+          "blocks": [
+            [
+              420,
+              1440
+            ]
+          ],
+          "commitments": [],
+          "rhythm_note": "今天原本就是轮休日，提前把整天留给相遇和自己的创作。"
+        }
+      }
+    }
+  ],
   "day_roles": [
     "A",
     "B",

@@ -1,10 +1,12 @@
 # Solmere · 五日旅程
 
-Godot 4.7.2 · 海边小镇探索、双主角的五日生活与公共作品。
+Godot 4.7.2 · 海边小镇探索、双主角的五日生活与彼此留下的痕迹。
 
-当前主流程以用户确认的《Solmere_Codex_5Day_Rebuild_CN》为准。保留现有美术、摄影录音、交易与可用小游戏。旧七日申请制不再控制推进。[五日交付报告](docs/FIVE_DAY_REBUILD_REPORT.md)说明实际挂载、存档和验证范围；其他历史文档中的七日要求不再代表当前流程。
+最新架构按《架构调整说明(1)》校正，详见[逐项复核与修正](docs/qa/architecture_alignment_20260924.md)。A 的碎片空档可重组，B 保留固定饭店工作；同栋住处共用门口和信箱，旅居申请分别检查本人 12 位居民认可。
 
-第二阶段按《Solmere_GameplayFlow_Feedback_Guidance_CN》接入持续生活物件、分级引导和第五天真实时段。[第二阶段报告](docs/GAMEPLAY_FLOW_GUIDANCE_REPORT.md)为当前反馈与时间交互的说明。
+五天主流程沿用用户确认的《Solmere_Codex_5Day_Rebuild_CN》。保留现有美术、摄影录音、交易与可用小游戏。旧七日申请制不再控制推进。[五日交付报告](docs/FIVE_DAY_REBUILD_REPORT.md)说明实际挂载、存档和验证范围；其他历史文档中的七日要求不再代表当前流程。
+
+第二阶段按《Solmere_GameplayFlow_Feedback_Guidance_CN》接入持续生活物件、分级引导和第五天真实时段。[第二阶段报告](docs/GAMEPLAY_FLOW_GUIDANCE_REPORT.md)保留当时的实施记录；其中旧时间形状以最新架构复核为准。
 
 ## 启动
 

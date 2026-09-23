@@ -158,6 +158,11 @@ func _open_selected() -> void:
 	if objects.is_empty() or absf(stage.player_x - _hotspot_x(selected_index)) > stage.REACH:
 		return
 	var item: Dictionary = objects[selected_index]
+	if str(item.get("kind",""))=="household":
+		if not is_instance_valid(pocket_panel):
+			pocket_panel=preload("res://scripts/ui/components/household_panel.gd").new()
+			add_child(pocket_panel)
+		return
 	if str(item.get("kind",""))=="everyday":
 		if not is_instance_valid(pocket_panel):
 			pocket_panel=preload("res://scripts/ui/components/public_trace_panel.gd").new()

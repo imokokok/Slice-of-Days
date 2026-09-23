@@ -210,7 +210,7 @@ func _time_guidance_text() -> String:
 	var home_id := str(commitment.get("location", "dorm"))
 	var shortest := WorldGraph.walk_minutes(GameState.current_location,home_id) + 1
 	var leave_by := return_by - shortest
-	return "%s 回家工作 · 步行约%d分钟 · %s · %s" % [_minute_text(return_by), shortest, "住宅区内" if segment_id == "residential" else "Tab 选择回家路线", "现在该动身了" if GameState.current_minute >= leave_by else _minute_text(leave_by) + "前动身"]
+	return "%s 到%s · 步行约%d分钟 · %s" % [_minute_text(return_by), str(commitment.get("location_label","工作地点")), shortest, "现在该动身了" if GameState.current_minute >= leave_by else _minute_text(leave_by) + "前动身"]
 
 
 func _spaces_at(location_id: String) -> Array[Dictionary]:
@@ -664,7 +664,7 @@ func _rebuild_hotspots() -> void:
 		var person_x := building_center + float(DialogueSystem.resident_placement(people[index]).x)
 		street.hotspots.append({"x":person_x, "kind":"person", "id":people[index], "label":"和%s交谈" % str(person.get("display_name", people[index]))})
 	if GameState.current_location in ["residence", "dorm"]:
-		var own_home := "residence" if GameState.current_role == "A" else "dorm"
+		var own_home := CoreLoopSystem.home()
 		if GameState.current_location == own_home:
 			street.hotspots.append({"x":center, "kind":"home", "reach":street.DOOR_REACH, "label":"回家"})
 	else:
@@ -701,7 +701,7 @@ func _interact() -> void:
 			_show_line("",str(item.get("text","")))
 			MetaExperience.observe(GameState.current_location,str(item.get("text","")),{"kind":"place","event_id":"echo_"+GameState.current_location})
 		"closed": _show_line("", "观景台将在晚上九点开放。")
-		"home": SceneRouter.enter_space("home_a" if GameState.current_role == "A" else "home_b")
+		"home": _show_pocket_panel(preload("res://scripts/ui/components/household_panel.gd").new())
 		"door":
 			if not _guard_pocket_audio(): SceneRouter.enter_space(str(item.id))
 		"shop": _open_shop(str(item.id))

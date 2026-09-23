@@ -1058,7 +1058,7 @@ func _guidance_action(action: Dictionary) -> void:
 		var home := "home_a" if GameState.current_role=="A" else "home_b"
 		if SceneRouter.active_space_id==home: mode="organize"
 		else:
-			map_selected="residence" if GameState.current_role=="A" else "dorm"
+			map_selected=CoreLoopSystem.home()
 			mode="map"
 	elif kind in ["exploration","requirements","recognition","receipts","personal"]:
 		mode="dossier"; tab="packet"

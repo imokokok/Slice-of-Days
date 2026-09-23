@@ -15,15 +15,16 @@
     },
     {
       "id": "residence",
-      "name": "海边住处",
+      "name": "临时住处",
       "interior": true,
       "kind": "home_a",
       "street_index": 1,
-      "subtitle": "海边住处",
+      "subtitle": "海风路17号 · 门口信箱",
       "position": [
         1350,
         718
-      ]
+      ],
+      "address": "海风路17号"
     },
     {
       "id": "print_shop",
@@ -151,11 +152,11 @@
     },
     {
       "id": "dorm",
-      "name": "街角住处",
-      "interior": true,
-      "kind": "home_b",
+      "name": "住宅后巷",
+      "interior": false,
+      "kind": "street",
       "street_index": 10,
-      "subtitle": "街角住处",
+      "subtitle": "沿着后巷走走",
       "position": [
         9450,
         718

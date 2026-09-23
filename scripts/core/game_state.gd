@@ -145,7 +145,7 @@ func switch_to_role(role: String, day := -1, reset_to_schedule_start := false) -
 		var schedule := schedule_for(role, current_day)
 		current_minute = int(schedule.get("start", 9 * 60))
 		clock_remainder = 0.0
-		current_location = "residence" if role == "A" else "dorm"
+		current_location = "residence"
 		for fact in schedule.get("opening_facts", []):
 			add_fact(str(fact), false)
 	refresh_appointments()
@@ -200,11 +200,44 @@ func schedule_for(role: String, day: int) -> Dictionary:
 		var role_override: Dictionary = roles.get(role, {})
 		for key in role_override:
 			result[key] = role_override[key]
+	var rearranged: Dictionary=shared_state.get("flexible_schedule",{}).get("%s_%d"%[role,day],{})
+	if role=="A" and rearranged.has("blocks"): result.blocks=rearranged.blocks.duplicate(true)
 	return result
 
 
 func active_time_blocks() -> Array:
 	return schedule_for(current_role, current_day).get("blocks", [])
+
+
+func flexible_merge_preview() -> Dictionary:
+	if current_role!="A": return {}
+	var blocks: Array=active_time_blocks().duplicate(true)
+	for i in range(blocks.size()-1):
+		var block: Array=blocks[i]
+		if current_minute<int(block[0]) or current_minute>=int(block[1]): continue
+		var next: Array=blocks[i+1]
+		var gap := int(next[0])-int(block[1])
+		if gap<=0: continue
+		return {"index":i,"gap":gap,"start":int(block[1]),"moved_to":int(next[1])-gap,"end":int(next[1])}
+	return {}
+
+
+func combine_flexible_time() -> bool:
+	if not GameplayModuleSystem.pending_module_id().is_empty(): return false
+	var preview := flexible_merge_preview()
+	if preview.is_empty(): return false
+	var snapshot := to_save_data().duplicate(true)
+	var blocks: Array=active_time_blocks().duplicate(true)
+	var index := int(preview.index)
+	blocks[index][1]=int(preview.moved_to)
+	blocks.remove_at(index+1)
+	shared_state.get_or_add("flexible_schedule",{})["%s_%d"%[current_role,current_day]]={"blocks":blocks}
+	add_journal_entry({"kind":"personal_schedule","text":"把 %s 的私人整理延到 %s，留一段时间给正在做的事。"%[_minute_text(int(preview.start)),_minute_text(int(preview.moved_to))]})
+	commit_active_role_state()
+	if not SaveManager.save_or_report("日程调整未能保存"):
+		load_save_data(snapshot); return false
+	state_changed.emit()
+	return true
 
 
 func commitments_for_day(role := "", day := -1) -> Array[Dictionary]:
@@ -363,7 +396,7 @@ func complete_next_commitment() -> Dictionary:
 		return {"ok": false, "message": "这段工作已经完成。"}
 	var return_by := int(commitment.get("return_by", commitment.get("start", 0)))
 	if current_minute < return_by:
-		return {"ok": false, "message": "%s前回到电脑即可。现在还有%d分钟可安排。" % [_minute_text(return_by), return_by - current_minute]}
+		return {"ok": false, "message": "%s前到工作地点即可。现在还有%d分钟可安排。" % [_minute_text(return_by), return_by - current_minute]}
 	if current_minute > int(commitment.get("start", 0)) + int(commitment.get("late_grace", 10)):
 		_miss_commitment(commitment)
 		return {"ok": false, "message": "已经错过这段工作的开始时间。"}
@@ -757,6 +790,13 @@ func load_save_data(data: Dictionary) -> void:
 	session_restored.emit()
 	role_states=data.role_states.duplicate(true)
 	shared_state=data.shared_state.duplicate(true)
+	if int(shared_state.get("architecture_version",0))<2:
+		# Keep private content intact; migrate only the obsolete separate home.
+		if str(role_states.B.get("location",""))=="dorm": role_states.B.location="residence"
+		for key in shared_state.get("street_positions",{}).keys():
+			if str(key).begins_with("B_") and str(key).ends_with("_residential"): shared_state.street_positions.erase(key)
+		shared_state.erase("pending_commitment")
+		shared_state["architecture_version"]=2
 	_load_role_state(str(data.current_role))
 	ChapterSystem.align_saved_chapter()
 	commit_active_role_state()

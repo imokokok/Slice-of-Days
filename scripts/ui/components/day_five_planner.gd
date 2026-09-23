@@ -4,45 +4,43 @@ var status: Label
 func _ready() -> void: name="DayFivePlanner"; rebuild()
 func rebuild() -> void:
 	for child in get_children(): remove_child(child); child.queue_free()
-	if not CharacterSystem.switch_unlocked():
-		PALETTE.words(self,"今天的时间",Vector2.ZERO,1100,32,PALETTE.INK)
-		PALETTE.words(self,"第 %d 天 · %s · %s" % [GameState.current_day,GameState.current_role,GameState.clock_text()],Vector2(0,58),1100,22,PALETTE.MUTED)
-		var blocks: Array=GameState.schedule_for(GameState.current_role,GameState.current_day).get("blocks",[])
-		for i in blocks.size():
-			var span: Array=blocks[i]
-			PALETTE.words(self,GuidanceSystem.time_text(int(span[0]))+" — "+GuidanceSystem.time_text(int(span[1]))+" · 今天的活动时间",Vector2(0,123+i*56),1000,24,PALETTE.INK)
-		PALETTE.words(self,GameState.current_time_guidance(),Vector2(0,250),1060,23,PALETTE.INK)
-		PALETTE.words(self,"23:59 前回家。午夜到来时，旅程进入下一天。",Vector2(0,325),1060,23,PALETTE.MUTED)
-		PALETTE.words(self,"先过好今天。另一位主角的视角会随旅程展开；此时不能切换角色。",Vector2(0,437),1060,23,PALETTE.INK)
-		return
-	PALETTE.words(self,"今天余下的时间",Vector2(0,0),900,32,PALETTE.INK)
-	PALETTE.words(self,"现在 "+GuidanceSystem.time_text(GameState.current_minute)+" · 切换视角共用同一个小镇时钟",Vector2(0,50),1100,21,PALETTE.MUTED)
-	for i in 2:
-		var role := "A" if i==0 else "B"
+	var revealed := CharacterSystem.switch_unlocked()
+	PALETTE.words(self,"今天余下的时间" if revealed else "今天的时间",Vector2.ZERO,1120,32,PALETTE.INK)
+	PALETTE.words(self,"第 %d 天 · %s"%[GameState.current_day,GameState.clock_text()],Vector2(0,48),1120,22,PALETTE.MUTED)
+	var roles: Array=["A","B"] if revealed else [GameState.current_role]
+	for i in roles.size():
+		var role: String=roles[i]
 		var x := float(i)*580
-		PALETTE.words(self,role+" · "+("连续的创作时间" if i==0 else "工作之间的空闲"),Vector2(x,110),540,27,PALETTE.INK)
-		var blocks: Array=GameState.schedule_for(role,5).get("blocks",[])
+		PALETTE.words(self,(role+" · " if revealed else "")+("可以重组的空档" if role=="A" else "已留好的整块时间"),Vector2(x,94),540,26,PALETTE.INK)
+		var blocks: Array=GameState.schedule_for(role,GameState.current_day).get("blocks",[])
 		for j in blocks.size():
 			var span: Array=blocks[j]
 			var past := int(span[1])<=GameState.current_minute
 			var active := GameState.current_minute>=int(span[0]) and not past
-			var face := Panel.new(); face.position=Vector2(x,165+j*57); face.size=Vector2(520,47)
-			face.add_theme_stylebox_override("panel",PALETTE.face(PALETTE.LEMON if active else Color("e1e8e8") if past else PALETTE.CREAM,5)); add_child(face)
-			PALETTE.words(face,GuidanceSystem.time_text(int(span[0]))+" — "+GuidanceSystem.time_text(int(span[1]))+(" · 已经过了" if past else " · 现在可用" if active else " · 稍后"),Vector2(16,9),480,20,PALETTE.MUTED if past else PALETTE.INK)
-		var b := preload("res://scripts/ui/components/solmere_button.gd").new(); b.text=LocalizationSystem.text_with_values("正在使用 %s" if role==GameState.current_role else "以 %s 继续",[role]); b.position=Vector2(x,423); b.size=Vector2(520,54); add_child(b)
-		b.disabled=role==GameState.current_role
-		b.name="Choose_"+role
-		b.pressed.connect(func():
-			if CharacterSystem.switch_character(): rebuild()
-			else: status.text=LocalizationSystem.text("请先收起正在操作的物件。"))
-	status=PALETTE.words(self,"活动前会提示耗时；完整活动必须放得进当前空闲时段。",Vector2(0,494),1120,20,PALETTE.INK)
-	var wait := preload("res://scripts/ui/components/solmere_button.gd").new(); wait.position=Vector2(0,544); wait.size=Vector2(550,52); add_child(wait)
+			PALETTE.words(self,GuidanceSystem.time_text(int(span[0]))+" — "+GuidanceSystem.time_text(int(span[1]))+(" · 已过" if past else " · 现在" if active else ""),Vector2(x,140+j*38),540,21,PALETTE.MUTED if past else PALETTE.INK)
+		if role=="B": PALETTE.words(self,"今天是已排好的轮休日。\n这段完整时间可以留给自己的创作。" if GameState.current_day==5 else "14:00—18:00 饭店固定班次\n去出餐口旁开始，错过不结算本班收入。",Vector2(x,255),540,20,PALETTE.MUTED)
+		if revealed:
+			var button := _button("正在使用 "+role if role==GameState.current_role else "以 "+role+" 继续",Vector2(x,350),Vector2(530,48),func():
+				if CharacterSystem.switch_character(): rebuild()
+				else: status.text="先收起正在操作的物件。")
+			button.disabled=role==GameState.current_role; button.name="Choose_"+role
+	status=PALETTE.words(self,GameState.current_time_guidance(),Vector2(0,414),1120,21,PALETTE.INK)
+	var preview := GameState.flexible_merge_preview()
+	if not preview.is_empty():
+		var join := _button("合并相邻空档",Vector2(0,477),Vector2(450,49),func():
+			var confirm := preload("res://scripts/ui/components/confirm_sheet.gd").new(); confirm.heading="给这一件事多留一点时间"; confirm.description="把 %s 的 %d 分钟私人整理延到 %s。\n总空闲时间不增加，暂时让下一件事等一等。"%[GuidanceSystem.time_text(int(preview.start)),int(preview.gap),GuidanceSystem.time_text(int(preview.moved_to))]; confirm.confirm_text="调整私人安排"; add_child(confirm)
+			confirm.accepted.connect(func():
+				if GameState.combine_flexible_time(): confirm.queue_free(); rebuild()
+				else: confirm.busy=false))
+		join.name="CombineFlexibleTime"
 	var next := CharacterSystem.next_window(GameState.current_role)
-	wait.text=LocalizationSystem.text_with_values("等到 %s 的下一段空闲",[GuidanceSystem.time_text(next)]) if next>=0 else LocalizationSystem.text("今天没有更晚的空闲时段")
-	wait.disabled=next<0
-	wait.name="WaitForWindow"
-	wait.pressed.connect(func():
-		var confirm := preload("res://scripts/ui/components/confirm_sheet.gd").new(); confirm.heading="等一会儿"; confirm.description="时间将从 %s 走到 %s，共 %d 分钟。\n两个人共用的时间都会向前。"%[GuidanceSystem.time_text(GameState.current_minute),GuidanceSystem.time_text(next),next-GameState.current_minute]; confirm.confirm_text="等待"; add_child(confirm)
+	var wait := _button("等到 "+GuidanceSystem.time_text(next)+" 的下一段空闲" if next>=0 else "今天没有更晚的空闲时段",Vector2(0,541),Vector2(550,49),func():
+		var confirm := preload("res://scripts/ui/components/confirm_sheet.gd").new(); confirm.heading="等一会儿"; confirm.description="从 %s 等到 %s，共 %d 分钟。"%[GameState.clock_text(),GuidanceSystem.time_text(next),next-GameState.current_minute]+("\n跨过已答应的饭店班次会记为缺席，没有这班收入。" if GameState.current_role=="B" and next>=1080 and GameState.current_minute<1080 else ""); confirm.confirm_text="等待"; add_child(confirm)
 		confirm.accepted.connect(func():
 			confirm.queue_free()
-			if CharacterSystem.wait_for_window(): rebuild()))
+			if CharacterSystem.wait_for_window(): rebuild()
+			else: status.text="等待暂时未能保存，可以再试一次。"))
+	wait.disabled=next<0; wait.name="WaitForWindow"
+	PALETTE.words(self,"23:59 前到家 · 00:00 换日",Vector2(595,548),535,20,PALETTE.MUTED)
+func _button(text: String, at: Vector2, dimensions: Vector2, action: Callable) -> Button:
+	var result := preload("res://scripts/ui/components/solmere_button.gd").new(); result.text=LocalizationSystem.text(text); result.position=at; result.size=dimensions; add_child(result); result.pressed.connect(action); return result

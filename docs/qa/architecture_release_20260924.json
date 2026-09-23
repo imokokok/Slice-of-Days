@@ -1,0 +1,64 @@
+{
+  "date": "2026-09-24",
+  "baseline": "cc2488af05001c154ce440897430d88368dbfa6c",
+  "engine": "Godot 4.7.2",
+  "isolated_save": true,
+  "results": [
+    {
+      "log": "architecture-state",
+      "result": "ARCHITECTURE_AUDIT: PASS checks=42 failures=0",
+      "sha256": "0264b81d83314bdbebed574ec133e990d325f8a3a7e912812ea197d635fc144d"
+    },
+    {
+      "log": "architecture-homes",
+      "result": "HOME_INTERIORS: 47 checks / 0 failures",
+      "sha256": "e24a489c46fc01be209528c8e1ed006a0201e860fa40f46f91f6e016ba3a6797"
+    },
+    {
+      "log": "architecture-five-day",
+      "result": "FIVE_DAY_FLOW: PASS checks=229 failures=0",
+      "sha256": "c95973b67225be46da8c825638ef853aafe3b8a9a6b2489c47550a17c7a87a68"
+    },
+    {
+      "log": "architecture-identity",
+      "result": "FIVE_DAY_IDENTITY_MECHANICS: PASS checks=36 failures=0",
+      "sha256": "b61a7f306ffdfe7489279caa8ef98c81b7bb65bd6f88a4dc73b2f6ba4bf54b44"
+    },
+    {
+      "log": "architecture-readability",
+      "result": "UI_READABILITY: 108 checks, 0 failures",
+      "sha256": "54c802b2754714172c534065bb4f639f6520b5ba551334f07d7fc0bd6c4f32cd"
+    },
+    {
+      "log": "architecture-packed-state",
+      "result": "ARCHITECTURE_AUDIT: PASS checks=42 failures=0",
+      "sha256": "0264b81d83314bdbebed574ec133e990d325f8a3a7e912812ea197d635fc144d"
+    },
+    {
+      "log": "architecture-packed-readability",
+      "result": "UI_READABILITY: 108 checks, 0 failures",
+      "sha256": "54c802b2754714172c534065bb4f639f6520b5ba551334f07d7fc0bd6c4f32cd"
+    },
+    {
+      "log": "architecture-packed-music",
+      "result": "MUSIC_SOURCE_ROUTE: 8 checks, 0 failures",
+      "sha256": "7e0f011a13964bf690bb6f5053ea3b55c57c6bf53ab9c0efedafcfc28a159d13"
+    },
+    {
+      "log": "architecture-packed-resources",
+      "result": "RESOURCE_INTEGRATION: 204 checks, 0 failures",
+      "sha256": "04b87b2d9bbc4e85e5f8210015a55cbd422a2f677bee8bf7b1c37e368548be65"
+    }
+  ],
+  "files": {
+    "Solmere.exe": {
+      "sha256": "d34d36f3be1a6c49c56525ae86469b92e4f417ddf0b43cf00dd80c385c4b0562",
+      "bytes": 109268480
+    },
+    "Solmere.pck": {
+      "sha256": "e9f4b889bc60b47454e39b56d37826c8d3f8fc28281c90cab4c4ad7250124592",
+      "bytes": 404043180
+    }
+  },
+  "visual_review": "Real window: same front door, mailbox notice body, upstairs room. Both floors verified through actual interaction tests."
+}

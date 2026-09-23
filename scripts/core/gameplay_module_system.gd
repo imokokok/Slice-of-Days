@@ -6,6 +6,7 @@ signal module_completed(role: String, module_id: String, outcome: Dictionary)
 
 const MODULES_PATH := "res://data/gameplay/modules.json"
 const PROTOTYPES_PATH := "res://data/gameplay/module_prototypes.json"
+const COOKING = preload("res://scripts/core/cooking_mechanics.gd")
 
 var modules: Dictionary = {}
 var prototypes: Dictionary = {}
@@ -207,6 +208,10 @@ func choice_interaction_check(module_id: String, choice_id: String, interaction_
 		var forbidden_id := str(forbidden_id_value)
 		if selected_tokens.has(forbidden_id):
 			return {"ok": false, "message": str(selected.get("constraint_note", "当前选择包含不能用于这个结果的项目。"))}
+	if module_id=="cooking":
+		var mechanic: Dictionary=interaction_record.get("mechanic",{})
+		if mechanic.has("phase") and not str(mechanic.get("phase","")).is_empty() and str(mechanic.get("phase","")) not in ["plate","serve"]:
+			return {"ok":false,"message":"先完成备料、下锅、翻拌、尝味和装盘，再决定怎样出餐。"}
 	return {"ok": true, "message": ""}
 
 
@@ -257,7 +262,7 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 		role_results.erase("money")
 		for artifact in results.get("artifacts",[]):
 			if str(artifact.get("collection",""))!="recipes": continue
-			artifact.data.merge({"id":"recipe_"+Crypto.new().generate_random_bytes(12).hex_encode(),"format":"solmere.recipe.v1","author":GameState.current_role,"ingredients":stored_interaction.get("selected_tokens",[]).duplicate(),"heat":float(stored_interaction.get("mechanic",{}).get("heat",0.58)),"notes":"按记录的顺序下锅，温热拌匀。\n这道菜留在今天的公共菜谱里。","strokes":[]},true)
+			artifact.data.merge({"id":"recipe_"+Crypto.new().generate_random_bytes(12).hex_encode(),"format":"solmere.recipe.v1","author":GameState.current_role,"ingredients":stored_interaction.get("selected_tokens",[]).duplicate(),"heat":float(stored_interaction.get("mechanic",{}).get("heat",0.58)),"notes":COOKING.recipe_notes(stored_interaction),"strokes":[]},true)
 	EventSystem.apply_results("module_%s_%s" % [module_id, choice_id], results)
 	EventSystem.apply_results("module_%s_%s" % [module_id, choice_id], role_results)
 	var outcome := {
@@ -266,6 +271,7 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 		"source_event_id": str(GameState.shared_state.get("pending_module", {}).get("source_event_id", "")),
 		"interaction": stored_interaction,
 	}
+	if module_id=="cooking": outcome["craft_grade"]=stored_interaction.get("mechanic",{}).get("grade",{}).duplicate(true)
 	complete(module_id, outcome)
 	if module_id == "cooking": EconomySystem.finish_cooking(outcome, stored_interaction.get("selected_tokens", []))
 	if work_payment > 0:

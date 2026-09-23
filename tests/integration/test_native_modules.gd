@@ -41,7 +41,7 @@ func run() -> void:
 func _exercise(module_id: String, tokens: Array[String], choice_id: String, slider_value: float) -> void:
 	var game_state = root.get_node("GameState")
 	var gameplay = root.get_node("GameplayModuleSystem")
-	game_state.begin_new_game("A")
+	game_state.begin_new_game("B" if module_id=="cooking" else "A")
 	game_state.current_location = {
 		"cooking": "night_market",
 		"sound_sampling": "record_store",
@@ -49,7 +49,7 @@ func _exercise(module_id: String, tokens: Array[String], choice_id: String, slid
 		"optical_illusion": "old_station",
 		"archives": "library",
 	}.get(module_id, "residence")
-	game_state.current_minute = 540
+	game_state.current_minute = 600 if module_id=="cooking" else 540
 	game_state.commit_active_role_state()
 	check(gameplay.begin_session(module_id, "native_test_%s" % module_id), "%s should begin" % module_id)
 	var packed = load("res://scenes/native_module_game.tscn")
@@ -63,12 +63,37 @@ func _exercise(module_id: String, tokens: Array[String], choice_id: String, slid
 	check(scene.module_id == module_id, "%s scene should resolve its pending module" % module_id)
 	for token_id in tokens:
 		scene._toggle_token(token_id)
-	if slider_value >= 0.0:
-		scene.value_slider.value = slider_value
-	scene._perform_primary_action()
+	if module_id=="cooking":
+		scene._perform_primary_action()
+		check(scene.cooking_phase=="prep","Cooking should begin with hands-on preparation")
+		for _step in tokens.size(): scene._choose_prep_option(_step%2)
+		check(scene.cooking_phase=="cook","Prepared ingredients should move to the pan")
+		for token_id in tokens:
+			var token: Dictionary=scene._token_data(token_id)
+			var window: Array=token.get("heat_window",[.42,.7])
+			scene.value_slider.value=(float(window[0])+float(window[1]))*.5
+			scene._toggle_token(token_id)
+			scene._perform_primary_action()
+		for style in ["gentle","fold"]:
+			scene.value_slider.value=.58
+			scene._stir(style)
+		scene._perform_primary_action()
+		check(scene.cooking_phase=="taste","The cook should decide when to taste after enough stirring")
+		var seasoning: String=load("res://scripts/core/cooking_mechanics.gd").seasoning_target(scene._selected_token_data())
+		scene._choose_seasoning(seasoning)
+		scene._choose_plating("space")
+	else:
+		if slider_value >= 0.0:
+			scene.value_slider.value = slider_value
+		scene._perform_primary_action()
 	if module_id == "sound_sampling":
 		await create_timer(2.6).timeout
 	check(scene.stage_ready, "%s mechanic should reach its completion gate" % module_id)
+	if module_id=="cooking":
+		var mechanic: Dictionary=scene._interaction_record().get("mechanic",{})
+		check(int(mechanic.get("stir_count",0))==2,"Cooking should store the player-chosen stir count")
+		check(str(mechanic.get("seasoning",""))!="","Cooking should store the tasting decision")
+		check(str(mechanic.get("plating",""))!="","Cooking should store the plating decision")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		DirAccess.make_dir_recursive_absolute("res://.runtime/handmade-captures")
 		await RenderingServer.frame_post_draw

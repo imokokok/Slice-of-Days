@@ -114,9 +114,22 @@ func run() -> void:
 	var kitchen = current_scene
 	kitchen.set_process(false)
 	for id in ["tomato","herbs","sea_beans"]: kitchen._toggle_token(id)
-	kitchen.value_slider.value = .58
 	kitchen._perform_primary_action()
-	check(kitchen.stage_ready, "Real kitchen selection and heat mechanic allow serving")
+	for _prep in 3: kitchen._choose_prep_option(_prep%2)
+	for id in ["tomato","herbs","sea_beans"]:
+		var token: Dictionary=kitchen._token_data(id)
+		var heat_window: Array=token.get("heat_window",[.42,.70])
+		kitchen.value_slider.value=(float(heat_window[0])+float(heat_window[1]))*.5
+		kitchen._toggle_token(id)
+		kitchen._perform_primary_action()
+	for style in ["gentle","fold"]:
+		kitchen.value_slider.value=.58
+		kitchen._stir(style)
+	kitchen._perform_primary_action()
+	var seasoning: String=load("res://scripts/core/cooking_mechanics.gd").seasoning_target(kitchen._selected_token_data())
+	kitchen._choose_seasoning(seasoning)
+	kitchen._choose_plating("generous")
+	check(kitchen.stage_ready, "Real kitchen preparation, pan rhythm and tasting allow serving")
 	var before_work: int = state.current_minute
 	kitchen._complete_choice("careful_menu")
 	check(kitchen.completed, "Existing native kitchen completes the order")

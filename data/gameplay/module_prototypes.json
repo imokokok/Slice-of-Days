@@ -21,47 +21,128 @@
           {
             "id": "lemon",
             "label": "一袋柠檬",
-            "detail": "明亮，也很容易盖过别的味道"
+            "detail": "明亮，也很容易盖过别的味道",
+            "prep_action": "切开，先只挤出少量汁",
+            "pan_cue": "锅边刚有细小气泡时",
+            "heat_window": [0.34, 0.55],
+            "heat_drop": 0.03,
+            "flavors": ["bright"],
+            "prep_options": [
+              {"id":"squeeze","label":"切开挤汁","detail":"亮味会更直接，适合最后收口。","pan_cue":"火声放轻以后再挤入"},
+              {"id":"slices","label":"留下薄片","detail":"香气会慢慢出来，也会带一点皮的微苦。","pan_cue":"锅边刚有细小气泡时放入"}
+            ]
           },
           {
             "id": "bread",
             "label": "昨天的面包",
-            "detail": "需要被重新处理"
+            "detail": "需要被重新处理",
+            "prep_action": "掰成不规则的小块",
+            "pan_cue": "锅底温热、还没有冒烟时",
+            "heat_window": [0.38, 0.58],
+            "heat_drop": 0.04,
+            "flavors": ["starch", "dry"],
+            "prep_options": [
+              {"id":"large","label":"掰成大块","detail":"里面会保持柔软，适合吸住汤汁。","pan_cue":"汤汁已经热起来时放入"},
+              {"id":"small","label":"撕成小块","detail":"边缘更多，容易变脆也更容易焦。","pan_cue":"锅底温热、还没有冒烟时放入"}
+            ]
           },
           {
             "id": "tomato",
             "label": "熟透的番茄",
-            "detail": "今天不用就会坏"
+            "detail": "今天不用就会坏",
+            "prep_action": "切开，并把流出的汁留下",
+            "pan_cue": "油面开始轻轻波动时",
+            "heat_window": [0.45, 0.68],
+            "heat_drop": 0.09,
+            "flavors": ["bright", "juicy"],
+            "prep_options": [
+              {"id":"keep_juice","label":"保留汁水","detail":"下锅会明显降温，但能留下完整酸甜。","pan_cue":"油面开始轻轻波动时连汁倒入"},
+              {"id":"drain","label":"先沥一点汁","detail":"锅温更稳，味道会更集中。","pan_cue":"锅底出现稳定细响时放入"}
+            ]
           },
           {
             "id": "herbs",
             "label": "窗台香草",
-            "detail": "量不多，但足够改变方向"
+            "detail": "量不多，但足够改变方向",
+            "prep_action": "摘下嫩叶，粗粗撕开",
+            "pan_cue": "把火收小以后",
+            "heat_window": [0.25, 0.48],
+            "heat_drop": 0.02,
+            "flavors": ["fresh", "bright"],
+            "prep_options": [
+              {"id":"tear","label":"粗粗撕开","detail":"叶片完整，香气会在最后才出来。","pan_cue":"把火收小以后放入"},
+              {"id":"chop","label":"切得细一点","detail":"香气来得快，也更容易被高火带走。","pan_cue":"关火前的短暂余温里撒入"}
+            ]
           },
           {
             "id": "cheese",
             "label": "剩下的奶酪",
-            "detail": "成本已经算进昨天"
+            "detail": "成本已经算进昨天",
+            "prep_action": "切成容易融开的薄片",
+            "pan_cue": "锅里还有余温、火声不急时",
+            "heat_window": [0.28, 0.52],
+            "heat_drop": 0.05,
+            "flavors": ["rich", "salty"],
+            "prep_options": [
+              {"id":"slices","label":"切成薄片","detail":"融得均匀，会包住其他材料。","pan_cue":"锅里还有余温、火声不急时铺开"},
+              {"id":"chunks","label":"留成小块","detail":"能吃到奶酪本身，局部味道会更浓。","pan_cue":"准备收火前放入，不要一直翻动"}
+            ]
           },
           {
             "id": "sea_beans",
             "label": "海盐豆罐头",
-            "detail": "咸鲜的奇怪食材，需实际购买。"
+            "detail": "咸鲜的奇怪食材，需实际购买。",
+            "prep_action": "沥掉大部分盐水",
+            "pan_cue": "锅里开始稳定冒泡时",
+            "heat_window": [0.46, 0.68],
+            "heat_drop": 0.08,
+            "flavors": ["salty", "savory"],
+            "prep_options": [
+              {"id":"drain","label":"彻底沥干","detail":"咸味容易控制，豆子的口感更清楚。","pan_cue":"锅里稳定冒泡时放入"},
+              {"id":"keep_brine","label":"留一勺盐水","detail":"能补足汤汁，但后面不宜再急着加盐。","pan_cue":"火声稳定时连一勺盐水加入"}
+            ]
           },
           {
             "id": "star_salt",
             "label": "星形盐片",
-            "detail": "杂货店的奇怪食材，需实际购买。"
+            "detail": "杂货店的奇怪食材，需实际购买。",
+            "prep_action": "捏碎，只留下小小一撮",
+            "pan_cue": "火声最轻的时候",
+            "heat_window": [0.20, 0.42],
+            "heat_drop": 0.01,
+            "flavors": ["salty"],
+            "prep_options": [
+              {"id":"crush","label":"捏成细盐","detail":"容易均匀，也最容易不小心放多。","pan_cue":"火声最轻时用指尖撒入"},
+              {"id":"flakes","label":"保留几片","detail":"入口时才碰到咸味，适合最后点上去。","pan_cue":"关火装盘前再放"}
+            ]
           },
           {
             "id": "sardine",
             "label": "沙丁鱼",
-            "detail": "在海边钓到后带来的鲜鱼。"
+            "detail": "在海边钓到后带来的鲜鱼。",
+            "prep_action": "擦干鱼身，在表皮划两刀",
+            "pan_cue": "锅底热透、还没起烟时",
+            "heat_window": [0.55, 0.74],
+            "heat_drop": 0.12,
+            "flavors": ["rich", "savory"],
+            "prep_options": [
+              {"id":"score","label":"擦干后划刀","detail":"表皮更容易煎香，需要热锅快下。","pan_cue":"锅底热透、还没起烟时皮朝下"},
+              {"id":"gentle","label":"带一点水分","detail":"会更像轻煨，锅温会明显掉下来。","pan_cue":"稳定中火时轻轻放入"}
+            ]
           },
           {
             "id": "sea_bream",
             "label": "金鳍海鲷",
-            "detail": "亲手钓来的鱼，适合配柠檬和香草。"
+            "detail": "亲手钓来的鱼，适合配柠檬和香草。",
+            "prep_action": "擦干鱼身，在厚处浅浅划开",
+            "pan_cue": "锅底热透、油面刚刚展开时",
+            "heat_window": [0.58, 0.76],
+            "heat_drop": 0.14,
+            "flavors": ["rich", "savory"],
+            "prep_options": [
+              {"id":"score","label":"厚处浅浅划开","detail":"受热更均匀，也能保留整鱼形状。","pan_cue":"油面刚展开时把厚的一侧先贴锅"},
+              {"id":"portions","label":"分成两段","detail":"更容易翻动，边缘会多一点焦香。","pan_cue":"锅底热透时分开放入"}
+            ]
           }
         ]
       },

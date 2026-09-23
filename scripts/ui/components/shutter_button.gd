@@ -1,6 +1,6 @@
 extends Button
 func _ready() -> void:
-	text=""; tooltip_text="拍摄"; focus_mode=FOCUS_ALL
+	text=""; tooltip_text=LocalizationSystem.text("拍摄"); focus_mode=FOCUS_ALL
 	for state in ["normal","hover","pressed","focus","disabled"]: add_theme_stylebox_override(state,StyleBoxEmpty.new())
 	for event in ["mouse_entered","mouse_exited","focus_entered","focus_exited","button_down","button_up"]: connect(event,queue_redraw)
 func _draw() -> void:

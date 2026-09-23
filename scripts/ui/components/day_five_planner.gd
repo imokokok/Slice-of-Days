@@ -19,16 +19,16 @@ func rebuild() -> void:
 			var face := Panel.new(); face.position=Vector2(x,165+j*57); face.size=Vector2(520,47)
 			face.add_theme_stylebox_override("panel",PALETTE.face(PALETTE.LEMON if active else Color("e1e8e8") if past else PALETTE.CREAM,5)); add_child(face)
 			PALETTE.words(face,GuidanceSystem.time_text(int(span[0]))+" — "+GuidanceSystem.time_text(int(span[1]))+(" · 已经过了" if past else " · 现在可用" if active else " · 稍后"),Vector2(16,9),480,20,PALETTE.MUTED if past else PALETTE.INK)
-		var b := preload("res://scripts/ui/components/solmere_button.gd").new(); b.text="正在使用 "+role if role==GameState.current_role else "以 "+role+" 继续"; b.position=Vector2(x,423); b.size=Vector2(520,54); add_child(b)
+		var b := preload("res://scripts/ui/components/solmere_button.gd").new(); b.text=LocalizationSystem.text_with_values("正在使用 %s" if role==GameState.current_role else "以 %s 继续",[role]); b.position=Vector2(x,423); b.size=Vector2(520,54); add_child(b)
 		b.disabled=role==GameState.current_role
 		b.name="Choose_"+role
 		b.pressed.connect(func():
 			if CharacterSystem.switch_character(): rebuild()
-			else: status.text="请先收起正在操作的物件。")
+			else: status.text=LocalizationSystem.text("请先收起正在操作的物件。"))
 	status=PALETTE.words(self,"活动前会提示耗时；完整活动必须放得进当前空闲时段。",Vector2(0,494),1120,20,PALETTE.INK)
 	var wait := preload("res://scripts/ui/components/solmere_button.gd").new(); wait.position=Vector2(0,544); wait.size=Vector2(550,52); add_child(wait)
 	var next := CharacterSystem.next_window(GameState.current_role)
-	wait.text="等到 "+GuidanceSystem.time_text(next)+" 的下一段空闲" if next>=0 else "今天没有更晚的空闲时段"
+	wait.text=LocalizationSystem.text_with_values("等到 %s 的下一段空闲",[GuidanceSystem.time_text(next)]) if next>=0 else LocalizationSystem.text("今天没有更晚的空闲时段")
 	wait.disabled=next<0
 	wait.name="WaitForWindow"
 	wait.pressed.connect(func():

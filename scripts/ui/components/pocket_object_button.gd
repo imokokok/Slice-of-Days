@@ -9,6 +9,7 @@ var lift := 0.0
 var feedback: Tween
 
 func _ready() -> void:
+	title=LocalizationSystem.text(title)
 	texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
 	add_to_group("pocket_object_button")
 	focus_mode=FOCUS_ALL

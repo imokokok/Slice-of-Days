@@ -52,7 +52,7 @@ func _ready() -> void:
 
 func _button(parent: Node, text: String, callback: Callable) -> Button:
 	var b := ButtonComponent.new()
-	b.variant="camera"; b.text=text
+	b.variant="camera"; b.text=LocalizationSystem.text(text)
 	b.add_theme_font_size_override("font_size",22)
 	b.custom_minimum_size=Vector2(96,48)
 	parent.add_child(b)
@@ -66,7 +66,7 @@ func _button(parent: Node, text: String, callback: Callable) -> Button:
 
 func _label(parent: Node, text: String, font_size := 20) -> Label:
 	var label := Label.new()
-	label.text=text
+	label.text=LocalizationSystem.text(text)
 	label.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	label.add_theme_font_override("font",PaperLanguage.body_font)
 	label.add_theme_font_size_override("font_size",font_size)
@@ -157,10 +157,10 @@ func select_nebula(index: int) -> void:
 	heading.text=entry.title+"  /  "+entry.subtitle
 	description.text=str(entry.get("introduction",entry.treatment))
 	if is_instance_valid(science_panel): science_panel.queue_free(); science_panel=null
-	credits.text="[url="+entry.source+"]"+entry.credit+"[/url]\n"+("照片 [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url] · " if not str(entry.image).is_empty() else "")+"Solmere：空间呈现与着色；非机构背书"
+	credits.text="[url="+entry.source+"]"+LocalizationSystem.text(entry.credit)+"[/url]\n"+(LocalizationSystem.text("照片")+" [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url] · " if not str(entry.image).is_empty() else "")+LocalizationSystem.text("Solmere：空间呈现与着色；非机构背书")
 	for i in tabs.size(): tabs[i].selected=i==selected_index
 	view_age=0
-	hint.text="左键拖动查看照片视角 · 滚轮缩放 · 单击显示 / 收起工具"
+	hint.text=LocalizationSystem.text("左键拖动查看照片视角 · 滚轮缩放 · 单击显示 / 收起工具")
 	interface_age=0
 	update_camera()
 
@@ -256,7 +256,7 @@ func _toggle_science() -> void:
 	var attribution := RichTextLabel.new(); attribution.bbcode_enabled=true; attribution.fit_content=true; attribution.scroll_active=false
 	attribution.add_theme_font_override("normal_font",PaperLanguage.body_font); attribution.add_theme_font_size_override("normal_font_size",18)
 	attribution.text=credits.text; attribution.meta_clicked.connect(func(url): OS.shell_open(str(url))); rows.add_child(attribution)
-	var source := LinkButton.new(); source.text="阅读 NASA / ESA 原始资料 ↗"; source.add_theme_font_size_override("font_size",21)
+	var source := LinkButton.new(); source.text=LocalizationSystem.text("阅读 NASA / ESA 原始资料 ↗"); source.add_theme_font_size_override("font_size",21)
 	source.pressed.connect(func():OS.shell_open(str(entry.get("science_source",entry.source)))); rows.add_child(source)
 	close.grab_focus()
 
@@ -306,15 +306,15 @@ func collect() -> void:
 				pending_image=null
 				finish_button.show()
 				ObservatoryAudio.feedback(true)
-				hint.text="已收入相册，也可以放进七天作品集。"
+				hint.text=LocalizationSystem.text("已收入相册，也可以放进七天作品集。")
 				_set_interface_visible(true)
 				view_age=0
 			else:
 				GameState.load_save_data(snapshot)
-				hint.text="画面已保留，存档暂时没写入。点击重试保存。"
-		else: hint.text="照片信息未写入；画面已保留，点击重试。"
+				hint.text=LocalizationSystem.text("画面已保留，存档暂时没写入。点击重试保存。")
+		else: hint.text=LocalizationSystem.text("照片信息未写入；画面已保留，点击重试。")
 	else: hint.text=library.last_error
-	capture_button.text="重试保存星光" if pending_image!=null else "再留一张"
+	capture_button.text=LocalizationSystem.text("重试保存星光" if pending_image!=null else "再留一张")
 	capture_button.disabled=false
 	is_capturing=false
 	_set_interface_visible(true)

@@ -156,7 +156,7 @@ func _activate_photo(item: Dictionary) -> void:
 		queue_free()
 		return
 	var dialog := AcceptDialog.new()
-	dialog.title = str(item.get("subject_name", item.get("title", "照片")))
+	dialog.title = LocalizationSystem.text(str(item.get("subject_name", item.get("title", "照片"))))
 	dialog.min_size = Vector2i(860, 610)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 12)

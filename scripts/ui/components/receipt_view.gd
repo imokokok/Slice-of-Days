@@ -21,13 +21,13 @@ func _ready() -> void:
 	rows.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; sheet.add_child(rows)
 	var stack := VBoxContainer.new(); stack.size_flags_horizontal=SIZE_EXPAND_FILL; stack.add_theme_constant_override("separation",12); rows.add_child(stack)
 	for line in receipt.get("line_items",[]):
-		var text := Label.new(); text.text="%s × %d\n%d 元" % [str(line.name),int(line.quantity),int(line.total)]
+		var text := Label.new(); text.text=LocalizationSystem.text("%s × %d\n%d 元" % [LocalizationSystem.text(str(line.name)),int(line.quantity),int(line.total)])
 		text.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; text.size_flags_horizontal=SIZE_EXPAND_FILL; stack.add_child(text)
 	P.words(sheet,"整理旧货 · %d 分钟" % int(receipt.help_minutes) if receipt.get("kind","")=="handover" else "实付  %d 元" % int(receipt.get("total",0)),Vector2(112,425),380,31,P.SEA)
 	P.words(sheet,"付款后余额  %d 元" % int(receipt.get("balance",0)),Vector2(112,473),380,18,P.MUTED)
 	P.words(sheet,collection_note if not collection_note.is_empty() else "小票已存入生活记录的素材夹。\n摄影柜台也能再次查看。",Vector2(112,533),377,19,P.INK)
 	var close := preload("res://scripts/ui/components/solmere_button.gd").new()
-	close.text="收好小票  ·  "+SettingsSystem.binding_text("ui_cancel"); close.position=Vector2(110,664); close.size=Vector2(385,52)
+	close.text=LocalizationSystem.text("收好小票")+"  ·  "+SettingsSystem.binding_text("ui_cancel"); close.position=Vector2(110,664); close.size=Vector2(385,52)
 	close.pressed.connect(queue_free); sheet.add_child(close); close.grab_focus()
 	if not SettingsSystem.reduced_motion():
 		sheet.position.y+=12; sheet.modulate.a=0

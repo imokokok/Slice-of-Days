@@ -26,7 +26,7 @@ func _ready() -> void:
 	recorder=FieldRecorder.new(); add_child(recorder)
 	recorder.input_gain=float(GameState.artifacts.get("recorder_gain",1.0))
 	playback=AudioStreamPlayer.new(); playback.bus="Music"; add_child(playback)
-	playback.finished.connect(func(): play_button.text="试听")
+	playback.finished.connect(func(): play_button.text=LocalizationSystem.text("试听"))
 	# Copy the actual scene before the recorder body draws. The view below
 	# reads this frame, so it cannot recursively photograph its own screen.
 	var world_frame := BackBufferCopy.new(); world_frame.copy_mode=BackBufferCopy.COPY_MODE_VIEWPORT
@@ -54,10 +54,10 @@ func _ready() -> void:
 	_button("边走边录",Vector2(703,269),Vector2(155,40),_toggle_compact)
 	var knob=preload("res://scripts/ui/components/recorder_knob.gd").new()
 	knob.position=Vector2(831,343); knob.size=Vector2(84,84); knob.name="RecordingGain"; face.add_child(knob)
-	knob.value=recorder.input_gain; knob.accessibility_name="录音增益"
+	knob.value=recorder.input_gain; knob.accessibility_name=LocalizationSystem.text("录音增益")
 	var gain_caption=p.words(face,"增益 × %.2f"%knob.value,Vector2(811,431),145,17)
 	knob.value_changed.connect(func(v: float):
-		recorder.input_gain=v; GameState.artifacts.recorder_gain=v; gain_caption.text="增益 × %.2f"%v)
+		recorder.input_gain=v; GameState.artifacts.recorder_gain=v; gain_caption.text=LocalizationSystem.text("增益 × %.2f"%v))
 	compact_button=preload("res://scripts/ui/components/solmere_button.gd").new()
 	compact_button.text="录音机 · 展开"; compact_button.variant="paper"; compact_button.position=Vector2(1300,775); compact_button.size=Vector2(258,68); compact_button.hide(); add_child(compact_button)
 	compact_button.pressed.connect(_toggle_compact)
@@ -65,8 +65,8 @@ func _ready() -> void:
 		levels.append(peak)
 		if levels.size()>95: levels.pop_front()
 		status.text=LocalizationSystem.text("● %02d:%02d   %s · %d 个标记" % [int(seconds)/60,int(seconds)%60,TravelSystem.location_name(GameState.current_location),marks.size()])
-		compact_button.text="● %02d:%02d · 展开录音机"%[int(seconds)/60,int(seconds)%60]
-		record_button.text="■ 停止并保存"; mark_button.disabled=false
+		compact_button.text=LocalizationSystem.text("● %02d:%02d · 展开录音机"%[int(seconds)/60,int(seconds)%60])
+		record_button.text=LocalizationSystem.text("■ 停止并保存"); mark_button.disabled=false
 		queue_redraw())
 	recorder.failed.connect(func(message: String): status.text=LocalizationSystem.text(message); close_after=false; record_button.text="● 重新录音"; mark_button.disabled=true)
 	recorder.completed.connect(_complete)
@@ -108,10 +108,10 @@ func _save(warning := "") -> void:
 	pending_wav = null
 	pending_sample={}
 	saved = true
-	record_button.text="● 再录一段"; mark_button.disabled=true
+	record_button.text=LocalizationSystem.text("● 再录一段"); mark_button.disabled=true
 	status.text = LocalizationSystem.text("已保存到录音机\n"+warning)
 	if close_after: queue_free()
-	else: status.text="已保存到录音机，可以继续录制。"
+	else: status.text=LocalizationSystem.text("已保存到录音机，可以继续录制。")
 
 func _dismiss_saved() -> void:
 	await get_tree().create_timer(0.8).timeout

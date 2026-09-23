@@ -14,7 +14,7 @@ func _ready() -> void:
 	add_child(card)
 	card.configure(stage,npc)
 	card.speaker_label.text=LocalizationSystem.text("问一件事 · %d分钟" % int(MetaExperience.catalog.timing.ask_minutes))
-	card.hint_label.text=SettingsSystem.binding_text("ui_accept")+" 回应 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
+	card.hint_label.text=SettingsSystem.binding_text("ui_accept")+" "+LocalizationSystem.text("回应")+" · "+SettingsSystem.binding_text("ui_cancel")+" "+LocalizationSystem.text("离开")
 	_show_questions(false)
 
 func _show_questions(interests: bool) -> void:

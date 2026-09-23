@@ -173,7 +173,7 @@ func _receipt_history() -> void:
 		if str(entry.get("category",""))!="photography" and str(entry.get("kind",""))!="handover": continue
 		count+=1
 		var b := preload("res://scripts/ui/components/solmere_button.gd").new(); b.alignment=HORIZONTAL_ALIGNMENT_LEFT
-		b.text="DAY %02d · %s · %s  ›" % [int(entry.day),str(entry.line_items[0].name),"交换凭条" if entry.get("kind","")=="handover" else "%d 元" % int(entry.total)]
+		b.text=LocalizationSystem.text("DAY %02d · %s · %s  ›" % [int(entry.day),LocalizationSystem.text(str(entry.line_items[0].name)),LocalizationSystem.text("交换凭条" if entry.get("kind","")=="handover" else "%d 元" % int(entry.total))])
 		b.custom_minimum_size.y=58; b.pressed.connect(_show_receipt.bind(entry,"")); list.add_child(b)
 	if count==0: label(list,"付款后，小票会留在这里，也会收进生活记录。",Vector2.ZERO,Vector2(1030,80),22)
 

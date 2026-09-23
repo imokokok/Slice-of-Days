@@ -26,13 +26,13 @@ func _ready() -> void:
 
 func _btn(text: String, at: Vector2, extent: Vector2, action: Callable, variant := "quiet") -> Button:
 	var b := preload("res://scripts/ui/components/solmere_button.gd").new()
-	b.text=text; b.position=at; b.size=extent; b.variant=variant; b.pressed.connect(action); body.add_child(b)
+	b.text=LocalizationSystem.text(text); b.position=at; b.size=extent; b.variant=variant; b.pressed.connect(action); body.add_child(b)
 	return b
 
 func _remember_draft() -> bool:
 	if not editing: return true
 	if not BOOK.save_draft(_draft()):
-		message.text="草稿还没能保存，请稍后重试。"
+		message.text=LocalizationSystem.text("草稿还没能保存，请稍后重试。")
 		return false
 	return true
 
@@ -97,7 +97,7 @@ func _build() -> void:
 		if section=="mine":
 			_btn("编辑这一页",Vector2(225,494),Vector2(225,43),func():
 				if not GameState.artifacts.get("recipe_draft",{}).is_empty():
-					message.text="先继续并保存已有草稿，再编辑另一页。"; return
+					message.text=LocalizationSystem.text("先继续并保存已有草稿，再编辑另一页。"); return
 				ingredients=chosen.ingredients.duplicate(); heat=float(chosen.heat); editing=true; _build())
 			_btn("放进公共菜谱",Vector2(454,494),Vector2(256,43),func(): message.text=str(BOOK.save_recipe(chosen,true).message))
 	var new_label := "继续未写完的草稿" if not GameState.artifacts.get("recipe_draft",{}).is_empty() else "记下手边这道菜"
@@ -105,10 +105,10 @@ func _build() -> void:
 
 func _editor() -> void:
 	P.words(body,"把这道菜留下来",Vector2(225,143),475,31)
-	title_field=LineEdit.new(); title_field.placeholder_text="菜名"; title_field.text=str(chosen.get("title","")); title_field.position=Vector2(225,212); title_field.size=Vector2(475,50); title_field.max_length=48; body.add_child(title_field)
-	author_field=LineEdit.new(); author_field.placeholder_text="署名"; author_field.text=str(chosen.get("author",GameState.current_role)); author_field.position=Vector2(225,280); author_field.size=Vector2(475,50); author_field.max_length=40; body.add_child(author_field)
+	title_field=LineEdit.new(); title_field.placeholder_text=LocalizationSystem.text("菜名"); title_field.text=str(chosen.get("title","")); title_field.position=Vector2(225,212); title_field.size=Vector2(475,50); title_field.max_length=48; body.add_child(title_field)
+	author_field=LineEdit.new(); author_field.placeholder_text=LocalizationSystem.text("署名"); author_field.text=str(chosen.get("author",GameState.current_role)); author_field.position=Vector2(225,280); author_field.size=Vector2(475,50); author_field.max_length=40; body.add_child(author_field)
 	# Leave the printed botanical corner below y=525 unobstructed.
-	notes_field=TextEdit.new(); notes_field.name="RecipeNotes"; notes_field.placeholder_text="食材顺序、火候、想留给做菜人的话……"; notes_field.text=str(chosen.get("notes","")); notes_field.position=Vector2(225,350); notes_field.size=Vector2(475,165); notes_field.wrap_mode=TextEdit.LINE_WRAPPING_BOUNDARY; body.add_child(notes_field)
+	notes_field=TextEdit.new(); notes_field.name="RecipeNotes"; notes_field.placeholder_text=LocalizationSystem.text("食材顺序、火候、想留给做菜人的话……"); notes_field.text=str(chosen.get("notes","")); notes_field.position=Vector2(225,350); notes_field.size=Vector2(475,165); notes_field.wrap_mode=TextEdit.LINE_WRAPPING_BOUNDARY; body.add_child(notes_field)
 	notes_field.text_changed.connect(func():
 		if notes_field.text.length()>1600: notes_field.text=notes_field.text.left(1600))
 	for i in ingredients.size(): ART.picture(body,str(ingredients[i]),Vector2(851+i*165,150),Vector2(145,110))
@@ -119,7 +119,7 @@ func _editor() -> void:
 	_btn("保存这一页",Vector2(1100,752),Vector2(294,48),_save,"camera")
 	_btn("收好草稿并返回",Vector2(223,752),Vector2(330,48),_back,"camera")
 	P.words(body,"当前食材 %d / 3 · 火候 %d%%" % [ingredients.size(),roundi(heat*100)],Vector2(242,710),452,18,P.CREAM)
-	message.text="翻页或收起时会保存草稿；写好菜名和署名后，可保存为正式菜谱。"
+	message.text=LocalizationSystem.text("翻页或收起时会保存草稿；写好菜名和署名后，可保存为正式菜谱。")
 
 func _save() -> void:
 	var result := BOOK.save_recipe(_draft(),false,true)
@@ -136,7 +136,7 @@ func _file(importing: bool) -> void:
 		if importing:
 			var result := BOOK.import_recipe(path); message.text=str(result.message)
 			if result.ok: chosen=result.recipe; section="shared"; _build()
-		else: message.text="已导出，可把菜谱文件交给朋友。" if BOOK.export_recipe(chosen,path) else "导出失败，原菜谱仍保留。"
+		else: message.text=LocalizationSystem.text("已导出，可把菜谱文件交给朋友。" if BOOK.export_recipe(chosen,path) else "导出失败，原菜谱仍保留。")
 		dialog.queue_free())
 	dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(900,600))
 

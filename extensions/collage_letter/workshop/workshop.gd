@@ -161,7 +161,7 @@ func _ready() -> void:
 	add_child(papers)
 	main_paper = Paper.new()
 	main_paper.object_id = "letter"
-	main_paper.title = "信纸"
+	main_paper.title = LocalizationSystem.text("信纸")
 	main_paper.set_image(_blank_paper(Vector2i(440,390)))
 	main_paper.position = Vector2(807,605)
 	main_paper.rotation = -0.018
@@ -248,7 +248,7 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _caption(text: String, point: Vector2, size: int = 18, color: Color = INK) -> void:
-	draw_string(font, point, text, HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
+	draw_string(font, point, LocalizationSystem.text(text), HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
 
 func _sprite(id: String, rect: Rect2, tint: Color = Color.WHITE) -> void:
 	if sprites.has(id): draw_texture_rect(sprites[id],rect,false,tint)
@@ -285,7 +285,7 @@ func _paper_style() -> StyleBoxFlat:
 
 func _label(text: String, rect: Rect2, size: int = 18) -> Label:
 	var label := Label.new()
-	label.text = text
+	label.text = LocalizationSystem.text(text)
 	label.position = rect.position
 	label.size = rect.size
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -298,7 +298,7 @@ func _label(text: String, rect: Rect2, size: int = 18) -> Label:
 
 func _button(text: String, rect: Rect2, callback: Callable) -> Button:
 	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
-	button.variant="paper"; button.text=text; button.position=rect.position; button.size=rect.size
+	button.variant="paper"; button.text=LocalizationSystem.text(text); button.position=rect.position; button.size=rect.size
 	button.pressed.connect(callback); ui.add_child(button); button.add_theme_font_size_override("font_size",17)
 	return button
 

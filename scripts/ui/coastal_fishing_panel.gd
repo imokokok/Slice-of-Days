@@ -33,7 +33,7 @@ func _ready() -> void:
 	sea_view.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; sea_view.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	sea_view.set_anchors_and_offsets_preset(PRESET_FULL_RECT); sea_view.mouse_filter=MOUSE_FILTER_IGNORE; add_child(sea_view)
 	sea_view.modulate=preload("res://scripts/ui/street_composition.gd").daylight(GameState.current_minute)
-	var caption := Panel.new(); caption.position=Vector2(54,43); caption.size=Vector2(420,62)
+	var caption := Panel.new(); caption.position=Vector2(54,43); caption.size=Vector2(650,62)
 	caption.add_theme_stylebox_override("panel",P.face(P.CREAM,7,0)); caption.mouse_filter=MOUSE_FILTER_IGNORE; add_child(caption)
 	P.words(self,("港湾" if GameState.current_location=="port" else "观景台下")+" · 海边钓位",Vector2(76,54),800,31,P.INK)
 	rod=ART.picture(self,"rod_clean",Vector2(60,270),Vector2(600,397))
@@ -48,41 +48,41 @@ func _ready() -> void:
 	keep_button=_button("带回厨房",Vector2(633,689),Vector2(370,50),func():_resolve(true))
 	release_button=_button("放回海里",Vector2(1040,689),Vector2(370,50),func():_resolve(false))
 	var relaxed := preload("res://scripts/ui/components/solmere_button.gd").new()
-	relaxed.text="从容收线：开" if bool(FISH.state().relaxed) else "从容收线：关"
+	relaxed.text=LocalizationSystem.text("从容收线：开" if bool(FISH.state().relaxed) else "从容收线：关")
 	relaxed.position=Vector2(1205,56); relaxed.size=Vector2(275,48); relaxed.variant="paper"; relaxed.toggle_mode=true
 	relaxed.button_pressed=bool(FISH.state().relaxed); add_child(relaxed)
 	relaxed.toggled.connect(func(value: bool):
 		var previous: bool=FISH.state().relaxed; FISH.state().relaxed=value; GameState.commit_active_role_state()
 		if not SaveManager.save_or_report("垂钓偏好保存失败"): FISH.state().relaxed=previous; relaxed.set_pressed_no_signal(previous); relaxed.selected=previous
-		relaxed.text="从容收线：开" if bool(FISH.state().relaxed) else "从容收线：关"
+		relaxed.text=LocalizationSystem.text("从容收线：开" if bool(FISH.state().relaxed) else "从容收线：关")
 	)
 	meter=Control.new(); meter.mouse_filter=MOUSE_FILTER_IGNORE; meter.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(meter); meter.draw.connect(_draw_meter)
 	if not FISH.state().pending.is_empty(): fish=FISH.state().pending.duplicate(true); phase=Phase.LANDED; _show_fish()
 	_refresh(); cast_button.grab_focus()
 	_button("鱼获与海边笔记",Vector2(76,140),Vector2(310,48),_open_journal).name="OpenFishJournal"
 func _button(text: String, at: Vector2, extent: Vector2, action: Callable) -> Button:
-	var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.text=text; button.position=at; button.size=extent; button.pressed.connect(action); ui.add_child(button); return button
+	var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.text=LocalizationSystem.text(text); button.position=at; button.size=extent; button.pressed.connect(action); ui.add_child(button); return button
 func _act() -> void:
 	match phase:
 		Phase.READY, Phase.ESCAPED:
 			var result := FISH.begin_cast()
-			if not result.ok: status.text=str(result.message); return
+			if not result.ok: status.text=LocalizationSystem.text(str(result.message)); return
 			fish=result.fish; phase=Phase.WAITING; timer=randf_range(3.0,6.0); progress=0; elapsed=0; misses=0
-			status.text="浮漂轻轻晃着……"; guide.text="等它真正沉下去。可以随时收竿离开。"
+			status.text=LocalizationSystem.text("浮漂轻轻晃着……"); guide.text=LocalizationSystem.text("等它真正沉下去。可以随时收竿离开。")
 			_rod_motion(-.045)
 		Phase.WAITING:
-			phase=Phase.ESCAPED; status.text="提得太早，水面安静下来。"; guide.text="看见浮漂下沉、听到提示，再提竿。"
+			phase=Phase.ESCAPED; status.text=LocalizationSystem.text("提得太早，水面安静下来。"); guide.text=LocalizationSystem.text("看见浮漂下沉、听到提示，再提竿。")
 		Phase.BITE:
-			phase=Phase.REELING; elapsed=0; target=randf_range(.38,.72); status.text="咬住了，慢慢收线。"
-			guide.text="指针进黄色区间时点收线。错过会松线；别急，可以等下一圈。"
+			phase=Phase.REELING; elapsed=0; target=randf_range(.38,.72); status.text=LocalizationSystem.text("咬住了，慢慢收线。")
+			guide.text=LocalizationSystem.text("指针进黄色区间时点收线。错过会松线；别急，可以等下一圈。")
 			WorldSound.play_detail(true)
 		Phase.REELING:
 			var width: float=float(fish.window)*(1.55 if bool(FISH.state().relaxed) else 1.0)
 			if absf(cursor-target)<width*.5:
-				progress=minf(1,progress+.27); target=randf_range(.25,.75); status.text="线绷得刚刚好。"; _rod_motion(-.07); WorldSound.play_detail(true)
+				progress=minf(1,progress+.27); target=randf_range(.25,.75); status.text=LocalizationSystem.text("线绷得刚刚好。"); _rod_motion(-.07); WorldSound.play_detail(true)
 			else:
-				progress=maxf(0,progress-.12); misses+=1; status.text="松一点，等下一圈。"
-				if misses>=5 and not bool(FISH.state().relaxed): phase=Phase.ESCAPED; status.text="鱼挣脱了。"; guide.text="海里还有下一次相遇。"
+				progress=maxf(0,progress-.12); misses+=1; status.text=LocalizationSystem.text("松一点，等下一圈。")
+				if misses>=5 and not bool(FISH.state().relaxed): phase=Phase.ESCAPED; status.text=LocalizationSystem.text("鱼挣脱了。"); guide.text=LocalizationSystem.text("海里还有下一次相遇。")
 			if progress>=1: _land()
 	_refresh()
 func _process(delta: float) -> void:
@@ -98,8 +98,8 @@ func _process(delta: float) -> void:
 		timer-=delta
 		if timer<=0:
 			if phase==Phase.WAITING:
-				phase=Phase.BITE; timer=3.6 if bool(FISH.state().relaxed) else 2.4; status.text="浮漂沉下去了！"; guide.text="现在提竿。"; _rod_motion(-.1); WorldSound.play_detail(true)
-			else: phase=Phase.ESCAPED; status.text="鱼游走了。"; guide.text="下次在浮漂沉下去时提竿。"
+				phase=Phase.BITE; timer=3.6 if bool(FISH.state().relaxed) else 2.4; status.text=LocalizationSystem.text("浮漂沉下去了！"); guide.text=LocalizationSystem.text("现在提竿。"); _rod_motion(-.1); WorldSound.play_detail(true)
+			else: phase=Phase.ESCAPED; status.text=LocalizationSystem.text("鱼游走了。"); guide.text=LocalizationSystem.text("下次在浮漂沉下去时提竿。")
 			_refresh()
 	if phase==Phase.REELING:
 		elapsed+=delta
@@ -111,30 +111,30 @@ func _land() -> void:
 	phase=Phase.LANDED
 	if FISH.land(fish): _show_fish()
 	else:
-		status.text="没能保存鱼获，点下方重试。"
-		cast_button.text="重试保存鱼获"
+		status.text=LocalizationSystem.text("没能保存鱼获，点下方重试。")
+		cast_button.text=LocalizationSystem.text("重试保存鱼获")
 	_refresh()
 func _show_fish() -> void:
 	if is_instance_valid(catch_art): catch_art.queue_free()
 	catch_art=ART.picture(self,str(fish.id),Vector2(850,295),Vector2(450,220))
 	var row := FISH.species(str(fish.id))
-	status.text="%s · %.1f 厘米 · %s" % [row.get("name",fish.name),float(fish.length_cm),FISH.size_description(fish)]
-	guide.text="常见 %.0f–%.0f 厘米。收下可做料理；放生同样留下观察记录。" % [float(row.get("common_min_cm",0)),float(row.get("common_max_cm",0))]
+	status.text=LocalizationSystem.text("%s · %.1f 厘米 · %s" % [LocalizationSystem.text(row.get("name",fish.name)),float(fish.length_cm),LocalizationSystem.text(FISH.size_description(fish))])
+	guide.text=LocalizationSystem.text("常见 %.0f–%.0f 厘米。收下可做料理；放生同样留下观察记录。" % [float(row.get("common_min_cm",0)),float(row.get("common_max_cm",0))])
 	keep_button.call_deferred("grab_focus")
 func _resolve(keep: bool) -> void:
 	if FISH.state().pending.is_empty():
-		if not FISH.land(fish): status.text="还没能存好，请重试。"; return
+		if not FISH.land(fish): status.text=LocalizationSystem.text("还没能存好，请重试。"); return
 	var result := FISH.resolve(keep)
-	status.text=str(result.message)
+	status.text=LocalizationSystem.text(str(result.message))
 	if result.ok:
-		phase=Phase.READY; fish={}; guide.text="鱼获记录与随身包已经保存。"
+		phase=Phase.READY; fish={}; guide.text=LocalizationSystem.text("鱼获记录与随身包已经保存。")
 		if is_instance_valid(catch_art): catch_art.queue_free()
 	_refresh()
 func _refresh() -> void:
 	if is_instance_valid(bobber): bobber.visible=phase!=Phase.LANDED
 	keep_button.visible=phase==Phase.LANDED; release_button.visible=phase==Phase.LANDED
 	cast_button.visible=phase!=Phase.LANDED
-	cast_button.text={Phase.READY:"抛竿 · 10 分钟",Phase.WAITING:"提竿（还没有咬钩）",Phase.BITE:"提竿！",Phase.REELING:"收线",Phase.ESCAPED:"再抛一竿 · 10 分钟"}.get(phase,"")
+	cast_button.text=LocalizationSystem.text({Phase.READY:"抛竿 · 10 分钟",Phase.WAITING:"提竿（还没有咬钩）",Phase.BITE:"提竿！",Phase.REELING:"收线",Phase.ESCAPED:"再抛一竿 · 10 分钟"}.get(phase,""))
 	if phase in [Phase.BITE,Phase.REELING]: cast_button.text+=" · "+SettingsSystem.binding_text("fishing_action")
 	if is_instance_valid(meter): meter.queue_redraw()
 func _rod_motion(angle: float) -> void:
@@ -168,7 +168,7 @@ func _draw_meter() -> void:
 	meter.draw_line(Vector2(642,730),Vector2(642+progress*790,730),P.SAGE,4,true)
 func _leave() -> void:
 	if phase==Phase.LANDED and FISH.state().pending.is_empty() and not FISH.land(fish):
-		status.text="魚获还没能存好，请稍后收竿。"; return
+		status.text=LocalizationSystem.text("魚获还没能存好，请稍后收竿。"); return
 	queue_free()
 func _unhandled_input(event: InputEvent) -> void:
 	if is_instance_valid(journal): return

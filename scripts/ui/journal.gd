@@ -38,7 +38,14 @@ func _build_ui() -> void:
 
 	if GameState.current_role == "A": _build_pocket()
 	else: _text_panel(Vector2(80,125),Vector2(710,710),"Notebook / 时间与已知信息",_today_text() + "\n\n" + _planning_text())
-	_text_panel(Vector2(810, 125), Vector2(710, 710), "沿途留下的东西", _memory_text() + "\n\n旧日记录（未经本次核实）\n" + _fact_text() + "\n\n" + _traces_text())
+	var memory_sections: Array[String] = [
+		LocalizationSystem.text(_memory_text()),
+		LocalizationSystem.text("旧日记录（未经本次核实）"),
+		LocalizationSystem.text(_fact_text()),
+	]
+	var traces := LocalizationSystem.text(_traces_text())
+	if not traces.is_empty(): memory_sections.append(traces)
+	_text_panel(Vector2(810, 125), Vector2(710, 710), "沿途留下的东西", "\n\n".join(memory_sections))
 
 func _today_text() -> String:
 	var lines: Array[String] = []

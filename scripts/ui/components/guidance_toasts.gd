@@ -23,8 +23,8 @@ func _process(delta: float) -> void:
 	if current.is_empty():
 		current=GuidanceSystem.take_feedback()
 		if current.is_empty(): return
-		heading.text=str(current.get("heading","刚刚发生"))
-		words.text=str(current.text); age=0; entrance_age=0; card.show()
+		heading.text=LocalizationSystem.text(str(current.get("heading","刚刚发生")))
+		words.text=LocalizationSystem.text(str(current.text)); age=0; entrance_age=0; card.show()
 		var actionable: bool=not current.get("target",{}).is_empty()
 		card.focus_mode=FOCUS_ALL if actionable else FOCUS_NONE
 		card.mouse_filter=MOUSE_FILTER_STOP if actionable else MOUSE_FILTER_IGNORE

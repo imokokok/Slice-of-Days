@@ -175,7 +175,7 @@ func _build_ui() -> void:
 	devices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	devices.clip_text = true
 	devices.item_selected.connect(func(index: int) -> void:
-		get_node("/root/SoundSettings").select_input(devices.get_item_text(index)))
+		get_node("/root/SoundSettings").select_input(str(devices.get_item_metadata(index))))
 	device_row.add_child(devices)
 	refresh_button = _button("刷新 / 重试", _refresh_devices)
 	device_row.add_child(refresh_button)
@@ -305,10 +305,11 @@ func _exit_tree() -> void:
 func _refresh_devices() -> void:
 	devices.clear()
 	for device in AudioServer.get_input_device_list():
-		devices.add_item(device)
+		devices.add_item(_device_display_name(device))
+		devices.set_item_metadata(devices.item_count - 1, device)
 	var selected_device: String = get_node("/root/SoundSettings").input_device
 	for index in devices.item_count:
-		if devices.get_item_text(index) == selected_device: devices.select(index)
+		if str(devices.get_item_metadata(index)) == selected_device: devices.select(index)
 	device_row.visible = source_picker.selected == 1
 	source_hint.text = LocalizationSystem.text("直接录下当前地点的游戏背景声与互动音效，不启用麦克风。" if source_picker.selected == 0 else "仅按下 REC 时启用麦克风。建议戴耳机录制人声。")
 	if source_picker.selected == 0:
@@ -316,7 +317,7 @@ func _refresh_devices() -> void:
 	elif devices.item_count == 0:
 		status_label.text = LocalizationSystem.text("MICROPHONE NOT AVAILABLE · 未找到麦克风，连接设备后点重试。")
 	else:
-		status_label.text = LocalizationSystem.text("录音设备：" + selected_device + "。按 REC 开始采集。")
+		status_label.text = LocalizationSystem.text_with_values("录音设备：%s。按 REC 开始采集。", [_device_display_name(selected_device)])
 	_refresh_controls()
 
 func _start_recording() -> void:
@@ -327,10 +328,15 @@ func _start_recording() -> void:
 	timer_label.text = "00:00.00"
 	var source_mode := "game" if source_picker.selected == 0 else "microphone"
 	draft_context = _capture_context(source_mode)
-	if recorder.start(devices.get_item_text(devices.selected) if devices.selected >= 0 else "", source_mode):
+	if recorder.start(str(devices.get_item_metadata(devices.selected)) if devices.selected >= 0 else "", source_mode):
 		WorldSound.play_ui("record_start")
 		status_label.text = LocalizationSystem.text("正在录制 · 录完请按 STOP，最长 60 秒。")
 	_refresh_controls()
+
+func _device_display_name(device: String) -> String:
+	if not TranslationServer.get_locale().begins_with("en"):
+		return device
+	return device.replace("麦克风", "Microphone").replace("扬声器", "Speakers").replace("耳机", "Headphones").replace("默认", "Default")
 
 func _stop() -> void:
 	if recorder.capturing:

@@ -304,7 +304,7 @@ func build_inspector() -> void:
 		changed()))
 
 func changed() -> void:
-	if is_instance_valid(tutorial): tutorial.text="可以拖动片段调整位置；点播放，先听一听。" if not model.clips.is_empty() else "先从素材区放入一段声音，再试听。"
+	if is_instance_valid(tutorial): tutorial.text=LocalizationSystem.text("可以拖动片段调整位置；点播放，先听一听。" if not model.clips.is_empty() else "先从素材区放入一段声音，再试听。")
 	if not restoring_history: _remember_edit()
 	for i in mute_controls.size():
 		mute_controls[i].set_pressed_no_signal(bool(model.muted[i]))
@@ -336,7 +336,7 @@ func play() -> void:
 	player.stream = mixdown
 	player.stream_paused = false
 	player.play(paused_at if paused_at < model.length() else 0.0)
-	tutorial.text="听好后，可以制作封面并压片。完成交付约需 60 分钟。"
+	tutorial.text=LocalizationSystem.text("听好后，可以制作封面并压片。完成交付约需 60 分钟。")
 	status.text = LocalizationSystem.text("播放中 · 所有轨道已混合到同一个采样时钟。")
 
 func pause() -> void:

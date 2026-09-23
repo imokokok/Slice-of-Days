@@ -38,13 +38,13 @@ func _ready() -> void:
 	_refresh()
 func _btn(parent: Node, text: String, at: Vector2, extent: Vector2, action: Callable) -> Button:
 	var b := preload("res://scripts/ui/components/solmere_button.gd").new()
-	b.text=text; b.variant="quiet"; b.position=at; b.size=extent; b.pressed.connect(action); parent.add_child(b)
+	b.text=LocalizationSystem.text(text); b.variant="quiet"; b.position=at; b.size=extent; b.pressed.connect(action); parent.add_child(b)
 	return b
 func _clear(node: Node) -> void:
 	for child in node.get_children(): node.remove_child(child); child.queue_free()
 func _refresh() -> void:
-	balance_label.text="钱包  %d 元" % GameState.money
-	budget_label.text=GameState.spending_plan_text()
+	balance_label.text=LocalizationSystem.text_with_values("钱包  %d 元", [GameState.money])
+	budget_label.text=LocalizationSystem.text(GameState.spending_plan_text())
 	var focused := ""
 	var owner := get_viewport().gui_get_focus_owner()
 	if is_instance_valid(owner): focused=str(owner.name)
@@ -123,7 +123,7 @@ func _basket() -> void:
 		_btn(row,"+",Vector2(367,43),Vector2(46,42),_change.bind(str(id),1,true)).name="More_"+str(id)
 		_btn(row,"取出",Vector2(420,43),Vector2(73,42),func():_quantity(str(id),0))
 	if basket.is_empty():
-		var label := Label.new(); label.text="篮子空着，还没选东西。"; rows.add_child(label)
+		var label := Label.new(); label.text=LocalizationSystem.text("篮子空着，还没选东西。"); rows.add_child(label)
 	var quote := EconomySystem.cart_quote(shop_id)
 	P.words(right,"合计  %d 元" % int(quote.get("total",0)),Vector2(24,499),480,28)
 	P.words(right,"结账后，小票和物品一起收好。",Vector2(24,545),480,18,P.MUTED)
@@ -154,7 +154,7 @@ func _receipt() -> void:
 	P.words(right,"DAY %02d · %02d:%02d" % [int(receipt.get("day",1)),int(receipt.get("minute",0))/60,int(receipt.get("minute",0))%60],Vector2(100,150),355,17)
 	var rows := _scroll(Vector2(100,200),Vector2(355,208))
 	for line in receipt.get("line_items",[]):
-		var label := Label.new(); label.text="%s ×%d\n%d 元" % [line.name,line.quantity,line.total]; label.add_theme_font_size_override("font_size",20)
+		var label := Label.new(); label.text=LocalizationSystem.text("%s ×%d\n%d 元" % [LocalizationSystem.text(line.name),line.quantity,line.total]); label.add_theme_font_size_override("font_size",20)
 		label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; label.custom_maximum_size.x=345; label.size_flags_horizontal=SIZE_EXPAND_FILL; rows.add_child(label)
 	P.words(right,"实付  %d 元" % int(receipt.get("total",0)),Vector2(100,430),355,28)
 	P.words(right,"已报销 %d 元 · 原票保留" % int(receipt.get("reimbursed_amount",0)) if bool(receipt.get("reimbursed",false)) else "收进生活记录了。",Vector2(100,472),355,19,P.MUTED)
@@ -175,11 +175,11 @@ func _history() -> void:
 			ART.picture(row,str(line.item_id),Vector2(0,0),Vector2(70,65))
 			P.words(row,"%s ×%d" % [line.name,line.quantity],Vector2(83,15),392,20)
 		var b := preload("res://scripts/ui/components/solmere_button.gd").new()
-		b.text="DAY %02d · 合计 %d 元 · 看小票" % [int(entry.day),int(entry.total)]
+		b.text=LocalizationSystem.text("DAY %02d · 合计 %d 元 · 看小票" % [int(entry.day),int(entry.total)])
 		b.custom_minimum_size.y=46; box.add_child(b)
 		b.pressed.connect(func():receipt=entry; mode="receipt"; _refresh_right())
 	if not found:
-		var empty := Label.new(); empty.text="还没有在这里买过东西。"; rows.add_child(empty)
+		var empty := Label.new(); empty.text=LocalizationSystem.text("还没有在这里买过东西。"); rows.add_child(empty)
 func _buy(item: Dictionary) -> void:
 	# Existing callers keep the real one-item checkout path.
 	if buying or Time.get_ticks_msec()-last_purchase_msec<350: return

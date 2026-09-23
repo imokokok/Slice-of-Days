@@ -10,7 +10,7 @@ func _ready() -> void:
 	text=""
 	title_label=P.words(self,title,Vector2(18,9),maxf(size.x,custom_minimum_size.x)-36,21)
 	if not compact: P.words(self,subtitle,Vector2(18,40),size.x-36,17,P.MUTED)
-	tooltip_text=title+"\n"+subtitle
+	tooltip_text=LocalizationSystem.text(title)+"\n"+LocalizationSystem.text(subtitle)
 func _draw() -> void:
 	super._draw()
 	if selected: draw_line(Vector2(3,11),Vector2(3,size.y-11),P.SEA,3,true)

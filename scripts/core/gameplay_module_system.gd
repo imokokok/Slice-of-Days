@@ -98,6 +98,7 @@ func complete(module_id: String, outcome: Dictionary = {}) -> bool:
 	var outcomes: Array = state.get("outcomes", [])
 	var stored := outcome.duplicate(true)
 	stored["context"] = session_context()
+	stored["craft_perspective"] = ChapterSystem.module_perspective(module_id)
 	if str(stored.context.get("current_character",""))!=GameState.current_role: return false
 	stored["day"] = int(stored.get("day", GameState.current_day))
 	outcomes.append(stored)

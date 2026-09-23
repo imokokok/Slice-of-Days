@@ -89,9 +89,9 @@ func _ready() -> void:
 	_refresh_count()
 	for parent in [hold_layer,finder_layer]:
 		var back := preload("res://scripts/ui/components/solmere_button.gd").new(); back.variant="camera"; back.text="×"; back.position=Vector2(48,43); back.size=Vector2(52,52); parent.add_child(back); back.pressed.connect(queue_free)
-	var focus := preload("res://scripts/ui/components/solmere_button.gd").new(); focus.text="查看取景框"; focus.position=Vector2(1210,250); focus.size=Vector2(355,48); hold_layer.add_child(focus); focus.pressed.connect(enter_viewfinder)
-	var gallery := preload("res://scripts/ui/components/solmere_button.gd").new(); gallery.variant="camera"; gallery.text="照片"; gallery.position=Vector2(80,770); gallery.size=Vector2(128,70); finder_layer.add_child(gallery)
-	gallery.name="OpenGallery"; gallery.accessibility_name="照片收藏"; gallery.tooltip_text="查看已冲洗的照片"
+	var focus := preload("res://scripts/ui/components/solmere_button.gd").new(); focus.text=LocalizationSystem.text("查看取景框"); focus.position=Vector2(1210,250); focus.size=Vector2(355,48); hold_layer.add_child(focus); focus.pressed.connect(enter_viewfinder)
+	var gallery := preload("res://scripts/ui/components/solmere_button.gd").new(); gallery.variant="camera"; gallery.text=LocalizationSystem.text("照片"); gallery.position=Vector2(80,770); gallery.size=Vector2(128,70); finder_layer.add_child(gallery)
+	gallery.name="OpenGallery"; gallery.accessibility_name=LocalizationSystem.text("照片收藏"); gallery.tooltip_text=LocalizationSystem.text("查看已冲洗的照片")
 	gallery.pressed.connect(func() -> void: gallery_requested.emit(); queue_free())
 	var photos := library.list_photos()
 	if not photos.is_empty():

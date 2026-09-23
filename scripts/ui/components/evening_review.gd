@@ -16,7 +16,7 @@ func _ready() -> void:
 		if int(item.get("day",0))!=GameState.current_day or str(item.kind)=="official" or str(item.get("source",""))=="walk": continue
 		var note := Label.new(); note.text=str(item.title); note.custom_minimum_size=Vector2(370,44); note.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; rows.add_child(note)
 	if rows.get_child_count()==0: _label(paper,"还没有收进来的材料。\n也可以先写下一件小事。",Vector2(45,190),Vector2(390,110),22)
-	reflection=TextEdit.new(); reflection.position=Vector2(490,148); reflection.size=Vector2(420,310); reflection.text=str(CoreLoopSystem.day_state().get("reflection_draft",CoreLoopSystem.day_state().reflection)); reflection.placeholder_text="今天，有哪一刻想留住？\n\n未完成的事情可以明天继续。"; paper.add_child(reflection)
+	reflection=TextEdit.new(); reflection.position=Vector2(490,148); reflection.size=Vector2(420,310); reflection.text=str(CoreLoopSystem.day_state().get("reflection_draft",CoreLoopSystem.day_state().reflection)); reflection.placeholder_text=LocalizationSystem.text("今天，有哪一刻想留住？\n\n未完成的事情可以明天继续。"); reflection.wrap_mode=TextEdit.LINE_WRAPPING_BOUNDARY; paper.add_child(reflection)
 	reflection.text_changed.connect(func() -> void: CoreLoopSystem.day_state()["reflection_draft"]=reflection.text)
 	var availability := ChapterSystem.can_end_day()
 	feedback=_label(paper,"今天想做的事已处理好。可以继续探索，也可以主动结束今天。" if bool(availability.ok) else str(availability.reason),Vector2(45,470),Vector2(850,66),19)
@@ -24,9 +24,9 @@ func _ready() -> void:
 	_button(paper,"先收起",Vector2(520,551),Vector2(390,54),_dismiss)
 	reflection.grab_focus()
 func _label(parent: Node, text: String, at: Vector2, bounds: Vector2, size: int) -> Label:
-	var label := Label.new(); label.text=text; label.position=at; label.size=bounds; label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; label.add_theme_font_size_override("font_size",size); parent.add_child(label); return label
+	var label := Label.new(); label.text=LocalizationSystem.text(text); label.position=at; label.size=bounds; label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; label.add_theme_font_size_override("font_size",size); parent.add_child(label); return label
 func _button(parent: Node, text: String, at: Vector2, bounds: Vector2, action: Callable) -> void:
-	var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.variant="outlined"; button.text=text; button.position=at; button.size=bounds; parent.add_child(button); button.pressed.connect(action)
+	var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.variant="outlined"; button.text=LocalizationSystem.text(text); button.position=at; button.size=bounds; parent.add_child(button); button.pressed.connect(action)
 func _rest() -> void:
 	var check := ChapterSystem.can_end_day()
 	if not bool(check.ok): feedback.text=str(check.reason); return

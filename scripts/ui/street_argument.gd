@@ -32,7 +32,7 @@ func _process(delta: float) -> void:
 	dialogue_card.speaker_label.text=speaker
 	dialogue_card.text_label.text=words
 	dialogue_card.text_label.visible_characters=-1 if waiting or finished or SettingsSystem.reduced_motion() else int(typed)
-	dialogue_card.hint_label.text=("点击记忆，再点对方，让他听见" if waiting else SettingsSystem.binding_text("dialogue_advance")+" 继续")+" · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
+	dialogue_card.hint_label.text=(LocalizationSystem.text("点击记忆，再点对方，让他听见") if waiting else SettingsSystem.binding_text("dialogue_advance")+" "+LocalizationSystem.text("继续"))+" · "+SettingsSystem.binding_text("ui_cancel")+" "+LocalizationSystem.text("离开")
 	dialogue_card.additional_obstacles.clear()
 	for side in 2:
 		var memory_index: int=PAIRS[chapter][side]

@@ -1,0 +1,30 @@
+{
+  "xanni": {
+    "assumes_same_person": ["你今天挑声音的习惯和我记得的不太一样。我先当作是心情变了。"],
+    "notices_inconsistency": ["同一个人不该一边熟悉这些旋律，一边又像第一次进门。可能是我记错了谁。"],
+    "suspects_two_people": ["两次来店里的人，听声音的方式不一样。我开始怀疑自己一直在和两个人说话。"],
+    "identity_confirmed": ["现在我会分别记住你们：一个先听底噪，一个先找旋律。"]
+  },
+  "shi_yongqi": {
+    "assumes_same_person": ["你今天下刀的节奏和我记得的有点不同，不过我先当作是手感变了。"],
+    "notices_inconsistency": ["做菜的顺序、收小票的习惯都对不上。看来不是一句‘忘了’能解释的。"],
+    "suspects_two_people": ["我见到的也许一直是两个人。难怪同一道菜，你们会从完全不同的地方开始。"],
+    "identity_confirmed": ["以后你们各自来，我会把各自的口味和账分开记。"]
+  },
+  "mossner": {
+    "assumes_same_person": ["你写信时停顿的位置变了。我原以为只是今天想得更久。"],
+    "notices_inconsistency": ["信里的节奏和桌边留下的生活对不上。我们先把这个疑问保留下来。"],
+    "suspects_two_people": ["我不再把这些差异归到同一个人的记忆里。现在只差让两边见面。"],
+    "identity_confirmed": ["见过你们站在一起以后，那些对不上的细节终于各自有了归处。"],
+    "identity_confirmed_clarify": ["你当时直接说那不是你的经历，是对的。那句话让我们开始重新核对记忆。"],
+    "identity_confirmed_defer": ["你当时没有急着替另一个人解释。等到见面再说清，也保护了两边的生活。"]
+  },
+  "naonao": {
+    "assumes_same_person": ["你落子的习惯和上次不一样。我还以为只是换了心情。"],
+    "notices_inconsistency": ["棋路和你说起那些物件时的反应对不上。我得重新想想自己记住的是谁。"],
+    "suspects_two_people": ["我先不再用一个名字概括你们。明天见面以后，再把两边都记清楚。"],
+    "identity_confirmed": ["现在我能分清了：你们不是同一盘棋的前后手，而是两个各自落子的人。"],
+    "identity_confirmed_clarify": ["你当时把误认说出来，才让那场见面不再只是猜测。以后我会先问清是谁。"],
+    "identity_confirmed_defer": ["你当时选择等见面再说。我明白了，有些答案要让当事的两个人一起给出。"]
+  }
+}

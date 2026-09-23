@@ -10,6 +10,9 @@ const DAYS := [
  {"role":"B","module":"chess","location":"chess_stall","npc":"naonao","label":"在棋摊完成一局棋"},
  {"role":"A","module":"","location":"print_shop","npc":"","label":"去社区中心赴约"}]
 const MAIN_OWNERS := {"sound_sampling":"A","cooking":"B","ghostwriting":"A","chess":"B"}
+const MODULE_LOCATIONS := {"sound_sampling":"record_store","cooking":"night_market","ghostwriting":"handcraft_shop","chess":"chess_stall"}
+const MAIN_NPCS := ["xanni", "shi_yongqi", "mossner", "naonao"]
+
 var curfew_retry := 0.0
 
 func _process(delta: float) -> void:
@@ -53,8 +56,24 @@ func _enforce_curfew() -> void:
 
 func story() -> Dictionary:
 	if not GameState.shared_state.has("five_day_story"):
-		GameState.shared_state["five_day_story"]={"days":{},"A_noticing":false,"B_noticing":false,"A_searching":false,"B_searching":false,"meeting_arranged":false,"reveal_completed":false}
-	return GameState.shared_state.five_day_story
+		GameState.shared_state["five_day_story"]={}
+	var current: Dictionary=GameState.shared_state.five_day_story
+	var defaults := {
+		"days":{},
+		"A_noticing":false,
+		"B_noticing":false,
+		"A_searching":false,
+		"B_searching":false,
+		"meeting_arranged":false,
+		"reveal_completed":false,
+		"observed_A":[],
+		"observed_B":[],
+		"cross_domain_practice":{"A":[],"B":[]},
+		"identity_responses":{"A":{},"B":{}},
+	}
+	for key in defaults:
+		if not current.has(key): current[key]=defaults[key].duplicate(true) if defaults[key] is Array or defaults[key] is Dictionary else defaults[key]
+	return current
 func day_state(day := -1) -> Dictionary:
 	var key := str(GameState.current_day if day<0 else day)
 	if not story().days.has(key): story().days[key]={"main_completed":false,"narrative_completed":false,"result":{}}
@@ -89,9 +108,36 @@ func module_available(module_id: String) -> bool:
 	if not MAIN_OWNERS.has(module_id) or bool(story().reveal_completed): return true
 	return str(MAIN_OWNERS[module_id])==GameState.current_role
 
+func module_perspective(module_id: String, role := "") -> String:
+	var active_role := GameState.current_role if role.is_empty() else role
+	if not MAIN_OWNERS.has(module_id): return "shared"
+	return "home_domain" if str(MAIN_OWNERS[module_id])==active_role else "cross_domain"
+
+func register_cross_domain_result(module_id: String, result: Dictionary) -> void:
+	result["craft_perspective"]=module_perspective(module_id)
+	if not bool(story().reveal_completed) or str(result.craft_perspective)!="cross_domain": return
+	var practice: Dictionary=story().cross_domain_practice
+	var completed: Array=practice.get(GameState.current_role,[])
+	if completed.has(module_id): return
+	completed.append(module_id)
+	practice[GameState.current_role]=completed
+	story().cross_domain_practice=practice
+	var names := {"sound_sampling":"声音制作","cooking":"料理","ghostwriting":"拼贴书信","chess":"棋局"}
+	GameState.add_journal_entry({"kind":"cross_domain_practice","module_id":module_id,"text":"第一次用自己的方式完成了对方熟悉的%s。"%str(names.get(module_id,module_id))})
+
+func next_cross_domain_activity(role := "") -> Dictionary:
+	var active_role := GameState.current_role if role.is_empty() else role
+	var completed: Array=story().cross_domain_practice.get(active_role,[])
+	if not completed.is_empty(): return {}
+	for module_id in ["sound_sampling","cooking","ghostwriting","chess"]:
+		if str(MAIN_OWNERS.get(module_id,""))==active_role or completed.has(module_id): continue
+		return {"module_id":module_id,"location":str(MODULE_LOCATIONS[module_id]),"perspective":"cross_domain"}
+	return {}
+
 func record_main_result(module_id: String, result: Dictionary) -> void:
 	var context: Dictionary=result.get("context",{})
 	if str(context.get("current_character",""))!=GameState.current_role or int(context.get("day",0))!=GameState.current_day: return
+	register_cross_domain_result(module_id,result)
 	if module_id==str(plan().module) and GameState.current_role==str(plan().role):
 		day_state().main_completed=true
 		day_state().result=result.duplicate(true)
@@ -122,14 +168,18 @@ func inspect_trace(id: String) -> Dictionary:
 	GameState.commit_active_role_state()
 	return trace.duplicate(true)
 func narrative_lines(npc: String) -> Array:
-	if not bool(day_state().main_completed) or npc!=str(plan().npc): return []
+	if not bool(day_state().main_completed) or bool(day_state().narrative_completed) or npc!=str(plan().npc): return []
 	match GameState.current_day:
 		1: return [["npc","这段声音收好了。想听的时候，随时可以放来听。"]]
 		2: return [["npc","今天的菜做好了，小票也收好了。忙完可以歇一会儿。"]]
 		3:
-			if bool(story().A_noticing): return [["player","桌上的做法和小票对得上，但我不记得自己做过这些。想知道是谁用过那张桌子。"],["npc","不急。今天先把手边的信收好。"]]
+			if bool(story().A_noticing):
+				var found_a := _observation_title_text("A")
+				return [["player","我在起居角翻到%s。它们能互相印证，但我不记得自己做过这些。"%found_a],["npc","你记得今天寄出的信，却不记得这些生活痕迹。那就先别替另一个人下结论。"],["player","我想知道是谁一直在同一张桌子旁生活。"]]
 		4:
-			if bool(story().B_noticing): return [["player","那份声音作品不是我的，可有人把它认成了我留下的。"],["npc","正好，也有人问起这些记录。要不要明天在社区中心见面，把各自的事情说清楚？"]]
+			if bool(story().B_noticing):
+				var found_b := _observation_title_text("B")
+				return [["player","%s都不是我留下的，可镇上的人一直把它们算在我身上。"%found_b],["npc","如果不是记错一件东西，而是一直把两个人记成了一个人呢？"],["npc","明天在社区中心见面吧。让留下这些东西的人自己说明。"]]
 	return []
 func on_conversation_completed(npc: String) -> void:
 	if narrative_lines(npc).is_empty(): return
@@ -138,12 +188,49 @@ func on_conversation_completed(npc: String) -> void:
 		3:
 			story().A_searching=true
 			day_state().narrative_completed=true
-		4: story().B_searching=true
+			RelationshipSystem.advance_identity_stage(npc,"notices_inconsistency",{"kind":"ordinary_objects","objects":observation_summary("A").ids})
+		4:
+			story().B_searching=true
+			RelationshipSystem.advance_identity_stage(npc,"suspects_two_people",{"kind":"ordinary_objects","objects":observation_summary("B").ids})
 	GameState.commit_active_role_state()
+
+func identity_response(npc: String, role := "") -> String:
+	var active_role := GameState.current_role if role.is_empty() else role
+	var by_role: Dictionary=story().identity_responses.get(active_role,{})
+	return str(by_role.get(npc,{}).get("choice",""))
+
+func identity_response_record(npc: String, role := "") -> Dictionary:
+	var active_role := GameState.current_role if role.is_empty() else role
+	return story().identity_responses.get(active_role,{}).get(npc,{}).duplicate(true)
+
+func record_identity_response(npc: String, choice: String) -> bool:
+	if npc not in MAIN_NPCS or choice not in ["clarify","defer"]: return false
+	var responses: Dictionary=story().identity_responses
+	var role_rows: Dictionary=responses.get(GameState.current_role,{})
+	if role_rows.has(npc): return str(role_rows[npc].get("choice",""))==choice
+	var record := {
+		"choice":choice,
+		"day":GameState.current_day,
+		"role":GameState.current_role,
+		"identity_stage":RelationshipSystem.identity_stage(npc),
+		"observed_ids":observation_summary(GameState.current_role).ids.duplicate(),
+	}
+	role_rows[npc]=record
+	responses[GameState.current_role]=role_rows
+	story().identity_responses=responses
+	var label := "当场说明这是另一个人的经历" if choice=="clarify" else "先保留疑问，等见面再说明"
+	RelationshipSystem.add_flags(npc,["identity_response_"+choice,"identity_response_"+choice+"_by_"+GameState.current_role])
+	if choice=="clarify":
+		RelationshipSystem.advance_identity_stage(npc,"notices_inconsistency",{"kind":"player_clarification","role":GameState.current_role})
+	GameState.record_choice("identity_response_"+npc,choice,label)
+	GameState.add_journal_entry({"id":"identity_response_%s_%s"%[GameState.current_role,npc],"kind":"identity_response","text":label+"。","npc":npc,"choice":choice})
+	GameState.commit_active_role_state()
+	return true
 func arrange_meeting() -> bool:
 	if GameState.current_day!=4 or GameState.current_location!="chess_stall" or not bool(day_state().main_completed) or not bool(story().A_searching) or not bool(story().B_searching): return false
 	story().meeting_arranged=true
 	day_state().narrative_completed=true
+	RelationshipSystem.advance_identity_stage(str(plan().npc),"suspects_two_people",{"kind":"meeting_arranged"})
 	GameState.add_journal_entry({"kind":"appointment","text":"明天去社区中心，和留下那些记录的人见面。"})
 	GameState.commit_active_role_state()
 	return true
@@ -154,9 +241,8 @@ func finish_reveal() -> bool:
 	day_state().main_completed=true
 	day_state().narrative_completed=true
 	GameState.shared_state["character_switch_enabled"]=true
-	for memory in GameState.shared_state.get("npc_memory",{}).values():
-		memory.perceived_same_person=false
-		memory.memory_flags["identity_revealed"]=true
+	RelationshipSystem.confirm_all_known_identities({"kind":"meeting_reveal"})
+	for memory in GameState.shared_state.get("npc_memory",{}).values(): memory.memory_flags["identity_revealed"]=true
 	GameState.commit_active_role_state()
 	return true
 func objectives() -> Array:
@@ -227,7 +313,34 @@ func residency_audit(role: String) -> Dictionary:
 	GameState.commit_active_role_state()
 	var state: Dictionary=GameState.role_states.get(role,{})
 	return {"role":role,"passed":bool(story().reveal_completed),"completed_events":state.get("completed_events",[]).size(),"journal_entries":state.get("journal_entries",[]).size(),"choices":state.get("choice_history",[]).size(),"confirmed":state.get("confirmed_residents",[]).size(),"required":0}
-func journey_audit() -> Dictionary: return {"A":residency_audit("A"),"B":residency_audit("B"),"game_complete":bool(GameState.shared_state.get("game_complete",false))}
+func journey_audit() -> Dictionary: return {"A":residency_audit("A"),"B":residency_audit("B"),"cross_domain_practice":story().cross_domain_practice.duplicate(true),"identity_responses":story().identity_responses.duplicate(true),"game_complete":bool(GameState.shared_state.get("game_complete",false))}
+
+func ending_reflections() -> Dictionary:
+	var works: Array=[]
+	for trace in GameState.shared_state.get("public_traces",{}).values(): works.append(trace.duplicate(true))
+	works.sort_custom(func(a: Dictionary,b: Dictionary)->bool:
+		if int(a.get("day",0))==int(b.get("day",0)): return str(a.get("id",""))<str(b.get("id",""))
+		return int(a.get("day",0))<int(b.get("day",0)))
+	var recognitions: Array=[]
+	for npc in MAIN_NPCS:
+		var memory: Dictionary=GameState.shared_state.get("npc_memory",{}).get(npc,{})
+		if memory.is_empty(): continue
+		var response: Dictionary={}
+		for role in ["A","B"]:
+			var candidate := identity_response_record(npc,role)
+			if not candidate.is_empty(): response=candidate; break
+		recognitions.append({
+			"npc":npc,
+			"name":str(ScheduleSystem.residents.get(npc,{}).get("display_name",npc)),
+			"stage":RelationshipSystem.identity_stage(npc),
+			"response":response,
+		})
+	var practices: Array=[]
+	var module_names := {"sound_sampling":"声音制作","cooking":"料理","ghostwriting":"拼贴书信","chess":"棋局"}
+	for role in ["A","B"]:
+		for module_id in story().cross_domain_practice.get(role,[]):
+			practices.append({"role":role,"module_id":module_id,"name":str(module_names.get(module_id,module_id))})
+	return {"works":works,"recognitions":recognitions,"practices":practices}
 
 # Persistent ordinary objects. Sources are real deliveries/receipts, never clues
 # awarded for entering a day. The same reading surface is used at the shared
@@ -280,9 +393,51 @@ func observe_everyday_object(id: String) -> Dictionary:
 		var key := "observed_"+GameState.current_role
 		var observed: Array=story().get_or_add(key,[])
 		if not observed.has(id): observed.append(id)
-		if observed.size()>=2:
+		var summary := observation_summary(GameState.current_role)
+		if summary.kinds.size()>=2:
 			story()[GameState.current_role+"_noticing"]=true
 			story()["day%d_%s_confirmed_other_person"%[GameState.current_day,GameState.current_role.to_lower()]]=true
 	GameState.commit_active_role_state()
 	GameState.state_changed.emit()
 	return item.duplicate(true)
+
+func observation_summary(role := "", through_day := -1) -> Dictionary:
+	var active_role := GameState.current_role if role.is_empty() else role
+	var last_day := GameState.current_day if through_day<0 else through_day
+	var rows: Array=[]
+	var kinds: Array[String]=[]
+	var titles: Array[String]=[]
+	for id in story().get("observed_"+active_role,[]):
+		if not everyday_objects().has(id): continue
+		var item: Dictionary=everyday_objects()[id]
+		if str(item.get("owner",""))==active_role or int(item.get("day",0))>=last_day: continue
+		rows.append(item.duplicate(true))
+		var kind := str(item.get("view_kind",item.get("type","book")))
+		if not kinds.has(kind): kinds.append(kind)
+		var title := str(item.get("title","留下的物件"))
+		if not titles.has(title): titles.append(title)
+	return {"role":active_role,"ids":rows.map(func(row: Dictionary)->String:return str(row.id)),"kinds":kinds,"titles":titles,"objects":rows}
+
+func _observation_title_text(role: String) -> String:
+	var titles: Array=observation_summary(role,5).titles
+	if titles.is_empty(): return "几件不属于自己的生活物件"
+	var wrapped: Array[String]=[]
+	for title in titles.slice(0,2): wrapped.append("《"+str(title)+"》")
+	return "和".join(wrapped)
+
+func meeting_lines() -> Array[String]:
+	var a_text := _observation_title_text("A")
+	var b_text := _observation_title_text("B")
+	var aware_names: Array[String]=[]
+	for npc in GameState.shared_state.get("npc_memory",{}).keys():
+		var stage := RelationshipSystem.identity_stage(str(npc))
+		if RelationshipSystem.IDENTITY_STAGES.find(stage)>=RelationshipSystem.IDENTITY_STAGES.find("notices_inconsistency"):
+			aware_names.append(str(ScheduleSystem.residents.get(str(npc),{}).get("display_name",npc)))
+	aware_names.sort()
+	var witnesses := "镇上的人" if aware_names.is_empty() else "、".join(aware_names.slice(0,3))
+	return [
+		"你也来赴约了。我看到的%s，是你留下的吗？"%a_text,
+		"是我。我也翻到%s。原来我们一直在同一座小镇生活。"%b_text,
+		"%s已经察觉记录对不上，只是还不知道该怎样称呼这件事。"%witnesses,
+		"把各自留下的东西放在一起，才看清：这是两个人的生活，不是一个人漏掉的记忆。",
+	]

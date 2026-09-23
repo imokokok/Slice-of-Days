@@ -309,7 +309,7 @@ func direction_thought() -> void:
 	if next.is_empty() or scene==null: return
 	var words := preload("res://scripts/meta/flowing_thought.gd").new()
 	words.position=Vector2(680,230); words.size=Vector2(450,160); words.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	words.text="也许，先去"+TravelSystem.location_name(str(next.get("location",GameState.current_location)))+"看看。" if GameState.current_role=="A" else "还可以从"+TravelSystem.location_name(str(next.get("location",GameState.current_location)))+"开始……"
+	words.text=LocalizationSystem.text("也许，先去"+TravelSystem.location_name(str(next.get("location",GameState.current_location)))+"看看。" if GameState.current_role=="A" else "还可以从"+TravelSystem.location_name(str(next.get("location",GameState.current_location)))+"开始……")
 	words.add_theme_font_override("font",PaperLanguage.handwriting); words.add_theme_font_size_override("font_size",24)
 	scene.add_child(words); words.modulate.a=0
 	var fade := words.create_tween(); fade.tween_property(words,"modulate:a",1.0,.4); fade.tween_interval(5); fade.tween_property(words,"modulate:a",0.0,.6); fade.tween_callback(words.queue_free)

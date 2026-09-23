@@ -143,8 +143,8 @@ func _build_host_bar() -> void:
 		panel.size = Vector2(360, 60)
 		panel.add_to_group("scene_speech")
 		panel.add_theme_stylebox_override("panel",StyleBoxEmpty.new())
-		leave.text = "收起"
-		complete_button.text = "带着回忆回去"
+		leave.text = LocalizationSystem.text("收起")
+		complete_button.text = LocalizationSystem.text("带着回忆回去")
 		title.hide()
 		status_label.hide()
 		leave.position = Vector2(8, 8)

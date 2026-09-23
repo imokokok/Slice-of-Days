@@ -2,6 +2,14 @@ extends Node
 
 signal relationship_changed(role: String, resident_id: String)
 
+const IDENTITY_STAGES := [
+	"unseen",
+	"assumes_same_person",
+	"notices_inconsistency",
+	"suspects_two_people",
+	"identity_confirmed",
+]
+
 
 func ensure_resident(resident_id: String) -> Dictionary:
 	if not ResidentProfileSystem.is_core(resident_id):
@@ -191,17 +199,113 @@ func _request_memory(status: String) -> String:
 		"refused": "曾拒绝把一次闲聊直接变成认可",
 	}.get(status, "谈过一次认可请求")
 
+func _default_npc_memory() -> Dictionary:
+	return {
+		"actual_met_A": false,
+		"actual_met_B": false,
+		"perceived_same_person": true,
+		"identity_stage": "unseen",
+		"identity_history": [],
+		"identity_evidence": [],
+		"memory_flags": {},
+	}
+
+
+func _identity_stage_index(stage: String) -> int:
+	var index := IDENTITY_STAGES.find(stage)
+	return index if index >= 0 else 0
+
+
+func _normalize_npc_memory(memory: Dictionary) -> Dictionary:
+	var normalized := _default_npc_memory()
+	for key in memory:
+		normalized[key] = memory[key]
+	if not memory.has("identity_stage"):
+		if bool(ChapterSystem.story().get("reveal_completed", false)):
+			normalized.identity_stage = "identity_confirmed"
+		elif not bool(memory.get("perceived_same_person", true)):
+			normalized.identity_stage = "suspects_two_people"
+		elif bool(memory.get("actual_met_A", false)) and bool(memory.get("actual_met_B", false)):
+			normalized.identity_stage = "notices_inconsistency"
+		elif bool(memory.get("actual_met_A", false)) or bool(memory.get("actual_met_B", false)):
+			normalized.identity_stage = "assumes_same_person"
+	var stage := str(normalized.identity_stage)
+	normalized.perceived_same_person = stage in ["unseen", "assumes_same_person", "notices_inconsistency"]
+	return normalized
+
+
+func _memory_for_update(npc: String) -> Dictionary:
+	var memories: Dictionary = GameState.shared_state.get("npc_memory", {})
+	var memory := _normalize_npc_memory(memories.get(npc, {}))
+	memories[npc] = memory
+	GameState.shared_state["npc_memory"] = memories
+	return memory
+
+
+func _set_identity_stage(memory: Dictionary, target_stage: String, evidence: Dictionary = {}) -> bool:
+	if not IDENTITY_STAGES.has(target_stage): return false
+	var current := str(memory.get("identity_stage", "unseen"))
+	if _identity_stage_index(target_stage) <= _identity_stage_index(current): return false
+	memory.identity_stage = target_stage
+	memory.perceived_same_person = target_stage in ["unseen", "assumes_same_person", "notices_inconsistency"]
+	var history: Array = memory.get("identity_history", [])
+	history.append({
+		"stage": target_stage,
+		"day": GameState.current_day,
+		"role": GameState.current_role,
+		"evidence": evidence.duplicate(true),
+	})
+	memory.identity_history = history
+	if not evidence.is_empty():
+		var evidence_rows: Array = memory.get("identity_evidence", [])
+		evidence_rows.append(evidence.duplicate(true))
+		memory.identity_evidence = evidence_rows
+	return true
+
+
+func advance_identity_stage(npc: String, target_stage: String, evidence: Dictionary = {}) -> bool:
+	if not ResidentProfileSystem.is_core(npc): return false
+	var memories: Dictionary = GameState.shared_state.get("npc_memory", {})
+	var memory := _normalize_npc_memory(memories.get(npc, {}))
+	if not _set_identity_stage(memory, target_stage, evidence): return false
+	memories[npc] = memory
+	GameState.shared_state["npc_memory"] = memories
+	GameState.commit_active_role_state()
+	GameState.state_changed.emit()
+	return true
+
+
+func confirm_all_known_identities(evidence: Dictionary = {}) -> void:
+	var memories: Dictionary = GameState.shared_state.get("npc_memory", {})
+	for npc in memories.keys():
+		var memory := _normalize_npc_memory(memories[npc])
+		_set_identity_stage(memory, "identity_confirmed", evidence)
+		memories[npc] = memory
+	GameState.shared_state["npc_memory"] = memories
+
+
+func identity_stage(npc: String) -> String:
+	return str(_memory_for_update(npc).identity_stage)
+
+
 func _record_actual_memory(npc: String, event_id: String) -> void:
-	var memories: Dictionary=GameState.shared_state.get("npc_memory",{})
-	if not memories.has(npc): memories[npc]={"actual_met_A":false,"actual_met_B":false,"perceived_same_person":true,"memory_flags":{}}
-	var memory: Dictionary=memories[npc]
-	memory["actual_met_"+GameState.current_role]=true
-	memory.perceived_same_person=not bool(ChapterSystem.story().reveal_completed)
-	memory.memory_flags[GameState.current_role+":"+event_id]=true
-	GameState.shared_state["npc_memory"]=memories
+	var memories: Dictionary = GameState.shared_state.get("npc_memory", {})
+	var memory := _normalize_npc_memory(memories.get(npc, {}))
+	memory["actual_met_" + GameState.current_role] = true
+	var flag_id := GameState.current_role + ":" + (event_id if not event_id.is_empty() else "visit")
+	memory.memory_flags[flag_id] = true
+	if str(memory.identity_stage) == "unseen":
+		_set_identity_stage(memory, "assumes_same_person", {"kind":"encounter", "event_id":event_id})
+	elif bool(memory.actual_met_A) and bool(memory.actual_met_B) and not bool(ChapterSystem.story().reveal_completed):
+		_set_identity_stage(memory, "notices_inconsistency", {"kind":"met_both_roles", "event_id":event_id})
+	if bool(ChapterSystem.story().reveal_completed):
+		_set_identity_stage(memory, "identity_confirmed", {"kind":"post_reveal_encounter", "event_id":event_id})
+	memories[npc] = memory
+	GameState.shared_state["npc_memory"] = memories
+
 
 func npc_memory(npc: String) -> Dictionary:
 	GameState.commit_active_role_state()
-	var memory: Dictionary=GameState.shared_state.get("npc_memory",{}).get(npc,{"actual_met_A":false,"actual_met_B":false,"perceived_same_person":true,"memory_flags":{}}).duplicate(true)
+	var memory := _memory_for_update(npc).duplicate(true)
 	for role in ["A","B"]: memory["relationship_"+role]=GameState.role_states.get(role,{}).get("relationships",{}).get(npc,{}).duplicate(true)
 	return memory

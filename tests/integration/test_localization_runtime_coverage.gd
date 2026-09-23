@@ -12,10 +12,23 @@ const SCENES := [
 	"res://extensions/myriorama_tarot/main.tscn",
 	"res://extensions/observatory/scenes/Main.tscn",
 ]
+const DYNAMIC_SURFACES := [
+	"res://scripts/residency/map_paper.gd",
+	"res://scripts/residency/recorder_lite.gd",
+	"res://scripts/ui/coastal_fishing_panel.gd",
+	"res://scripts/ui/components/confirm_sheet.gd",
+	"res://scripts/ui/components/evening_review.gd",
+	"res://scripts/ui/components/receipt_view.gd",
+	"res://scripts/ui/fish_journal.gd",
+	"res://scripts/ui/recipe_book_panel.gd",
+	"res://scripts/ui/shop_panel.gd",
+	"res://scripts/ui/transport_panel.gd",
+]
 
 var failures := 0
 var checked_strings := 0
 var cjk := RegEx.new()
+var capture_dir := ""
 
 
 func _initialize() -> void:
@@ -28,13 +41,23 @@ func run() -> void:
 		push_error("Localization coverage test requires -- --isolated-save")
 		quit(1)
 		return
+	# UI coverage must not inherit old journals, recordings or world state from
+	# whichever manual save happens to exist on the machine running the test.
+	root.get_node("ChapterSystem").start_new_game()
+	capture_dir = OS.get_environment("LOCALIZATION_CAPTURE_DIR")
+	if not capture_dir.is_empty():
+		DirAccess.make_dir_recursive_absolute(capture_dir)
 	var settings = root.get_node("SettingsSystem")
 	var original_values: Dictionary = settings.values.duplicate(true)
 	settings.values = settings.DEFAULTS.duplicate(true)
 	settings.values["language"] = "en"
+	# Capture settled layouts instead of sampling the first frame of entrance
+	# tweens, which can make otherwise valid text look faded or displaced.
+	settings.values["reduced_motion"] = true
 	settings.apply_settings()
 
-	for scene_path in SCENES:
+	for scene_index in SCENES.size():
+		var scene_path: String = SCENES[scene_index]
 		var packed := load(scene_path) as PackedScene
 		if packed == null:
 			_fail(scene_path, "scene did not load")
@@ -44,14 +67,49 @@ func run() -> void:
 		await process_frame
 		await process_frame
 		_scan_node(scene, scene_path)
+		await _capture("%02d-scene-%s" % [scene_index + 1, scene_path.get_file().get_basename()])
 		scene.queue_free()
+		await process_frame
+
+	for surface_index in DYNAMIC_SURFACES.size():
+		var script_path: String = DYNAMIC_SURFACES[surface_index]
+		var script := load(script_path) as Script
+		if script == null:
+			_fail(script_path, "script did not load")
+			continue
+		var surface = script.new()
+		if script_path.ends_with("receipt_view.gd"):
+			surface.receipt = {
+				"day": 1, "minute": 650, "kind": "purchase", "help_minutes": 0,
+				"total": 15, "balance": 185,
+				"line_items": [{"name": "海盐豆罐头", "quantity": 1, "total": 15}],
+			}
+		elif script_path.ends_with("confirm_sheet.gd"):
+			surface.heading = "制作并交付唱片"
+			surface.description = "封面与压片交付会用去 60 分钟。\n工程已保留；取消不会结算这段时间。"
+			surface.confirm_text = "开始制作"
+		root.add_child(surface)
+		await process_frame
+		await process_frame
+		_scan_node(surface, script_path)
+		await _capture("%02d-surface-%s" % [surface_index + 1, script_path.get_file().get_basename()])
+		surface.queue_free()
 		await process_frame
 
 	settings.values = original_values
 	settings.apply_settings()
 	if failures == 0:
-		print("LOCALIZATION RUNTIME COVERAGE: PASS scenes=%d strings=%d" % [SCENES.size(), checked_strings])
+		print("LOCALIZATION RUNTIME COVERAGE: PASS scenes=%d dynamic=%d source_strings_checked=%d" % [SCENES.size(), DYNAMIC_SURFACES.size(), checked_strings])
 	quit(failures)
+
+
+func _capture(name: String) -> void:
+	if capture_dir.is_empty() or DisplayServer.get_name() == "headless":
+		return
+	await RenderingServer.frame_post_draw
+	var image := root.get_texture().get_image()
+	if image.save_png(capture_dir.path_join(name + ".png")) != OK:
+		_fail(name, "screenshot could not be saved")
 
 
 func _scan_node(node: Node, scene_path: String) -> void:

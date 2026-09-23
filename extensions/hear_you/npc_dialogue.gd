@@ -109,7 +109,7 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	draw_rect(Rect2(0,0,1280,960), PAPER)
 	_text("听懂你", Vector2(70,73), 32, INK, title_font)
-	_text("语言与语境", Vector2(185,71), 13, MUTED)
+	_text("语言与语境", Vector2(240,71), 13, MUTED)
 	_center_text("一起逛早市", 71, 17, MUTED)
 	_button(NPC_RESET,"重新开始")
 	_draw_room()

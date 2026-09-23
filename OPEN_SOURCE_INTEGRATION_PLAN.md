@@ -1,5 +1,7 @@
 # SOLMERE 开源集成与现有系统审计
 
+> 历史记录：本文是 2026-09-18 的 V3 审计，七日制、作品集推进门槛等已被后续五日制规格取代。不要依据本文恢复旧玩法。当前第三方接入状态见 [2026-09-24 核对](docs/third_party_integration_20260924.md)，实际许可见 [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)。
+
 审计日期：2026-09-18
 
 运行基线：Godot 4.7.2 stable，GDScript，1600×900 主视口

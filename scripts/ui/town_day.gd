@@ -757,9 +757,9 @@ func _show_line(speaker: String, text: String) -> void:
 		speech_tween.tween_property(line, "visible_characters", line.text.length(), maxf(0.3, line.text.length() / 28.0))
 	var box := VBoxContainer.new()
 	var next := preload("res://scripts/ui/components/dialogue_choice.gd").new()
-	next.text="继续"; next.custom_minimum_size.y=46
+	next.text=LocalizationSystem.text("继续"); next.custom_minimum_size.y=46
 	box.add_child(next)
-	event_panel.hint_label.text=SettingsSystem.binding_text("dialogue_advance")+" 继续 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
+	event_panel.hint_label.text=SettingsSystem.binding_text("dialogue_advance")+" "+LocalizationSystem.text("继续")+" · "+SettingsSystem.binding_text("ui_cancel")+" "+LocalizationSystem.text("离开")
 	event_panel.attach_choices(box)
 	next.pressed.connect(func() -> void: event_overlay.hide())
 	dialogue_choices.append(next)
@@ -772,9 +772,9 @@ func _show_dialogue_beat() -> void:
 			_resolve_event(staged_event_id)
 			return
 		_clear_dialogue()
-		event_panel.speaker_label.text="你说"
+		event_panel.speaker_label.text=LocalizationSystem.text("你说")
 		event_panel.text_label.text=""
-		event_panel.hint_label.text=SettingsSystem.binding_text("ui_accept")+" 回应 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
+		event_panel.hint_label.text=SettingsSystem.binding_text("ui_accept")+" "+LocalizationSystem.text("回应")+" · "+SettingsSystem.binding_text("ui_cancel")+" "+LocalizationSystem.text("离开")
 		var box := VBoxContainer.new()
 		for i in choices.size():
 			var choice: Dictionary = choices[i]

@@ -30,7 +30,7 @@ func _ready() -> void:
 	emblem.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; emblem.texture=atlas
 	emblem.position=Vector2(108,74); emblem.size=Vector2(70,70)
 	emblem.mouse_filter=MOUSE_FILTER_IGNORE; add_child(emblem)
-	P.words(self,"小镇出行",Vector2(198,72),400,33,P.CREAM)
+	P.words(self,"小镇出行",Vector2(198,72),650,33,P.CREAM)
 	P.words(self,"SOLMERE   /   从 "+TravelSystem.location_name(origin)+" 出发",Vector2(200,121),850,19,Color("d0e2df"))
 	P.words(self,"DAY %02d   %s" % [GameState.current_day,_time(GameState.current_minute)],Vector2(1124,76),320,22,P.CREAM)
 	var close := _button(self,"返回街道  ·  "+SettingsSystem.binding_text("ui_cancel"),Vector2(1270,115),Vector2(216,40),_close)
@@ -46,7 +46,7 @@ func _ready() -> void:
 		heading.add_theme_font_size_override("font_size",18); heading.add_theme_color_override("font_color",P.MUTED); list.add_child(heading)
 		for id in segment.locations:
 			var button := OPTION.new(); button.compact=true
-			button.title=TravelSystem.location_name(id)+(" · 此处" if id==origin else "")
+			button.title=LocalizationSystem.text(TravelSystem.location_name(id))+(" · "+LocalizationSystem.text("此处") if id==origin else "")
 			button.name="Destination_"+id; button.custom_minimum_size=Vector2(327,49)
 			button.disabled=id==origin; button.pressed.connect(_select.bind(id))
 			list.add_child(button); destinations[id]=button
@@ -73,7 +73,7 @@ func _surface(rect: Rect2, color: Color, radius := 0) -> void:
 	panel.add_theme_stylebox_override("panel",P.face(color,radius,0)); add_child(panel)
 
 func _button(parent: Node, text: String, at: Vector2, extent: Vector2, action: Callable) -> Button:
-	var button: Button=BUTTON.new(); button.text=text; button.position=at; button.size=extent
+	var button: Button=BUTTON.new(); button.text=LocalizationSystem.text(text); button.position=at; button.size=extent
 	button.pressed.connect(action); parent.add_child(button); return button
 
 func _time(minute: int) -> String:
@@ -103,7 +103,7 @@ func _refresh_journey() -> void:
 		b.subtitle="%d 分钟 · %s" % [int(quote.get("minutes",0)),"免费" if int(quote.get("cost",0))==0 else "%d 元" % int(quote.cost)] if available else "暂不可用"
 		b.disabled=not available; b.selected=id==method; b.pressed.connect(_choose_method.bind(id))
 		detail.add_child(b); choices[id]=b
-		if not available: b.tooltip_text=str(quote.get("reason","暂不可用"))
+		if not available: b.tooltip_text=LocalizationSystem.text(str(quote.get("reason","暂不可用")))
 		index+=1
 	var active := _quote(method); var valid := bool(active.get("available",false))
 	P.words(detail,_time(GameState.current_minute)+"  出发",Vector2(545,661),300,19,P.SEA)
@@ -114,12 +114,12 @@ func _refresh_journey() -> void:
 	timing_label.max_lines_visible=1; timing_label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	notice=P.words(detail,"钱包 %d 元" % GameState.money,Vector2(516,758),624,21,P.MUTED)
 	if valid:
-		notice.text="%s → %s   ·   %d 元" % [TravelSystem.location_name(origin),TravelSystem.location_name(selected),int(active.cost)]
+		notice.text=LocalizationSystem.text("%s → %s   ·   %d 元" % [LocalizationSystem.text(TravelSystem.location_name(origin)),LocalizationSystem.text(TravelSystem.location_name(selected)),int(active.cost)])
 		P.words(detail,"钱包 %d 元 · 出发后 %d 元" % [GameState.money,GameState.money-int(active.cost)],Vector2(516,792),620,17,P.MUTED)
 		if not active.get("conflicts",[]).is_empty():
-			timing_label.text="可能错过："+"、".join(active.conflicts)
+			timing_label.text=LocalizationSystem.text("可能错过：")+LocalizationSystem.text("、".join(active.conflicts))
 			timing_label.add_theme_font_size_override("font_size",17); timing_label.tooltip_text=timing_label.text
-	else: notice.text=str(active.get("reason","请选择可用的方式。"))
+	else: notice.text=LocalizationSystem.text(str(active.get("reason","请选择可用的方式。")))
 	notice.max_lines_visible=1; notice.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS; notice.tooltip_text=notice.text
 	depart=_button(detail,"%s出发  →" % METHODS[method] if valid else "当前方式不可用",Vector2(1195,758),Vector2(282,66),_depart)
 	depart.name="Depart"; depart.variant="guidance"; depart.add_theme_font_size_override("font_size",24); depart.refresh(); depart.disabled=not valid
@@ -133,7 +133,7 @@ func _depart() -> void:
 	busy=true; depart.disabled=true
 	var result := SceneRouter.travel_to(selected,method)
 	if not bool(result.get("ok",false)):
-		busy=false; _refresh_journey(); notice.text=str(result.message)
+		busy=false; _refresh_journey(); notice.text=LocalizationSystem.text(str(result.message))
 
 func _close() -> void:
 	if not busy: queue_free()

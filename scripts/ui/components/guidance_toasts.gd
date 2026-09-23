@@ -23,8 +23,8 @@ func _process(delta: float) -> void:
 	if current.is_empty():
 		current=GuidanceSystem.take_feedback()
 		if current.is_empty(): return
-		heading.text=str(current.get("heading","刚刚发生"))
-		words.text=str(current.text); age=0; card.show()
+		heading.text=LocalizationSystem.text(str(current.get("heading","刚刚发生")))
+		words.text=LocalizationSystem.text(str(current.text)); age=0; card.show()
 		card.size=Vector2(390,maxf(96,mini(6,words.get_line_count())*29+64))
 		lifetime=reading_seconds(words.text)
 	var direction: Control=get_parent().get("next_button")

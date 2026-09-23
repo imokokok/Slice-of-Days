@@ -43,8 +43,8 @@ func _ready() -> void:
 	folder = Button.new()
 	folder.position = Vector2(25,25)
 	folder.size = Vector2(109,61)
-	folder.text = "档案"
-	folder.tooltip_text = SettingsSystem.binding_text("open_archive")+" · 居住档案"
+	folder.text = LocalizationSystem.text("档案")
+	folder.tooltip_text = SettingsSystem.binding_text("open_archive")+" · "+LocalizationSystem.text("居住档案")
 	folder.add_theme_font_size_override("font_size",22)
 	folder.add_theme_color_override("font_color",Color("495955"))
 	var paper := StyleBoxFlat.new()
@@ -150,7 +150,7 @@ func _process(delta: float) -> void:
 	folder.hide()
 	switch_button.visible=CharacterSystem.switch_unlocked()
 	switch_button.disabled=_blocked() or is_instance_valid(overlay) or is_instance_valid(tool)
-	switch_button.text="日程与视角 · "+GameState.current_role
+	switch_button.text=LocalizationSystem.text_with_values("日程与视角 · %s", [GameState.current_role])
 	var minute := GameState.current_minute
 	var period := "Morning" if minute < 720 else "Afternoon" if minute < 960 else "Late Afternoon" if minute < 1140 else "Evening"
 	var period_key := str(GameState.current_day)+period

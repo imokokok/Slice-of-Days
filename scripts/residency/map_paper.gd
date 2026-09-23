@@ -29,7 +29,7 @@ func _ready() -> void:
 		marker.set_meta("state","discovered" if discovered else "undiscovered")
 		if not bool(route.get("available",false)) and str(id)!=GameState.current_location: marker.set_meta("state","unavailable")
 		marker.text=TravelSystem.location_name(str(id))
-		marker.tooltip_text=("已经到访" if discovered else "尚未到访")+"\n"+str(route.get("reason",""))
+		marker.tooltip_text=LocalizationSystem.text("已经到访" if discovered else "尚未到访")+"\n"+LocalizationSystem.text(str(route.get("reason","")))
 		marker.position=Vector2(points[id])-Vector2(16,22); marker.size=Vector2(174,44)
 		marker.add_theme_font_size_override("font_size",20); add_child(marker)
 		marker.selected=str(lead.get("location",""))==str(id)
@@ -47,7 +47,7 @@ func refresh_markers() -> void:
 		var status := GuidanceSystem.location_status(id)
 		var discovered: bool=ResidencySystem.state().visits.has(id) or id==GameState.current_location
 		marker.set_meta("state",("discovered" if discovered else "undiscovered") if bool(status.open) else "unavailable")
-		marker.tooltip_text=str(status.reason) if not bool(status.open) else "已经到访" if discovered else "可以沿路去看看"
+		marker.tooltip_text=LocalizationSystem.text(str(status.reason) if not bool(status.open) else "已经到访" if discovered else "可以沿路去看看")
 		marker.selected=str(next.get("location",""))==id and bool(status.open)
 		marker.refresh()
 

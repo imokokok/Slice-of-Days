@@ -10,9 +10,12 @@ const SAGE := Color("7d8f59")
 const LINE := Color("b88963")
 const COVER_BLUE := Color("3f78a4")
 const NAVIGATION_TITLES := {
+	"Continue": "继续旅程",
 	"NewGame": "新游戏",
 	"Chapters": "章节",
 	"Settings": "设置",
+	"Credits": "制作人员",
+	"Quit": "退出",
 }
 
 var modal_overlay: ColorRect
@@ -128,7 +131,7 @@ func _build_navigation() -> void:
 		navigation.add_child(button)
 		button.pressed.connect(actions[i])
 	for i in 2:
-		var extra := preload("res://scripts/ui/components/solmere_button.gd").new(); extra.variant="camera"; extra.text=["制作人员","退出"][i]; extra.position=Vector2(645+i*185,814); extra.size=Vector2(150,38); add_child(extra); extra.add_theme_font_size_override("font_size",16); extra.pressed.connect([_show_credits,_show_quit_confirmation][i])
+		var extra := preload("res://scripts/ui/components/solmere_button.gd").new(); extra.name=["Credits","Quit"][i]; extra.variant="camera"; extra.text=LocalizationSystem.text(["制作人员","退出"][i]); extra.position=Vector2(645+i*185,814); extra.size=Vector2(150,38); add_child(extra); extra.add_theme_font_size_override("font_size",16); extra.pressed.connect([_show_credits,_show_quit_confirmation][i])
 	navigation.modulate.a = 1
 
 
@@ -136,7 +139,7 @@ func _refresh_navigation_language(_locale := "") -> void:
 	if not is_instance_valid(navigation):
 		return
 	for button_name in NAVIGATION_TITLES:
-		var button := navigation.get_node_or_null(button_name) as Button
+		var button := find_child(button_name, true, false) as Button
 		if button != null:
 			button.text = LocalizationSystem.text(NAVIGATION_TITLES[button_name])
 

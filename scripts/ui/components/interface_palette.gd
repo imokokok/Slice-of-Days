@@ -19,7 +19,7 @@ static func face(color: Color, radius := 8, margin := 12) -> StyleBoxFlat:
 
 static func words(parent: Node, value: String, at: Vector2, width: float, point := 20, color := INK) -> Label:
 	var result := Label.new()
-	result.text=value; result.position=at; result.size.x=width; result.custom_maximum_size.x=width
+	result.text=LocalizationSystem.text(value); result.position=at; result.size.x=width; result.custom_maximum_size.x=width
 	result.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	result.add_theme_font_override("font",PaperLanguage.body_font)
 	result.add_theme_font_size_override("font_size",point); result.add_theme_color_override("font_color",color)

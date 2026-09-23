@@ -152,7 +152,7 @@ func _build_case_panel() -> void:
 	var world_card := _make_button(panel, "XXI  THE WORLD\n翻开并提交汤底", Vector2(20, 438), Vector2(278, 104), "world")
 	world_card.pressed.connect(_open_world)
 	insight_label = _make_label(panel, "", Vector2(20, 558), Vector2(278, 30), 14, TEAL)
-	var help := _make_label(panel, "一轮只做一次 Reading\n\n1  翻开本轮三张牌\n2  选牌，再点一个可读意象\n3  自己组织 YES / NO 问题\n4  关键 YES 会把牌留在牌阵\n5  重复牌可深读，两牌可交叉", Vector2(20, 600), Vector2(278, 164), 14, MUTED)
+	var help := _make_label(panel, "一轮只做一次 Reading\n\n1  翻开本轮三张牌\n2  选牌，再点一个可读意象\n3  自己组织 YES / NO 问题\n4  关键 YES 会把牌留在牌阵\n5  重复牌可深读，两牌可交叉", Vector2(20, 600), Vector2(278, 164), 13, MUTED)
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	help.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 
@@ -160,9 +160,9 @@ func _build_case_panel() -> void:
 func _build_reading_panel() -> void:
 	var panel := _make_panel(self, Vector2(360, 86), Vector2(850, 516), PAPER, LINE)
 	_make_label(panel, "本轮 Reading", Vector2(20, 12), Vector2(170, 28), 19, INK)
-	shuffle_button = _make_button(panel, "翻开三张", Vector2(660, 10), Vector2(104, 34), "shuffle")
+	shuffle_button = _make_button(panel, "翻开三张", Vector2(635, 10), Vector2(115, 34), "shuffle")
 	shuffle_button.pressed.connect(_shuffle_pile)
-	round_label = _make_label(panel, "", Vector2(764, 14), Vector2(66, 26), 13, MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
+	round_label = _make_label(panel, "", Vector2(755, 14), Vector2(75, 26), 13, MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
 	var step_names := ["1 翻牌", "2 选牌", "3 读意象", "4 提问"]
 	for index in step_names.size():
 		var step := _make_label(panel, step_names[index], Vector2(20 + index * 202, 49), Vector2(190, 24), 12, MUTED, HORIZONTAL_ALIGNMENT_CENTER)

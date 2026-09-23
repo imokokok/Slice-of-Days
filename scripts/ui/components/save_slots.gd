@@ -19,7 +19,7 @@ func _ready() -> void:
 		if bool(info.get("exists",false)):
 			_label(card,("Day %02d · %s" % [int(info.day),GuidanceSystem.time_text(int(info.minute))]) if bool(info.get("compatible",false)) else "旧七日存档 · 请开始新旅程",Vector2(21,249),18)
 			_label(card,TravelSystem.location_name(str(info.location)),Vector2(21,292),20)
-			var remove := preload("res://scripts/ui/components/solmere_button.gd").new(); remove.text="删除这份存档"; remove.position=Vector2(i*340+64,386); remove.size=Vector2(200,40); remove.disabled=not FileAccess.file_exists(SaveManager.path_for_slot(slot)); add_child(remove)
+			var remove := preload("res://scripts/ui/components/solmere_button.gd").new(); remove.text=LocalizationSystem.text("删除这份存档"); remove.position=Vector2(i*340+64,386); remove.size=Vector2(200,40); remove.disabled=not FileAccess.file_exists(SaveManager.path_for_slot(slot)); add_child(remove)
 			remove.pressed.connect(func() -> void:
 				var confirm := preload("res://scripts/ui/components/confirm_sheet.gd").new(); confirm.heading="删除旅程 %02d？" % slot; confirm.description="这份存档删除后无法恢复。\n\n取消即可继续保留。"; confirm.confirm_text="删除存档"
 				confirm.accepted.connect(func() -> void:
@@ -28,4 +28,4 @@ func _ready() -> void:
 				get_tree().current_scene.add_child(confirm))
 
 func _label(parent: Node, text: String, at: Vector2, point: int) -> void:
-	var label := Label.new(); label.text=text; label.position=at; label.size=Vector2(276,40); label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS; label.add_theme_font_size_override("font_size",point); label.mouse_filter=MOUSE_FILTER_IGNORE; parent.add_child(label)
+	var label := Label.new(); label.text=LocalizationSystem.text(text); label.position=at; label.size=Vector2(276,40); label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS; label.add_theme_font_size_override("font_size",point); label.mouse_filter=MOUSE_FILTER_IGNORE; parent.add_child(label)

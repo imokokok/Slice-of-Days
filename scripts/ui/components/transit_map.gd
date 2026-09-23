@@ -38,8 +38,8 @@ func update_route(from: String, to: String) -> void:
 			if id==from: face.bg_color=P.SEA
 			if state=="focus": face.bg_color=Color.TRANSPARENT; face.border_color=P.DEEP; face.set_border_width_all(4)
 			marker.add_theme_stylebox_override(state,face)
-	origin_label.text="此处 · "+TravelSystem.location_name(from)
-	destination_label.text="前往 · "+TravelSystem.location_name(to)
+	origin_label.text=LocalizationSystem.text("此处")+" · "+LocalizationSystem.text(TravelSystem.location_name(from))
+	destination_label.text=LocalizationSystem.text("前往")+" · "+LocalizationSystem.text(TravelSystem.location_name(to))
 	for pair in [[origin_label,from],[destination_label,to]]:
 		var at := _point(pair[1])+Vector2(24,17 if pair[1]==from else -41)
 		pair[0].position=Vector2(clampf(at.x,10,size.x-224),clampf(at.y,10,size.y-45))

@@ -148,7 +148,7 @@ func _open_recipe_book() -> void:
 		value_slider.value=float(recipe.heat); stage_ready=false
 		instruction_label.text=str(recipe.title)+"\n\n"+str(recipe.notes).left(60)
 		_update_state()
-		status_label.text="正在照着「%s」做。%s" % [recipe.title,"还缺食材，先去采购或钓鱼。" if selected_tokens.size()<3 else "食材就位，可以调火候。"]
+		status_label.text=LocalizationSystem.text("正在照着「%s」做。%s" % [LocalizationSystem.text(recipe.title),LocalizationSystem.text("还缺食材，先去采购或钓鱼。" if selected_tokens.size()<3 else "食材就位，可以调火候。")])
 	)
 	add_child(book)
 
@@ -450,7 +450,7 @@ func _draw_archives() -> void:
 		draw_texture_rect(art.texture("archive_sheet"),card,false)
 		var note := get_node_or_null("SourceNote"+str(i)) as Label
 		if note:
-			note.text="先从右侧取一份记录"
+			note.text=LocalizationSystem.text("先从右侧取一份记录")
 			if i<selected_tokens.size():
 				var id := selected_tokens[i]
 				note.text=_token_label(id)+"\n\n"

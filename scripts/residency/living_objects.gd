@@ -93,7 +93,7 @@ func build() -> void:
 		b.name="ObjectTab_"+targets[i]; b.variant="tab"; b.selected=chosen; b.refresh()
 		b.add_theme_font_size_override("font_size",17)
 	var back := button(body,"×",Vector2(1290,-42),Vector2(42,38),close)
-	back.tooltip_text=SettingsSystem.binding_text("ui_cancel")+" 收起"
+	back.tooltip_text=SettingsSystem.binding_text("ui_cancel")+" "+LocalizationSystem.text("收起")
 	back.add_theme_color_override("font_color",Color.WHITE)
 	match mode:
 		"day_schedule":
@@ -394,14 +394,14 @@ func _notebook_page() -> void:
 			var row := VBoxContainer.new(); rows.add_child(row)
 			var words := Label.new(); words.text=str(lead.text)+"\n— "+GuidanceSystem.source_name(str(lead.source)); words.custom_minimum_size=Vector2(361,130); words.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; row.add_child(words)
 			var actions := HBoxContainer.new(); row.add_child(actions)
-			var follow := preload("res://scripts/ui/components/solmere_button.gd").new(); follow.text="取消追踪" if str(GuidanceSystem.state().tracked_lead)==str(lead.id) else "追踪"; follow.disabled=not bool(lead.available); actions.add_child(follow)
+			var follow := preload("res://scripts/ui/components/solmere_button.gd").new(); follow.text=LocalizationSystem.text("取消追踪" if str(GuidanceSystem.state().tracked_lead)==str(lead.id) else "追踪"); follow.disabled=not bool(lead.available); actions.add_child(follow)
 			follow.pressed.connect(func() -> void: GuidanceSystem.track("" if str(GuidanceSystem.state().tracked_lead)==str(lead.id) else str(lead.id)); build())
-			var map := preload("res://scripts/ui/components/solmere_button.gd").new(); map.text="看地图"; actions.add_child(map); map.pressed.connect(func() -> void: _guidance_action({"action":"map","location":str(lead.location)}))
+			var map := preload("res://scripts/ui/components/solmere_button.gd").new(); map.text=LocalizationSystem.text("看地图"); actions.add_child(map); map.pressed.connect(func() -> void: _guidance_action({"action":"map","location":str(lead.location)}))
 	else:
 		var s := ResidencySystem.state()
 		var note := edit(body,str(s.get("private_note","")),Vector2(242,176),Vector2(370,178),func(value: String) -> void: s.private_note=value; ResidencySystem.persist(),"留给自己的话……")
 		note.name="PrivateNotebookText"; note.add_theme_font_override("font",PaperLanguage.handwriting); note.add_theme_font_size_override("font_size",25)
-		var plan := LineEdit.new(); plan.name="PersonalPlanText"; plan.position=Vector2(242,369); plan.size=Vector2(258,43); plan.placeholder_text="想做的一件小事"; body.add_child(plan)
+		var plan := LineEdit.new(); plan.name="PersonalPlanText"; plan.position=Vector2(242,369); plan.size=Vector2(258,43); plan.placeholder_text=LocalizationSystem.text("想做的一件小事"); body.add_child(plan)
 		button(body,"记下",Vector2(510,369),Vector2(100,43),func() -> void: CoreLoopSystem.pin_personal(plan.text); build()).name="PinPersonalPlan"
 		var plans := scroll_area(body,Vector2(242,427),Vector2(375,210))
 		for entry in CoreLoopSystem.state().personal:
@@ -500,7 +500,7 @@ func _icon(parent: Node, kind: String, at: Vector2, dimensions: Vector2) -> Cont
 	var icon := preload("res://scripts/ui/components/ink_icon.gd").new(); icon.kind=kind; icon.position=at; icon.size=dimensions; parent.add_child(icon); return icon
 func _toggle_drawing() -> void:
 	canvas.drawing=not canvas.drawing
-	feedback.text="画笔已拿起 · 再按画笔收起" if canvas.drawing else ""
+	feedback.text=LocalizationSystem.text("画笔已拿起 · 再按画笔收起") if canvas.drawing else ""
 func _photo_material_tray() -> void:
 	_material_tray()
 	var spread := detail.find_child("LooseMaterials",true,false)
@@ -537,7 +537,7 @@ func _notebook_collection(section: String) -> void:
 			var title := Label.new(); title.text=GuidanceSystem.source_name(str(id)); title.add_theme_font_size_override("font_size",26); entry.add_child(title)
 			var words := Label.new(); words.custom_minimum_size=Vector2(935,52); words.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 			var facts: Array=KnowledgeSystem.facts().filter(func(fact: Dictionary) -> bool: return str(fact.get("source_npc_id",""))==str(id) or str(fact.get("subject_id",""))==str(id))
-			words.text="\n".join(facts.map(func(fact: Dictionary) -> String: return str(fact.get("text","")))) if not facts.is_empty() else "在小镇遇见过。下一次，听听对方的故事。"
+			words.text=LocalizationSystem.text("\n".join(facts.map(func(fact: Dictionary) -> String: return str(fact.get("text","")))) if not facts.is_empty() else "在小镇遇见过。下一次，听听对方的故事。")
 			entry.add_child(words)
 	elif section=="places":
 		for id in ResidencySystem.state().visits:
@@ -577,12 +577,12 @@ func _map_select(location: String) -> void:
 		var why := label(b,str(methods[i][2]) if available else reason,Vector2(15,41),Vector2(380,23),14,Color("72889a")); why.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	label(side,"钱包  %d 元" % GameState.money,Vector2(29,463),Vector2(280,29),18,BLUE)
 	var cancel := button(side,"×",Vector2(403,20),Vector2(32,32),func() -> void: _map_select(GameState.current_location))
-	cancel.name="TravelCancel"; cancel.tooltip_text="收起地点"
+	cancel.name="TravelCancel"; cancel.tooltip_text=LocalizationSystem.text("收起地点")
 
 func _travel_selected(method: String) -> void:
 	if travel_pending or SceneRouter.transitioning: return
 	var route := TravelSystem.route(GameState.current_location,map_selected,method,GameState.current_role,GameState.current_minute)
-	if not bool(route.get("available",false)): feedback.text=str(route.get("reason","无法出发")); return
+	if not bool(route.get("available",false)): feedback.text=LocalizationSystem.text(str(route.get("reason","无法出发"))); return
 	var confirmation := preload("res://scripts/ui/components/confirm_sheet.gd").new()
 	confirmation.heading=str(route.label)+"前往"+TravelSystem.location_name(map_selected)
 	confirmation.description="所需时间    %d 分钟\n花费            %s\n抵达时间    %s" % [int(route.minutes),"免费" if int(route.cost)==0 else "%d 元" % int(route.cost),GuidanceSystem.time_text(int(route.arrival))]

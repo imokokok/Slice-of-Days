@@ -7,6 +7,7 @@ var selected := false:
 		selected=value
 		if is_inside_tree(): refresh()
 func _ready() -> void:
+	text=LocalizationSystem.text(text)
 	focus_mode=FOCUS_ALL
 	mouse_default_cursor_shape=CURSOR_POINTING_HAND
 	refresh()

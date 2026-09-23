@@ -498,7 +498,7 @@ func _world_label(key: String, rect: Rect2, text: String, color: Color, point :=
 		add_child(label)
 		world_labels[key] = label
 	label.position=rect.position; label.size=rect.size
-	label.text=text
+	label.text=LocalizationSystem.text(text)
 	label.add_theme_color_override("font_color",color)
 	label.modulate=Composition.daylight(GameState.current_minute)
 	label.show()

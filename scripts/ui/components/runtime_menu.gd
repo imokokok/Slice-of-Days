@@ -34,7 +34,7 @@ func _action(action: String) -> void:
 		"pause","settings": owner_ui.mode=action; owner_ui.build()
 		"save":
 			if SaveManager.save_or_report("保存失败"):
-				owner_ui.feedback.text="已保存"
+				owner_ui.feedback.text=LocalizationSystem.text("已保存")
 				var shell := owner_ui.get_parent()
 				if shell.has_method("_camera_source") and DisplayServer.get_name()!="headless": SaveManager.save_thumbnail(await shell._camera_source())
 			else: owner_ui.feedback.text=SaveManager.last_error

@@ -232,7 +232,7 @@ func _leave() -> void:
 		CoreLoopSystem.participated(material_id)
 		CoreLoopSystem.memory_return(material_id)
 	if not SaveManager.save_or_report("房间记忆保存失败"):
-		GameState.load_save_data(snapshot); exit_started=false; caption.text="还没能保存，请再试一次收起记忆。"; return
+		GameState.load_save_data(snapshot); exit_started=false; caption.text=LocalizationSystem.text("还没能保存，请再试一次收起记忆。"); return
 	queue_free()
 
 func _exit_tree() -> void:

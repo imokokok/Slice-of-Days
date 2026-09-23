@@ -407,7 +407,7 @@ func _dossier_reference_page() -> void:
 		hit.pressed.connect(_select_dossier_tab.bind(str(row[0])))
 		add_child(hit)
 	var close_link := Button.new()
-	close_link.text = "收起  Esc"
+	close_link.text = LocalizationSystem.text("收起  Esc")
 	close_link.flat = true
 	close_link.position = Vector2(art_position.x + art_size.x - 112, art_position.y - 40)
 	close_link.size = Vector2(112, 32)

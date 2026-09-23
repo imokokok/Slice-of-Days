@@ -411,7 +411,7 @@ func _interact() -> void:
 		"echo":
 			name_label.text = LocalizationSystem.text("黑板")
 			cue_label.text = LocalizationSystem.text(str(nearest.text))
-			detail_label.text = SettingsSystem.binding_text("dialogue_advance")+" · 收起视线"
+			detail_label.text = SettingsSystem.binding_text("dialogue_advance")+" · "+LocalizationSystem.text("收起视线")
 			room_dialogue.show()
 			MetaExperience.observe(GameState.current_location,str(nearest.text),{"kind":"place","event_id":"echo_"+GameState.current_location})
 		"exit": SceneRouter.leave_space()

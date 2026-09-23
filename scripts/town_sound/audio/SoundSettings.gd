@@ -61,7 +61,8 @@ func show_dialog() -> void:
 func fill_picker(picker: OptionButton, devices: PackedStringArray, current: String) -> void:
 	picker.clear()
 	for device in devices:
-		picker.add_item(device)
+		picker.add_item(device_display_name(device))
+		picker.set_item_metadata(picker.item_count - 1, device)
 		if device == current: picker.select(picker.item_count - 1)
 
 func build_dialog() -> void:
@@ -77,10 +78,10 @@ func build_dialog() -> void:
 	column.add_child(output_label)
 	output_picker = OptionButton.new()
 	output_picker.item_selected.connect(func(index: int) -> void:
-		output_device = output_picker.get_item_text(index)
+		output_device = str(output_picker.get_item_metadata(index))
 		AudioServer.output_device = output_device
 		save_settings()
-		message.text = LocalizationSystem.text("已选择：" + output_device + "。点击测试音。"))
+		message.text = LocalizationSystem.text_with_values("已选择：%s。点击测试音。", [device_display_name(output_device)]))
 	column.add_child(output_picker)
 	var test := Button.new()
 	test.text = LocalizationSystem.text("♪ 播放测试音（两声）")
@@ -96,12 +97,18 @@ func build_dialog() -> void:
 	input_label.text = LocalizationSystem.text("录音设备 / 麦克风")
 	column.add_child(input_label)
 	input_picker = OptionButton.new()
-	input_picker.item_selected.connect(func(index: int) -> void: select_input(input_picker.get_item_text(index)))
+	input_picker.item_selected.connect(func(index: int) -> void: select_input(str(input_picker.get_item_metadata(index))))
 	column.add_child(input_picker)
 	message = Label.new()
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(message)
 	_sync_volume_controls()
+
+
+func device_display_name(device: String) -> String:
+	if not TranslationServer.get_locale().begins_with("en"):
+		return device
+	return device.replace("麦克风", "Microphone").replace("扬声器", "Speakers").replace("耳机", "Headphones").replace("默认", "Default")
 
 
 func _add_volume_control(parent: VBoxContainer, key: String, title: String, value: int, setter: Callable) -> void:
@@ -173,4 +180,4 @@ func play_test_tone() -> void:
 	if AudioServer.get_driver_name() != "Dummy":
 		test_player.play()
 	if message != null:
-		message.text = LocalizationSystem.text("测试音输出到：" + output_device + "\n若仍听不到，换一个输出设备，并检查系统音量。" if AudioServer.get_driver_name() != "Dummy" else "当前没有可用的音频输出驱动。")
+		message.text = LocalizationSystem.text_with_values("测试音输出到：%s\n若仍听不到，换一个输出设备，并检查系统音量。", [device_display_name(output_device)]) if AudioServer.get_driver_name() != "Dummy" else LocalizationSystem.text("当前没有可用的音频输出驱动。")

@@ -53,13 +53,13 @@ func refresh() -> void:
 		card.variant="archive"
 		card.name=("PhotoCard_" if kind=="photo" else "RecordingItem_")+str(i)
 		card.custom_minimum_size=Vector2(275,210) if kind=="photo" else Vector2(1120,72)
-		card.text=str(item.get("title","照片")) if kind=="photo" else "%s    Day %02d    %s    %.1fs" % [item.name,int(item.get("game_day",0)),str(item.created_at).left(10),float(item.duration)]
+		card.text=LocalizationSystem.text(str(item.get("title","照片"))) if kind=="photo" else LocalizationSystem.text("%s    Day %02d    %s    %.1fs" % [item.name,int(item.get("game_day",0)),str(item.created_at).left(10),float(item.duration)])
 		grid.add_child(card)
 		card.add_theme_stylebox_override("normal",_card_style())
 		if kind=="photo":
 			card.text=""; var photo := library.load_photo(str(item.photo_id))
 			if photo!=null: _image(card,photo,Vector2(10,8),Vector2(255,156))
-			var title := Label.new(); title.text=str(item.get("title","照片")); title.position=Vector2(12,168); title.size=Vector2(252,32); title.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS; title.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(title)
+			var title := Label.new(); title.text=LocalizationSystem.text(str(item.get("title","照片"))); title.position=Vector2(12,168); title.size=Vector2(252,32); title.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS; title.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(title)
 		card.disabled=bool(item.get("missing",false)); card.pressed.connect(show_entry.bind(i))
 func show_entry(index: int) -> void:
 	chosen=clampi(index,0,entries.size()-1)
@@ -86,7 +86,7 @@ func show_entry(index: int) -> void:
 				for record in GameState.artifacts.get("samples",[]):
 					if str(record.get("id",""))==str(item.id): record.title=item.name
 				ResidencySystem._sync_sources(); ResidencySystem.persist()
-			else: owner_ui.feedback.text=store.last_error).tooltip_text="保存录音名称"
+			else: owner_ui.feedback.text=LocalizationSystem.text(store.last_error)).tooltip_text=LocalizationSystem.text("保存录音名称")
 		_label("Day %02d  ·  %s" % [int(item.get("game_day",0)),str(item.created_at).left(10)],Vector2(294,91),Vector2(596,31)).add_theme_font_size_override("font_size",14)
 		var waveform := preload("res://scripts/residency/sound_paper.gd").new(); waveform.wav=player.stream; waveform.position=Vector2(294,143); waveform.size=Vector2(624,112); add_child(waveform)
 		progress=HSlider.new(); progress.position=Vector2(294,267); progress.size=Vector2(624,24); progress.max_value=maxf(.01,float(item.duration)); progress.step=.01; add_child(progress)
@@ -119,9 +119,9 @@ func show_entry(index: int) -> void:
 				confirm.queue_free()))
 		for page in ResidencySystem.state().get("free_pages",{}).values():
 			if page.any(func(piece: Dictionary) -> bool: return str(piece.get("material",""))==str(item.id)):
-				remove.disabled=true; remove.tooltip_text="这段录音仍在作品页中使用。"
+				remove.disabled=true; remove.tooltip_text=LocalizationSystem.text("这段录音仍在作品页中使用。")
 		if CoreLoopSystem.material_in_use(str(item.id)):
-			remove.disabled=true; remove.tooltip_text="这段录音已留在分享或申请的记录里。"
+			remove.disabled=true; remove.tooltip_text=LocalizationSystem.text("这段录音已留在分享或申请的记录里。")
 
 func _process(_delta: float) -> void:
 	if is_instance_valid(progress):
@@ -153,7 +153,7 @@ func _empty_recorder() -> void:
 func _label(value: String, at: Vector2, dimensions: Vector2) -> Label:
 	var label := PALETTE.words(self,value,at,dimensions.x,20,PALETTE.INK); label.size=dimensions; return label
 func _button(value: String, at: Vector2, dimensions: Vector2, action: Callable) -> Button:
-	var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.text=value; button.position=at; button.size=dimensions; add_child(button); button.pressed.connect(action); return button
+	var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.text=LocalizationSystem.text(value); button.position=at; button.size=dimensions; add_child(button); button.pressed.connect(action); return button
 func _image(parent: Node, data: Image, at: Vector2, dimensions: Vector2) -> void:
 	var photo := TextureRect.new(); photo.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; photo.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	photo.texture=ImageTexture.create_from_image(data); photo.position=at; photo.size=dimensions; photo.mouse_filter=MOUSE_FILTER_IGNORE; parent.add_child(photo)

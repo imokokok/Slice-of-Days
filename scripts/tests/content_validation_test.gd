@@ -281,6 +281,29 @@ func _validate_module_interaction(module_id: String, interaction: Dictionary) ->
 			token_ids.append(token_id)
 		if str(token.get("label", "")).is_empty() or str(token.get("detail", "")).is_empty():
 			failures.append("prototype %s token %s needs label and detail" % [module_id, token_id])
+		if module_id=="cooking":
+			if str(token.get("prep_action","")).is_empty() or str(token.get("pan_cue","")).is_empty():
+				failures.append("cooking token %s needs prep_action and pan_cue" % token_id)
+			var heat_window: Array=token.get("heat_window",[])
+			if heat_window.size()!=2 or float(heat_window[0])<0.0 or float(heat_window[1])>1.0 or float(heat_window[0])>=float(heat_window[1]):
+				failures.append("cooking token %s has an invalid heat window" % token_id)
+			var heat_drop := float(token.get("heat_drop",-1.0))
+			if heat_drop<0.0 or heat_drop>0.25:
+				failures.append("cooking token %s has an invalid heat drop" % token_id)
+			var prep_options: Array=token.get("prep_options",[])
+			if prep_options.size()!=2:
+				failures.append("cooking token %s needs exactly two prep options" % token_id)
+			var prep_ids: Array[String]=[]
+			for option_value in prep_options:
+				var option: Dictionary=option_value
+				var option_id := str(option.get("id",""))
+				if option_id.is_empty() or prep_ids.has(option_id):
+					failures.append("cooking token %s has an empty or duplicated prep option" % token_id)
+				prep_ids.append(option_id)
+				for field in ["label","detail","pan_cue"]:
+					if str(option.get(field,"")).is_empty(): failures.append("cooking token %s prep option %s needs %s" % [token_id,option_id,field])
+			if (token.get("flavors",[]) as Array).is_empty():
+				failures.append("cooking token %s needs at least one flavor tag" % token_id)
 	var progress_steps: Array = interaction.get("progress_steps", [])
 	if not progress_steps.is_empty():
 		if progress_steps.size() < maximum + 1:

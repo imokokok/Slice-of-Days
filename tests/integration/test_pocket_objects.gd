@@ -124,14 +124,15 @@ func run() -> void:
 	var kitchen=current_scene
 	for id in ["tomato","herbs","sea_beans"]: kitchen.token_buttons[id].pressed.emit()
 	check(kitchen.prep_board.items.size()==3,"Selected ingredients appear on the real cutting board")
-	kitchen.primary_button.pressed.emit(); check(kitchen.stage_ready,"Whole ingredients remain a supported cooking path")
+	preload("res://tests/integration/cooking_walkthrough.gd").prepare_and_cook(kitchen,1)
+	check(kitchen.stage_ready,"Alternative ingredient preparation remains a complete cooking path")
 	kitchen.value_slider.value=.59
-	check(kitchen.food_in_pan and kitchen.prep_board.items.is_empty(),"Adjusting heat does not teleport food out of the pan")
+	check(kitchen.added_tokens.size()==3 and kitchen.prep_board.items.is_empty(),"Adjusting heat does not teleport food out of the pan")
 	# Reset the ingredient selection to exercise the alternative preparation path.
-	kitchen.token_buttons.sea_beans.pressed.emit(); kitchen.token_buttons.sea_beans.pressed.emit()
+	kitchen.cooking_reset_button.pressed.emit(); kitchen.primary_button.pressed.emit()
 	for i in 3: kitchen.prep_board.pressed.emit()
 	check(kitchen._interaction_record().mechanic.cut_ingredients.size()==2,"Actual cuts record tomato and herbs; the tin is never cut")
-	kitchen.value_slider.value=.6; kitchen.primary_button.pressed.emit()
+	preload("res://tests/integration/cooking_walkthrough.gd").finish_prepared(kitchen)
 	check(kitchen.stage_ready,"Prepared dish uses the same real heat mechanic")
 	await capture("04-cooking-table")
 	kitchen._complete_choice("careful_menu")

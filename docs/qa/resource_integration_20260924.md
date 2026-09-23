@@ -12,11 +12,15 @@
 | Fresh-process UI reload | UI_REVIEW_RELOAD: 4 checks / 0 failures |
 | Recording failed-save retry | RECORDING_RETRY failures=0 |
 | Actual audio bus isolation | WORLD_CAPTURE_TESTS: PASS |
+| Merged cooking decisions and outcome | COOKING_RHYTHM_TEST: PASS failures=0 |
+| Merged native module routes | NATIVE_MODULE_TEST: PASS failures=0 |
+| Merged procurement and inventory | V3 ECONOMY PASS: 51 checks |
+| Pocket objects and complete cooking controls | POCKET_OBJECTS: 57 checks / 0 failures |
 
 ## 实窗验证
 
 - 新主菜单：地图不覆盖按钮；鼠标点击制作人员可以看到真实作者署名和滚动页面。
-- 厨房：在实际窗口选择柠檬、面包和奶酪，点击砧板切菜，点击锅具入锅/搅拌，再打开并确认出餐。按钮随状态启用/禁用，显示材料已扣除与出餐记录。
+- 厨房：实际窗口选择柠檬、面包和奶酪，点击砧板逐项备料、点食材移到锅边、点击改造锅具下锅；锅口和菜谱记录同步。首次单步版本曾实窗确认出餐；合并后完整备料、下锅、翻拌、尝味、装盘和出餐由真实控件测试另行覆盖。修正后的火候说明已重启检查，不再挤进食材栏。
 - 录音：实际录制数十秒，真实场景、波形、六频段色块随采样更新；停止显示已保存，回听入口启用。
 - 独立导出 EXE：实际启动、重新识别窗口并截图检查主菜单。PCK 内容单独用同一资源/音频/料理测试验证，未用源项目目录冒充打包资源。
 
@@ -26,6 +30,7 @@
 2. 改造锅具的原后景层悬浮：按新锅口重新定位并保留前景遮挡。
 3. 纸页样式从 StyleBoxFlat 切到 StyleBoxTexture 后，继承页强制转换导致空页面：移除不成立的类型假设。
 4. 快速换页释放按钮后，延迟动效挂接仍携带失效 Object：改为延迟解析实例 ID，并验证 25 个当帧释放的按钮及完整五日流程。
+5. 发布前合并 main 的料理节奏更新：将锅具层绑定到真实分步状态，调整汽泡/热气在新锅口的位置，移除料理中的脚步占位音，更新旧单步回归。火候长句上移，避免落入食材栏。
 
 早期无声 headless 启动不具备真实录音驱动；实际录音验收均显式使用 WASAPI。五日唱片封面步骤需要真实渲染，因此完整五日测试使用图形窗口。这些早期不适用的运行未计入通过结果。
 

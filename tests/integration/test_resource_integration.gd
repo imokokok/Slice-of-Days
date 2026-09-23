@@ -90,8 +90,20 @@ func run() -> void:
 	var kitchen=current_scene
 	check(is_instance_valid(kitchen.illustrated_pot),"Adapted pot is instantiated in real kitchen")
 	for id in ["lemon","bread","cheese"]: kitchen._toggle_token(id)
-	kitchen.value_slider.value=.58; kitchen.illustrated_pot.pressed.emit(); await settle()
-	check(kitchen.food_in_pan and kitchen.illustrated_pot.ingredients.size()==3,"Pot click uses real selected ingredients")
+	# Keep this walkthrough self-contained so it can test the exported PCK,
+	# which deliberately excludes test fixtures.
+	kitchen.primary_button.pressed.emit()
+	for i in 3: kitchen.prep_option_buttons[0].pressed.emit()
+	for id in ["lemon","bread","cheese"]:
+		kitchen.value_slider.value=.58
+		kitchen.token_buttons[id].pressed.emit()
+		kitchen.illustrated_pot.pressed.emit()
+	kitchen.value_slider.value=.58
+	for i in 2: kitchen.stir_buttons.fold.pressed.emit()
+	kitchen.primary_button.pressed.emit()
+	kitchen.seasoning_buttons.salt.pressed.emit()
+	kitchen.plating_buttons.share.pressed.emit(); await settle()
+	check(kitchen.stage_ready and kitchen.illustrated_pot.ingredients.size()==3,"Pot clicks add real ingredients through the complete cooking workflow")
 	check(kitchen.illustrated_pot.stir_tween!=null,"Accepted cooking input animates the spoon")
 	kitchen._complete_choice("careful_menu")
 	check(kitchen.completed and gs.inventory.cheese==1,"Serving consumes inventory exactly once")

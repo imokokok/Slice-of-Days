@@ -48,5 +48,5 @@ func _draw() -> void:
 		draw_arc(Vector2(192,361),119,.15,PI-.15,26,Color("d99d70",(heat-.68)*.65),3,true)
 	var lid:=Assets.texture("pot_lid")
 	if lid: draw_texture_rect(lid,Rect2(236,321,145,56),false,Color("f2e4cf"))
-	if is_hovered() or has_focus(): draw_line(Vector2(90,383),Vector2(309,383),Color("617b73"),3,true)
+	if not disabled and (is_hovered() or has_focus()): draw_line(Vector2(90,383),Vector2(309,383),Color("617b73"),3,true)
 	draw_set_transform(Vector2.ZERO)

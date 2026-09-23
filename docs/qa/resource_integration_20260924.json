@@ -59,6 +59,34 @@
       "checks": null,
       "log": "presentation-world-capture.log",
       "sha256": "4a1d2b178637ca92826928ebcfb0d4dc470096f551d605d5a9b00a0da557ea09"
+    },
+    {
+      "test": "Merged cooking decisions and outcome",
+      "result": "COOKING_RHYTHM_TEST: PASS failures=0",
+      "checks": null,
+      "log": "presentation-cooking-rhythm.log",
+      "sha256": "7a65ebdf576232c6516799d88fb570329b6f12d944bb4c592d1c28c421d195ec"
+    },
+    {
+      "test": "Merged native module routes",
+      "result": "NATIVE_MODULE_TEST: PASS failures=0",
+      "checks": null,
+      "log": "presentation-native_modules.log",
+      "sha256": "10776ee1fcf39f3078c1384e9313b3f8343a17e460c6bcd811be34fe71f0c271"
+    },
+    {
+      "test": "Merged procurement and inventory",
+      "result": "V3 ECONOMY PASS: 51 checks",
+      "checks": 51,
+      "log": "presentation-v3_economy.log",
+      "sha256": "22b27bf6995589983b5849040bbeb9699d39fb060a5e280455f24b31e25cad1f"
+    },
+    {
+      "test": "Pocket objects and complete cooking controls",
+      "result": "POCKET_OBJECTS: 57 checks / 0 failures",
+      "checks": 57,
+      "log": "presentation-pocket.log",
+      "sha256": "3e1ab41d824e07ecac1a9c819e1d5e8ca663c463d535dfe03a422dd029c7623b"
     }
   ]
 }

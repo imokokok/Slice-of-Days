@@ -103,7 +103,7 @@ func run() -> void:
 	check(modules.begin_session("cooking","handmade_test"),"Cooking still enters existing module")
 	var kitchen=load("res://scenes/native_module_game.tscn").instantiate(); root.add_child(kitchen); await settle()
 	for id in [fish_id,"herbs","lemon"]: kitchen._toggle_token(id)
-	kitchen.value_slider.value=.58; kitchen._perform_primary_action()
+	preload("res://tests/integration/cooking_walkthrough.gd").prepare_and_cook(kitchen)
 	check(kitchen.stage_ready,"Caught fish works as a real cooking ingredient")
 	await snap("10-kitchen")
 	kitchen._complete_choice("careful_menu")

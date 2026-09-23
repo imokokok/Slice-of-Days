@@ -142,8 +142,8 @@ func native(module: String, tokens: Array, choice: String) -> void:
 	var scene=current_scene
 	check(scene.module_id==module,"production scene resolves active context")
 	for token in tokens: scene._toggle_token(str(token))
-	if module=="cooking": scene.value_slider.value=.58
-	scene._perform_primary_action()
+	if module=="cooking": preload("res://tests/integration/cooking_walkthrough.gd").prepare_and_cook(scene)
+	else: scene._perform_primary_action()
 	if module=="sound_sampling": await create_timer(2.7).timeout
 	check(scene.stage_ready,"actual mechanic ready "+module)
 	scene._complete_choice(choice)

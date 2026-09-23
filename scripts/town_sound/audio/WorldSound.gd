@@ -30,6 +30,7 @@ func _ready() -> void:
 	foley = AudioStreamPlayer.new()
 	coast = AudioStreamPlayer.new()
 	weather_player = AudioStreamPlayer.new()
+	weather_player.bus=SOUND_EFFECTS_BUS
 	ui = AudioStreamPlayer.new()
 	ambience.bus = MUSIC_BUS
 	coast.bus = MUSIC_BUS

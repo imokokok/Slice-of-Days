@@ -27,6 +27,15 @@ func _draw() -> void:
 			var extent := photo.get_size()*fit
 			draw_texture_rect(photo,Rect2((size-extent)*.5,extent),false)
 	else:
+		var asset := str(data.get("asset_id",""))
+		if not asset.is_empty():
+			var art := preload("res://scripts/ui/components/handmade_assets.gd").texture(asset)
+			var extent := art.get_size()*minf(size.x/art.get_width(),(size.y-28)/art.get_height())
+			draw_texture_rect(art,Rect2(Vector2((size.x-extent.x)*.5,0),extent),false)
+			draw_rect(Rect2(0,size.y-28,size.x,28),Color("faf4df"))
+			draw_string(get_theme_font("font"),Vector2(7,size.y-8),str(data.get("text","")),HORIZONTAL_ALIGNMENT_LEFT,size.x-14,15,ink)
+			if selected or has_focus(): draw_rect(r,Color("e8c75d"),false,2)
+			return
 		if data.get("kind","") not in ["text","recognition"]: draw_rect(r,Color("faf4df"))
 		var words := TextParagraph.new(); words.width=size.x-16
 		words.add_string(str(data.get("text","")),get_theme_font("font"),22)

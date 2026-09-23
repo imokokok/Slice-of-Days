@@ -18,7 +18,8 @@ func run() -> void:
 	var modules=root.get_node("GameplayModuleSystem")
 	var recipes=load("res://scripts/core/recipe_book.gd")
 	var fishing=load("res://scripts/core/coastal_fishing.gd")
-	gs.begin_new_game("A"); gs.current_location="cafe"; gs.current_minute=660; gs.money=1000
+	root.get_node("ChapterSystem").start_new_game(); gs.switch_to_role("B",2,true)
+	gs.current_location="cafe"; gs.current_minute=660; gs.money=1000
 	var shop=load("res://scripts/ui/shop_panel.gd").new(); shop.shop_id="grocery"; root.add_child(shop); await settle()
 	check(shop.item_list.get_child_count()==economy.stock("grocery").size(),"Each actual product has an independent button")
 	var product=economy.stock("grocery")[0]
@@ -108,7 +109,8 @@ func run() -> void:
 	kitchen._complete_choice("careful_menu")
 	check(kitchen.completed and not gs.inventory.has(fish_id),"Cooking consumes real caught fish")
 	kitchen.queue_free(); await settle()
-	gs.begin_new_game("B"); gs.current_minute=660; gs.current_location="night_market"
+	root.get_node("ChapterSystem").start_new_game(); gs.switch_to_role("B",2,true)
+	gs.current_minute=660; gs.current_location="night_market"
 	var router=root.get_node("SceneRouter"); router.active_space_id="restaurant"
 	check(economy.accept_procurement().ok,"Restaurant accepts procurement before basket test")
 	gs.current_location="cafe"; router.active_space_id=""

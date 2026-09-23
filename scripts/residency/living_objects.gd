@@ -87,12 +87,12 @@ func build() -> void:
 		return
 	var names := ["随身本  Notebook","档案  Archive","相机  Camera","录音机  Recorder"]
 	var targets := ["notebook","dossier","gallery","sound_library"]
-	for i in 4:
+	for i in (0 if mode=="map" else 4):
 		var chosen: bool=mode==targets[i] or (i==0 and mode in ["home","map","today","knowledge","fieldbook","bag","day_schedule"])
 		var b := button(body,names[i],Vector2(212+i*222,-42),Vector2(214,39),_switch_object.bind(targets[i]))
 		b.name="ObjectTab_"+targets[i]; b.variant="tab"; b.selected=chosen; b.refresh()
 		b.add_theme_font_size_override("font_size",17)
-	var back := button(body,"×",Vector2(1290,-42),Vector2(42,38),close)
+	var back := button(body,"×",Vector2(1290,0 if mode=="map" else -42),Vector2(42,38),close)
 	back.tooltip_text=SettingsSystem.binding_text("ui_cancel")+" 收起"
 	back.add_theme_color_override("font_color",Color.WHITE)
 	match mode:
@@ -196,11 +196,14 @@ func _free_page(key: String) -> void:
 		ResidencySystem.persist())
 	canvas.selection_changed.connect(_selection_toolbar)
 	if not canvas.read_only:
-		var tools := [["add","素材","Add"],["text","文字","Text"],["photo","照片","Photo"],["draw","画笔","Draw"]]
+		var add := button(body,"＋ 添加素材",Vector2(906,122),Vector2(281,54),_material_tray)
+		add.name="AddCollageMaterial"; add.tooltip_text="打开照片、小票、信件和生活纸片；点击或拖入页面"
+		var tools := [["text","文字","Text"],["photo","照片","Photo"],["draw","画笔","Draw"]]
 		for i in tools.size():
-			var action: Callable=[_material_tray,_write_piece,_photo_material_tray,_toggle_drawing][i]
+			var action: Callable=[_write_piece,_photo_material_tray,_toggle_drawing][i]
 			var tool_button := button(body,"",Vector2(1220,172+i*111),Vector2(82,101),action)
 			tool_button.variant="outlined"; tool_button.refresh()
+			tool_button.name="CollageTool_"+str(tools[i][0])
 			_icon(tool_button,str(tools[i][0]),Vector2(25,12),Vector2(32,32))
 			var words := label(tool_button,str(tools[i][1])+"\n"+str(tools[i][2]),Vector2(2,48),Vector2(78,44),14,BLUE); words.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 
@@ -213,10 +216,12 @@ func _selection_toolbar() -> void:
 	for i in actions.size(): button(selection_tools,labels[i],Vector2(i*112,0),Vector2(105,40),canvas.transform_selected.bind(actions[i]))
 
 func _material_tray() -> void:
+	ResidencySystem._sync_sources()
 	if is_instance_valid(detail): detail.queue_free()
 	detail=panel(body,Vector2(825,150),Vector2(470,485),Color("faf7ee"))
+	detail.name="CollageMaterialTray"
 	button(detail,"收起素材 ×",Vector2(275,8),Vector2(180,35),func() -> void: detail.queue_free())
-	label(detail,"拖一张到纸上",Vector2(18,13),Vector2(245,32),19,BLUE)
+	label(detail,"点击放入 · 也可拖到纸上",Vector2(18,13),Vector2(255,32),17,BLUE)
 	var scroll := ScrollContainer.new()
 	scroll.position=Vector2(8,52); scroll.size=Vector2(454,418)
 	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; detail.add_child(scroll)
@@ -228,18 +233,20 @@ func _material_tray() -> void:
 		if item.get("kind","")=="official": continue
 		var piece := preload("res://scripts/residency/material_cutout.gd").new()
 		piece.material_id=str(id); piece.item=item
+		piece.name="Material_"+str(id).validate_node_name()
 		var kind := str(item.get("kind","note"))
 		piece.size=Vector2([170,184,160,176][index%4],155 if kind=="photo" else 172 if kind=="receipt" else 112+(index%3)*12)
 		piece.position=Vector2(24+(index%2)*207+sin(index*2.0)*8,18+floori(index/2.0)*178+(index%2)*14)
 		piece.pivot_offset=piece.size*.5; piece.rotation=[-.065,.045,-.035,.075][index%4]
 		spread.add_child(piece)
 		piece.activated.connect(func() -> void:
-			canvas._drop_data(Vector2(420,210),{"residency_material":id}); detail.queue_free())
+			canvas._drop_data(Vector2(330+(canvas.pieces.size()%3)*85,180+(canvas.pieces.size()%2)*75),{"residency_material":id}); detail.queue_free())
 		bottom=maxf(bottom,piece.position.y+piece.size.y+22)
 		index+=1
 	spread.custom_minimum_size=Vector2(430,maxf(410,bottom))
-	if index==0: label(spread,"生活留下的纸片，
-会慢慢聚在这里。",Vector2(45,90),Vector2(350,100),22,BLUE)
+	if index==0:
+		label(spread,"还没有收集到素材。\n照片、小票和回信会出现在这里；也可以先写一张纸条。",Vector2(35,62),Vector2(350,140),22,BLUE)
+		button(spread,"写一张纸条",Vector2(58,242),Vector2(285,48),_write_piece)
 
 func _write_piece() -> void:
 	if is_instance_valid(detail): detail.queue_free()
@@ -307,6 +314,7 @@ func _inventory() -> void:
 			button(detail,"放回包里",Vector2(190,236),Vector2(220,40),func() -> void: detail.queue_free()))
 	if grid.get_child_count()==0: label(body,"包里还空着。",Vector2(110,245),Vector2(1040,60),25,BLUE)
 	button(body,"← 回到随身本",Vector2(110,671),Vector2(300,40),_switch_object.bind("notebook"))
+	button(body,"整理素材 · 制作拼贴 →",Vector2(862,670),Vector2(370,44),_open_collage).name="OpenCollage"
 
 func _show_detail(id: String) -> void:
 	if is_instance_valid(detail): detail.queue_free()
@@ -425,6 +433,11 @@ func _notebook_page() -> void:
 	for i in 3:
 		var targets := ["map","knowledge","bag"]
 		var b := button(body,["地图","人和地方","随身包"][i],Vector2(737+i*169,638),Vector2(157,40),_switch_object.bind(targets[i])); b.add_theme_font_size_override("font_size",17)
+	button(body,"制作拼贴 · 添加生活素材 →",Vector2(765,577),Vector2(444,45),_open_collage).name="OpenCollage"
+
+func _open_collage() -> void:
+	mode="dossier"; archive_tab="days"; build()
+	body.get_node("AddCollageMaterial").grab_focus()
 
 func _refresh_checks() -> void:
 	var rows := GuidanceSystem.must_objectives()
@@ -508,20 +521,18 @@ func _photo_material_tray() -> void:
 		if piece.get("item") is Dictionary and str(piece.item.get("kind",""))!="photo": piece.hide()
 
 func _map() -> void:
-	var viewport := panel(body,Vector2(28,26),Vector2(1284,646),Color("f1ead8"))
-	viewport.name="MapViewport"; viewport.clip_contents=true
+	var viewport := Control.new(); viewport.position=Vector2(82,0); viewport.size=Vector2(1200,722)
+	viewport.name="MapViewport"; viewport.mouse_filter=MOUSE_FILTER_IGNORE; body.add_child(viewport)
 	map_board=load("res://scripts/residency/map_paper.gd").new()
-	map_board.position=Vector2(130,0); map_board.scale=Vector2.ONE*.90
+	map_board.position=Vector2(45,-6); map_board.scale=Vector2.ONE*.83
 	map_board.selected.connect(_map_select); viewport.add_child(map_board)
 	var filters: Array=[]
 	for i in 4:
-		var b := button(viewport,["全部地点","去过的地方","听说的地方","当前线索"][i],Vector2(10,158+i*56),Vector2(115,46),func() -> void:
+		var b := button(viewport,["全部地点","去过的地方","听说的地方","当前线索"][i],Vector2(110+i*203,710),Vector2(191,36),func() -> void:
 			map_board.filter_locations(i)
 			for index in filters.size(): filters[index].selected=index==i)
 		b.name="MapFilter_"+str(i); b.add_theme_font_size_override("font_size",15); b.clip_text=true; b.selected=i==0; filters.append(b)
-	var lead := GuidanceSystem.tracked_lead()
-	if not lead.is_empty():
-		label(body,"听说："+str(lead.get("text","")),Vector2(74,681),Vector2(1120,31),17,Color("fff9e9"))
+	feedback.position=Vector2(195,676); feedback.size=Vector2(990,30)
 	_map_select(GameState.current_location if map_selected.is_empty() else map_selected)
 
 func _notebook_collection(section: String) -> void:
@@ -557,7 +568,7 @@ func _map_select(location: String) -> void:
 	var old := body.get_node_or_null("MapDetails")
 	if old != null: body.remove_child(old); old.queue_free()
 	if location==GameState.current_location: return
-	var side := panel(body,Vector2(814,104),Vector2(455,510),Color("f1f5f4",.98))
+	var side := panel(body,Vector2(814,104),Vector2(455,510),Color("f5ecd8"))
 	side.name="MapDetails"
 	label(side,TravelSystem.location_name(location),Vector2(27,21),Vector2(363,45),28,BLUE)
 	label(side,"从 "+TravelSystem.location_name(GameState.current_location)+" 出发",Vector2(27,76),Vector2(393,35),18,Color("6a8598"))

@@ -166,7 +166,9 @@ func build() -> void:
 		"notebook": _notebook()
 
 func close() -> void:
-	ResidencySystem.persist()
+	if not ResidencySystem.persist():
+		if is_instance_valid(feedback): feedback.text="保存失败，内容仍保留在当前页面。请稍后重试。"
+		return
 	WorldSound.play_ui("paper")
 	queue_free()
 

@@ -128,7 +128,7 @@ func latest_outcome(module_id: String) -> Dictionary:
 
 func begin_session(module_id: String, source_event_id := "", rollback_snapshot: Dictionary = {}) -> bool:
 	if not ChapterSystem.module_available(module_id) or not GameState.shared_state.get("pending_module",{}).is_empty(): return false
-	if not GameState.can_fit_now(60 if source_event_id.begins_with("studio:") else required_minutes(module_id)): return false
+	if not bool(entry_check(module_id,60 if source_event_id.begins_with("studio:") else -1).ok): return false
 	if module_id == "contemplation" and GameState.current_minute < WorldGraph.LOOKOUT_OPEN:
 		return false
 	if not unlock(module_id) or not start(module_id):
@@ -345,5 +345,10 @@ func entry_check(module_id: String, duration_override := -1) -> Dictionary:
 	if not ChapterSystem.module_available(module_id): return {"ok":false,"reason":"今天先做手边的事情。"}
 	if module_id=="contemplation" and GameState.current_minute<WorldGraph.LOOKOUT_OPEN: return {"ok":false,"reason":"观景台入夜开放，可以晚些再来。"}
 	var minutes := duration_override if duration_override>=0 else required_minutes(module_id)
+	var place := WorldGraph.activity_location(module_id)
+	if not place.is_empty():
+		var hours := WorldGraph.location_status(place)
+		if not bool(hours.open): return {"ok":false,"reason":str(hours.reason)}
+		if GameState.current_minute+minutes>int(hours.closes): return {"ok":false,"reason":"这次活动约需 %d 分钟，店铺 %02d:%02d 休息。明天早点来吧。"%[minutes,int(hours.closes)/60,int(hours.closes)%60]}
 	if not GameState.can_fit_now(minutes): return {"ok":false,"reason":"这次活动需要约 %d 分钟，当前空闲时段放不下。可以查看日程。"%minutes}
 	return {"ok":true,"reason":"","minutes":minutes}

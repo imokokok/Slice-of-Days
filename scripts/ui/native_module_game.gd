@@ -12,6 +12,9 @@ const BOARD := Rect2(42, 122, 920, 610)
 
 var cooking_pan: Texture2D=preload("res://art/ui/enamel-cooking-pan.png")
 var ingredient_art: Control
+var prep_board: Button
+var prepared_food: Dictionary={}
+var food_in_pan := false
 var module_id := ""
 var session_context: Dictionary = {}
 var prototype: Dictionary = {}
@@ -105,12 +108,19 @@ func _build_cooking_ui() -> void:
 	var p = preload("res://scripts/ui/components/interface_palette.gd")
 	theme=p.theme_for_tools()
 	p.words(self,"潮汐饭店 · 手边的料理",Vector2(70,40),1010,34)
-	p.words(self,"取食材，调火候，把今天的味道留成一页。",Vector2(72,96),1100,20,p.MUTED)
+	p.words(self,"取食材 · 在砧板上切菜 · 调火候 · 留下自己的菜谱",Vector2(72,96),1100,20,p.MUTED)
 	var book_button := _button(self,"翻开菜谱",Vector2(1175,48),Vector2(300,50),false)
 	book_button.variant="quiet"; book_button.refresh(); book_button.pressed.connect(_open_recipe_book)
-	art.picture(self,"worktop",Vector2(65,183),Vector2(820,455),true)
+	prep_board=preload("res://scripts/ui/components/cooking_board.gd").new()
+	prep_board.position=Vector2(66,247); prep_board.size=Vector2(388,266); add_child(prep_board)
+	prep_board.prepared.connect(func(id: String):
+		prepared_food[id]=true; stage_ready=false; _update_state()
+		status_label.text=("已切好" if preload("res://scripts/ui/components/cooking_ingredients.gd").can_cut(id) else "已取出")+_token_label(id)+"。可以继续准备，或放入锅里拌匀。")
+	_kitchen_picture(1,Vector2(480,197),Vector2(390,390))
+	_kitchen_picture(2,Vector2(485,218),Vector2(422,342))
+	_kitchen_picture(5,Vector2(75,158),Vector2(184,115))
 	art.picture(self,"recipe_book",Vector2(940,176),Vector2(592,426),true)
-	instruction_label=p.words(self,"从下面取三样食材。\n\n先后顺序，也是一道菜的记忆。",Vector2(994,219),209,21)
+	instruction_label=p.words(self,"从下面取三样食材。\n\n点击砧板切菜，或保留整块口感。",Vector2(994,219),209,21)
 	selection_label=p.words(self,"",Vector2(1256,218),230,19)
 	ingredient_art=Control.new(); ingredient_art.mouse_filter=MOUSE_FILTER_IGNORE; add_child(ingredient_art)
 	var tokens: Array=interaction.get("tokens",[])
@@ -137,6 +147,12 @@ func _build_cooking_ui() -> void:
 	return_button.variant="quiet"; return_button.refresh(); return_button.pressed.connect(_return_or_cancel)
 	token_buttons.values()[0].grab_focus()
 
+func _kitchen_picture(index: int, at: Vector2, extent: Vector2) -> void:
+	var atlas := AtlasTexture.new(); atlas.atlas=preload("res://art/ui/pocket_doodles/kitchen_objects.png")
+	atlas.region=Rect2((index%3)*512,floori(index/3.0)*512,512,512)
+	var picture := TextureRect.new(); picture.texture=atlas; picture.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	picture.position=at; picture.size=extent; picture.mouse_filter=MOUSE_FILTER_IGNORE; add_child(picture)
+
 func _open_recipe_book() -> void:
 	if not get_tree().get_nodes_in_group("recipe_book").is_empty(): return
 	var book := preload("res://scripts/ui/recipe_book_panel.gd").new()
@@ -145,7 +161,7 @@ func _open_recipe_book() -> void:
 		selected_tokens.clear()
 		for id in recipe.ingredients:
 			if token_buttons.has(str(id)) and EconomySystem.ingredient_available(str(id)): selected_tokens.append(str(id))
-		value_slider.value=float(recipe.heat); stage_ready=false
+		value_slider.value=float(recipe.heat); stage_ready=false; food_in_pan=false
 		instruction_label.text=str(recipe.title)+"\n\n"+str(recipe.notes).left(60)
 		_update_state()
 		status_label.text="正在照着「%s」做。%s" % [recipe.title,"还缺食材，先去采购或钓鱼。" if selected_tokens.size()<3 else "食材就位，可以调火候。"]
@@ -186,6 +202,7 @@ func _toggle_token(token_id: String) -> void:
 			status_label.text = LocalizationSystem.text("最多保留 %d 项。先取消一项，作品不会替你丢掉边界。" % maximum)
 			return
 		selected_tokens.append(token_id)
+	food_in_pan=false
 	stage_ready = false
 	_update_state()
 
@@ -208,9 +225,10 @@ func _perform_primary_action() -> void:
 		"cooking":
 			var heat := value_slider.value
 			if heat < 0.42 or heat > 0.74:
-				status_label.text = LocalizationSystem.text("火候还没有进入稳定区。让指针停在蓝色刻度之间。")
+				status_label.text = LocalizationSystem.text("火候还不稳定，调到 42%–74% 之间再拌匀。")
 				return
 			stage_ready = true
+			food_in_pan = true
 			status_label.text = LocalizationSystem.text("火候稳定，三样材料已经完成同一轮处理。现在决定怎样出餐。")
 		"sound_sampling":
 			playback_active = true
@@ -258,12 +276,20 @@ func _process(delta: float) -> void:
 
 
 func _update_state() -> void:
+	if is_instance_valid(prep_board):
+		prep_board.items.assign(selected_tokens)
+		if food_in_pan: prep_board.items.clear()
+		prep_board.cuts=prepared_food
+		prep_board.disabled=completed or food_in_pan or selected_tokens.is_empty() or selected_tokens.all(func(id: String):return prepared_food.has(id))
+		prep_board.queue_redraw()
 	if is_instance_valid(ingredient_art):
 		for old in ingredient_art.get_children(): ingredient_art.remove_child(old); old.queue_free()
-		for index in selected_tokens.size():
-			var sketch := preload("res://scripts/ui/goods_sketch.gd").new(); sketch.item_id=selected_tokens[index]
+		for index in (selected_tokens.size() if food_in_pan else 0):
+			var sketch := TextureRect.new()
+			sketch.texture=preload("res://scripts/ui/components/cooking_ingredients.gd").texture(selected_tokens[index],prepared_food.has(selected_tokens[index]))
+			sketch.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; sketch.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED; sketch.mouse_filter=MOUSE_FILTER_IGNORE
 			var angle := -PI*.8+index*PI*.6
-			sketch.position=Vector2(348,330)+Vector2(cos(angle),sin(angle))*59; sketch.size=Vector2(115,106); ingredient_art.add_child(sketch)
+			sketch.position=Vector2(585,319)+Vector2(cos(angle),sin(angle))*47; sketch.size=Vector2(100,88); ingredient_art.add_child(sketch)
 	var minimum := int(interaction.get("min_select", 0))
 	var labels: Array[String] = []
 	for token_id in selected_tokens:
@@ -342,6 +368,7 @@ func _interaction_record() -> Dictionary:
 		"selected_labels": selected_tokens.map(func(token_id: String) -> String: return _token_label(token_id)),
 		"mechanic": {
 			"heat": value_slider.value if module_id == "cooking" else null,
+			"cut_ingredients": selected_tokens.filter(func(id: String): return prepared_food.has(id) and preload("res://scripts/ui/components/cooking_ingredients.gd").can_cut(id)) if module_id=="cooking" else [],
 			"exposure": value_slider.value if module_id == "photography" else null,
 			"view_angle": value_slider.value if module_id == "optical_illusion" else null,
 			"auditioned": stage_ready if module_id == "sound_sampling" else null,
@@ -383,7 +410,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO,size),Color("f4f1e6"))
-	if module_id=="cooking": return
+	if module_id=="cooking":
+		draw_rect(Rect2(Vector2.ZERO,size),Color("e7c7b4"))
+		draw_rect(Rect2(0,620,size.x,280),Color("f1dfc1"))
+		draw_line(Vector2(0,620),Vector2(size.x,620),Color("886952"),2)
+		return
 	var art=preload("res://scripts/ui/components/handmade_assets.gd")
 	match module_id:
 		"sound_sampling":

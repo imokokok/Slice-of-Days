@@ -11,7 +11,7 @@ func _ready() -> void:
 	var panel := PanelContainer.new(); panel.position=Vector2(360,155); panel.size=Vector2(880,590)
 	var face := StyleBoxFlat.new(); face.bg_color=Color("faf7ee"); face.set_corner_radius_all(9); face.set_content_margin_all(28); panel.add_theme_stylebox_override("panel",face); add_child(panel)
 	var rows := VBoxContainer.new(); rows.add_theme_constant_override("separation",16); panel.add_child(rows)
-	var heading := Label.new(); heading.text="起居角 · 唱片与纸张" if GameState.current_location in ["residence","dorm"] else "小镇的公共作品架"; heading.add_theme_font_size_override("font_size",28); rows.add_child(heading)
+	var heading := Label.new(); heading.text="起居角 · 唱片与纸张" if GameState.current_location in ["residence","dorm"] else "在小镇留下的记录"; heading.add_theme_font_size_override("font_size",28); rows.add_child(heading)
 	var scroll := ScrollContainer.new(); scroll.custom_minimum_size.y=180; rows.add_child(scroll)
 	actions=GridContainer.new(); actions.columns=3; actions.size_flags_horizontal=SIZE_EXPAND_FILL; actions.add_theme_constant_override("h_separation",10); actions.add_theme_constant_override("v_separation",10); scroll.add_child(actions)
 	var traces := ChapterSystem.everyday_at(GameState.current_location)

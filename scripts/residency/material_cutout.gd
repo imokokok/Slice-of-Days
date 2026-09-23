@@ -5,12 +5,13 @@ var material_id := ""
 var item: Dictionary = {}
 var photo: Texture2D
 var hovering := false
+var click_pending := false
 func _ready() -> void:
 	focus_mode=FOCUS_ALL
 	mouse_default_cursor_shape=CURSOR_DRAG
 	mouse_filter=MOUSE_FILTER_STOP
 	clip_contents=true
-	tooltip_text=str(item.get("title","素材"))+"\n拖到纸上 · 双击放入"
+	tooltip_text=str(item.get("title","素材"))+"\n点击放入 · 拖到纸上 · 回车确认"
 	mouse_entered.connect(func() -> void: hovering=true; queue_redraw())
 	mouse_exited.connect(func() -> void: hovering=false; queue_redraw())
 	if str(item.get("kind",""))=="photo" and photo==null:
@@ -55,6 +56,7 @@ func _draw() -> void:
 	words.add_string(str(item.get("title",item.get("text","素材"))),get_theme_font("font"),16)
 	words.draw(get_canvas_item(),Vector2(10,top),ink)
 func _get_drag_data(_position: Vector2) -> Variant:
+	click_pending=false
 	var preview := Control.new()
 	var card = get_script().new()
 	card.material_id=material_id; card.item=item; card.photo=photo; card.size=size
@@ -63,5 +65,9 @@ func _get_drag_data(_position: Vector2) -> Variant:
 	return {"residency_material":material_id}
 func _gui_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_accept"): activated.emit(); accept_event()
-	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed and event.double_click:
-		activated.emit(); accept_event()
+	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT:
+		if event.pressed: click_pending=true; grab_focus()
+		else:
+			if click_pending and Rect2(Vector2.ZERO,size).has_point(event.position): activated.emit()
+			click_pending=false
+		accept_event()

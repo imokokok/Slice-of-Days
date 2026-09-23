@@ -21,7 +21,7 @@ func _ready() -> void:
 	var next := ChapterSystem.next_chapter()
 	words.text = LocalizationSystem.text("灯熄了。海还醒着。" if next.is_empty() else "灯熄了。\n醒来时，又是新的一天。")
 	if bool(GameState.shared_state.get("midnight_rest", false)):
-		words.text = LocalizationSystem.text("夜深了，小镇渐渐安静下来。" if next.is_empty() else "夜深了，小镇渐渐安静下来。\n醒来时，又是新的一天。")
+		words.text = "00:00\n"+LocalizationSystem.text("这段旅程收好了。" if next.is_empty() else "新的一天。")
 	add_child(words)
 	words.modulate.a = 0.0
 	var fade := create_tween()
@@ -34,10 +34,11 @@ func _continue_journey() -> void:
 	if continuing: return
 	continuing = true
 	var rollback_snapshot := GameState.to_save_data().duplicate(true)
+	var midnight := bool(GameState.shared_state.get("midnight_rest",false))
 	GameState.shared_state.erase("sleep_pending")
 	GameState.shared_state.erase("midnight_rest")
 	ChapterSystem.mark_transition_complete(str(ChapterSystem.transition_context().get("transition_id", "")))
-	var result := ChapterSystem.advance_chapter()
+	var result := ChapterSystem.advance_chapter(midnight)
 	if not bool(result.get("ok",false)):
 		GameState.load_save_data(rollback_snapshot)
 		GameState.shared_state.erase("sleep_pending")

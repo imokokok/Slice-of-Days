@@ -3,6 +3,15 @@ extends RefCounted
 ## Block boundaries, routes, original textures and save coordinates stay stable.
 const CURB := 718.0
 const FEET := 820.0
+const SIDEWALK_EDGE := 846.0
+const ROAD := 863.0
+
+static func rain_amount(day: int, minute: int) -> float:
+	# One coastal weather system follows the saved day/time, never a block hash.
+	var windows := {2:Vector2(780,1110),3:Vector2(420,630),5:Vector2(630,750)}
+	if not windows.has(day): return 0.0
+	var span: Vector2=windows[day]
+	return smoothstep(span.x,span.x+30,minute)*(1.0-smoothstep(span.y-30,span.y,minute))
 const CUTOUTS := {
 	"residence": {"size":Vector2(600,500), "ground":1166.0},
 	"dorm": {"size":Vector2(600,500), "ground":1166.0},
@@ -19,7 +28,7 @@ static func center_local(location: String) -> float:
 static func resident_feet(resident: String) -> float:
 	# Residents occupy a shallow second plane, entirely on the paving, while
 	# the continuous player path stays clear in the foreground.
-	return FEET - 16.0 - float(absi(resident.hash()) % 3) * 4.0
+	return CURB + 34.0 - float(absi(resident.hash()) % 3) * 4.0
 
 static func cutout_rect(location: String, source: Vector2, center: float) -> Rect2:
 	var layout: Dictionary = CUTOUTS[location]

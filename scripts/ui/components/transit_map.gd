@@ -26,7 +26,7 @@ func _ready() -> void:
 	for label in [origin_label,destination_label]: label.add_theme_stylebox_override("normal",P.face(P.CREAM,4,7))
 	update_route(origin,destination)
 func _point(id: String) -> Vector2:
-	return Vector2(points.get(id,Vector2(640,320)))/Vector2(1284,646)*size
+	return Vector2(points.get(id,MAP.MAP_SIZE*.5))/MAP.MAP_SIZE*size
 func update_route(from: String, to: String) -> void:
 	origin=from; destination=to
 	if not is_node_ready(): return

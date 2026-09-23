@@ -25,11 +25,7 @@ func flow_state() -> Dictionary:
 	return {"day":GameState.current_day,"character":GameState.current_role,"main":bool(ChapterSystem.day_state().main_completed),"blocks":GameState.active_time_blocks(),"minute":GameState.current_minute,"available_locations":locations,"side_activity_state":GameState.module_states.duplicate(true),"narrative":ChapterSystem.story().duplicate(true),"switch_enabled":CharacterSystem.switch_unlocked()}
 
 func location_status(id: String) -> Dictionary:
-	if id=="park" and GameState.current_minute<WorldGraph.LOOKOUT_OPEN: return {"open":false,"reason":"观景台入夜开放，可以晚些再来。"}
-	if id in ["cafe","produce_stall"]:
-		var shop := "grocery" if id=="cafe" else "produce_stall"
-		if not EconomySystem.shop_open(shop): return {"open":false,"reason":"店铺现在休息，可以稍后再来。"}
-	return {"open":true,"reason":""}
+	return WorldGraph.location_status(id)
 
 func blocked(message: String) -> void:
 	block_message=message; block_age=0; notification.emit("NOTICE",message); updated.emit()
@@ -41,6 +37,9 @@ func possibility() -> Dictionary:
 	var base := {"id":"possibility_%d"%day,"text":"","context":"","location":str(p.location),"action":"map","priority":"possibility"}
 	if not block_message.is_empty() and block_age<15:
 		base.text=block_message; base.priority="critical"; return base
+	if GameState.current_minute>=1350:
+		base.text="夜深了，23:59 前回到住处。" if GameState.current_location!=CoreLoopSystem.home() else "已经到家了，午夜会翻到下一天。"
+		base.location=CoreLoopSystem.home(); base.action="map"; base.context="已有记录会保留，不必赶着补齐。"; return base
 	if day==5 and CharacterSystem.switch_unlocked():
 		base.text="可以安排两个人接下来的一段时间。"; base.location=GameState.current_location; base.action="day_schedule"
 		base.context=GameState.current_time_guidance(); return base
@@ -63,7 +62,14 @@ func possibility() -> Dictionary:
 		base.context="结束今天由你决定，记录不需要交齐。"
 		if bool(location_status("park").open) and not bool(GameState.module_states.get("contemplation",{}).get("completed",false)): base.context="观景台现在开着，也可以先去看看夜海。随时能回家休息。"
 	var available := location_status(str(base.location))
-	if not bool(available.open): base.context=str(available.reason)
+	if not bool(available.open):
+		if GameState.current_minute<int(available.opens):
+			base.text=TravelSystem.location_name(str(base.location))+"还没开门，可以先在附近逛逛。"
+			base.context="营业时间 "+str(available.hours); base.action="map"
+		else:
+			base.text=TravelSystem.location_name(str(base.location))+"现在休息，可以先回住处。"
+			base.context="营业时间 "+str(available.hours)
+			base.location=CoreLoopSystem.home(); base.action="map"
 	if GameState.current_minute>=1200: base.context+="\n天色晚了，回程也需要留一点时间。"
 	if help_level==1 and not main: base.context="现在是 "+time_text(GameState.current_minute)+"，可以去"+TravelSystem.location_name(str(base.location))+"看看。"
 	return base
@@ -201,6 +207,9 @@ func refresh() -> void:
 		var material: Dictionary=ResidencySystem.state().materials[id]
 		if str(material.get("kind","")) not in ["official","proof"]:
 			snapshot["material_"+str(id)]={"type":"Material","kind":"FOUND","text":str(material.get("title","新材料"))}
+			if str(material.get("source",""))=="resident_reply":
+				snapshot["material_"+str(id)].kind="REPLY"
+				snapshot["material_"+str(id)].target={"mode":"fieldbook","material_id":str(id)}
 	for id in GameState.confirmed_residents:
 		snapshot["recognition_"+str(id)]={"type":"RecognitionEvent","kind":"CONNECTED","text":source_name(str(id))+"留下了认可"}
 	var key := GameState.current_role+":"+str(GameState.current_day)
@@ -218,8 +227,14 @@ func refresh() -> void:
 	var seen: Dictionary=state().seen
 	for id in snapshot:
 		if not _previous.has(id) and not seen.has(id):
-			notification.emit(str(snapshot[id].kind),str(snapshot[id].text)); seen[id]=true
-			GameEvents.publish({"DONE":"ObjectiveCompleted","FOUND":"MaterialAdded","HEARD":"LeadDiscovered","CONNECTED":"RecognitionGranted"}[str(snapshot[id].kind)],snapshot[id].merged({"id":id}))
+			if snapshot[id].has("target"): queue_feedback(str(snapshot[id].kind),str(snapshot[id].text),snapshot[id].target)
+			else: notification.emit(str(snapshot[id].kind),str(snapshot[id].text))
+			seen[id]=true
+			GameEvents.publish({"DONE":"ObjectiveCompleted","FOUND":"MaterialAdded","REPLY":"ResidentReplyReceived","HEARD":"LeadDiscovered","CONNECTED":"RecognitionGranted"}[str(snapshot[id].kind)],snapshot[id].merged({"id":id}))
+	for notice in GameState.shared_state.get("recipe_notifications",[]):
+		if str(notice.owner)!=GameState.current_role or bool(notice.get("notified",false)): continue
+		queue_feedback("APPRECIATED",str(notice.text),{"mode":"recipe","recipe_id":str(notice.recipe_id)})
+		notice.notified=true
 	if snapshot!=_previous: updated.emit()
 	_previous=snapshot
 	var next := next_step()
@@ -236,17 +251,22 @@ func _ready() -> void:
 	GameState.message_posted.connect(func(message: String): notification.emit("NOTICE",message))
 	GameState.session_restored.connect(func() -> void: _session_key=""; _previous.clear())
 
-func queue_feedback(kind: String, text: String) -> void:
+func queue_feedback(kind: String, text: String, target: Dictionary={}) -> void:
 	for entry in feedback_queue:
-		if entry.kind==kind:
+		if entry.kind==kind and entry.get("target",{})==target:
 			if not entry.texts.has(text): entry.texts.append(text)
 			return
-	feedback_queue.append({"kind":kind,"texts":[text],"priority":{"CONNECTED":4,"DONE":3,"HEARD":2,"FOUND":1}.get(kind,0)})
+	feedback_queue.append({"kind":kind,"texts":[text],"target":target.duplicate(),"priority":{"REPLY":6,"APPRECIATED":5,"CONNECTED":4,"DONE":3,"HEARD":2,"FOUND":1}.get(kind,0)})
 	feedback_age=0
 func take_feedback() -> Dictionary:
 	if feedback_queue.is_empty() or feedback_age<.25 or not bool(UIStateSystem.policy().notify): return {}
 	feedback_queue.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return a.priority>b.priority)
-	var entries := feedback_queue.duplicate(true); feedback_queue.clear()
+	var entries: Array=[]
+	if not feedback_queue[0].get("target",{}).is_empty(): entries.append(feedback_queue.pop_front())
+	else:
+		# A reply has its own destination. Do not bury it inside a general digest.
+		for entry in feedback_queue.duplicate():
+			if entry.get("target",{}).is_empty(): entries.append(entry); feedback_queue.erase(entry)
 	var parts: Array[String]=[]
 	for entry in entries:
 		parts.append(str(entry.texts[0])+("（另有%d项已记入随身本）"%(entry.texts.size()-1) if entry.texts.size()>1 else ""))
@@ -254,4 +274,4 @@ func take_feedback() -> Dictionary:
 		var summary: Array[String]=[]
 		for entry in entries.slice(1): summary.append(str({"DONE":"今日记录","FOUND":"新材料","HEARD":"听来的消息","CONNECTED":"居民留字","NOTICE":"刚刚发生","ARRIVAL":"到达"}.get(entry.kind,"新记录")))
 		parts=[parts[0],"   ".join(summary)]
-	return {"heading":str({"DONE":"今天留下了一笔","FOUND":"收进随身包","HEARD":"听来的消息","CONNECTED":"有人记住了你"}.get(entries[0].kind,"刚刚发生")),"text":"\n".join(parts),"entries":entries}
+	return {"heading":str({"REPLY":"收到一份回应","APPRECIATED":"有人喜欢你的菜谱","DONE":"今天留下了一笔","FOUND":"收进随身包","HEARD":"听来的消息","CONNECTED":"有人记住了你"}.get(entries[0].kind,"刚刚发生")),"text":"\n".join(parts),"entries":entries,"target":entries[0].get("target",{})}

@@ -228,6 +228,7 @@ func next_commitment() -> Dictionary:
 
 
 func current_time_guidance() -> String:
+	if current_minute>=1350: return "23:59 前到家 · 00:00 换日"
 	var remaining := current_block_remaining()
 	var next := next_commitment()
 	if not next.is_empty() and bool(next.get("auto_advance", false)):
@@ -240,7 +241,7 @@ func current_time_guidance() -> String:
 			if current_location == str(next.get("location", "")):
 				return "%s空闲 %d分钟 · 已在%s · %s开始" % ["整块" if remaining >= 90 else "碎片", remaining, str(next.get("location_label", "指定地点")), _minute_text(int(next.get("start", 0)))]
 			return "%s空闲 %d分钟 · %s前到%s · %s开始" % ["整块" if remaining >= 90 else "碎片", remaining, _minute_text(return_by), str(next.get("location_label", "指定地点")), _minute_text(int(next.get("start", 0)))]
-	var sleep_at := int(schedule_for(current_role, current_day).get("sleep_at", 1320))
+	var sleep_at := 1439
 	return "%s空闲 %d分钟 · %s休息" % ["整块" if remaining >= 90 else "碎片", remaining, _minute_text(sleep_at)]
 
 
@@ -248,6 +249,8 @@ func current_time_guidance() -> String:
 func advance_world_clock(real_seconds: float) -> void:
 	if is_instance_valid(get_node_or_null("/root/UIStateSystem")) and not bool(UIStateSystem.policy().world_time): return
 	if real_seconds <= 0.0 or not is_finite(real_seconds): return
+	if current_minute>=1440: return
+	if current_minute>=1439 and (current_location!=CoreLoopSystem.home() or SceneRouter.active_space_id!=("home_a" if current_role=="A" else "home_b")): return
 	if bool(shared_state.get("pending_commitment", false)):
 		return
 	# Fragmented schedules contain unavailable gaps. Natural world time may reach
@@ -274,7 +277,8 @@ func advance_world_clock(real_seconds: float) -> void:
 func spend_time(minutes: int) -> bool:
 	if minutes <= 0:
 		return true
-	current_minute = min(current_minute + minutes, 24 * 60 - 1)
+	var at_home := current_location==CoreLoopSystem.home() and SceneRouter.active_space_id==("home_a" if current_role=="A" else "home_b")
+	current_minute = mini(current_minute + minutes,1440 if at_home else 1439)
 	refresh_appointments()
 	commit_active_role_state()
 	state_changed.emit()
@@ -294,6 +298,7 @@ func can_fit_now(minutes: int) -> bool:
 func can_fit_at(role: String, day: int, minute: int, minutes: int) -> bool:
 	if minutes < 0:
 		return false
+	if minute+minutes>1439: return false
 	if minute>=1320 and day in range(1,5): return true
 	for block in schedule_for(role, day).get("blocks", []):
 		var start := int(block[0])
@@ -307,6 +312,9 @@ func current_block_remaining() -> int:
 	for block in active_time_blocks():
 		if current_minute >= int(block[0]) and current_minute < int(block[1]):
 			return int(block[1]) - current_minute
+	# The last evening remains playable for walking home even after Day 5's
+	# activity windows close. Daytime work gaps still use the safe planner.
+	if current_minute>=1320 and current_minute<1440: return 1440-current_minute
 	return 0
 
 

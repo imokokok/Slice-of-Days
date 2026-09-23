@@ -19,6 +19,16 @@ func segment_for(location: String) -> Dictionary:
 
 const JUNCTION_X := 5600.0
 
+func location_status(location: String, minute := -1) -> Dictionary:
+	var now := GameState.current_minute if minute<0 else minute
+	var hours: Array=config.get("business_hours",{}).get(location,[0,1440])
+	var opened := now>=int(hours[0]) and now<int(hours[1])
+	var hours_text := "%02d:%02d—%02d:%02d"%[int(hours[0])/60,int(hours[0])%60,int(hours[1])/60,int(hours[1])%60]
+	return {"open":opened,"opens":int(hours[0]),"closes":int(hours[1]),"hours":hours_text,"reason":"" if opened else TravelSystem.location_name(location)+" · "+hours_text+" 营业，现在休息。"}
+
+func activity_location(module: String) -> String:
+	return str({"sound_sampling":"record_store","cooking":"night_market","ghostwriting":"handcraft_shop","chess":"chess_stall","contemplation":"park","tarot":"tarot_stall","archives":"library"}.get(module,""))
+
 func location_x(location: String) -> float:
 	var route := segment_for(location)
 	var offset := float(route.get("offset", 0))

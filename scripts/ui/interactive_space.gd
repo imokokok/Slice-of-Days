@@ -37,7 +37,7 @@ func _ready() -> void:
 		return
 	objects = space.get("objects", [])
 	if SceneRouter.active_space_id in ["home_a","home_b"]:
-		objects.append({"id":"everyday_shelf","name":"起居角的唱片与纸张","kind":"everyday","x":620})
+		objects.append({"id":"everyday_shelf","name":"起居角的唱片与纸张","kind":"everyday","x":850 if SceneRouter.active_space_id=="home_a" else 310})
 	people = DialogueSystem.people_at(GameState.current_location)
 	if SceneRouter.active_space_id in ["home_a", "home_b"]: people.clear()
 	_build_theme()
@@ -53,7 +53,7 @@ func _ready() -> void:
 	if SceneRouter.active_space_id == "home_a": add_child(preload("res://scripts/ui/collection_display.gd").new())
 	if SceneRouter.active_space_id in ["home_a", "home_b"]: add_child(load("res://scripts/photography/room_photo_display.gd").new())
 	_build_ui()
-	stage.hotspots.append({"x":90, "kind":"exit", "label":"回到街道"})
+	stage.hotspots.append({"x":145 if SceneRouter.active_space_id=="home_a" else 90, "kind":"exit", "label":"回到街道"})
 	for index in objects.size():
 		var object_kind := str(objects[index].get("kind", ""))
 		stage.hotspots.append({"x":_hotspot_x(index), "kind":"object", "index":index, "prop":"bed" if object_kind == "sleep" else ("computer" if object_kind == "work" else "table"), "label":_object_hint(index)})
@@ -178,7 +178,7 @@ func _open_selected() -> void:
 		add_child(notes_overlay)
 		return
 	if str(item.get("kind", "")) == "journal":
-		SceneRouter.journal()
+		get_node("GameplayShell").open_paper("notebook")
 		return
 	if str(item.get("kind", "")) == "observe":
 		room_dialogue.show()
@@ -406,7 +406,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _interact() -> void:
 	if MetaExperience.modal_open() or is_instance_valid(conversation) or is_instance_valid(pocket_panel) or is_instance_valid(notes_overlay) or SceneRouter.transitioning: return
-	var nearest: Dictionary = stage.nearest()
+	var nearest: Dictionary = stage.nearest_interactable()
 	match str(nearest.get("kind", "")):
 		"echo":
 			name_label.text = LocalizationSystem.text("黑板")
@@ -512,8 +512,8 @@ func _object_hint(index: int) -> String:
 	var item: Dictionary = objects[index]
 	if str(item.get("kind", "")) == "work":
 		var work := GameState.next_commitment()
-		if work.is_empty(): return "电脑 · 今天的工作已处理完"
-		return "电脑 · %02d:%02d 开始 · %d分钟 · 收入%d元" % [int(work.start) / 60, int(work.start) % 60, int(work.end) - int(work.start), int(work.get("pay", 0))]
+		if work.is_empty(): return "书桌 · 今天的工作已处理完"
+		return "书桌 · %02d:%02d 开始 · %d分钟 · 收入%d元" % [int(work.start) / 60, int(work.start) % 60, int(work.end) - int(work.start), int(work.get("pay", 0))]
 	var hint := GameplayModuleSystem.time_hint(str(item.get("module_id","")))
 	return str(item.get("name","")) + (" · " + hint if not hint.is_empty() else "")
 

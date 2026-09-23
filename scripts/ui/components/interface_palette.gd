@@ -1,9 +1,9 @@
 extends RefCounted
 ## Shared production tokens. Paper is reserved for records; ink surfaces for tools.
-const INK := Color("243e50")
+const INK := Color("48483d")
 const SEA := Color("315e79")
 const DEEP := Color("254b66")
-const CREAM := Color("faf7ee")
+const CREAM := Color("f8efdd")
 const LEMON := Color("eed577")
 const SAGE := Color("849776")
 const MUTED := Color("607887")

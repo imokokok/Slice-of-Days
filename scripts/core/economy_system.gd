@@ -57,11 +57,7 @@ func stock(shop_id: String) -> Array:
 	return result
 
 func shop_open(shop_id: String) -> bool:
-	var hours: Array = config.shop_hours.get(shop_id,[0,1440])
-	# Keep the ingredients for the required restaurant activity obtainable if
-	# optional exploration runs late. Other days retain normal business hours.
-	if shop_id=="produce_stall" and GameState.current_day==2 and GameState.current_minute>=int(hours[1]) and not bool(ChapterSystem.day_state().main_completed): return true
-	return GameState.current_minute >= int(hours[0]) and GameState.current_minute < int(hours[1])
+	return bool(WorldGraph.location_status(str(catalog.get(shop_id,{}).get("location_id",""))).open)
 
 
 func cart(shop_id: String) -> Dictionary:

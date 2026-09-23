@@ -24,6 +24,7 @@ var time_notice_age := 8.0
 
 var switch_button: Button
 var clock_back: Panel
+var pocket_objects: Array[Button] = []
 
 func _ready() -> void:
 	name = "GameplayShell"
@@ -40,19 +41,7 @@ func _ready() -> void:
 		if child == self or child == stage or not child is CanvasItem: continue
 		if child is Label or child is Button or child is TextureRect: child.hide()
 		elif child is Panel and child != host.get("room_dialogue"): child.hide()
-	folder = Button.new()
-	folder.position = Vector2(25,25)
-	folder.size = Vector2(109,61)
-	folder.text = "档案"
-	folder.tooltip_text = SettingsSystem.binding_text("open_archive")+" · 居住档案"
-	folder.add_theme_font_size_override("font_size",22)
-	folder.add_theme_color_override("font_color",Color("495955"))
-	var paper := StyleBoxFlat.new()
-	paper.bg_color = Color("e7dab3",0.96)
-	paper.set_corner_radius_all(3)
-	folder.add_theme_stylebox_override("normal",paper)
-	folder.pressed.connect(func() -> void: open_paper("dossier"))
-	add_child(folder)
+	_build_pocket_objects()
 	clock_back=Panel.new(); clock_back.name="ClockBackdrop"; clock_back.add_to_group("solid_hud"); clock_back.position=Vector2(30,23); clock_back.size=Vector2(215,47); clock_back.mouse_filter=MOUSE_FILTER_IGNORE
 	var clock_face := StyleBoxFlat.new(); clock_face.bg_color=Color("254b66"); clock_face.set_corner_radius_all(7); clock_back.add_theme_stylebox_override("panel",clock_face); add_child(clock_back)
 	clock_label = Label.new()
@@ -116,6 +105,18 @@ func _ready() -> void:
 	switch_button.pressed.connect(func(): open_paper("day_schedule"))
 	add_child(switch_button)
 
+func _build_pocket_objects() -> void:
+	var titles := ["随身本","档案","相机","录音机","背包","地图"]
+	var actions := ["open_notebook","open_archive","open_camera","open_recorder","open_bag","open_map"]
+	var modes := ["notebook","dossier","camera","recorder","bag","map"]
+	for i in 6:
+		var item=preload("res://scripts/ui/components/pocket_object_button.gd").new()
+		item.name="Pocket_"+modes[i]; item.title=titles[i]; item.action=actions[i]; item.object_index=i
+		item.size=Vector2(100,100) if i<4 else Vector2(86,88)
+		item.pressed.connect(open_tool.bind(modes[i]) if i in [2,3] else open_paper.bind(modes[i]))
+		pocket_objects.append(item); add_child(item)
+	folder=pocket_objects[1]
+
 func _papers_changed() -> void:
 	var count := int(ResidencySystem.state().materials.size())
 	if count <= last_material_count: return
@@ -147,7 +148,6 @@ func finish_recording_for_exit() -> bool:
 	return true
 
 func _process(delta: float) -> void:
-	folder.hide()
 	switch_button.visible=CharacterSystem.switch_unlocked()
 	switch_button.disabled=_blocked() or is_instance_valid(overlay) or is_instance_valid(tool)
 	switch_button.text="日程与视角 · "+GameState.current_role
@@ -159,6 +159,13 @@ func _process(delta: float) -> void:
 		clock_label.text=CoreLoopSystem.day_stamp()+"   "+GameState.clock_text()
 	time_notice_age+=delta
 	var clear_view := not is_instance_valid(overlay) and not is_instance_valid(tool) and not _blocked()
+	for i in pocket_objects.size():
+		var item := pocket_objects[i]
+		item.visible=clear_view
+		item.position=Vector2((size.x-400)*.5+i*100,8) if i<4 else Vector2(size.x-196+(i-4)*94,size.y-112)
+		item.disabled=(i==2 and not FilmSystem.camera_available(false)) or not bool(UIStateSystem.policy().notebook)
+		item.tooltip_text=item.title+" · "+SettingsSystem.binding_text(item.action)
+		if i==2 and item.disabled: item.tooltip_text="先在杂货店取得相机"
 	clock_label.visible=clear_view
 	clock_back.visible=clear_view
 	clock_label.modulate.a=1.0
@@ -210,6 +217,8 @@ func _activate_context() -> void:
 	var special := _special()
 	if not special.is_empty():
 		_activate_special(special); return
+	if not stage.nearest_interactable().is_empty() and host.has_method("_interact"):
+		host.call("_interact"); return
 	if _talk_to_context(): return
 	if host.has_method("_interact"): host.call("_interact")
 
@@ -234,6 +243,8 @@ func _context() -> Dictionary:
 			return {"id":"work_"+str(commitment.get("id","")),"text":SettingsSystem.binding_text("open_map")+"  %02d:%02d 前回家工作" % [due/60,due%60]}
 	var special := _special()
 	if not special.is_empty(): return {"id":special,"text":SettingsSystem.binding_text("interact")+"  "+str({"counter":"资料领取 / 提交","organize":"整理桌上的材料","proofs":"领取工作证明","residence":"居住确认"}.get(special,special))+"\n"+SettingsSystem.binding_text("open_archive")+"  居住档案"}
+	var physical: Dictionary=stage.nearest_interactable()
+	if not physical.is_empty(): return {"id":str(physical),"text":SettingsSystem.binding_text("interact")+"  "+str(physical.get("label","互动"))}
 	var talk_near: Dictionary = stage.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
 	if not talk_near.is_empty():
 		var tracked := GuidanceSystem.tracked_lead()
@@ -248,6 +259,7 @@ func _context() -> Dictionary:
 func _special() -> String:
 	if not stage.indoor: return ""
 	var space := SceneRouter.active_space_id
+	if space in ["home_a","home_b"]: return ""
 	var service := ""
 	var at := 0.0
 	if space == "print_studio" and absf(stage.player_x-450)<95: service="counter"; at=450
@@ -264,6 +276,7 @@ func _service_points() -> void:
 	if not stage.indoor: return
 	var points: Array = []
 	var space := SceneRouter.active_space_id
+	if space in ["home_a","home_b"]: return
 	if space == "print_studio": points.append({"x":450,"kind":"residency","label":"社区资料柜台"})
 	if space == ("home_a" if GameState.current_role == "A" else "home_b"):
 		points.append({"x":460,"kind":"residency","label":"整理桌上的材料"})
@@ -309,17 +322,28 @@ func open_paper(mode: String) -> void:
 	add_child(paper)
 
 func open_tool(mode: String) -> void:
-	if is_instance_valid(tool) or _blocked(): return
+	if is_instance_valid(tool) or is_instance_valid(overlay) or _blocked(): return
 	if mode == "recorder":
 		tool = load("res://scripts/residency/recorder_lite.gd").new()
 		add_child(tool)
 		return
 	if not FilmSystem.camera_available(): return
 	tool = load("res://scripts/town_sound/PocketCamera.gd").new()
-	tool.gallery_requested.connect(func() -> void: call_deferred("open_paper","gallery"))
+	tool.gallery_requested.connect(_show_camera_gallery)
 	tool.source_provider = _camera_source
 	tool.context = {"location":GameState.current_location,"title":TravelSystem.location_name(GameState.current_location),"day":GameState.current_day,"role":GameState.current_role,"game_minute":GameState.current_minute}
 	add_child(tool)
+
+func show_recording_library() -> void:
+	if not finish_recording_for_exit(): return
+	# queue_free is applied after deferred calls. Wait for actual retirement so
+	# the library is not rejected as a second simultaneous tool.
+	await get_tree().process_frame
+	open_paper("sound_library")
+
+func _show_camera_gallery() -> void:
+	await get_tree().process_frame
+	open_paper("gallery")
 
 func _camera_source() -> Image:
 	focus_opening = true

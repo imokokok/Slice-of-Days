@@ -625,13 +625,13 @@ func _rebuild_hotspots() -> void:
 	street.queue_redraw()
 	var building_center := _place_center()
 	var center := building_center + Composition.entry_offset(GameState.current_location)
+	var sign_positions := [110.0,street.world_width-110.0]
+	if street.world_width>=6400: sign_positions.insert(1,street.world_width*.5)
+	for sign_x in sign_positions:
+		var sign_location := street_order[clampi(_index_at(sign_x),0,street_order.size()-1)]
+		street.hotspots.append({"x":sign_x,"reach":110.0,"kind":"transport","id":sign_location,"label":"小镇站牌 · 查看路线与出行方式"})
 	for i in street_order.size():
 		var place := street_order[i]
-		# Every map block owns one physical transport node at its far-right edge.
-		# Keeping the local coordinate fixed makes the road sign readable as the
-		# boundary/choice point instead of a hotspot that drifts with the building.
-		var sign_x := _world_x(i,1500.0)
-		street.hotspots.append({"x":sign_x,"kind":"transport","id":place,"label":"小镇站牌 · 查看路线与出行方式"})
 		# Adjacent blocks are already visible before the player crosses a boundary.
 		if place != GameState.current_location:
 			var neighbors := DialogueSystem.people_at(place)
@@ -656,7 +656,9 @@ func _rebuild_hotspots() -> void:
 	else:
 		var rooms := _spaces_at(GameState.current_location)
 		for i in rooms.size():
-			street.hotspots.append({"x":center + i * 120, "kind":"door", "reach":street.DOOR_REACH, "id":str(rooms[i].id), "label":"进入" + str(rooms[i].name)})
+			var hours := WorldGraph.location_status(GameState.current_location)
+			var caption := "进入"+str(rooms[i].name) if bool(hours.open) else str(rooms[i].name)+" · 休息中（"+str(hours.hours)+"）"
+			street.hotspots.append({"x":center + i * 120, "kind":"door", "reach":street.DOOR_REACH, "id":str(rooms[i].id), "label":caption})
 	for item in outdoor_objects:
 		if not ChapterSystem.module_available(str(item.get("module_id",""))): continue
 		if str(item.get("location_id", "")) == GameState.current_location:
@@ -666,7 +668,6 @@ func _rebuild_hotspots() -> void:
 				street.hotspots.append({"x":center + 145.0, "kind":"shop", "id":str(item.get("shop_id", "")), "label":str(item.name)})
 			else: street.hotspots.append({"x":center, "kind":"module", "id":str(item.module_id), "label":str(item.name) + " · " + GameplayModuleSystem.time_hint(str(item.module_id))})
 	if GameState.current_location=="print_shop":
-		street.hotspots.append({"x":_world_x(current_index,1210),"kind":"public_traces","label":"查看公共柜里的作品"})
 		if ChapterSystem.meeting_available(): street.hotspots.append({"x":_world_x(current_index,990),"kind":"meeting","label":"和赴约的人交谈"})
 	var available := EventSystem.available_events()
 	for index in available.size():
@@ -674,7 +675,7 @@ func _rebuild_hotspots() -> void:
 	street.queue_redraw()
 
 func _interact() -> void:
-	var item: Dictionary = street.nearest()
+	var item: Dictionary = street.nearest_interactable()
 	if item.is_empty(): return
 	# Talking has its own W binding; E is reserved for the physical world.
 	if str(item.get("kind", "")) in ["person", "npc", "resident", "shopkeeper", "invitation"]: return
@@ -694,7 +695,6 @@ func _interact() -> void:
 			if not is_instance_valid(pocket_panel): _show_pocket_panel(preload("res://scripts/ui/transport_panel.gd").new())
 		"fishing":
 			if not is_instance_valid(pocket_panel): _show_pocket_panel(preload("res://scripts/ui/coastal_fishing_panel.gd").new())
-		"public_traces": _open_public_traces()
 		"meeting": _open_meeting()
 		"module":
 			if _guard_pocket_audio(): return
@@ -873,10 +873,6 @@ func _open_map() -> void:
 		return
 	SceneRouter.town_map()
 
-func _open_public_traces() -> void:
-	if is_instance_valid(conversation): return
-	conversation=preload("res://scripts/ui/components/public_trace_panel.gd").new()
-	add_child(conversation)
 func _open_meeting() -> void:
 	if is_instance_valid(conversation) or not ChapterSystem.meeting_available(): return
 	conversation=preload("res://scripts/ui/components/meeting_scene.gd").new()

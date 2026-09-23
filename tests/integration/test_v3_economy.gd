@@ -29,7 +29,7 @@ func run() -> void:
 	root.get_node("ChapterSystem").start_new_game()
 	state.switch_to_role("B", 2, true) # Focused economy fixture: B's actual day.
 	check(state.money == 1600, "B starts with the configured 1600, without charging prepaid rent")
-	state.current_minute = 1080
+	state.current_minute = 960 # Leave real time for shopping before the 18:30 closing.
 	state.current_location = "night_market"
 	router.active_space_id = "restaurant"
 	change_scene_to_file("res://scenes/interactive_space.tscn")

@@ -18,12 +18,12 @@ func _ready() -> void:
 		if state=="focus": frame.bg_color=Color.TRANSPARENT; frame.set_border_width_all(2); frame.border_color=PALETTE.LEMON
 		add_theme_stylebox_override(state,frame)
 		add_theme_color_override("font_"+("color" if state=="normal" else state+"_color"),Color.TRANSPARENT)
-	heading=PALETTE.words(self,"",Vector2(24,17),340,15,PALETTE.LEMON)
-	title=PALETTE.words(self,"",Vector2(24,47),340,22,PALETTE.CREAM)
-	context=PALETTE.words(self,"",Vector2(24,105),340,17,Color("d8e5e9"))
+	heading=PALETTE.words(self,"",Vector2(16,10),288,15,PALETTE.LEMON); heading.hide()
+	title=PALETTE.words(self,"",Vector2(16,12),288,22,PALETTE.CREAM)
+	context=PALETTE.words(self,"",Vector2(16,73),288,18,Color("d8e5e9"))
 	for words in [title,context]:
-		words.max_lines_visible=3; words.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
-	route=PALETTE.words(self,"",Vector2(24,150),340,15,PALETTE.CREAM)
+		words.max_lines_visible=2 if words==title else 1; words.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	route=PALETTE.words(self,"",Vector2(16,112),288,17,PALETTE.CREAM)
 	for signal_name in ["mouse_entered","mouse_exited","focus_entered","focus_exited","button_down","button_up"]: connect(signal_name,queue_redraw)
 
 func present(value: Dictionary) -> void:
@@ -32,16 +32,12 @@ func present(value: Dictionary) -> void:
 	heading.text="先确认一下" if urgent else "你正在留意" if str(value.get("priority",""))=="personal" else "故事有了下文" if str(value.get("priority",""))=="connection" else "接下来，可以…"
 	var detail := str(value.get("context",""))
 	context.text=detail; context.visible=not detail.is_empty()
-	var title_height := maxf(32,mini(3,title.get_line_count())*31)
-	context.position.y=title.position.y+title_height+9
-	var context_height := 0.0 if detail.is_empty() else maxf(25,mini(3,context.get_line_count())*25)
-	route.position.y=context.position.y+context_height+17
 	var location := str(value.get("location",""))
 	var place := TravelSystem.location_name(location) if not location.is_empty() else "随身本"
 	var action := str(value.get("action",""))
 	var destination := "日程与视角" if action=="day_schedule" else "整理今天" if action=="evening" and location==GameState.current_location else "查看记录" if action in ["portfolio","final","personal"] else "查看路线"
 	route.text=("就在这里 · " if location==GameState.current_location else place+" · ")+destination+"  ›"
-	size=Vector2(390,route.position.y+42)
+	size=Vector2(320,144)
 	tooltip_text=text+"\n"+detail+"\n"+SettingsSystem.binding_text("open_map")+" 地图 · "+SettingsSystem.binding_text("open_notebook")+" 随身本"
 	var key := str(value.get("id",text))+detail
 	if key!=signature:

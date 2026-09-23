@@ -4,7 +4,7 @@ signal moved(world_x: float)
 
 const SPEED := 300.0
 const REACH := 85.0
-const DOOR_REACH := 55.0
+const DOOR_REACH := 100.0
 const ACTOR_BASE_HEIGHT := 121.0
 const OUTDOOR_ACTOR_HEIGHT := 184.0
 const INDOOR_ACTOR_HEIGHT := 320.0
@@ -27,6 +27,7 @@ const CICI_ART = preload("res://art/user_scenes/cici.png")
 const NAONAO_ART = preload("res://art/user_scenes/naonao_white.png")
 const XIA_TOUMING_ART = preload("res://art/user_scenes/xia_touming_colored.png")
 var original_resident: Sprite2D
+var player_display: Control
 var player_x := 500.0
 var world_width := 1800.0
 var route_id := ""
@@ -67,12 +68,20 @@ func presented_hotspots() -> Array[Dictionary]:
 	return result
 
 func _ready() -> void:
+	# World depth is entirely below the sibling HUD and modal layers.
+	z_index=-2
 	var finish := ShaderMaterial.new()
 	finish.shader = COASTAL_GRADE
 	material = finish if not indoor else null
+	if not indoor:
+		var sky := preload("res://scripts/ui/coast_backdrop.gd").new(); sky.stage=self; add_child(sky)
 	original_resident = preload("res://scripts/ui/original_resident.gd").new()
 	add_child(original_resident)
 	original_resident.hide()
+	player_display=Control.new(); player_display.name="ForegroundPlayer"
+	player_display.mouse_filter=MOUSE_FILTER_IGNORE; player_display.z_index=1
+	player_display.use_parent_material=true; add_child(player_display)
+	player_display.draw.connect(func(): _draw_protagonist(Vector2(player_x-camera_x,_actor_ground_at(player_x)),phase,gait_weight,facing,player_display))
 	if indoor and room_kind in ["home_a","home_b"]:
 		everyday_display=preload("res://scripts/ui/components/everyday_shelf_display.gd").new()
 		add_child(everyday_display)
@@ -120,11 +129,28 @@ func _update_world_finish() -> void:
 	material.set_shader_parameter("camera_offset", Vector2(camera_x,0))
 	material.set_shader_parameter("daylight", Vector3(light.r,light.g,light.b))
 	material.set_shader_parameter("amount", 0.0 if indoor else 1.0)
+	var lights := _night_lights()
+	var night_light := preload("res://scripts/ui/coast_backdrop.gd").weights(GameState.current_minute).z
+	material.set_shader_parameter("local_lights",lights)
+	material.set_shader_parameter("light_count",lights.size())
+	material.set_shader_parameter("night_strength",night_light)
 	for label: Label in world_labels.values(): label.modulate = light
 	if is_instance_valid(original_resident):
 		original_resident.material.set_shader_parameter("camera_offset", Vector2(camera_x,0))
 		original_resident.material.set_shader_parameter("daylight", Vector3(light.r,light.g,light.b))
 		original_resident.material.set_shader_parameter("amount", 0.0 if indoor else 1.0)
+		original_resident.material.set_shader_parameter("local_lights",lights)
+		original_resident.material.set_shader_parameter("light_count",lights.size())
+		original_resident.material.set_shader_parameter("night_strength",night_light)
+
+func _night_lights() -> PackedVector4Array:
+	var result := PackedVector4Array()
+	for place in places:
+		if absf(float(place.x)-camera_x-800)>1250: continue
+		if str(place.id) in Composition.CUTOUTS or not bool(place.get("interior",true)) or str(place.get("kind",""))=="tarot": continue
+		# Exact lamp positions used by _draw_facade, not floating ambient blobs.
+		for side in [-1,1]: result.append(Vector4(float(place.x)+side*268,570,250,.68))
+	return result.slice(0,16)
 
 func _walk_axis() -> float:
 	# SettingsSystem supplies the named actions.  The physical-key fallback keeps
@@ -167,6 +193,9 @@ func move_player(axis: float, delta: float, hurry := false) -> void:
 func nearest() -> Dictionary:
 	return nearest_of([])
 
+func nearest_interactable() -> Dictionary:
+	return nearest_of(["door","home","object","exit","shop","module","transport","fishing","closed","meeting","echo","event"])
+
 func nearest_of(kinds: Array) -> Dictionary:
 	var result: Dictionary = {}
 	var distance := INF
@@ -186,12 +215,11 @@ func _draw() -> void:
 	dialogue_scenery.clear()
 	for label: Label in world_labels.values(): label.hide()
 	var night := GameState.current_minute >= 1080
-	draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
+	if indoor: draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
 	# The lighthouse panorama is a rear layer.  Buildings and trees draw above
 	# it, while the road draws last beneath the people in the foreground.
 	var illustrated := _draw_atlas() if indoor else true
 	if not indoor:
-		_draw_global_coast()
 		_draw_street_middle()
 		_draw_foreground_road()
 		_draw_street_foreground()
@@ -226,9 +254,6 @@ func _draw() -> void:
 			# 尘缘坚持吃肉，CICI 则坚持素食；两位都用用户提供的形象。
 			_draw_authored_npc("chenyuan", Vector2(x-70,_npc_ground("chenyuan",float(item.x))), 1.0)
 			_draw_authored_npc("wu_wu", Vector2(x+70,_npc_ground("wu_wu",float(item.x))), -1.0)
-		elif kind == "public_traces":
-			draw_texture_rect(preload("res://art/ui/handmade/recipe_book.png"),Rect2(x-54,ground-110,108,110),false)
-			_world_label("public_cabinet",Rect2(x-135,ground-150,270,32),"公共柜 · 留下的东西",Color("315e79"),18)
 		elif kind == "meeting":
 			_draw_protagonist(Vector2(x,ground),0.0,0.0,-1.0)
 		elif kind == "event":
@@ -245,7 +270,7 @@ func _draw() -> void:
 		elif indoor and kind == "object" and not illustrated:
 			_draw_furniture(x, str(item.get("prop", "table")))
 	if is_instance_valid(everyday_display): everyday_display.draw_on(self)
-	_draw_protagonist(Vector2(player_x - camera_x, ground), phase, gait_weight, facing)
+	if is_instance_valid(player_display): player_display.queue_redraw()
 	if is_finite(walk_limit) and not illustrated:
 		var gate_x := walk_limit - camera_x + 18
 		draw_line(Vector2(gate_x, 640), Vector2(gate_x, 718), Color("40544e"), 7)
@@ -253,35 +278,26 @@ func _draw() -> void:
 	_draw_atmosphere()
 
 func _weather_kind() -> String:
-	# Weather is authored per day/location so it is repeatable in saves and
-	# never feels like a random filter flickering from frame to frame.
-	var seed := absi(GameState.current_location.hash()) + GameState.current_day * 17
-	return "rain" if posmod(seed, 5) == 0 and not indoor else "clear"
+	return "rain" if Composition.rain_amount(GameState.current_day,GameState.current_minute)>.03 and not indoor else "clear"
 
 func _draw_atmosphere() -> void:
 	if indoor: return
-	var minute := GameState.current_minute
-	var t := fposmod(float(minute), 1440.0)
-	# Separate top and horizon washes create a dawn / golden-hour / blue-hour
-	# transition while preserving the supplied buildings and panorama.
-	if t >= 330.0 and t < 510.0:
-		draw_rect(Rect2(0, 70, 1600, 648), Color(0.96, 0.56, 0.38, 0.045))
-	elif t >= 960.0 and t < 1170.0:
-		draw_rect(Rect2(0, 70, 1600, 648), Color(0.98, 0.48, 0.25, 0.065))
-	elif t >= 1170.0 or t < 330.0:
-		draw_rect(Rect2(0, 70, 1600, 648), Color(0.08, 0.16, 0.32, 0.17))
-		# A low warm band keeps windows and the sea from becoming a flat black
-		# block as the sun disappears behind the coast.
-		draw_rect(Rect2(0, 528, 1600, 190), Color(0.55, 0.36, 0.28, 0.06))
+	# The authored sky and local light pass own time of day. No full-screen wash.
 	if _weather_kind() != "rain": return
 	# Hand-drawn rain strokes: sparse, angled and layered so the weather reads
 	# as atmosphere instead of a particle-system overlay.
-	var drift := fposmod(idle_time * 90.0, 160.0)
-	for i in range(30):
-		var x := fposmod(float(i) * 83.0 - drift + camera_x * 0.04, 1680.0) - 40.0
-		var y := 112.0 + fposmod(float(i) * 137.0 + camera_x * 0.015, 560.0)
-		draw_line(Vector2(x, y), Vector2(x - 8.0, y + 25.0), Color(0.78, 0.90, 0.91, 0.16), 2.0)
-	draw_rect(Rect2(0, 558, 1600, 160), Color(0.27, 0.40, 0.43, 0.08))
+	var rain := Composition.rain_amount(GameState.current_day,GameState.current_minute)
+	for layer in 2:
+		for i in 44:
+			var x := fposmod(i*83.0-idle_time*(18+layer*12)+camera_x*.12,1680)-40
+			var y := fposmod(i*137.0+idle_time*(170+layer*105),850)
+			draw_line(Vector2(x,y),Vector2(x-3,y+13+layer*9),Color(.78,.9,.91,rain*(.14+layer*.09)),1+layer*.35,true)
+	# Small ground impacts and wet highlights stay on the paving plane.
+	for i in 18:
+		var age := fposmod(idle_time*.8+i*.37,1.0)
+		var x := fposmod(i*127.0-camera_x,1700)-50
+		var y := 765.0+posmod(i*23,69)
+		draw_line(Vector2(x-8*age,y),Vector2(x+8*age,y),Color(.78,.86,.87,rain*(1-age)*.3),1.2,true)
 
 func _draw_atlas() -> bool:
 	if indoor:
@@ -326,7 +342,6 @@ func _draw_global_coast() -> bool:
 	# avoids stretching, repeated buildings, or a second background layer.
 	var art_width := 900.0 * COAST_ART.get_width() / COAST_ART.get_height()
 	var art_rect := Rect2(-camera_x, 0, art_width, 900)
-	draw_texture_rect(COAST_ART, art_rect, false, _scene_art_tint())
 	return true
 
 func _draw_street_divider(x: float) -> void:
@@ -347,7 +362,12 @@ func _ground_at(world_x: float) -> float:
 
 func _actor_ground_at(world_x: float) -> float:
 	# A shared foreground walk line keeps feet away from the planted curb.
-	return Composition.FEET if not indoor else _ground_at(world_x)
+	if indoor: return _ground_at(world_x)
+	var passing := 0.0
+	for person in presented_residents():
+		passing=maxf(passing,1.0-smoothstep(35.0,150.0,absf(world_x-float(person.x))))
+	# The foreground path passes around the standing lane, inside the curb.
+	return Composition.FEET+18.0*passing
 
 func _npc_ground(resident: String, world_x: float) -> float:
 	return _actor_ground_at(world_x) if indoor else Composition.resident_feet(resident)
@@ -385,7 +405,7 @@ func _sync_original_resident() -> void:
 	for item in presented_residents():
 		if str(item.get("id","")) != "zhou_xiaoliu": continue
 		var at := Vector2(float(item.x)-camera_x,_npc_ground("zhou_xiaoliu",float(item.x)))
-		original_resident.stand_at(at,_actor_height(),player_x > float(item.x),_scene_art_tint())
+		original_resident.stand_at(at,_actor_height()*(1.0 if indoor else .94),player_x > float(item.x),_scene_art_tint())
 		original_resident.visible = at.x > -120 and at.x < 1720
 		break
 
@@ -469,15 +489,19 @@ func _draw_street_foreground() -> void:
 		_draw_authored_building(CORRESPONDENCE_OFFICE_ART, x, "print_shop")
 
 func _draw_foreground_road() -> void:
-	# The original curb and road silhouette remain. Sunlit aggregate replaces
-	# the opaque black overlay; joints belong to world space, not a parallax HUD.
-	draw_polygon(PackedVector2Array([Vector2(0,CURB_Y),Vector2(1600,CURB_Y),Vector2(1600,900),Vector2(0,900)]),PackedColorArray([Color("c5c2ad"),Color("c5c2ad"),Color("9caa9f"),Color("9caa9f")]))
-	draw_rect(Rect2(0,CURB_Y,1600,26),Color("d9d4bc"))
-	draw_line(Vector2(0,CURB_Y+3),Vector2(1600,CURB_Y+3),Color("eee7d0"),4)
-	draw_line(Vector2(0,CURB_Y+26),Vector2(1600,CURB_Y+26),Color("657c79",.25),2)
-	for i in range(9):
-		var x := float(i)*240.0-fposmod(camera_x,240.0)-120.0
-		draw_line(Vector2(x,CURB_Y+5),Vector2(x-6,CURB_Y+24),Color("969f8c",.40),1)
+	# Shared baseline -> broad pedestrian paving -> raised curb -> carriageway.
+	# Residents stand at the rear; the clear walking lane stays inside the curb.
+	draw_rect(Rect2(0,CURB_Y,1600,Composition.SIDEWALK_EDGE-CURB_Y),Color("dcd4bc"))
+	draw_line(Vector2(0,CURB_Y),Vector2(1600,CURB_Y),Color("657975"),3)
+	draw_line(Vector2(0,CURB_Y+5),Vector2(1600,CURB_Y+5),Color("f4ecd7"),3)
+	for y in [756.0,799.0]: draw_line(Vector2(0,y),Vector2(1600,y),Color("b5b6a4"),1.2,true)
+	for i in range(12):
+		var x := float(i)*170.0-fposmod(camera_x,170.0)-100
+		draw_line(Vector2(x,CURB_Y+8),Vector2(x-24,Composition.SIDEWALK_EDGE),Color("b3b4a2"),1.2,true)
+	draw_rect(Rect2(0,Composition.SIDEWALK_EDGE,1600,17),Color("a9b1a5"))
+	draw_line(Vector2(0,Composition.SIDEWALK_EDGE),Vector2(1600,Composition.SIDEWALK_EDGE),Color("fff3d7"),5)
+	draw_rect(Rect2(0,Composition.ROAD,1600,900-Composition.ROAD),Color("737f7d"))
+	draw_line(Vector2(0,Composition.ROAD),Vector2(1600,Composition.ROAD),Color("465e62"),3)
 	for place in places:
 		var x := float(place.x)-camera_x
 		if x < -700 or x > 2300: continue
@@ -721,26 +745,26 @@ func dialogue_obstacles(npc_id := "") -> Dictionary:
 	for i in scenery.size(): scenery[i]=transform*scenery[i]
 	return {"actors":actors,"scenery":scenery,"anchor":transform*anchor}
 
-func _draw_protagonist(at: Vector2, gait_phase: float, gait_strength: float, direction: float) -> void:
+func _draw_protagonist(at: Vector2, gait_phase: float, gait_strength: float, direction: float, target: CanvasItem = self) -> void:
 	# Four authored contact/passing frames, driven by travelled distance. The
 	# small weight shift keeps the cycle alive without lifting the feet off the
 	# road or introducing a distracting camera-like bounce.
 	var art: Texture2D = ActorMotion.WALK[ActorMotion.frame_at(gait_phase)] if gait_strength > .08 else PROTAGONIST_ART
 	var height := _actor_height() * 1.08
 	var width := height * float(art.get_width()) / float(art.get_height())
-	draw_colored_polygon(PackedVector2Array([at + Vector2(-width * 0.32, 2), at + Vector2(width * 0.32, 2), at + Vector2(width * 0.42, 6), at + Vector2(-width * 0.42, 6)]), Color("112630", 0.20))
+	target.draw_colored_polygon(PackedVector2Array([at + Vector2(-width * 0.32, 2), at + Vector2(width * 0.32, 2), at + Vector2(width * 0.42, 6), at + Vector2(-width * 0.42, 6)]), Color("112630", 0.20))
 	# The reference pose faces left in its source image, so mirror it for
 	# rightward travel and keep the visible direction aligned with input.
 	var walking := gait_strength > .08
 	var weight_shift := sin(gait_phase) * 0.012 * gait_strength
 	var lift := (1.0 - cos(gait_phase * 2.0)) * 0.65 * gait_strength
 	var sprite_at := at + Vector2(0.0, -lift)
-	draw_set_transform(sprite_at, weight_shift, Vector2((-1.0 if direction >= 0.0 else 1.0) * (1.0 + weight_shift * 0.15), 1.0 - absf(weight_shift) * 0.10))
+	target.draw_set_transform(sprite_at, weight_shift, Vector2((-1.0 if direction >= 0.0 else 1.0) * (1.0 + weight_shift * 0.15), 1.0 - absf(weight_shift) * 0.10))
 	# The colour pass is exported on the same canvas as each authored frame;
 	# keeping the bottom edge at the ground line avoids the old floating step.
 	var margin := 0.0 if walking else 0.0
-	draw_texture_rect(art, Rect2(-width * 0.5, -height + margin, width, height), false)
-	draw_set_transform(Vector2.ZERO)
+	target.draw_texture_rect(art, Rect2(-width * 0.5, -height + margin, width, height), false)
+	target.draw_set_transform(Vector2.ZERO)
 
 func _draw_authored_npc(npc_id: String, at: Vector2, direction := -1.0) -> bool:
 	var art: Texture2D
@@ -755,6 +779,7 @@ func _draw_authored_npc(npc_id: String, at: Vector2, direction := -1.0) -> bool:
 			art = XIA_TOUMING_ART
 			height = _actor_height() * 1.10
 		_: return false
+	if not indoor: height*=.94
 	var width := height * float(art.get_width()) / float(art.get_height())
 	draw_colored_polygon(PackedVector2Array([at + Vector2(-width * 0.30, 2), at + Vector2(width * 0.30, 2), at + Vector2(width * 0.40, 6), at + Vector2(-width * 0.40, 6)]), Color("112630", 0.20))
 	draw_set_transform(at, 0.0, Vector2(-1.0 if direction >= 0.0 else 1.0, 1.0))

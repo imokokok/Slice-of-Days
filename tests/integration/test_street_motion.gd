@@ -36,7 +36,12 @@ func run() -> void:
 			for x in [0.0,1.0]:
 				check(Motion.pose_point(Vector2(x,1),Vector2(100,184),t,seed_value)==Vector2((x-.5)*100,0),"Standing animation leaves both soles fixed")
 	for resident in ["chenyuan","wu_wu","naonao","xia_touming","zhou_xiaoliu","maya"]:
-		check(Composition.resident_feet(resident)>Composition.CURB+70 and Composition.resident_feet(resident)<Composition.FEET,"Resident stands on paving behind the walking lane")
+		check(Composition.resident_feet(resident)>Composition.CURB+20 and Composition.resident_feet(resident)<=Composition.FEET-60,"Residents keep a real standing lane behind the player")
+	for person in stage.presented_residents():
+		var x := float(person.x)
+		check(stage._actor_ground_at(x)-stage._npc_ground(str(person.id),x)>=80,"Passing feet never share the NPC standing plane")
+		check(stage._actor_ground_at(x)<Composition.SIDEWALK_EDGE-6,"Passing remains on the pavement")
+	check(stage.player_display.z_index>stage.original_resident.z_index,"Original-sheet NPC cannot render through the foreground player")
 	# Optional visual evidence records the actual stage, not a mockup.
 	var folder:=OS.get_environment("MOTION_CAPTURE_DIR")
 	if not folder.is_empty() and DisplayServer.get_name()!="headless":

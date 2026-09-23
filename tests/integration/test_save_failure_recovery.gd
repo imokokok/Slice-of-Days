@@ -16,7 +16,8 @@ func run() -> void:
 	var failing := GDScript.new()
 	failing.source_code = "extends \"res://scripts/core/save_manager.gd\"\nfunc save_or_report(_context := \"\") -> bool:\n\treturn false\n"
 	check(failing.reload() == OK, "Save-failure stub compiles")
-	state.begin_new_game("B")
+	root.get_node("ChapterSystem").start_new_game()
+	state.switch_to_role("B",2,true) # Valid five-day fixture; B is not playable on day one.
 	state.current_location = "cafe"
 	state.current_minute = 700
 	var shop = load("res://scripts/ui/shop_panel.gd").new()
@@ -49,13 +50,13 @@ func run() -> void:
 	check(state.current_minute == old_minute and state.money == old_money and not bool(failed_trip.get("ok",false)), "Failed route save restores time and money")
 	var trip_message := str(failed_trip.get("message",""))
 	check(trip_message.contains("撤销") or trip_message.contains("失败"), "Route failure returns a visible retry message to the map: "+trip_message)
-	check(gameplay.begin_session("translation", "audit", state.to_save_data()), "Prepare a pending extension session")
+	check(gameplay.begin_session("cooking", "audit", state.to_save_data()), "Prepare a pending gameplay session")
 	var host = load("res://scripts/ui/extension_host.gd").new()
-	host.module_id = "translation"
+	host.module_id = "cooking"
 	host.status_label = Label.new()
 	host.add_child(host.status_label)
 	host._cancel()
-	check(gameplay.pending_module_id() == "translation" and not router.transitioning, "Failed cancel save preserves the pending minigame for retry")
+	check(gameplay.pending_module_id() == "cooking" and not router.transitioning, "Failed cancel save preserves the pending minigame for retry")
 	check(host.status_label.text.contains("重试离开"), "Failed cancel gives a retry message")
 	saves.set_script(original_script)
 	gameplay.cancel_session()
@@ -74,13 +75,10 @@ func run() -> void:
 	check(not loop.share_material("xanni","share_test").ok and not loop.state().shared.has("xanni") and not state.confirmed_residents.has("xanni"),"Failed material sharing cannot grant a signature or consume sharing")
 	saves.set_script(original_script)
 	check(loop.share_material("xanni","share_test").ok,"Material sharing retries once")
-	state.current_day=7; state.confirmed_residents.assign(loop.catalog.people.keys().filter(func(id: String) -> bool: return id!="grocery"))
-	var dossier: Dictionary=residency.state(); dossier.free_pages={"personal":[{"kind":"text","text":"我"}],"life":[{"material":"share_test"}]}
-	for day in range(1,8): dossier.free_pages["day_%d"%day]=[{"kind":"text","text":"当天的记录"}]
-	dossier.final_answers={"0":"来看看","1":"人","2":"风","3":"声音","4":"倾听","signature":"A"}
+	var dossier: Dictionary=residency.state(); dossier.free_pages={"collage":[{"kind":"text","text":"当天的记录"}]}
 	saves.set_script(failing)
-	check(not residency.submit_free_application().ok and residency.state().submitted.is_empty(),"Failed final save cannot seal an unsubmitted application")
-	check(residency.state().free_pages.size()==9,"Failed final save keeps all personal, life and seven portfolio pages")
+	check(not residency.persist(),"Failed optional collage save is reported")
+	check(residency.state().free_pages.collage.size()==1,"Failed optional collage save retains the editable page")
 	saves.set_script(original_script)
 	print("SAVE FAILURE RECOVERY PASS" if failures == 0 else "SAVE FAILURE RECOVERY FAIL")
 	quit(failures)

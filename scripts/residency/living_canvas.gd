@@ -98,9 +98,17 @@ func _can_drop_data(_at: Vector2, data: Variant) -> bool:
 	return not read_only and data is Dictionary and data.has("residency_material")
 
 func _drop_data(at: Vector2, data: Variant) -> void:
+	if not _can_drop_data(at,data): return
 	var id := str(data.residency_material)
 	var item: Dictionary = ResidencySystem.state().materials.get(id,{})
-	add_piece({"material":id,"kind":str(item.get("kind","object")),"text":str(item.get("text",item.get("title",""))),"w":220,"h":160},at)
+	if item.is_empty(): return
+	var words := str(item.get("text",""))
+	if words.is_empty(): words=str(item.get("title",""))
+	if str(item.get("kind",""))=="receipt":
+		words=str(item.get("title","小票"))+"\n"
+		for line in item.get("line_items",[]): words+=str(line.get("name",""))+" × "+str(line.get("quantity",1))+"\n"
+		words+="合计 "+str(item.get("total",0))+" 元"
+	add_piece({"material":id,"kind":str(item.get("kind","object")),"asset_id":str(item.get("asset_id","")),"text":words,"w":220,"h":210 if item.get("kind","")=="receipt" else 160},at.clamp(Vector2(110,105),size-Vector2(110,105)))
 
 func _sync_items() -> void:
 	var keep: Array[String]=[]

@@ -12,7 +12,7 @@ func rebuild() -> void:
 		pictures.append(texture_for(items[i]))
 
 func draw_on(stage: CanvasItem) -> void:
-	var origin := Vector2(546,507) if SceneRouter.active_space_id=="home_a" else Vector2(542,497)
+	var origin := Vector2(701,516) if SceneRouter.active_space_id=="home_a" else Vector2(234,497)
 	for i in pictures.size():
 		if pictures[i]==null: continue
 		stage.draw_set_transform(origin+Vector2(i*35,i%2*5),-.045 if i%2==0 else .035)

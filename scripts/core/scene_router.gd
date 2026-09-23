@@ -66,6 +66,8 @@ func town_day(fade_duration := .3) -> void:
 
 func enter_space(space_id: String) -> void:
 	if transitioning: return
+	var hours := WorldGraph.location_status(GameState.current_location)
+	if not bool(hours.open): GuidanceSystem.blocked(str(hours.reason)); return
 	active_space_id = space_id
 	go_to(INTERACTIVE_SPACE)
 

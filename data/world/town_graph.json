@@ -1,4 +1,16 @@
 {
+  "business_hours": {
+    "cafe": [480, 1320],
+    "produce_stall": [630, 1110],
+    "night_market": [600, 1320],
+    "print_shop": [480, 1260],
+    "handcraft_shop": [540, 1260],
+    "library": [540, 1200],
+    "record_store": [540, 1140],
+    "chess_stall": [540, 1200],
+    "tarot_stall": [600, 1320],
+    "park": [1260, 1439]
+  },
   "segments": [
     {
       "id": "main_street",

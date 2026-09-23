@@ -15,6 +15,7 @@ func run() -> void:
 	var router=root.get_node("SceneRouter")
 	var modules=root.get_node("GameplayModuleSystem")
 	chapter.start_new_game()
+	gs.current_minute=540
 	guidance.notification.connect(func(kind: String, words: String): messages.append({"kind":kind,"text":words}))
 	check(chapter.everyday_objects().is_empty(),"No invented objects in a new home")
 	root.get_node("EchoSystem").close_day()
@@ -47,11 +48,13 @@ func run() -> void:
 	var marker=paper.map_board.get_node("Destination_record_store")
 	check(marker.selected,"Current core place is lightly emphasized on the actual map")
 	paper.map_board.get_node("Destination_park").pressed.emit()
-	check(paper.feedback.text.contains("入夜"),"Clicking closed place gives an in-game reason")
+	check(paper.feedback.text.contains("21:00"),"Clicking closed place gives its actual opening hours")
 	check(paper.map_board.get_node("Destination_park").get_meta("state")=="unavailable","Closed state is bound to the native marker")
 	gs.current_minute=root.get_node("WorldGraph").LOOKOUT_OPEN; gs.state_changed.emit()
 	check(paper.map_board.get_node("Destination_park").get_meta("state")!="unavailable","Opening time refreshes existing markers without reopening the map")
 	paper.close(); await process_frame
+	check(not modules.entry_check("sound_sampling").ok,"Closed music shop rejects evening entry")
+	gs.current_minute=600
 	var old_minute: int=gs.current_minute
 	check(router.request_gameplay("sound_sampling","street:record_store"),"Real activity request opens a confirmation")
 	var confirmations:=get_nodes_in_group("native_confirmation")

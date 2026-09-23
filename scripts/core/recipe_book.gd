@@ -61,6 +61,31 @@ static func save_draft(raw: Dictionary) -> bool:
 	if SaveManager.save_or_report("菜谱草稿保存失败"): return true
 	GameState.load_save_data(before)
 	return false
+
+static func appreciations(id: String) -> Dictionary:
+	return GameState.shared_state.get("recipe_appreciations",{}).get(id,{}).duplicate(true)
+
+static func appreciate(id: String) -> Dictionary:
+	var chosen: Dictionary={}
+	for row in entries("shared"):
+		if str(row.id)==id: chosen=row; break
+	if chosen.is_empty(): return {"ok":false,"message":"这页菜谱已经不在公共菜谱里了。"}
+	if str(chosen.get("role",""))==GameState.current_role: return {"ok":false,"message":"这是自己留下的菜谱。"}
+	var reactions := appreciations(id)
+	if reactions.has(GameState.current_role): return {"ok":false,"message":"已经给这页菜谱留下喜欢了。"}
+	var before := GameState.to_save_data().duplicate(true)
+	reactions[GameState.current_role]={"day":GameState.current_day,"minute":GameState.current_minute}
+	var all: Dictionary=GameState.shared_state.get("recipe_appreciations",{})
+	all[id]=reactions; GameState.shared_state.recipe_appreciations=all
+	var notices: Array=GameState.shared_state.get("recipe_notifications",[])
+	var owner := str(chosen.get("role",""))
+	if owner in ["A","B"]:
+		notices.append({"owner":owner,"recipe_id":id,"text":GameState.current_role+" 喜欢了「"+str(chosen.title)+"」","notified":false})
+		GameState.shared_state.recipe_notifications=notices
+	if not SaveManager.save_or_report("菜谱回应未能保存"):
+		GameState.load_save_data(before); return {"ok":false,"message":"还没能存好这份回应，可以再试一次。"}
+	GameEvents.publish("RecipeAppreciated",{"recipe_id":id,"actor":GameState.current_role,"owner":owner})
+	return {"ok":true,"message":"已在这页菜谱上留下喜欢。"}
 static func export_recipe(row: Dictionary, path: String) -> bool:
 	var checked := validate(row)
 	if checked.is_empty(): return false

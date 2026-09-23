@@ -1,6 +1,6 @@
 extends Control
 ## The book is native geometry, independent from every interactive page element.
-var backing: Texture2D=preload("res://art/ui/blank-notebook-spread.png")
+var backing: Texture2D=preload("res://art/ui/pocket_doodles/book.png")
 var spread := true
 var ruled := false
 func _ready() -> void:
@@ -19,7 +19,7 @@ func _sheet(rect: Rect2, ink: Color, bend: float) -> void:
 func _draw() -> void:
 	var w := size.x; var h := size.y
 	if spread:
-		draw_texture_rect(backing,Rect2(Vector2(-30,-9),size+Vector2(60,18)),false)
+		draw_texture_rect_region(backing,Rect2(Vector2(-30,-9),size+Vector2(60,18)),Rect2(35,88,1465,872))
 		if ruled:
 			for y in range(150,int(h-80),58): draw_line(Vector2(243,y),Vector2(w*.5-43,y-2),Color("8e9e9c",.18),1,true)
 		return
@@ -37,7 +37,4 @@ func _draw() -> void:
 		_sheet(Rect2(22,19,w-45,h-45),Color("f6efdf"),-2)
 	if ruled:
 		for y in range(140,int(h-90),60): draw_line(Vector2(87,y),Vector2(w*.5-58,y-3),Color("8e9e9c",.19),1,true)
-	var rng := RandomNumberGenerator.new(); rng.seed=98
-	for i in 2800:
-		var at := Vector2(rng.randf_range(30,w-34),rng.randf_range(25,h-32))
-		draw_line(at,at+Vector2(rng.randf_range(.5,2),.4),Color("8b805e",.045),1,true)
+	# UI paper stays quiet: a few imperfect contours, no procedural grain field.

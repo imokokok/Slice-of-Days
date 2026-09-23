@@ -140,11 +140,12 @@ func _card_style() -> StyleBoxFlat:
 	var face := StyleBoxFlat.new(); face.bg_color=Color("fffcf4"); face.set_corner_radius_all(3); face.set_border_width_all(1); face.border_color=Color("beb7a6",.3); return face
 func _recorder_face() -> void:
 	var card := Panel.new(); card.position=Vector2(257,12); card.size=Vector2(700,627)
-	var face := StyleBoxFlat.new(); face.bg_color=Color("edf3f4"); face.set_corner_radius_all(14); card.add_theme_stylebox_override("panel",face); card.mouse_filter=MOUSE_FILTER_IGNORE; add_child(card); move_child(card,0)
+	var face := StyleBoxFlat.new(); face.bg_color=PALETTE.CREAM; face.set_corner_radius_all(5); face.set_border_width_all(2); face.border_color=Color("806c4c"); card.add_theme_stylebox_override("panel",face); card.mouse_filter=MOUSE_FILTER_IGNORE; add_child(card); move_child(card,0)
 	# Inset sound window, readable controls and small speaker perforations.
-	var sound_window := Panel.new(); sound_window.position=Vector2(22,116); sound_window.size=Vector2(656,159); sound_window.add_theme_stylebox_override("panel",PALETTE.face(Color("d9e5e4"),7)); sound_window.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(sound_window)
-	for i in 9:
-		var hole := ColorRect.new(); hole.position=Vector2(569+i*10,36); hole.size=Vector2(3,15); hole.color=Color("95abae"); hole.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(hole)
+	var sound_window := Panel.new(); sound_window.position=Vector2(22,116); sound_window.size=Vector2(656,159); sound_window.add_theme_stylebox_override("panel",PALETTE.face(Color("e6e7d8"),4)); sound_window.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(sound_window)
+	var badge := TextureRect.new(); var region := AtlasTexture.new()
+	region.atlas=preload("res://art/ui/pocket_doodles/objects.png"); region.region=Rect2(0,512,512,512)
+	badge.texture=region; badge.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; badge.position=Vector2(606,25); badge.size=Vector2(65,65); badge.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(badge)
 	_button("＋ 新录音",Vector2(459,586),Vector2(290,43),owner_ui._home_action.bind("recorder"))
 func _empty_recorder() -> void:
 	_recorder_face()

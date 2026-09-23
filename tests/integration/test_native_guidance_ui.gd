@@ -20,9 +20,9 @@ func run() -> void:
 	var residency = root.get_node("ResidencySystem")
 	if OS.get_cmdline_user_args().has("--load-only"):
 		check(save.load_game("user://native_ui_roundtrip.json"),"Load saved UI in a fresh process")
-		var pieces: Array=residency.state().free_pages.day_1
+		var pieces: Array=residency.state().free_pages.collage
 		check(pieces.size()==2 and pieces[0].id!=pieces[1].id,"Distinct placed IDs survive process restart")
-		check(pieces[0].rotation>0 and pieces[0].scale>1 and pieces[0].page=="day_1","Transform and page survive process restart")
+		check(pieces[0].rotation>0 and pieces[0].scale>1 and pieces[0].page=="collage","Transform and page survive process restart")
 		check(guidance.state().tracked_lead=="cici_record_store","Tracked lead survives process restart")
 		check(residency.state().private_note=="明天继续听海","Private plan survives process restart")
 		print("NATIVE UI RELOAD failures=",failures); quit(failures); return
@@ -53,13 +53,13 @@ func run() -> void:
 	guidance.track("cici_record_store")
 	shell.open_paper("notebook"); await settle()
 	var paper = shell.overlay
-	check(paper.task_checks.size()==3,"Notebook shows live daily objectives")
+	check(paper.task_checks.size()==guidance.must_objectives().size(),"Notebook shows the five-day plan's live objectives")
 	state.current_location="print_shop"; state.current_minute=660; root.get_node("SceneRouter").active_space_id="print_studio"
 	residency.collect_packet()
 	root.get_node("SceneRouter").active_space_id=""
 	for id in ["cafe","produce_stall","print_shop"]: residency.visit(id)
 	state.state_changed.emit(); await settle()
-	check(paper.task_checks[0].button_pressed,"Checkbox updates from gameplay without reopening")
+	check(not paper.task_checks[0].button_pressed,"Visiting shops cannot mark an unfinished main activity complete")
 	await capture("notebook")
 	paper.notebook_section="heard"; paper.build(); await capture("heard")
 	paper.notebook_section="personal"; paper.build()
@@ -81,8 +81,8 @@ func run() -> void:
 	var first_id: String=paper.canvas.pieces[0].id
 	paper.canvas.select_id(first_id); paper.canvas.move_selected(Vector2(20,10))
 	check(paper.canvas.pieces[0].x==230,"Keyboard movement changes saved coordinates")
-	paper.day=2; paper.build(); check(paper.canvas.pieces.is_empty(),"Second day is independent")
-	paper.day=1; paper.build(); check(paper.canvas.pieces[0].id==first_id,"Stable IDs across page switching")
+	paper.archive_tab="personal"; paper.build(); check(paper.canvas.pieces.is_empty(),"Personal expression page stays independent of free collage")
+	paper.archive_tab="days"; paper.build(); check(paper.canvas.pieces[0].id==first_id,"Stable IDs across archive section switching")
 	await capture("portfolio")
 	paper.mode="pause"; paper.build(); check(paused,"Pause pauses the scene tree")
 	await capture("pause")

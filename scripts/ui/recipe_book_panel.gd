@@ -88,6 +88,12 @@ func _build() -> void:
 		drawing=preload("res://scripts/ui/components/recipe_drawing.gd").new(); drawing.position=Vector2(854,490); drawing.size=Vector2(500,103); drawing.strokes=chosen.get("strokes",[]).duplicate(true); drawing.editable=false; body.add_child(drawing)
 		_btn("照着这一页做",Vector2(844,752),Vector2(290,48),func(): follow_recipe.emit(chosen); queue_free(),"camera")
 		_btn("导出给朋友",Vector2(1150,752),Vector2(255,48),func(): _file(false),"camera")
+		if section=="shared":
+			var reactions := BOOK.appreciations(str(chosen.id))
+			var like := _btn("喜欢这个做法 · %d"%reactions.size(),Vector2(860,626),Vector2(480,48),func():
+				message.text=str(BOOK.appreciate(str(chosen.id)).message); _build(),"paper")
+			like.name="AppreciateRecipe"
+			like.disabled=reactions.has(GameState.current_role) or str(chosen.get("role",""))==GameState.current_role
 		if section=="mine":
 			_btn("编辑这一页",Vector2(225,494),Vector2(225,43),func():
 				if not GameState.artifacts.get("recipe_draft",{}).is_empty():

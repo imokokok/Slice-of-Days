@@ -32,10 +32,10 @@ func state() -> Dictionary:
 		if not material.has("can_use_in_portfolio"): _material_metadata(material)
 	return s
 
-func persist() -> void:
+func persist() -> bool:
 	GameState.commit_active_role_state()
 	changed.emit()
-	SaveManager.save_or_report("档案保存失败，请保留当前窗口后重试")
+	return SaveManager.save_or_report("档案保存失败，请保留当前窗口后重试")
 
 func _sync_sources() -> void:
 	if importing: return
@@ -59,6 +59,20 @@ func _sync_sources() -> void:
 			if s.materials.has(id): s.materials[id].merge(details,true)
 			else: _add(id,kind,str(item.get("title",collection)),details)
 	for receipt in GameState.artifacts.get("economy",{}).get("receipts",{}).values(): ingest_receipt(receipt)
+	# Purchased collage goods and found paper used to stay in a separate
+	# economy collection, so the actual collage picker could never offer them.
+	var collected: Array=GameState.artifacts.get("collage_materials",[]).duplicate()
+	for item in GameState.artifacts.get("economy",{}).get("collections",{}).values():
+		if str(item.get("purpose",""))=="collage": collected.append(item)
+	for item in collected:
+		var source := str(item.get("id",""))
+		if source.is_empty(): continue
+		var details: Dictionary=item.duplicate(true)
+		details.id="collage_"+source; details.source=source; details.kind="paper"
+		var item_id := str(item.get("item_id",""))
+		if preload("res://scripts/ui/components/handmade_assets.gd").IDS.has(item_id): details.asset_id=item_id
+		_add(str(details.id),"paper",str(item.get("title",item.get("name","生活纸片"))),details)
+		if details.has("asset_id"): s.materials[details.id].asset_id=details.asset_id
 	for item in GameState.shared_state.get("world_artifacts",{}).get("records",[]):
 		if str(item.get("created_by","")) != GameState.current_role: continue
 		var id := "archive_"+str(item.id)

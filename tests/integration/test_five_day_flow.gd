@@ -134,6 +134,9 @@ func end_day() -> void:
 	check(gs.current_day==mini(5,before+1),"one overnight advances exactly one day")
 	check(save.save_game() and save.load_game(),"overnight save and reload preserves day and role")
 func studio() -> void:
+	var hours: Dictionary=root.get_node("WorldGraph").location_status("record_store")
+	if gs.current_minute<int(hours.opens): check(gs.use_free_time(int(hours.opens)-gs.current_minute),"wait for record shop opening consumes actual free time")
+	check(modules.entry_check("sound_sampling",60).ok,"music fits the actual shop hours and character schedule")
 	var recorder=load("res://scripts/town_sound/RecorderScreen.gd").new()
 	recorder.shop_mode=true; current_scene.add_child(recorder)
 	await process_frame
@@ -152,6 +155,8 @@ func studio() -> void:
 	work.model.add_sample(samples[0],0,0); work.model.add_sample(samples[1],1,4.5); work.changed()
 	await work.open_visual(); await process_frame
 	var room=recorder.get_child(recorder.get_child_count()-1)
+	check(room.has_method("submit"),"actual visual sound room opened")
+	if not room.has_method("submit"): return
 	await room.submit()
 	check(is_instance_valid(room.pressing),"boss listens to actual mixed recording")
 	var press=room.pressing
@@ -161,6 +166,7 @@ func studio() -> void:
 	check(modules.record_studio_delivery(press.saved_record) and gs.money==balance,"retrying delivery cannot duplicate rewards")
 	recorder.queue_free(); await process_frame
 func letter() -> void:
+	await wait_for_opening("handcraft_shop")
 	check(router.gameplay_module("ghostwriting","street:handcraft_shop"),"real letter host starts")
 	await settle()
 	var host=current_scene
@@ -199,6 +205,7 @@ func motion(game: Node, at: Vector2) -> void:
 	game.previous_pointer=game.pointer; game.pointer=at
 	game._motion(InputEventMouseMotion.new())
 func chess() -> void:
+	await wait_for_opening("chess_stall")
 	check(router.gameplay_module("chess","street:chess_stall"),"same production chess host starts")
 	await settle()
 	var host=current_scene
@@ -216,6 +223,12 @@ func chess() -> void:
 	check(match_view.ended and turn_count>2,"real legal moves versus AI reach a game result")
 	check(host._experience_completed(),"board result reaches host")
 	host._complete(); await settle()
+func wait_for_opening(location: String) -> void:
+	var hours: Dictionary=root.get_node("WorldGraph").location_status(location)
+	if gs.current_minute<int(hours.opens):
+		check(gs.use_free_time(int(hours.opens)-gs.current_minute),"wait for "+location+" opening consumes actual free time")
+	await process_frame
+
 func run() -> void:
 	if not OS.get_cmdline_user_args().has("--isolated-save"): quit(2); return
 	gs=root.get_node("GameState"); chapter=root.get_node("ChapterSystem"); modules=root.get_node("GameplayModuleSystem"); router=root.get_node("SceneRouter"); save=root.get_node("SaveManager")
@@ -339,7 +352,7 @@ func run() -> void:
 		for module in ["sound_sampling","cooking","ghostwriting","chess"]:
 			# This final pass checks launch/cancel as time allows; all four opposite
 			# domains above have already completed through real mechanics.
-			if not gs.can_fit_now(modules.required_minutes(module)): continue
+			if not modules.entry_check(module).ok: continue
 			check(router.gameplay_module(module,"street:"+gs.current_location),"Day 5 "+role+" can enter "+module)
 			await settle()
 			check(modules.session_context().current_character==role,"minigame reads correct character context")

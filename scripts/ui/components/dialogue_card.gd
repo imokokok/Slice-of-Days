@@ -16,7 +16,7 @@ var content: Control
 var settled := false
 var layout_elapsed := 0.0
 var body_width := 350.0
-var minimum_body_height := 0.0
+var minimum_body_height := 156.0
 var additional_obstacles: Array[Rect2]=[]
 var layout_signature := 0
 
@@ -61,8 +61,11 @@ func _height(label: Label, width: float) -> float:
 func _measure(column: float) -> Vector2:
 	var y := 17.0
 	for label in [speaker_label,text_label,hint_label]:
-		var height := _height(label,column) if label.visible else 0.0
-		if label==text_label and not label.text.is_empty(): height=maxf(height,minimum_body_height)
+		# Reserve a comfortable reading area before revealing a single character.
+		# Dialogue is paginated by its owner; punctuation and speaker changes
+		# must not resize the backing or move the controls.
+		var height := maxf(156.0,minimum_body_height) if label==text_label else 25.0
+		label.custom_maximum_size.x=column
 		label.position=Vector2(22,y); label.size=Vector2(column,height)
 		if height>0: y+=height+(11 if label==text_label else 6)
 	return Vector2(column+44,y+11)
@@ -98,6 +101,11 @@ func layout(animate := false) -> void:
 	size=_measure(column)
 	content.size=size
 	var result := Layout.place(available,size,actors,scenery,anchor,previous)
+	if not settled:
+		var reserved := Layout.place(available,Vector2(size.x,size.y+288),actors,scenery,anchor)
+		if Layout.occlusion_cost(reserved,actors,scenery)==0: result.position=reserved.position
+	elif available.grow(-32).encloses(previous) and Layout.overlap(previous,actors)==0:
+		result.position=previous.position
 	if is_instance_valid(choices):
 		var extent := _choice_extent(minf(326,available.size.x-64))
 		# Reflow the two distinct surfaces together when a free side column
@@ -108,7 +116,8 @@ func layout(animate := false) -> void:
 			prior_stack=Rect2(previous.position,combined)
 		var stacked := Layout.place(available,combined,actors,scenery,anchor,prior_stack)
 		var use_stack := Layout.occlusion_cost(stacked,actors,scenery)==0 and stacked.position.y>=available.size.y*.28
-		if use_stack: result.position=stacked.position
+		if use_stack and not settled: result.position=stacked.position
+		use_stack=Layout.occlusion_cost(Rect2(result.position,combined),actors,scenery)==0 and available.grow(-32).encloses(Rect2(result.position,combined))
 		var preferred := Vector2(result.position.x,result.end.y+16)
 		var exclusions := actors.duplicate()
 		exclusions.append(result.grow(12))

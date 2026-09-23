@@ -21,6 +21,7 @@ var largest_peak := 0.0
 var discarded_start := 0
 var source_mode := "microphone"
 var capture_bus := ""
+var input_gain := 1.0
 
 func _ready() -> void:
 	bus_index = AudioServer.bus_count
@@ -84,7 +85,7 @@ func _drain() -> void:
 	for frame in frames:
 		if frame_count >= int(MAX_SECONDS * sample_rate):
 			break
-		var mono := clampf((frame.x + frame.y) * 0.5, -1.0, 1.0)
+		var mono := clampf((frame.x + frame.y) * 0.5 * input_gain, -1.0, 1.0)
 		peak = maxf(peak, absf(mono))
 		pcm.encode_s16(frame_count * 2, int(round(mono * 32767.0)))
 		frame_count += 1

@@ -195,20 +195,22 @@
           "id": "desk",
           "name": "桌上的照片和票根",
           "kind": "journal",
-          "detail": "便签和照片散落在桌面。"
+          "detail": "便签和照片散落在桌面。",
+          "x": 690
         },
         {
           "id": "bed",
           "name": "躺下睡觉",
           "kind": "sleep",
-          "detail": "关灯，让今天结束。"
+          "detail": "关灯，让今天结束。",
+          "x": 1080
         },
         {
           "id": "collection_shelf",
           "name": "收藏架 · 摆放与命名",
           "detail": "摆好从杂货店买回来的小东西，留一句自己的记忆。",
           "kind": "collections",
-          "x": 760,
+          "x": 365,
           "icon": "物"
         }
       ],
@@ -225,26 +227,29 @@
           "id": "memory_entry",
           "name": "采样桌",
           "kind": "memory",
-          "x": 520,
+          "x": 470,
           "detail": "翻看留在房间里的七张纸。"
         },
         {
           "id": "desk",
           "name": "桌上的笔记本",
           "kind": "journal",
-          "detail": "笔记本整齐地放在地图旁。"
+          "detail": "笔记本整齐地放在地图旁。",
+          "x": 625
         },
         {
           "id": "work_computer",
-          "name": "打开电脑处理固定工作",
+          "name": "桌前处理工作",
           "kind": "work",
-          "detail": "开始后会结算准备与工作时间，并在完成时发放收入。"
+          "detail": "在书桌前查看今天的工作安排。",
+          "x": 790
         },
         {
           "id": "bed",
           "name": "躺下睡觉",
           "kind": "sleep",
-          "detail": "关灯，让今天结束。"
+          "detail": "关灯，让今天结束。",
+          "x": 1290
         }
       ],
       "sign": "HOME_B",

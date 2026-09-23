@@ -10,6 +10,46 @@ const DAYS := [
  {"role":"B","module":"chess","location":"chess_stall","npc":"naonao","label":"在棋摊完成一局棋"},
  {"role":"A","module":"","location":"print_shop","npc":"","label":"去社区中心赴约"}]
 const MAIN_OWNERS := {"sound_sampling":"A","cooking":"B","ghostwriting":"A","chess":"B"}
+var curfew_retry := 0.0
+
+func _process(delta: float) -> void:
+	curfew_retry=maxf(0,curfew_retry-delta)
+	if GameState.current_minute<1439 or curfew_retry>0 or bool(GameState.shared_state.get("sleep_pending",false)) or bool(GameState.shared_state.get("game_complete",false)): return
+	if SceneRouter.transitioning or UIStateSystem.current() not in ["EXPLORATION","RECORDER"]: return
+	var scene := get_tree().current_scene
+	if scene==null or scene.scene_file_path not in [SceneRouter.TOWN_DAY,SceneRouter.INTERACTIVE_SPACE]: return
+	curfew_retry=.5
+	_enforce_curfew.call_deferred()
+
+func _enforce_curfew() -> void:
+	if SceneRouter.transitioning or GameState.current_minute<1439 or bool(GameState.shared_state.get("sleep_pending",false)): return
+	if UIStateSystem.current() not in ["EXPLORATION","RECORDER"] or bool(GameState.shared_state.get("game_complete",false)): return
+	var home := "home_a" if GameState.current_role=="A" else "home_b"
+	var scene := get_tree().current_scene
+	var shell := scene.get_node_or_null("GameplayShell") if scene!=null else null
+	if shell!=null and not shell.finish_recording_for_exit(): curfew_retry=5; return
+	var snapshot := GameState.to_save_data()
+	if GameState.current_location!=CoreLoopSystem.home() or SceneRouter.active_space_id!=home:
+		GameState.current_minute=1439
+		GameState.clock_remainder=0
+		GameState.current_location=CoreLoopSystem.home()
+		GameState.shared_state.erase("pending_commitment")
+		GameState.commit_active_role_state()
+		if not SaveManager.save_or_report("夜间回家保存失败"):
+			GameState.load_save_data(snapshot); curfew_retry=5; return
+		SceneRouter.enter_space(home)
+		GuidanceSystem.notification.emit("NOTICE","23:59，收好东西回到住处。午夜即将翻到下一天。")
+		return
+	GameState.shared_state.erase("pending_commitment")
+	if GameState.current_minute<1440: return
+	# Midnight is a deadline, not an invented completion of missing work.
+	day_state()["ended_at_midnight"]=true
+	GameState.shared_state["midnight_rest"]=true
+	GameState.shared_state["sleep_pending"]=true
+	GameState.commit_active_role_state()
+	if not SaveManager.save_or_report("午夜换日保存失败"):
+		GameState.load_save_data(snapshot); curfew_retry=5; return
+	SceneRouter.chapter_transition()
 
 func story() -> Dictionary:
 	if not GameState.shared_state.has("five_day_story"):
@@ -77,7 +117,7 @@ func inspect_trace(id: String) -> Dictionary:
 	if str(trace.location)!=GameState.current_location or int(trace.day)>GameState.current_day: return {}
 	if not trace.discovered_by.has(GameState.current_role):
 		trace.discovered_by.append(GameState.current_role)
-		GameState.add_journal_entry({"kind":"public_trace","trace_id":id,"text":"在公共柜看到了："+str(trace.title)})
+		GameState.add_journal_entry({"kind":"public_trace","trace_id":id,"text":"在小镇看到了："+str(trace.title)})
 	observe_everyday_object(id)
 	GameState.commit_active_role_state()
 	return trace.duplicate(true)
@@ -136,9 +176,10 @@ func can_end_day() -> Dictionary:
 	if not bool(day_state().main_completed): return {"ok":false,"reason":"今天还有一件想做的事："+str(plan().label)}
 	if GameState.current_day>=3 and not bool(day_state().narrative_completed): return {"ok":false,"reason":"还想在住处坐一会儿，看看桌上的东西，再聊聊今天的经历。"}
 	return {"ok":true,"reason":""}
-func advance_chapter() -> Dictionary:
+func advance_chapter(midnight := false) -> Dictionary:
 	var check := can_end_day()
-	if not bool(check.ok): return check
+	if midnight and GameState.current_minute<1440: return {"ok":false,"reason":"还没有到午夜。"}
+	if not midnight and not bool(check.ok): return check
 	var current := current_chapter()
 	EchoSystem.close_day()
 	var completed: Array=GameState.shared_state.get("completed_chapters",[])

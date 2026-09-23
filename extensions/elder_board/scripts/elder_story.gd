@@ -41,16 +41,17 @@ var next: Button
 var alternative: Button
 
 func _ready() -> void:
+	theme = UI.paper_theme()
 	size = Vector2(1579, 972)
 	chapter = 0 if preview_mode else mini(Memory.story_index(), CHAPTERS.size() - 1)
 	var shade := ColorRect.new()
 	shade.size = size
-	shade.color = Color(0, 0, 0, 0.58)
+	shade.color = Color("384a45", .44)
 	add_child(shade)
 	UI.panel(self, Rect2(250, 205, 1080, 560))
 	UI.label(self, "老棋友" if not preview_mode else "老棋友 · 对话试看", Rect2(300, 240, 920, 45), 32)
 	gesture = UI.label(self, "", Rect2(300, 300, 980, 55), 22)
-	gesture.add_theme_color_override("font_color", Color("acb4aa"))
+	gesture.add_theme_color_override("font_color", Color("847056"))
 	words = UI.label(self, "", Rect2(300, 375, 980, 205), 29)
 	next = UI.button(self, "", Rect2(300, 605, 475, 60), func(): choose(0))
 	alternative = UI.button(self, "", Rect2(800, 605, 480, 60), func(): choose(1))

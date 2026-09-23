@@ -1,6 +1,7 @@
 extends Control
 signal start_requested(go_size: int)
 signal closed
+const UI = preload("res://extensions/elder_board/scripts/ui_bits.gd")
 const Text = preload("res://extensions/elder_board/scripts/game_text.gd")
 var game_id: StringName
 var setup_mode := false
@@ -13,18 +14,17 @@ func configure(id: StringName, is_setup: bool, preferred_size: int = 9) -> void:
 	go_size = preferred_size
 
 func _ready() -> void:
+	theme = UI.paper_theme()
 	size = Vector2(1579, 972)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var shade := ColorRect.new()
-	shade.color = Color(0, 0, 0, 0.72)
+	shade.color = Color("384a45", .44)
 	shade.size = size
 	add_child(shade)
 	var panel := PanelContainer.new()
 	panel.position = Vector2(265, 65)
 	panel.size = Vector2(1050, 842)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("303330")
-	style.set_corner_radius_all(12)
+	var style := UI.paper_style()
 	style.content_margin_left = 36
 	style.content_margin_right = 36
 	style.content_margin_top = 25
@@ -61,14 +61,17 @@ func _ready() -> void:
 	var footer := HBoxContainer.new()
 	footer.add_theme_constant_override("separation", 20)
 	column.add_child(footer)
-	var back := Button.new()
+	var back := preload("res://scripts/ui/components/solmere_button.gd").new()
+	back.variant = "paper"
 	back.text = LocalizationSystem.text("返回选择" if setup_mode else "明白了，继续下棋")
 	back.custom_minimum_size = Vector2(280, 60)
 	back.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	back.pressed.connect(func(): closed.emit())
 	footer.add_child(back)
 	if setup_mode:
-		var start := Button.new()
+		var start := preload("res://scripts/ui/components/solmere_button.gd").new()
+		start.variant = "paper"
+		start.selected = true
 		start.text = LocalizationSystem.text("准备好了，开始对弈")
 		start.custom_minimum_size = Vector2(400, 60)
 		start.size_flags_horizontal = Control.SIZE_EXPAND_FILL

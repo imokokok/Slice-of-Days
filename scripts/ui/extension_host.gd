@@ -53,6 +53,7 @@ func _ready() -> void:
 		resized.connect(_fit_experience)
 	else:
 		add_child(experience)
+		resized.connect(_fit_experience)
 	if module_id == "contemplation":
 		experience.return_requested.connect(_cancel)
 		experience.finish_requested.connect(_complete)
@@ -75,6 +76,11 @@ func _fit_experience() -> void:
 		return
 	if experience is Control:
 		experience.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		if module_id == "chess":
+			experience.offset_top = LETTER_HOST_BAR_HEIGHT
+			if is_instance_valid(host_panel):
+				host_panel.position = Vector2.ZERO
+				host_panel.size = Vector2(size.x, LETTER_HOST_BAR_HEIGHT - 4)
 		if module_id == "tarot":
 			experience.offset_top = 60
 			if not has_node("TableHeader"):
@@ -99,7 +105,7 @@ func _build_host_bar() -> void:
 	panel.position = Vector2(825, 12)
 	panel.size = Vector2(755, 88)
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("edf3f4",.95)
+	style.bg_color = Color("faf1dd")
 	style.border_color = Color(TERRACOTTA, 0.85)
 	style.set_border_width_all(0)
 	style.set_corner_radius_all(10)
@@ -127,10 +133,13 @@ func _build_host_bar() -> void:
 	complete_button = _button(panel, "完成并返回", Vector2(564, 19), Vector2(170, 50), true)
 	complete_button.disabled = true
 	complete_button.pressed.connect(_complete)
-	if module_id == "ghostwriting":
+	if module_id in ["ghostwriting", "chess"]:
+		panel.add_to_group("solid_hud")
 		title.position = Vector2(18, 5)
 		status_label.position = Vector2(18, 32)
-		status_label.size = Vector2(700, 26)
+		status_label.size = Vector2(1040, 26)
+		status_label.add_theme_font_size_override("font_size", 18)
+		status_label.clip_text = true
 		leave.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 		leave.position = Vector2(panel.size.x - 345, 9)
 		leave.size = Vector2(145, 48)
@@ -157,6 +166,8 @@ func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2
 	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
 	button.variant="camera" if module_id in ["tarot","contemplation"] else "outlined"
 	button.selected=primary; button.text=LocalizationSystem.text(text_value); button.position=at; button.size=button_size; parent.add_child(button)
+	button.clip_text = true
+	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	return button
 
 

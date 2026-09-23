@@ -35,40 +35,50 @@ var restoring := false
 var last_image := ""
 
 func _ready() -> void:
+	theme = UI.paper_theme()
 	size = Vector2(1579, 972)
 	var shade := ColorRect.new()
-	shade.color = Color("222822")
+	shade.color = Color("e6d7b9")
 	shade.size = size
 	add_child(shade)
+	var book := TextureRect.new()
+	book.texture = preload("res://art/ui/pocket_doodles/book.png")
+	book.position = Vector2(0, 30)
+	book.size = Vector2(1579, 1070)
+	book.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	book.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	book.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(book)
 	UI.label(self, "%s · 教老棋友一种棋" % Memory.role, Rect2(55, 26, 800, 50), 36)
 	UI.button(self, "模型连接", Rect2(1100, 28, 200, 50), show_settings)
 	UI.button(self, "返回", Rect2(1325, 28, 180, 50), leave)
 	mode_label = UI.label(self, "", Rect2(55, 90, 1450, 38), 21)
-	UI.panel(self, Rect2(40, 140, 710, 790))
-	UI.panel(self, Rect2(775, 140, 755, 790))
-	transcript = UI.rich(self, Rect2(65, 160, 660, 430), 25)
+	transcript = UI.rich(self, Rect2(110, 160, 600, 430), 25)
 	transcript.scroll_following = true
 	input = TextEdit.new()
-	input.position = Vector2(65, 605)
-	input.size = Vector2(660, 135)
+	input.position = Vector2(110, 605)
+	input.size = Vector2(600, 135)
 	input.placeholder_text = LocalizationSystem.text("例如：这是井字棋，3×3，横竖斜连成3子就赢，我先下。也可以画在右边。")
 	input.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	input.add_theme_font_size_override("font_size", 24)
 	add_child(input)
 	input.text_changed.connect(mark_edited)
-	send_button = UI.button(self, "告诉老人", Rect2(65, 755, 200, 56), send_message)
-	retry_button = UI.button(self, "重试回答", Rect2(285, 755, 200, 56), retry)
-	UI.button(self, "试教井字棋", Rect2(505, 755, 220, 56), func():
+	send_button = UI.button(self, "告诉老人", Rect2(110, 755, 170, 56), send_message)
+	retry_button = UI.button(self, "重试回答", Rect2(300, 755, 180, 56), retry)
+	UI.button(self, "试教井字棋", Rect2(500, 755, 210, 56), func():
 		if not busy: input.text = LocalizationSystem.text("我教您井字棋，3×3，横竖斜连成3子就赢，长连也算，我先下。")
 	)
 	retry_button.disabled = true
 	library = OptionButton.new()
-	library.position = Vector2(65, 830)
-	library.size = Vector2(420, 55)
+	library.fit_to_longest_item = false
+	library.clip_text = true
+	library.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	library.position = Vector2(110, 830)
+	library.size = Vector2(375, 55)
 	library.add_theme_font_size_override("font_size", 23)
 	library.item_selected.connect(load_lesson)
 	add_child(library)
-	lesson_button = UI.button(self, "教另一种", Rect2(510, 830, 215, 55), new_lesson)
+	lesson_button = UI.button(self, "教另一种", Rect2(510, 830, 200, 55), new_lesson)
 	UI.label(self, "画给老人看 / 导入一张图", Rect2(800, 156, 610, 34), 25)
 	pad = preload("res://extensions/elder_board/scripts/sketch_pad.gd").new()
 	pad.position = Vector2(805, 205)
@@ -92,6 +102,11 @@ func _ready() -> void:
 	summary = UI.rich(self, Rect2(805, 625, 690, 175), 23)
 	confirm_button = UI.button(self, "记对了，记住这套棋", Rect2(805, 830, 400, 55), confirm_lesson)
 	play_button = UI.button(self, "下我教的棋", Rect2(1220, 830, 275, 55), play_lesson)
+	# Keep every native hit area inside the right-hand illustrated page.
+	for child in get_children():
+		if child is Control and child != book and child.position.x >= 800 and child.position.y >= 140:
+			child.position.x = 835 + (child.position.x - 805) * .90
+			child.size.x *= .90
 	file_dialog = FileDialog.new()
 	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
@@ -289,7 +304,7 @@ func show_settings() -> void:
 	add_child(settings)
 	var shade := ColorRect.new()
 	shade.size = size
-	shade.color = Color(0, 0, 0, 0.8)
+	shade.color = Color("384a45", .44)
 	settings.add_child(shade)
 	UI.panel(settings, Rect2(260, 180, 1050, 650))
 	UI.label(settings, "实时教学 · 模型连接", Rect2(305, 210, 950, 45), 32)

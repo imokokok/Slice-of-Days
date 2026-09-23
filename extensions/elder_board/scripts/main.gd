@@ -12,7 +12,7 @@ const GAMES := [
 var selected_game: StringName = &""
 var stage: Control
 var dialogue: Label
-var choices: HBoxContainer
+var choices: VBoxContainer
 var back_button: Button
 var buttons: Array[Button] = []
 var match_view: Control
@@ -31,23 +31,12 @@ func _ready() -> void:
 	if has_node("/root/GameState"):
 		Memory.role = str(get_node("/root/GameState").current_role)
 	DisplayServer.window_set_title(LocalizationSystem.text("Solmere · 老棋友"))
-	var ui_theme := Theme.new()
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Microsoft YaHei", "Noto Sans CJK SC", "PingFang SC", "sans-serif"])
-	ui_theme.default_font = font
-	ui_theme.default_font_size = 27
-	theme = ui_theme
+	theme = preload("res://extensions/elder_board/scripts/ui_bits.gd").paper_theme()
 	stage = Control.new()
 	stage.name = "OriginalArtworkStage"
 	stage.size = DESIGN_SIZE
 	add_child(stage)
-	var background := TextureRect.new()
-	background.texture = preload("res://extensions/elder_board/assets/background.jpg")
-	background.size = DESIGN_SIZE
-	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	background.stretch_mode = TextureRect.STRETCH_SCALE
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stage.add_child(background)
+	stage.add_child(preload("res://extensions/elder_board/scripts/table_preview.gd").new())
 	_build_dialogue()
 	game_selected.connect(_open_match)
 	resized.connect(_fit_stage)
@@ -74,66 +63,55 @@ func _panel_style(color: Color, border: Color = Color.TRANSPARENT) -> StyleBoxFl
 func _button(text_value: String) -> Button:
 	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
 	button.variant="outlined"; button.text=LocalizationSystem.text(text_value); button.custom_minimum_size=Vector2(220,65); button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	button.clip_text = true
+	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	return button
 
 func _build_dialogue() -> void:
-	var panel := PanelContainer.new()
-	panel.name = "DialogueOverlay"
-	panel.position = Vector2(455, 582)
-	panel.size = Vector2(870, 260)
-	panel.add_theme_stylebox_override("panel", _panel_style(Color(0.18, 0.18, 0.18, 0.96)))
-	stage.add_child(panel)
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 32)
-	margin.add_theme_constant_override("margin_right", 32)
-	margin.add_theme_constant_override("margin_top", 22)
-	margin.add_theme_constant_override("margin_bottom", 24)
-	panel.add_child(margin)
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 15)
-	margin.add_child(column)
+	column.name = "DialogueOverlay"
+	column.position = Vector2(1020, 172)
+	column.size = Vector2(430, 600)
+	column.add_theme_constant_override("separation", 16)
+	stage.add_child(column)
 	var speaker := Label.new()
 	speaker.text = LocalizationSystem.text("老棋友")
-	speaker.add_theme_color_override("font_color", Color("bdbdbd"))
-	var heading := HBoxContainer.new()
-	speaker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	heading.add_child(speaker)
+	speaker.add_theme_font_size_override("font_size", 34)
+	column.add_child(speaker)
 	role_choice = OptionButton.new()
-	role_choice.visible=not Memory.hosted
+	role_choice.visible = not Memory.hosted
 	role_choice.add_item(LocalizationSystem.text("角色 A"))
 	role_choice.add_item(LocalizationSystem.text("角色 B"))
 	role_choice.select(0 if Memory.role == "A" else 1)
-	role_choice.add_theme_font_size_override("font_size", 21)
-	role_choice.item_selected.connect(func(index: int):
-		Memory.role = "A" if index == 0 else "B"
-		dialogue.text = LocalizationSystem.text("%s，来坐。另一位教过的棋也记在棋谱里。\n想下一局，还是教我点新的？" % Memory.role)
-	)
-	heading.add_child(role_choice)
-	var teach_button := Button.new()
-	teach_button.text = LocalizationSystem.text("教棋 / 共享棋谱")
-	teach_button.add_theme_font_size_override("font_size", 21)
-	teach_button.pressed.connect(_open_teaching)
-	heading.add_child(teach_button)
-	var chat_button := Button.new()
-	chat_button.text = LocalizationSystem.text("聊两句")
-	chat_button.add_theme_font_size_override("font_size", 22)
-	chat_button.pressed.connect(_chat)
-	heading.add_child(chat_button)
-	column.add_child(heading)
+	role_choice.item_selected.connect(func(index: int): Memory.role = "A" if index == 0 else "B")
+	role_choice.position = Vector2(215, 55)
+	role_choice.size = Vector2(230, 54)
+	stage.add_child(role_choice)
 	dialogue = Label.new()
 	dialogue.text = LocalizationSystem.text(Text.GREETINGS[0])
-	dialogue.add_theme_font_size_override("font_size", 26)
-	dialogue.add_theme_color_override("font_color", Color("f2f2f2"))
-	dialogue.custom_minimum_size.y = 78
+	dialogue.add_theme_font_size_override("font_size", 25)
+	dialogue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dialogue.custom_minimum_size = Vector2(430, 126)
 	column.add_child(dialogue)
-	choices = HBoxContainer.new()
-	choices.add_theme_constant_override("separation", 22)
+	choices = VBoxContainer.new()
+	choices.add_theme_constant_override("separation", 10)
 	column.add_child(choices)
 	for index in range(GAMES.size()):
-		var button := _button("%d. %s" % [index + 1, GAMES[index]["title"]])
+		var button := _button(str(GAMES[index]["title"]))
+		button.custom_minimum_size = Vector2(430, 58)
+		button.add_theme_font_size_override("font_size", 25)
 		button.pressed.connect(_select_game.bind(index))
 		choices.add_child(button)
 		buttons.append(button)
+	var teach_button := _button("教棋 / 共享棋谱")
+	teach_button.add_theme_font_size_override("font_size", 23)
+	teach_button.custom_minimum_size.y = 48
+	teach_button.pressed.connect(_open_teaching)
+	column.add_child(teach_button)
+	var chat_button := _button("聊两句")
+	chat_button.custom_minimum_size.y = 48
+	chat_button.pressed.connect(_chat)
+	column.add_child(chat_button)
 	back_button = _button("重新选择")
 	back_button.pressed.connect(_reset_selection)
 	back_button.hide()

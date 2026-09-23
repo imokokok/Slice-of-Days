@@ -66,6 +66,10 @@ window/stretch/mode="canvas_items"
 theme/custom="res://art/ui/solmere_ui.tres"
 theme/default_font_multichannel_signed_distance_field=true
 
+[internationalization]
+
+locale/fallback="zh_CN"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

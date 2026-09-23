@@ -4,13 +4,14 @@ signal match_finished(result: String)
 const Grid = preload("res://extensions/elder_board/scripts/grid_rules.gd")
 const Chess = preload("res://extensions/elder_board/scripts/chess_rules.gd")
 const Text = preload("res://extensions/elder_board/scripts/game_text.gd")
-const GLYPHS := ["", "♟", "♞", "♝", "♜", "♛", "♚"]
+const Art = preload("res://extensions/elder_board/scripts/table_art.gd")
+const UI = preload("res://extensions/elder_board/scripts/ui_bits.gd")
 
 var game_id: StringName
 var board: Array = []
 var n := 9
 var cell := 70.0
-var origin := Vector2(152, 175)
+var origin := Art.ORIGIN
 var turn := 1
 var busy := false
 var ended := false
@@ -29,7 +30,6 @@ var detail: Label
 var pass_button: Button
 var score_button: Button
 var promotion: OptionButton
-var piece_font: SystemFont
 var go_size := 9
 var talk_index := 0
 var feedback := ""
@@ -42,8 +42,8 @@ func setup(id: StringName, preferred_go_size: int = 9) -> void:
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	size = Vector2(1579, 972)
-	piece_font = SystemFont.new()
-	piece_font.font_names = PackedStringArray(["Segoe UI Symbol", "DejaVu Sans", "Arial Unicode MS"])
+	theme = UI.paper_theme()
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_build_ui()
 	restart()
 	mouse_exited.connect(func() -> void: hovered_cell=-1; queue_redraw())
@@ -55,17 +55,20 @@ func label_at(text: String, p: Vector2, width: float, font_size: int) -> Label:
 	label.size.x = width
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", Color("eeeeee"))
+	label.add_theme_color_override("font_color", UI.INK)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(label)
 	return label
 
 func button_at(text: String, p: Vector2, action: Callable) -> Button:
 	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
-	button.variant="choice"
+	button.variant="paper"
 	button.text = LocalizationSystem.text(text)
 	button.position = p
-	button.size = Vector2(420, 62)
+	button.size = Vector2(430, 52)
+	button.clip_text = true
+	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	button.add_theme_font_size_override("font_size", 24)
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	button.pressed.connect(action)
 	add_child(button)
@@ -73,23 +76,26 @@ func button_at(text: String, p: Vector2, action: Callable) -> Button:
 
 func _build_ui() -> void:
 	var titles := {&"go": "围棋 · %d 路" % go_size, &"gomoku": "五子棋 · 15 路", &"chess": "国际象棋"}
-	label_at(titles[game_id], Vector2(110, 60), 750, 42)
-	label_at("闹闹", Vector2(1000, 95), 470, 32)
-	status = label_at("", Vector2(1000, 160), 450, 30)
-	detail = label_at("", Vector2(1000, 250), 440, 23)
-	pass_button = button_at("停一手", Vector2(1000, 460), human_pass)
+	label_at(titles[game_id], Vector2(215, 56), 750, 42)
+	label_at("闹闹", Vector2(1020, 172), 470, 32)
+	status = label_at("", Vector2(1020, 226), 430, 29)
+	detail = label_at("", Vector2(1020, 312), 430, 24)
+	pass_button = button_at("停一手", Vector2(1020, 492), human_pass)
 	pass_button.visible = game_id == &"go"
-	score_button = button_at("确认死子，计算结果", Vector2(1000, 460), finish_score)
+	score_button = button_at("确认死子，计算结果", Vector2(1020, 492), finish_score)
 	score_button.hide()
-	button_at("重新开局", Vector2(1000, 550), restart)
-	button_at("认输", Vector2(1000, 635), resign)
-	button_at("返回棋类选择", Vector2(1000, 720), func(): return_requested.emit())
-	button_at("规则说明", Vector2(1000, 805), show_rules)
-	label_at("点击棋盘落子；国际象棋先选棋子，再选目标格。", Vector2(110, 850), 800, 23)
+	button_at("重新开局", Vector2(1020, 560), restart)
+	button_at("认输", Vector2(1020, 628), resign)
+	button_at("返回棋类选择", Vector2(1020, 696), func(): return_requested.emit())
+	var rules_button := button_at("规则说明", Vector2(1020, 756), show_rules)
+	rules_button.size = Vector2(330, 40)
+	rules_button.variant = "quiet"
+	rules_button.refresh()
+	label_at("点击棋盘落子；国际象棋先选棋子，再选目标格。", Vector2(215, 850), 650, 23)
 	promotion = OptionButton.new()
 	for item in ["升变：后", "升变：车", "升变：象", "升变：马"]: promotion.add_item(LocalizationSystem.text(item))
-	promotion.position = Vector2(1000, 460)
-	promotion.size = Vector2(420, 62)
+	promotion.position = Vector2(1020, 492)
+	promotion.size = Vector2(430, 52)
 	promotion.visible = game_id == &"chess"
 	add_child(promotion)
 
@@ -129,40 +135,28 @@ func restart() -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, size), Color("183b53",.98))
+	Art.tabletop(self)
 	if game_id == &"chess":
 		for i in range(64):
 			var p := origin + Vector2(i % 8, i / 8) * cell
-			draw_rect(Rect2(p, Vector2.ONE * cell), Color("c2c0b5") if (i % 8 + int(i / 8)) % 2 == 0 else Color("696e68"))
+			draw_rect(Rect2(p, Vector2.ONE * cell), Color("f4e2bb") if (i % 8 + int(i / 8)) % 2 == 0 else Art.SAGE)
 			if i == last_move: draw_rect(Rect2(p, Vector2.ONE * cell), Color(0.8, 0.8, 0.4, 0.28))
 			if i == selected: draw_rect(Rect2(p + Vector2.ONE * 3, Vector2.ONE * (cell - 6)), Color("e5ddad"), false, 4)
 			var piece: int = board[i]
 			if piece != 0:
-				var glyph: String = GLYPHS[absi(piece)]
-				var pos := p + Vector2(7, 60)
-				draw_string_outline(piece_font, pos, glyph, HORIZONTAL_ALIGNMENT_LEFT, -1, 60, 3, Color("292929") if piece > 0 else Color("dddddd"))
-				draw_string(piece_font, pos, glyph, HORIZONTAL_ALIGNMENT_LEFT, -1, 60, Color("fafafa") if piece > 0 else Color("202020"))
+				Art.piece(self, absi(piece), piece, Rect2(p, Vector2.ONE * cell))
 		if selected >= 0:
 			for move in legal_moves:
 				if move.from == selected:
 					var p := origin + Vector2(move.to % 8 + 0.5, int(move.to / 8) + 0.5) * cell
-					draw_circle(p, 8, Color("eadf9b"))
+					draw_circle(p, 8, Color("936241"))
 	else:
-		draw_rect(Rect2(origin - Vector2.ONE * 30, Vector2.ONE * (608 + 60)), Color("b6b3a5"))
-		for i in range(n):
-			draw_line(origin + Vector2(i * cell, 0), origin + Vector2(i * cell, 608), Color("454741"), 1.5)
-			draw_line(origin + Vector2(0, i * cell), origin + Vector2(608, i * cell), Color("454741"), 1.5)
-		var stars := [3, int(n / 2), n - 4]
-		if n == 9: stars = [2, 4, 6]
-		for x in stars:
-			for y in stars:
-				if n == 19 or x == y or x + y == n - 1: draw_circle(origin + Vector2(x, y) * cell, 4, Color("454741"))
+		Art.grid(self, n, origin)
 		for i in range(board.size()):
 			if board[i] == 0: continue
 			var p := origin + Vector2(i % n, i / n) * cell
 			var radius := cell * 0.42
-			draw_circle(p + Vector2(2, 3), radius, Color(0, 0, 0, 0.2))
-			draw_circle(p, radius, Color("242626") if board[i] == 1 else Color("eeeee8"))
+			Art.stone(self, p, radius, board[i])
 			if i == last_move: draw_arc(p, radius * 0.4, 0, TAU, 24, Color("a6a485"), 2)
 			if dead.has(i):
 				draw_line(p - Vector2(10, 10), p + Vector2(10, 10), Color("b55252"), 3)
@@ -171,8 +165,8 @@ func _draw() -> void:
 	if hovered_cell>=0 and _can_preview(hovered_cell):
 		var at := origin+Vector2(hovered_cell%n,hovered_cell/n)*cell
 		if game_id==&"chess":
-			draw_rect(Rect2(at+Vector2.ONE*4,Vector2.ONE*(cell-8)),Color("eed577"),false,3)
-		else: draw_circle(at,cell*.35,Color("31658b",.45))
+			draw_rect(Rect2(at+Vector2.ONE*4,Vector2.ONE*(cell-8)),Color("936241"),false,3)
+		else: draw_circle(at,cell*.35,Color("52665d",.45))
 
 func _can_preview(index: int) -> bool:
 	if ended or busy or turn!=1 or scoring or is_instance_valid(rules_view): return false

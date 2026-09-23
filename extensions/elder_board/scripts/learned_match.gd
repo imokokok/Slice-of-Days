@@ -26,6 +26,7 @@ func setup(saved: Dictionary) -> void:
 	rule = profile.rules
 
 func _ready() -> void:
+	theme = UI.paper_theme()
 	size = Vector2(1579, 972)
 	UI.label(self, rule.name, Rect2(95, 45, 850, 65), 38)
 	UI.label(self, "%s教的棋 · %s正在下" % [profile.get("taught_by", "棋友"), Memory.role], Rect2(950, 80, 550, 45), 27)
@@ -58,12 +59,12 @@ func refresh() -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, size), Color("222822"))
+	draw_rect(Rect2(Vector2.ZERO, size), Color("e6d7b9"))
 	var w := int(rule.width)
 	var h := int(rule.height)
-	draw_rect(Rect2(origin, Vector2(w, h) * cell), Color("bbb8a9"))
-	for x in range(w + 1): draw_line(origin + Vector2(x * cell, 0), origin + Vector2(x * cell, h * cell), Color("656b60"), 1)
-	for y in range(h + 1): draw_line(origin + Vector2(0, y * cell), origin + Vector2(w * cell, y * cell), Color("656b60"), 1)
+	draw_rect(Rect2(origin, Vector2(w, h) * cell), Color("efd6a4"))
+	for x in range(w + 1): draw_line(origin + Vector2(x * cell, 0), origin + Vector2(x * cell, h * cell), UI.INK, 1)
+	for y in range(h + 1): draw_line(origin + Vector2(0, y * cell), origin + Vector2(w * cell, y * cell), UI.INK, 1)
 	for i in range(board.size()):
 		var p := origin + Vector2(i % w + 0.5, int(i / w) + 0.5) * cell
 		if board[i] != 0: draw_circle(p, cell * 0.34, Color("242925") if board[i] == 1 else Color("f4f2e9"))
@@ -133,7 +134,7 @@ func show_rules() -> void:
 	add_child(rule_view)
 	var shade := ColorRect.new()
 	shade.size = size
-	shade.color = Color(0, 0, 0, 0.7)
+	shade.color = Color("384a45", .44)
 	rule_view.add_child(shade)
 	UI.panel(rule_view, Rect2(290, 200, 1000, 580))
 	UI.rich(rule_view, Rect2(340, 240, 900, 410), 28).text = LocalizationSystem.text(Rules.summary(rule))

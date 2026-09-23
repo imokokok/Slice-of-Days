@@ -1,0 +1,1024 @@
+{
+  "method": "Static references plus SHA-256 verification; not a runtime coverage claim",
+  "verified_source_archives": [
+    "cila",
+    "cozy_sfx",
+    "cute_ui",
+    "little_chef"
+  ],
+  "assets": [
+    {
+      "key": "food_bread",
+      "path": "res://art/licensed/kitchen/food_bread.png",
+      "source": "Sprites/Sprites/Environment/Shelf/bread.png",
+      "pack": "little_chef",
+      "installed_sha256": "0c2ff0e0494f83855c9da0fd8931a2abfdfa1b01c4b327e63c9be36eb1b3f58e",
+      "source_sha256": "0c2ff0e0494f83855c9da0fd8931a2abfdfa1b01c4b327e63c9be36eb1b3f58e",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/ui/components/handmade_assets.gd:7"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "food_cheese",
+      "path": "res://art/licensed/kitchen/food_cheese.png",
+      "source": "Sprites/Sprites/Environment/Shelf/cheese.png",
+      "pack": "little_chef",
+      "installed_sha256": "94ddd120f4c578e904865c3318a57687bb2e5b98563bd20eb8965d55f14518cf",
+      "source_sha256": "94ddd120f4c578e904865c3318a57687bb2e5b98563bd20eb8965d55f14518cf",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/ui/components/handmade_assets.gd:7"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "kitchen_salt",
+      "path": "res://art/licensed/kitchen/kitchen_salt.png",
+      "source": "Sprites/Sprites/Environment/Counter/salt.png",
+      "pack": "little_chef",
+      "installed_sha256": "250042b1b56a3985046c97c651a11f0c4f9c4136f4db5eb1bedfe669cbdc79e4",
+      "source_sha256": "250042b1b56a3985046c97c651a11f0c4f9c4136f4db5eb1bedfe669cbdc79e4",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/ui/native_module_game.gd:143"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "kitchen_spoon",
+      "path": "res://art/licensed/kitchen/kitchen_spoon.png",
+      "source": "Sprites/Sprites/Environment/Wall/spoon.png",
+      "pack": "little_chef",
+      "installed_sha256": "5a6b64a98cc6f1937ce4890015294255209ea2c0da4e5536e1ed8ce36e3654f1",
+      "source_sha256": "5a6b64a98cc6f1937ce4890015294255209ea2c0da4e5536e1ed8ce36e3654f1",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/ui/components/cooking_pot.gd:41"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "kitchen_ladle",
+      "path": "res://art/licensed/kitchen/kitchen_ladle.png",
+      "source": "Sprites/Sprites/Environment/Wall/sooup_spoon.png",
+      "pack": "little_chef",
+      "installed_sha256": "d7527668bbffbe6d1f513fcd30ec6460e5229bfaa25a95bab50d34fb19ccc8b9",
+      "source_sha256": "d7527668bbffbe6d1f513fcd30ec6460e5229bfaa25a95bab50d34fb19ccc8b9",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "pot_back",
+      "path": "res://art/licensed/kitchen/pot_back.png",
+      "source": "Sprites/Sprites/Environment/Pot/pot_back.png",
+      "pack": "little_chef",
+      "installed_sha256": "6a7cf95fd837edf22baf37f605fa605c4006baae119d134715444ba253c8cedf",
+      "source_sha256": "6a7cf95fd837edf22baf37f605fa605c4006baae119d134715444ba253c8cedf",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/ui/components/cooking_pot.gd:31"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "pot_body",
+      "path": "res://art/licensed/kitchen/pot_body.png",
+      "source": "Sprites/Sprites/Environment/Pot/pot_base.png",
+      "pack": "little_chef",
+      "installed_sha256": "fadd9b72c564e628b4ea6382938bb6c071f47dacb8397c9fdb43f3baed686eb6",
+      "source_sha256": "fadd9b72c564e628b4ea6382938bb6c071f47dacb8397c9fdb43f3baed686eb6",
+      "status": "adaptation_source_or_reserve",
+      "direct_references": [
+        "scripts/ui/native_module_game.gd:139"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "pot_hot",
+      "path": "res://art/licensed/kitchen/pot_hot.png",
+      "source": "Sprites/Sprites/Environment/Pot/pot_base_hot.png",
+      "pack": "little_chef",
+      "installed_sha256": "8026294d7489a618c6a50b372f185efcc53b5ee09e848c90ddfe6771e7c18676",
+      "source_sha256": "8026294d7489a618c6a50b372f185efcc53b5ee09e848c90ddfe6771e7c18676",
+      "status": "adaptation_source_or_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "pot_lid",
+      "path": "res://art/licensed/kitchen/pot_lid.png",
+      "source": "Sprites/Sprites/Environment/Pot/pot_lid.png",
+      "pack": "little_chef",
+      "installed_sha256": "dbb412823dbbab83a571709df52e97a1b2c96401e975ef01c7df01b6ea4ef39b",
+      "source_sha256": "dbb412823dbbab83a571709df52e97a1b2c96401e975ef01c7df01b6ea4ef39b",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/ui/components/cooking_pot.gd:49"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "serving_bowl",
+      "path": "res://art/licensed/kitchen/serving_bowl.png",
+      "source": "Sprites/Sprites/Environment/Shelf/Bowl_Stack/Bowl_0.png",
+      "pack": "little_chef",
+      "installed_sha256": "4bdbd747ca6df5c62f4459e71f8bc4c76533d26f1aa72344c77079f9f28f6472",
+      "source_sha256": "4bdbd747ca6df5c62f4459e71f8bc4c76533d26f1aa72344c77079f9f28f6472",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "paper_wide",
+      "path": "res://art/licensed/ui/paper_wide.png",
+      "source": "Cila - Paper UI stylized Free/paper/paper 02.png",
+      "pack": "cila",
+      "installed_sha256": "5ea1de516407451a82810a407df0524531d06cedfd2f26f0967dc0199861445f",
+      "source_sha256": "5ea1de516407451a82810a407df0524531d06cedfd2f26f0967dc0199861445f",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/ui/main_menu.gd:191",
+        "scripts/ui/production_assets.gd:49",
+        "scripts/ui/production_assets.gd:60",
+        "scripts/ui/production_assets.gd:81",
+        "scripts/ui/components/confirm_sheet.gd:21"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "paper_tall",
+      "path": "res://art/licensed/ui/paper_tall.png",
+      "source": "Cila - Paper UI stylized Free/paper/paper 03.png",
+      "pack": "cila",
+      "installed_sha256": "82507f521f9539409cc3d6e53f26d2e906c962b50a2069a0fbc611c0cd9c4c7e",
+      "source_sha256": "82507f521f9539409cc3d6e53f26d2e906c962b50a2069a0fbc611c0cd9c4c7e",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/ui/main_menu.gd:61"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "paper_large",
+      "path": "res://art/licensed/ui/paper_large.png",
+      "source": "Cila - Paper UI stylized Free/paper/paper 07.png",
+      "pack": "cila",
+      "installed_sha256": "ea8699fac0c8b7a12c965818d874362f8a1a497b8aecce03acc1616d4dbf73c5",
+      "source_sha256": "ea8699fac0c8b7a12c965818d874362f8a1a497b8aecce03acc1616d4dbf73c5",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/residency/paper_overlay.gd:63",
+        "scripts/ui/economy_paper.gd:21",
+        "scripts/ui/paper_language.gd:93",
+        "scripts/ui/production_assets.gd:60",
+        "scripts/ui/production_assets.gd:64",
+        "scripts/ui/production_assets.gd:86",
+        "scripts/ui/components/paper_page.gd:8"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "paper_dialogue",
+      "path": "res://art/licensed/ui/paper_dialogue.png",
+      "source": "Cila - Paper UI stylized Free/paper/dialog box 08.png",
+      "pack": "cila",
+      "installed_sha256": "386b7c393d6891483707be6143e3548e9c8bcc682bba44bf538ab860baebfdde",
+      "source_sha256": "386b7c393d6891483707be6143e3548e9c8bcc682bba44bf538ab860baebfdde",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "paper_label",
+      "path": "res://art/licensed/ui/paper_label.png",
+      "source": "Cila - Paper UI stylized Free/others/title 1 01.png",
+      "pack": "cila",
+      "installed_sha256": "fa52fc93b086a81174ae0e43b623ffd2e43bfbc8a3f8a80ee0b7fc0de26d028b",
+      "source_sha256": "fa52fc93b086a81174ae0e43b623ffd2e43bfbc8a3f8a80ee0b7fc0de26d028b",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/ui/main_menu.gd:136",
+        "scripts/ui/paper_language.gd:60",
+        "scripts/ui/paper_language.gd:62",
+        "scripts/ui/production_assets.gd:60",
+        "scripts/ui/production_assets.gd:67",
+        "scripts/ui/production_assets.gd:72",
+        "scripts/ui/production_assets.gd:76",
+        "scripts/ui/components/solmere_button.gd:51",
+        "scripts/ui/components/solmere_button.gd:57",
+        "scripts/ui/components/solmere_button.gd:67"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "paper_tab",
+      "path": "res://art/licensed/ui/paper_tab.png",
+      "source": "Cila - Paper UI stylized Free/others/title 2 01.png",
+      "pack": "cila",
+      "installed_sha256": "0fa1c50b9a55833a26bce322950c26407a4f99f7ad65aef42d3d1f01c4244887",
+      "source_sha256": "0fa1c50b9a55833a26bce322950c26407a4f99f7ad65aef42d3d1f01c4244887",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/ui/production_assets.gd:60",
+        "scripts/ui/production_assets.gd:67",
+        "scripts/ui/components/solmere_button.gd:57"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "paper_square",
+      "path": "res://art/licensed/ui/paper_square.png",
+      "source": "Cila - Paper UI stylized Free/others/square 01.png",
+      "pack": "cila",
+      "installed_sha256": "08352cdad45a6fa4f6279bb9a8e232130cef4c96845b09a61b4a475d72539ca9",
+      "source_sha256": "08352cdad45a6fa4f6279bb9a8e232130cef4c96845b09a61b4a475d72539ca9",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "paper_focus",
+      "path": "res://art/licensed/ui/paper_focus.png",
+      "source": "Cila - Paper UI stylized Free/others/Marker 01.png",
+      "pack": "cila",
+      "installed_sha256": "24e9f2314630f0df2b03af4ca588ed7c02a5faed3fbb3a4005a801cef3851747",
+      "source_sha256": "24e9f2314630f0df2b03af4ca588ed7c02a5faed3fbb3a4005a801cef3851747",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "icon_check",
+      "path": "res://art/licensed/ui/icon_check.png",
+      "source": "Cila - Paper UI stylized Free/icon/Check.png",
+      "pack": "cila",
+      "installed_sha256": "42d43905defc595509ad068e57a3389dc35a1c9c62fcfcfcf9240983bca99f3e",
+      "source_sha256": "42d43905defc595509ad068e57a3389dc35a1c9c62fcfcfcf9240983bca99f3e",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "icon_close",
+      "path": "res://art/licensed/ui/icon_close.png",
+      "source": "Cila - Paper UI stylized Free/icon/Exit.png",
+      "pack": "cila",
+      "installed_sha256": "79d4b5534ea985f2a8a774e112c5dba53711c63ad117e9f2a15bff823106d170",
+      "source_sha256": "79d4b5534ea985f2a8a774e112c5dba53711c63ad117e9f2a15bff823106d170",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "icon_play",
+      "path": "res://art/licensed/ui/icon_play.png",
+      "source": "Cila - Paper UI stylized Free/icon/Play.png",
+      "pack": "cila",
+      "installed_sha256": "ea5f3b94f22de25782e6523bbdafdcc5b85048f9161cdeff04b81608bb4107a5",
+      "source_sha256": "ea5f3b94f22de25782e6523bbdafdcc5b85048f9161cdeff04b81608bb4107a5",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "icon_pause",
+      "path": "res://art/licensed/ui/icon_pause.png",
+      "source": "Cila - Paper UI stylized Free/icon/Pause.png",
+      "pack": "cila",
+      "installed_sha256": "40a2e571c80a9b6ae910f036c7ecf131dea34d2d0bb1d95be0bb87a3cab0a0b3",
+      "source_sha256": "40a2e571c80a9b6ae910f036c7ecf131dea34d2d0bb1d95be0bb87a3cab0a0b3",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "icon_stop",
+      "path": "res://art/licensed/ui/icon_stop.png",
+      "source": "Cila - Paper UI stylized Free/icon/Stop.png",
+      "pack": "cila",
+      "installed_sha256": "a9f084ea178aaf1bea889a5f29f36a213024ddb1b0fd894984275c27166eed3c",
+      "source_sha256": "a9f084ea178aaf1bea889a5f29f36a213024ddb1b0fd894984275c27166eed3c",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "icon_music",
+      "path": "res://art/licensed/ui/icon_music.png",
+      "source": "Cila - Paper UI stylized Free/icon/Music.png",
+      "pack": "cila",
+      "installed_sha256": "53fd6dbf94f1355db43a1bebb30cdba2c9532d422b8a0f2521c968768245100e",
+      "source_sha256": "53fd6dbf94f1355db43a1bebb30cdba2c9532d422b8a0f2521c968768245100e",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "icon_info",
+      "path": "res://art/licensed/ui/icon_info.png",
+      "source": "Cila - Paper UI stylized Free/icon/Info.png",
+      "pack": "cila",
+      "installed_sha256": "a6ae6b343ba938bb04dbfb1e9ce30a6d651fc5b8648136d90f047f215101f62e",
+      "source_sha256": "a6ae6b343ba938bb04dbfb1e9ce30a6d651fc5b8648136d90f047f215101f62e",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "icon_arrow_left",
+      "path": "res://art/licensed/ui/icon_arrow_left.png",
+      "source": "Cila - Paper UI stylized Free/icon/arrow L.png",
+      "pack": "cila",
+      "installed_sha256": "6518f90d2edf687b2500d835fc4fcd5b7e633a11fe11fa5f330f358f0f3dea04",
+      "source_sha256": "6518f90d2edf687b2500d835fc4fcd5b7e633a11fe11fa5f330f358f0f3dea04",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "icon_arrow_right",
+      "path": "res://art/licensed/ui/icon_arrow_right.png",
+      "source": "Cila - Paper UI stylized Free/icon/arrow R.png",
+      "pack": "cila",
+      "installed_sha256": "7d5ca1196582ac93b52922063a4b3eaa77881a42a88cb543d51422ce80f64521",
+      "source_sha256": "7d5ca1196582ac93b52922063a4b3eaa77881a42a88cb543d51422ce80f64521",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "icon_heart",
+      "path": "res://art/licensed/ui/icon_heart.png",
+      "source": "Cila - Paper UI stylized Free/icon/Heart.png",
+      "pack": "cila",
+      "installed_sha256": "0b67c8bf5cf500d2dccb13c6d7c4a4c6833056551e1524efee848ebcb44ce3b1",
+      "source_sha256": "0b67c8bf5cf500d2dccb13c6d7c4a4c6833056551e1524efee848ebcb44ce3b1",
+      "status": "installed_reserve",
+      "direct_references": [],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_click",
+      "path": "res://art/licensed/audio/ui_click.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/02_click_soft.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "fcd39e8e463528ebe8bb10bea4d91a1bc0b2f80cf3153a50c41a8c9fad20c12a",
+      "source_sha256": "7718a389ee24667a0d598bccabd1e653821f715357e949671beb6afff929a139",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_focus",
+      "path": "res://art/licensed/audio/ui_focus.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/09_tap_feather.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "24e0145b8fd3dfb04888a7cc300d0cbcc749e690ae3d8da8916952159e0b6641",
+      "source_sha256": "107cdb308ad699d94ed10ab75c0e6e9e036b0fce7e8d36d950d4845cf2f69d6b",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_success",
+      "path": "res://art/licensed/audio/ui_success.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/11_success.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "a63ad5b852fe8a179523313c5fca3c114ff6d7e3ba4b6edbe691cc9705026592",
+      "source_sha256": "95d6b4b64bc03781766bde0feb43e4b3dd8135df89e152480eb7e2975ff98561",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_error",
+      "path": "res://art/licensed/audio/ui_error.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/39_fail_soft.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "4384492c21ec3f72cbfae2de8d09c0730fdac10978be3fb023f0b8f48550263b",
+      "source_sha256": "f8861e72936e00d7d8abe89f86d6db661775b303ba81c066754339ffd3e06de4",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_slide",
+      "path": "res://art/licensed/audio/ui_slide.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/13_swipe.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "1f5f5e1dd8a4e2114b0917be9fcaf3314b56322af039a4b1a8c68d711cf2b2bf",
+      "source_sha256": "3c326480e06e8dfe0f2265e92f70506fa6e6455274265864afa63e2bbc2db41b",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_open",
+      "path": "res://art/licensed/audio/ui_open.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/14_menu_open.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "b8410fabbc9f3091282aba8ccff0e042c29b57675be38c100c9f80531954d256",
+      "source_sha256": "f69996febc33c69f5f6a3eaac5ab2e9e279e9bdd7a6d08f07189696cb9bddc1f",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_close",
+      "path": "res://art/licensed/audio/ui_close.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/15_menu_close.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "c6d943da845cf8a1ef949af57afab0c84c7a3183f7cacf42b3171ab1ad713c05",
+      "source_sha256": "57720759d2f56632c9a4b676bcea53a04f5742c97a4cb8bc88ca8aaa68df9aea",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_notice",
+      "path": "res://art/licensed/audio/ui_notice.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/16_notification.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "825b02069b310bab51cc66daf62ef323a22ec8c118dc80c3e34d24e570276841",
+      "source_sha256": "f077b73356805a7a40e6a727c41b05e2904257e78675fe6e182de51688a67ab5",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_record_start",
+      "path": "res://art/licensed/audio/ui_record_start.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/19_toggle_on.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "c1d62b78caf360f050ae24a04ac35b2093dec663a8d4436c02a7f873ab242f0a",
+      "source_sha256": "b0bad160171d0d607c4fcc6ee473fbfc08631242c465b662b2e318b71de1b969",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_record_stop",
+      "path": "res://art/licensed/audio/ui_record_stop.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/20_toggle_off.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "bfbee37af7206d858049bbd816984a8f056c8df1b3c879a060129bf830d47949",
+      "source_sha256": "11928564ed181a3c9287a0b998cc0cf52520cf6368fd3187bd4a101a09ba02fd",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_check",
+      "path": "res://art/licensed/audio/ui_check.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/24_checkbox.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "fe042d20bb88d9ab6cd503b7a5ffa5f908129215e83a835e8e6436647abcab1c",
+      "source_sha256": "9cf62eeab992c3911e25680b6607d51ec3ac392e5a98d507e93c7c9b52a4a4ba",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_drag",
+      "path": "res://art/licensed/audio/ui_drag.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/31_drag.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "03dd9755260b305ab2dbf8db54e56aeb9ab7e5ef82ac901f65dcc3708bbf1627",
+      "source_sha256": "a209eb4140fdea8577ea1e6a15339230e4a7a7f5156209ad64ae44758c57b9e6",
+      "status": "cue_registered_no_gameplay_caller",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_drop",
+      "path": "res://art/licensed/audio/ui_drop.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/32_drop.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "d82f38e7d06431e63ccbaf76bffb93d654b672333b662cb7843e62f79e9723f1",
+      "source_sha256": "ce545935add9188002b33ac25a5f881f1676dd80f53130efc02a31bceb1791a4",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ui_snap",
+      "path": "res://art/licensed/audio/ui_snap.wav",
+      "source": "Cute - UI Sound Pack/WAV_48kHz_24bit/33_snap.wav",
+      "pack": "cute_ui",
+      "installed_sha256": "fed6b413f3e61b3fad4e8fe1c59b5f1ef83a953b2614601f4caad2bb4bc7f761",
+      "source_sha256": "e08913407432b9ec89d47a77edd4b7f49db5213b3a334e6a5d9ad91c782082ec",
+      "status": "cue_registered_no_gameplay_caller",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ambience_rain",
+      "path": "res://art/licensed/audio/ambience_rain.wav",
+      "source": "Cozy SFX Volume 1/BACKGROUND_AMBIENCE/RAIN_AMBIENCE.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "3344e4ea29061ec48680a1d658b8652ea4e25d454b950f792663530eee264d5c",
+      "source_sha256": "3344e4ea29061ec48680a1d658b8652ea4e25d454b950f792663530eee264d5c",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:112"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ambience_indoor_rain",
+      "path": "res://art/licensed/audio/ambience_indoor_rain.wav",
+      "source": "Cozy SFX Volume 1/BACKGROUND_AMBIENCE/INDOOR_RAIN_AMBIENCE.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "044ae02be933b582a1f53c3f6672a69977f9848422016ae281418dc3cae99440",
+      "source_sha256": "044ae02be933b582a1f53c3f6672a69977f9848422016ae281418dc3cae99440",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:112"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ambience_night",
+      "path": "res://art/licensed/audio/ambience_night.wav",
+      "source": "Cozy SFX Volume 1/BACKGROUND_AMBIENCE/NIGHTTIME_AMBIENCE.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "6c6e629e5fee8d66f23e791a3cd0815fca31448c7e4f987a2455e098376b77e2",
+      "source_sha256": "6c6e629e5fee8d66f23e791a3cd0815fca31448c7e4f987a2455e098376b77e2",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:120"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ambience_day",
+      "path": "res://art/licensed/audio/ambience_day.wav",
+      "source": "Cozy SFX Volume 1/BACKGROUND_AMBIENCE/OUTDOOR_GENERIC_AMBIENCE.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "6bdadbe00b6df2de654f2e439ee4c25c144f64679a76ec22cf669b6abf19b02b",
+      "source_sha256": "6bdadbe00b6df2de654f2e439ee4c25c144f64679a76ec22cf669b6abf19b02b",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:120"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ambience_room",
+      "path": "res://art/licensed/audio/ambience_room.wav",
+      "source": "Cozy SFX Volume 1/BACKGROUND_AMBIENCE/ROOM_TONE.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "0407cd0ea15fc7e63147e3d30cc710b3b5768b8f98a4a50fe0c115597404b66e",
+      "source_sha256": "0407cd0ea15fc7e63147e3d30cc710b3b5768b8f98a4a50fe0c115597404b66e",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:120"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "ambience_wind",
+      "path": "res://art/licensed/audio/ambience_wind.wav",
+      "source": "Cozy SFX Volume 1/BACKGROUND_AMBIENCE/WIND_AMBIENCE.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "e02cfce2694cc97e2abb43874631ab8fcbcb4492a232b2c22bc2e95d658975ac",
+      "source_sha256": "e02cfce2694cc97e2abb43874631ab8fcbcb4492a232b2c22bc2e95d658975ac",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:120"
+      ],
+      "dynamic_consumer": ""
+    },
+    {
+      "key": "step_grass_1",
+      "path": "res://art/licensed/audio/step_grass_1.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/GRASS/GRASS_FOOTSTEP_1.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "f55f6953dcea914fc326783af96425b40c70292fe79a205ec7d27b4b09d57d26",
+      "source_sha256": "f55f6953dcea914fc326783af96425b40c70292fe79a205ec7d27b4b09d57d26",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_grass_2",
+      "path": "res://art/licensed/audio/step_grass_2.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/GRASS/GRASS_FOOTSTEP_2.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "0ac58de8b3de8810cba4b5831c4bc4ef32d18ce3d4e30799e130485664e42d26",
+      "source_sha256": "0ac58de8b3de8810cba4b5831c4bc4ef32d18ce3d4e30799e130485664e42d26",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_grass_3",
+      "path": "res://art/licensed/audio/step_grass_3.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/GRASS/GRASS_FOOTSTEP_3.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "5309c9b1f8ed26fb4fe2dff453ed4399416f54a51c3c06801889c8fa9e707232",
+      "source_sha256": "5309c9b1f8ed26fb4fe2dff453ed4399416f54a51c3c06801889c8fa9e707232",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_grass_4",
+      "path": "res://art/licensed/audio/step_grass_4.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/GRASS/GRASS_FOOTSTEP_4.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "8e690ed2c9c935888a5935de852d46f179b5c9c2017cbe3217164ede59cee56b",
+      "source_sha256": "8e690ed2c9c935888a5935de852d46f179b5c9c2017cbe3217164ede59cee56b",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_grass_5",
+      "path": "res://art/licensed/audio/step_grass_5.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/GRASS/GRASS_FOOTSTEP_5.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "218ec2c8d8c51519386e8c2f0990e69f8535d85cc87039b96a1bc6090a997731",
+      "source_sha256": "218ec2c8d8c51519386e8c2f0990e69f8535d85cc87039b96a1bc6090a997731",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_gravel_1",
+      "path": "res://art/licensed/audio/step_gravel_1.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/GRAVEL/GRAVEL_FOOTSTEP_1.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "d7650109d9add691f0b542e4b937f34869cd7ee86c7910a18e83a8f04ba8eb7b",
+      "source_sha256": "d7650109d9add691f0b542e4b937f34869cd7ee86c7910a18e83a8f04ba8eb7b",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_gravel_2",
+      "path": "res://art/licensed/audio/step_gravel_2.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/GRAVEL/GRAVEL_FOOTSTEP_2.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "0afdaeb2046db4fe177285b857b7738a2d03c7abe412cefbb7544cda2be28e4b",
+      "source_sha256": "0afdaeb2046db4fe177285b857b7738a2d03c7abe412cefbb7544cda2be28e4b",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_gravel_3",
+      "path": "res://art/licensed/audio/step_gravel_3.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/GRAVEL/GRAVEL_FOOTSTEP_3.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "d550c3242bd02be1049d4252266975b84a96dc5e6e332de49d34f8815a6ebb8a",
+      "source_sha256": "d550c3242bd02be1049d4252266975b84a96dc5e6e332de49d34f8815a6ebb8a",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_gravel_4",
+      "path": "res://art/licensed/audio/step_gravel_4.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/GRAVEL/GRAVEL_FOOTSTEP_4.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "9058616418c4a176cb7b0ad0d7c9ab3ae0b2136a4482b2b066764a62cd838aa9",
+      "source_sha256": "9058616418c4a176cb7b0ad0d7c9ab3ae0b2136a4482b2b066764a62cd838aa9",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_gravel_5",
+      "path": "res://art/licensed/audio/step_gravel_5.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/GRAVEL/GRAVEL_FOOTSTEP_5.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "15d3de3721ea866c8382907eefd05f8b1b4c2409825ac5ada5aa85b51ab0b1fe",
+      "source_sha256": "15d3de3721ea866c8382907eefd05f8b1b4c2409825ac5ada5aa85b51ab0b1fe",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_stone_1",
+      "path": "res://art/licensed/audio/step_stone_1.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/STONE/STONE_FOOTSTEP_1.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "31426ded95d22d504ffcdbbf890b6b990db3247aa899dd9109a860861ed90e92",
+      "source_sha256": "31426ded95d22d504ffcdbbf890b6b990db3247aa899dd9109a860861ed90e92",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_stone_2",
+      "path": "res://art/licensed/audio/step_stone_2.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/STONE/STONE_FOOTSTEP_2.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "3e2a3a9af682ad7a7dcc3edeeb8e483df478f4a5756ee17bdbdb30b7f0009a77",
+      "source_sha256": "3e2a3a9af682ad7a7dcc3edeeb8e483df478f4a5756ee17bdbdb30b7f0009a77",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_stone_3",
+      "path": "res://art/licensed/audio/step_stone_3.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/STONE/STONE_FOOTSTEP_3.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "56482da01611dd3484ab39b32544f2b728bdf2fecd5558328627ce6e4351c2b6",
+      "source_sha256": "56482da01611dd3484ab39b32544f2b728bdf2fecd5558328627ce6e4351c2b6",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_stone_4",
+      "path": "res://art/licensed/audio/step_stone_4.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/STONE/STONE_FOOTSTEP_4.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "db0d0bf66fe90c27efff823525d116d1afce2c0f68b07cac8832e93819b7a222",
+      "source_sha256": "db0d0bf66fe90c27efff823525d116d1afce2c0f68b07cac8832e93819b7a222",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_stone_5",
+      "path": "res://art/licensed/audio/step_stone_5.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/STONE/STONE_FOOTSTEP_5.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "2541dde8719e83ba7adbcc507a670ff47f9619427bffc5ce63b1c6d27cc36be2",
+      "source_sha256": "2541dde8719e83ba7adbcc507a670ff47f9619427bffc5ce63b1c6d27cc36be2",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_wood_1",
+      "path": "res://art/licensed/audio/step_wood_1.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/WOOD/WOOD_FOOTSTEP_1.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "0c45775356918df5b6260ddb0edc583ea73b732f8c943fde1213e51d3f57ba49",
+      "source_sha256": "0c45775356918df5b6260ddb0edc583ea73b732f8c943fde1213e51d3f57ba49",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_wood_2",
+      "path": "res://art/licensed/audio/step_wood_2.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/WOOD/WOOD_FOOTSTEP_2.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "3727b98ba1b5b19e60adae331a64ef023d8c7d3ed90b19169d4bd074ac611b7e",
+      "source_sha256": "3727b98ba1b5b19e60adae331a64ef023d8c7d3ed90b19169d4bd074ac611b7e",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_wood_3",
+      "path": "res://art/licensed/audio/step_wood_3.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/WOOD/WOOD_FOOTSTEP_3.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "8eaadb16329be340e82aed7fe108023cdc56b7ea924ac5177f95112091a5c176",
+      "source_sha256": "8eaadb16329be340e82aed7fe108023cdc56b7ea924ac5177f95112091a5c176",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_wood_4",
+      "path": "res://art/licensed/audio/step_wood_4.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/WOOD/WOOD_FOOTSTEP_4.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "c01dbcc1bc77b668c1c0f6b148113afb5650f8aeb6d878491ab0376b418cfceb",
+      "source_sha256": "c01dbcc1bc77b668c1c0f6b148113afb5650f8aeb6d878491ab0376b418cfceb",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "step_wood_5",
+      "path": "res://art/licensed/audio/step_wood_5.wav",
+      "source": "Cozy SFX Volume 1/FOOTSTEPS/WOOD/WOOD_FOOTSTEP_5.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "971117388b73f8653ba51ab9654ce26ae18941d34020df4b392d1f6489462480",
+      "source_sha256": "971117388b73f8653ba51ab9654ce26ae18941d34020df4b392d1f6489462480",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_paper_1",
+      "path": "res://art/licensed/audio/foley_paper_1.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/FABRIC_1.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "5e39b8748ee95a22e79ee791c03a2fdd14c86a30bd13ccf1de42badf78bd6a47",
+      "source_sha256": "5e39b8748ee95a22e79ee791c03a2fdd14c86a30bd13ccf1de42badf78bd6a47",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_paper_2",
+      "path": "res://art/licensed/audio/foley_paper_2.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/FABRIC_2.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "743997ad892854dd6c500bffa1ef34868107c8cebd744f53b0722c3ded5cac6a",
+      "source_sha256": "743997ad892854dd6c500bffa1ef34868107c8cebd744f53b0722c3ded5cac6a",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_paper_3",
+      "path": "res://art/licensed/audio/foley_paper_3.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/FABRIC_3.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "fe0c316066d12363c30e951388cb9aca5a5fbcd3c969595ea29609613a38d9fa",
+      "source_sha256": "fe0c316066d12363c30e951388cb9aca5a5fbcd3c969595ea29609613a38d9fa",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_water_1",
+      "path": "res://art/licensed/audio/foley_water_1.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/WATER_1.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "1a1b598f5fd2ef01b065c264651857bd2553a0ec9cb3953e754b13dbf692ce3f",
+      "source_sha256": "1a1b598f5fd2ef01b065c264651857bd2553a0ec9cb3953e754b13dbf692ce3f",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_water_2",
+      "path": "res://art/licensed/audio/foley_water_2.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/WATER_2.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "6dfc5ab8970d09cc7c51de79ec5d8c5701de1e65de2e0ddde307d1ea5b45724c",
+      "source_sha256": "6dfc5ab8970d09cc7c51de79ec5d8c5701de1e65de2e0ddde307d1ea5b45724c",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_water_3",
+      "path": "res://art/licensed/audio/foley_water_3.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/WATER_3.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "fdedb1867a401672926fbcea9afe222eaf5ca82effcbfbb5c8d33e0ec69ee6d9",
+      "source_sha256": "fdedb1867a401672926fbcea9afe222eaf5ca82effcbfbb5c8d33e0ec69ee6d9",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_wood_1",
+      "path": "res://art/licensed/audio/foley_wood_1.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/WOOD_1.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "4182aa548f68b9f2b77e1b7119bdba9a136618913fba93b07db3e7dd53611ad0",
+      "source_sha256": "4182aa548f68b9f2b77e1b7119bdba9a136618913fba93b07db3e7dd53611ad0",
+      "status": "source_referenced",
+      "direct_references": [
+        "scripts/town_sound/audio/WorldSound.gd:207"
+      ],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_wood_2",
+      "path": "res://art/licensed/audio/foley_wood_2.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/WOOD_2.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "51d429471e1feee9ee20e43e0024857b355ac57a99eb231b19720430131a39ad",
+      "source_sha256": "51d429471e1feee9ee20e43e0024857b355ac57a99eb231b19720430131a39ad",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_wood_3",
+      "path": "res://art/licensed/audio/foley_wood_3.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/WOOD_3.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "b80e3303cd80dd89ff440848cb933ccf3f5d46380d9a346d160570b3fbcc971c",
+      "source_sha256": "b80e3303cd80dd89ff440848cb933ccf3f5d46380d9a346d160570b3fbcc971c",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_leaf_1",
+      "path": "res://art/licensed/audio/foley_leaf_1.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/LEAFS_1.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "4efe68abb080c5e6dd63724fcb861c8c321d1f9389bf8c2247eb1917a5520ea7",
+      "source_sha256": "4efe68abb080c5e6dd63724fcb861c8c321d1f9389bf8c2247eb1917a5520ea7",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_leaf_2",
+      "path": "res://art/licensed/audio/foley_leaf_2.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/LEAFS_2.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "29821a72a4c094888e3f18585eb7db3e94013beb4c030dcab6b407134f4ac395",
+      "source_sha256": "29821a72a4c094888e3f18585eb7db3e94013beb4c030dcab6b407134f4ac395",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "foley_leaf_3",
+      "path": "res://art/licensed/audio/foley_leaf_3.wav",
+      "source": "Cozy SFX Volume 1/INTERACTIONS/LEAFS_3.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "a71fa57a593c8bbe9a26a69e6af4cd535a78abe6c486d44154d7b8950799817a",
+      "source_sha256": "a71fa57a593c8bbe9a26a69e6af4cd535a78abe6c486d44154d7b8950799817a",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "bird_1",
+      "path": "res://art/licensed/audio/bird_1.wav",
+      "source": "Cozy SFX Volume 1/NATURE_ONESHOTS/BIRD_CHIRP_1.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "a1c4026f0be20697e29598985ef30a7c2d56e8e8d17bbfeddd6cc869eaa535a3",
+      "source_sha256": "a1c4026f0be20697e29598985ef30a7c2d56e8e8d17bbfeddd6cc869eaa535a3",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "bird_2",
+      "path": "res://art/licensed/audio/bird_2.wav",
+      "source": "Cozy SFX Volume 1/NATURE_ONESHOTS/BIRD_CHIRP_2.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "b1b3526ec94ca5566198520176e7a30957a37ef278b03f4c615ec23d72d47125",
+      "source_sha256": "b1b3526ec94ca5566198520176e7a30957a37ef278b03f4c615ec23d72d47125",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "bird_3",
+      "path": "res://art/licensed/audio/bird_3.wav",
+      "source": "Cozy SFX Volume 1/NATURE_ONESHOTS/BIRD_CHIRP_3.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "bd3d38f651b427c285dbbec298b63864b449c21df9a7c423f08a743fcdcb4c16",
+      "source_sha256": "bd3d38f651b427c285dbbec298b63864b449c21df9a7c423f08a743fcdcb4c16",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    },
+    {
+      "key": "bird_4",
+      "path": "res://art/licensed/audio/bird_4.wav",
+      "source": "Cozy SFX Volume 1/NATURE_ONESHOTS/BIRD_CHIRP_4.wav",
+      "pack": "cozy_sfx",
+      "installed_sha256": "ab9aa77c66a7a9599e553ff71e7195260c1d8bbbc049d0365d68afe679c9dfd2",
+      "source_sha256": "ab9aa77c66a7a9599e553ff71e7195260c1d8bbbc049d0365d68afe679c9dfd2",
+      "status": "source_referenced",
+      "direct_references": [],
+      "dynamic_consumer": "scripts/town_sound/audio/WorldSound.gd: location/surface/index routing"
+    }
+  ]
+}

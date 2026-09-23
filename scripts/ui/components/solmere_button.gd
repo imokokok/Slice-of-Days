@@ -32,8 +32,7 @@ func refresh() -> void:
 		face.set_corner_radius_all(10 if variant=="choice" else 3)
 		face.set_content_margin_all(10)
 		face.bg_color=Color.TRANSPARENT
-		if variant=="choice": face.bg_color=Color("2f5579")
-		elif variant=="guidance": face.bg_color=Color("254b66")
+		if dark: face.bg_color=Color("254b66")
 		elif variant=="archive": face.bg_color=Color("eee0c6",.7)
 		elif variant=="goods": face.bg_color=Color("eee3cd",.75)
 		elif variant=="tab": face.bg_color=Color("f1e3c8")
@@ -46,8 +45,8 @@ func refresh() -> void:
 		if variant=="tab" and (state in ["hover","pressed"] or selected): face.bg_color=Color("eed577")
 		if state=="focus":
 			face.bg_color=Color.TRANSPARENT; face.set_border_width_all(2); face.border_color=PaperLanguage.YELLOW if dark else PaperLanguage.BLUE
-		if state=="disabled": face.bg_color=Color("73828a",.07)
-		if state=="disabled" and variant in ["choice","guidance"]: face.bg_color=Color("dce4e6")
+		if dark and (state in ["hover","pressed"] or (state=="normal" and selected)): face.bg_color=Color("eed577")
+		if state=="disabled": face.bg_color=Color("dce4e6")
 		add_theme_stylebox_override(state,face)
 		if not dark and state!="focus" and Production.available("paper_label"):
 			var tint := Color("f8eedb")
@@ -57,10 +56,11 @@ func refresh() -> void:
 			if state=="disabled": tint=Color("e5e0d5")
 			add_theme_stylebox_override(state,Production.paper("paper_tab" if variant=="tab" else "paper_label",tint,10))
 	add_theme_color_override("font_color",PaperLanguage.WHITE if dark and not selected else Color("4b493b"))
-	add_theme_color_override("font_hover_color",PaperLanguage.BLUE)
-	add_theme_color_override("font_pressed_color",PaperLanguage.BLUE)
+	add_theme_color_override("font_hover_color",Production.INK)
+	add_theme_color_override("font_pressed_color",Production.INK)
+	add_theme_color_override("font_hover_pressed_color",Production.INK)
 	add_theme_color_override("font_focus_color",PaperLanguage.WHITE if dark and not selected else Color("4b493b"))
-	add_theme_color_override("font_disabled_color",Color("798c93",.5))
+	add_theme_color_override("font_disabled_color",Production.MUTED_INK)
 	add_theme_font_override("font",PaperLanguage.body_font)
 	if not has_theme_font_size_override("font_size"): add_theme_font_size_override("font_size",20)
 func _draw() -> void:

@@ -13,6 +13,8 @@ var previous := Rect2()
 var previous_choices := Rect2()
 var transition: Tween
 var content: Control
+var body_scroll: ScrollContainer
+var last_body := ""
 var settled := false
 var layout_elapsed := 0.0
 var body_width := 350.0
@@ -31,6 +33,10 @@ func _ready() -> void:
 	speaker_label=_label(17,Palette.SEA)
 	speaker_label.add_theme_font_override("font",PaperLanguage.handwriting)
 	text_label=_label(22,Palette.SPEECH_INK)
+	body_scroll=ScrollContainer.new(); body_scroll.name="DialogueReadingArea"
+	body_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	content.add_child(body_scroll); text_label.reparent(body_scroll)
+	text_label.size_flags_horizontal=SIZE_EXPAND_FILL
 	hint_label=_label(14,Palette.SPEECH_MUTED)
 	set_process(true)
 
@@ -66,7 +72,13 @@ func _measure(column: float) -> Vector2:
 		# must not resize the backing or move the controls.
 		var height := maxf(156.0,minimum_body_height) if label==text_label else 25.0
 		label.custom_maximum_size.x=column
-		label.position=Vector2(22,y); label.size=Vector2(column,height)
+		if label==text_label:
+			body_scroll.position=Vector2(22,y); body_scroll.size=Vector2(column,height)
+			label.position=Vector2.ZERO; label.size.x=column-18
+			if last_body!=label.text:
+				body_scroll.scroll_vertical=0; last_body=label.text
+		else:
+			label.position=Vector2(22,y); label.size=Vector2(column,height)
 		if height>0: y+=height+(11 if label==text_label else 6)
 	return Vector2(column+44,y+11)
 

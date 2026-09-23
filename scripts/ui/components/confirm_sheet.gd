@@ -5,20 +5,29 @@ var heading := "确认"
 var description := ""
 var confirm_text := "确认"
 var busy := false
+var paper: Panel
+var body_scroll: ScrollContainer
+var body_label: Label
+const P=preload("res://scripts/ui/components/interface_palette.gd")
 func _ready() -> void:
 	add_to_group("native_confirmation")
 	add_to_group("meta_modal")
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter=MOUSE_FILTER_STOP
+	theme=P.theme_for_tools()
 	var shade := ColorRect.new(); shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT); shade.color=Color("16334b",.55); add_child(shade)
-	var panel := Panel.new(); add_child(panel); panel.set_anchors_preset(PRESET_CENTER); panel.position=size*.5-Vector2(270,205); panel.size=Vector2(540,410)
-	var face := StyleBoxFlat.new(); face.bg_color=Color("f3f5f3"); face.set_corner_radius_all(12); panel.add_theme_stylebox_override("panel",face)
-	panel.add_theme_stylebox_override("panel",preload("res://scripts/ui/production_assets.gd").paper("paper_wide",Color("faf4e5"),18))
-	preload("res://scripts/ui/solmere_motion.gd").paper_open(panel,SettingsSystem.reduced_motion())
-	var title := Label.new(); title.text=LocalizationSystem.text(heading); title.position=Vector2(36,31); title.size=Vector2(468,74); title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; title.add_theme_font_size_override("font_size",28); panel.add_child(title)
-	var body := Label.new(); body.text=LocalizationSystem.text(description); body.position=Vector2(36,123); body.size=Vector2(468,166); body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; body.add_theme_font_size_override("font_size",21); panel.add_child(body)
+	paper=Panel.new(); paper.name="ConfirmationPaper"; add_child(paper)
+	paper.size=Vector2(620,480); paper.position=(size-paper.size)*.5
+	paper.add_theme_stylebox_override("panel",preload("res://scripts/ui/production_assets.gd").paper("paper_wide",P.CREAM,24))
+	preload("res://scripts/ui/solmere_motion.gd").paper_open(paper,SettingsSystem.reduced_motion())
+	var title:=P.words(paper,heading,Vector2(36,28),548,28,P.INK)
+	title.name="ConfirmationTitle"; title.max_lines_visible=2; title.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS; title.tooltip_text=title.text
+	body_scroll=ScrollContainer.new(); body_scroll.name="ConfirmationTextScroll"
+	body_scroll.position=Vector2(36,116); body_scroll.size=Vector2(548,247); body_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; paper.add_child(body_scroll)
+	body_label=P.words(body_scroll,description,Vector2.ZERO,528,21,P.INK)
+	body_label.name="ConfirmationText"; body_label.size_flags_horizontal=SIZE_EXPAND_FILL
 	for i in 2:
-		var b := preload("res://scripts/ui/components/solmere_button.gd").new(); b.text=LocalizationSystem.text("取消" if i==0 else confirm_text); b.position=Vector2(36+i*245,321); b.size=Vector2(223,52); b.selected=i==1; panel.add_child(b)
+		var b := preload("res://scripts/ui/components/solmere_button.gd").new(); b.text=LocalizationSystem.text("取消" if i==0 else confirm_text); b.position=Vector2(36+i*285,389); b.size=Vector2(263,54); b.selected=i==1; paper.add_child(b)
 		b.pressed.connect(func() -> void:
 			if busy: return
 			if i==1: busy=true; accepted.emit()

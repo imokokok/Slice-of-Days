@@ -24,11 +24,13 @@ var capture_bus := ""
 var input_gain := 1.0
 var spectrum_effect: AudioEffectSpectrumAnalyzer
 var spectrum_instance: AudioEffectSpectrumAnalyzerInstance
+var microphone_bus := ""
 
 func _ready() -> void:
 	bus_index = AudioServer.bus_count
 	AudioServer.add_bus(bus_index)
-	AudioServer.set_bus_name(bus_index, "TownSoundMicrophone")
+	microphone_bus="TownSoundMicrophone_%d" % get_instance_id()
+	AudioServer.set_bus_name(bus_index, microphone_bus)
 	AudioServer.set_bus_mute(bus_index, true)
 	capture = AudioEffectCapture.new()
 	capture.buffer_length = 0.5
@@ -36,7 +38,7 @@ func _ready() -> void:
 	spectrum_effect.fft_size=AudioEffectSpectrumAnalyzer.FFT_SIZE_1024
 
 	microphone = AudioStreamPlayer.new()
-	microphone.bus = "TownSoundMicrophone"
+	microphone.bus = microphone_bus
 	microphone.stream = AudioStreamMicrophone.new()
 	add_child(microphone)
 	set_process(false)
@@ -51,7 +53,7 @@ func start(device: String, source: String = "microphone") -> bool:
 		failed.emit("MICROPHONE NOT AVAILABLE · 输入设备已断开，请刷新后重试。")
 		return false
 	source_mode = source
-	capture_bus = "TownWorld" if source == "game" else "TownSoundMicrophone"
+	capture_bus = "TownWorld" if source == "game" else microphone_bus
 	var target := AudioServer.get_bus_index(capture_bus)
 	if target < 0:
 		failed.emit("游戏声景尚未就绪，请返回小镇重试。")
@@ -146,6 +148,6 @@ func _exit_tree() -> void:
 	if is_instance_valid(microphone):
 		microphone.stop()
 	_detach_capture()
-	bus_index = AudioServer.get_bus_index("TownSoundMicrophone")
+	bus_index = AudioServer.get_bus_index(microphone_bus)
 	if bus_index >= 0 and bus_index < AudioServer.bus_count:
 		AudioServer.remove_bus(bus_index)

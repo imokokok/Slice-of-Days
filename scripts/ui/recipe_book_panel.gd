@@ -118,7 +118,7 @@ func _editor() -> void:
 		if not drawing.strokes.is_empty(): drawing.strokes.pop_back(); drawing.queue_redraw(),"camera")
 	_btn("保存这一页",Vector2(1100,752),Vector2(294,48),_save,"camera")
 	_btn("收好草稿并返回",Vector2(223,752),Vector2(330,48),_back,"camera")
-	P.words(body,"当前食材 %d / 3 · 火候 %d%%" % [ingredients.size(),roundi(heat*100)],Vector2(242,710),452,18,P.CREAM)
+	P.words(body,"当前食材 %d / 3 · 火候 %d%%" % [ingredients.size(),roundi(heat*100)],Vector2(242,652),452,20,P.INK)
 	message.text=LocalizationSystem.text("翻页或收起时会保存草稿；写好菜名和署名后，可保存为正式菜谱。")
 
 func _save() -> void:

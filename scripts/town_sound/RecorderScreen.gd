@@ -44,6 +44,8 @@ func _draw() -> void:
 	if not compact: draw_rect(Rect2(Vector2.ZERO, size), Color("f1eddf"))
 
 func _ready() -> void:
+	add_to_group("town_sound_workspace")
+	add_to_group("meta_modal")
 	preload("res://scripts/town_sound/data/LegacyTownSound.gd").migrate()
 	previous_auto_accept_quit = get_tree().auto_accept_quit
 	get_tree().auto_accept_quit = false
@@ -103,6 +105,7 @@ func _build_theme() -> void:
 		skin.set_stylebox(state, "Button", style)
 		if state in ["normal", "focus"]:
 			skin.set_stylebox(state, "LineEdit", style)
+	preload("res://scripts/ui/production_assets.gd").apply_theme(skin)
 	theme = skin
 
 func _label(text: String, font_size: int = 17) -> Label:

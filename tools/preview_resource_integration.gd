@@ -23,6 +23,10 @@ func run() -> void:
 		await create_timer(.7).timeout
 		var shell=current_scene.get_node("GameplayShell")
 		if view=="recorder": shell.open_tool("recorder")
+		elif view=="confirmation":
+			var sheet=load("res://scripts/ui/components/confirm_sheet.gd").new()
+			sheet.heading="确认这次操作"; sheet.description="很长的操作说明也应当完整留在纸页里面。可以向下滚动，确认和取消的位置始终不变。\n\n".repeat(10)+"这是最后一行。"; sheet.confirm_text="确认并继续"
+			root.add_child(sheet); sheet.accepted.connect(sheet.queue_free)
 		elif view=="recipe": root.add_child(load("res://scripts/ui/recipe_book_panel.gd").new())
 		elif view=="shop":
 			var shop=load("res://scripts/ui/shop_panel.gd").new(); shop.shop_id="grocery"; root.add_child(shop)

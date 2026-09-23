@@ -86,6 +86,16 @@ func chapter_transition() -> void:
 
 func gameplay_module(module_id: String, source_event_id := "", rollback_snapshot: Dictionary = {}) -> bool:
 	if transitioning: return false
+	if module_id=="sound_sampling":
+		# All entrances use the real recording / arrangement / pressing chain.
+		# Delivery opens its own transactional session after a WAV exists.
+		var gate:=GameplayModuleSystem.entry_check(module_id)
+		if not bool(gate.ok): GuidanceSystem.blocked(str(gate.reason)); return false
+		if not get_tree().get_nodes_in_group("town_sound_workspace").is_empty(): return false
+		var workspace=load("res://scenes/town_sound/Recorder.tscn").instantiate()
+		workspace.shop_mode=true
+		get_tree().current_scene.add_child(workspace)
+		return true
 	var session_snapshot := rollback_snapshot.duplicate(true)
 	if session_snapshot.is_empty():
 		session_snapshot = GameState.to_save_data().duplicate(true)

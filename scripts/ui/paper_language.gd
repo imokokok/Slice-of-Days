@@ -3,7 +3,7 @@ extends Node
 const BLUE := Color("31658b")
 const WHITE := Color("faf7ee")
 const YELLOW := Color("eed577")
-const MUTED := Color("698594")
+const MUTED := Color("526b77")
 var handwriting := SystemFont.new()
 var body_font := SystemFont.new()
 const Production = preload("res://scripts/ui/production_assets.gd")
@@ -62,7 +62,7 @@ func button_style(button: Button, in_scene := false) -> void:
 			button.add_theme_stylebox_override(state,Production.paper("paper_label",tint,10))
 	for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:
 		button.add_theme_color_override(state,WHITE if in_scene else BLUE)
-	button.add_theme_color_override("font_disabled_color",Color(MUTED,.55))
+	button.add_theme_color_override("font_disabled_color",Production.MUTED_INK)
 	if DisplayServer.get_name()!="headless": button.add_theme_font_override("font",body_font)
 	button.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
 	if in_scene:

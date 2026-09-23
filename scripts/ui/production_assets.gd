@@ -5,6 +5,8 @@ const MANIFEST_PATH := "res://data/presentation/resource_manifest.json"
 static var catalog: Dictionary = {}
 static var textures: Dictionary = {}
 static var sounds: Dictionary = {}
+const INK := Color("38423e")
+const MUTED_INK := Color("56655e")
 
 static func manifest() -> Dictionary:
 	if catalog.is_empty() and FileAccess.file_exists(MANIFEST_PATH):
@@ -53,10 +55,17 @@ static func paper(kind := "paper_wide", tint := Color("faf4e5"), margin := 14) -
 		return flat
 	var face := StyleBoxTexture.new()
 	face.texture = art; face.modulate_color = tint
-	# Nine-slice keeps the small paper notches at their native scale.
-	face.texture_margin_left = 18; face.texture_margin_right = 18
-	face.texture_margin_top = 18; face.texture_margin_bottom = 18
+	# Protect the source's actual uneven edge instead of stretching a notch
+	# through the writing area. Margins follow the supplied PNG geometry.
+	var edges: Vector4={"paper_label":Vector4(16,24,12,8),"paper_tab":Vector4(18,32,18,10),"paper_large":Vector4(56,12,44,12),"paper_wide":Vector4(8,28,8,24)}.get(kind,Vector4(24,24,24,24))
+	face.texture_margin_left=edges.x; face.texture_margin_top=edges.y
+	face.texture_margin_right=edges.z; face.texture_margin_bottom=edges.w
 	face.set_content_margin_all(margin)
+	if kind=="paper_large":
+		face.content_margin_left=maxf(margin,64)
+		face.content_margin_right=maxf(margin,52)
+	if kind in ["paper_label","paper_tab"]:
+		face.content_margin_top=minf(margin,6); face.content_margin_bottom=minf(margin,6)
 	return face
 
 static func apply_theme(theme: Theme) -> void:
@@ -65,21 +74,20 @@ static func apply_theme(theme: Theme) -> void:
 		for state in ["normal", "hover", "pressed", "disabled"]:
 			var tint: Color = {"normal":Color("f5e9d2"),"hover":Color("eee0b9"),"pressed":Color("d8dcb9"),"disabled":Color("e1ded3")}[state]
 			theme.set_stylebox(state, type, paper("paper_label", tint, 10))
-		theme.set_color("font_color",type,Color("48483d"))
-		theme.set_color("font_hover_color",type,Color("315e79"))
-		theme.set_color("font_pressed_color",type,Color("315e79"))
-		theme.set_color("font_disabled_color",type,Color("7c8178"))
+		for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_focus_color"]: theme.set_color(state,type,INK)
+		theme.set_color("font_disabled_color",type,MUTED_INK)
 	for type in ["TextEdit", "LineEdit"]:
 		for state in ["normal", "read_only"]:
 			theme.set_stylebox(state,type,paper("paper_wide",Color("fffaf0"),12))
+		for state in ["font_color","font_selected_color","font_readonly_color","caret_color"]: theme.set_color(state,type,INK)
+		theme.set_color("font_placeholder_color",type,MUTED_INK)
+		theme.set_color("selection_color",type,Color("ded5ac"))
 	for type in ["Panel", "PanelContainer", "PopupPanel", "AcceptDialog"]:
 		theme.set_stylebox("panel",type,paper("paper_large",Color("faf4e5"),18))
-	var check := texture("icon_check")
-	var empty := texture("paper_square")
-	if check and empty:
-		# The icons are exposed through compact AtlasTextures to cap layout size.
-		for state in ["checked", "checked_disabled"]: theme.set_icon(state,"CheckBox",_small_icon(check,24))
-		for state in ["unchecked", "unchecked_disabled"]: theme.set_icon(state,"CheckBox",_small_icon(empty,24))
+	# A filled paper silhouette becomes a solid block when tinted as an icon.
+	for state in ["checked", "checked_disabled"]: theme.set_icon(state,"CheckBox",preload("res://art/ui/check-on.svg"))
+	for state in ["unchecked", "unchecked_disabled"]: theme.set_icon(state,"CheckBox",preload("res://art/ui/check-off.svg"))
+	for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_focus_color"]: theme.set_color(state,"CheckBox",INK)
 
 static func _small_icon(source: Texture2D, extent: int) -> Texture2D:
 	var key := "%s_%d" % [source.get_instance_id(),extent]
@@ -102,7 +110,7 @@ static func picture(parent: Node, key: String, at: Vector2, extent: Vector2, tin
 	var art := texture(key)
 	if art == null: return null
 	var node := TextureRect.new(); node.name = key.to_pascal_case()
-	node.texture = art; node.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	node.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; node.texture = art
 	node.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	node.position = at; node.size = extent; node.modulate = tint
 	node.mouse_filter = Control.MOUSE_FILTER_IGNORE

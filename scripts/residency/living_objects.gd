@@ -91,7 +91,8 @@ func build() -> void:
 		b.add_theme_font_size_override("font_size",17)
 	var back := button(body,"×",Vector2(1290,0 if mode=="map" else -42),Vector2(42,38),close)
 	back.tooltip_text=SettingsSystem.binding_text("ui_cancel")+" "+LocalizationSystem.text("收起")
-	back.add_theme_color_override("font_color",Color.WHITE)
+	back.name="CloseCarriedObject"
+	back.add_theme_color_override("font_color",PALETTE.INK)
 	match mode:
 		"day_schedule":
 			var planner := preload("res://scripts/ui/components/day_five_planner.gd").new()

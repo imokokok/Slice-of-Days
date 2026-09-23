@@ -1,0 +1,90 @@
+{
+  "date": "2026-09-24",
+  "engine": "Godot 4.7.2",
+  "audio_driver": "WASAPI",
+  "isolated_save": true,
+  "baseline": "6143f47d63ced04561bc08bbcc6d5789decbd634",
+  "results": [
+    {
+      "log": "ui-readability.log",
+      "result": "UI_READABILITY: 108 checks, 0 failures",
+      "sha256": "54c802b2754714172c534065bb4f639f6520b5ba551334f07d7fc0bd6c4f32cd"
+    },
+    {
+      "log": "audit-music_route.log",
+      "result": "MUSIC_SOURCE_ROUTE: 8 checks, 0 failures",
+      "sha256": "7e0f011a13964bf690bb6f5053ea3b55c57c6bf53ab9c0efedafcfc28a159d13"
+    },
+    {
+      "log": "audit-resource_integration.log",
+      "result": "RESOURCE_INTEGRATION: 204 checks, 0 failures",
+      "sha256": "04b87b2d9bbc4e85e5f8210015a55cbd422a2f677bee8bf7b1c37e368548be65"
+    },
+    {
+      "log": "audit-five_day_flow.log",
+      "result": "FIVE_DAY_FLOW: PASS checks=218 failures=0",
+      "sha256": "da6b04cc1ac741571738296bd54fca89a37a0451994662636a8ceb887c9a0a68"
+    },
+    {
+      "log": "audit-ui_review.log",
+      "result": "UI_REVIEW: 20 checks / 0 failures",
+      "sha256": "f451be38e324a61c79b76e55f79e11e483481a89785ff45271dd995557504191"
+    },
+    {
+      "log": "audit-chess_presentation.log",
+      "result": "CHESS_PRESENTATION: 30 checks / 0 failures",
+      "sha256": "ec6fbe5b3041696e0d0f73bc24e0099f7adb6e2c69d087d738bbf5abd05cd841"
+    },
+    {
+      "log": "audit-cooking_rhythm.log",
+      "result": "COOKING_RHYTHM_TEST: PASS failures=0",
+      "sha256": "a8e9b1af86f0a14d8d183a1555eb992286000af904d0fb3191d17aaabf072a7e"
+    },
+    {
+      "log": "audit-native_modules.log",
+      "result": "NATIVE_MODULE_TEST: PASS failures=0",
+      "sha256": "38ca6266160d2e8a9b42614d07e71ba5150edbf562298ea58c76072a5b2b22c3"
+    },
+    {
+      "log": "audit-recording_retry.log",
+      "result": "RECORDING_RETRY failures=0",
+      "sha256": "db4bc4009ec15a5ae1dac4760734b2fc89fcccd371e51b1fe231cc0cba2ce3dc"
+    },
+    {
+      "log": "audit-world_capture.log",
+      "result": "WORLD_CAPTURE_TESTS: PASS",
+      "sha256": "bbfffe26b2971d350487d71ee782706f1ff4d621c727718d8af45a668100eb1f"
+    },
+    {
+      "log": "audit-workshop_tools.log",
+      "result": "WORKSHOP_TOOLS_TEST: PASS failures=0",
+      "sha256": "10be9ad948f8c2c14a84157a6319356458d9ad10704df1f3ce3899e20edfbede"
+    },
+    {
+      "log": "audit-packed-ui_readability.log",
+      "result": "UI_READABILITY: 108 checks, 0 failures",
+      "sha256": "54c802b2754714172c534065bb4f639f6520b5ba551334f07d7fc0bd6c4f32cd"
+    },
+    {
+      "log": "audit-packed-resource_integration.log",
+      "result": "RESOURCE_INTEGRATION: 204 checks, 0 failures",
+      "sha256": "04b87b2d9bbc4e85e5f8210015a55cbd422a2f677bee8bf7b1c37e368548be65"
+    },
+    {
+      "log": "audit-packed-music_source_route.log",
+      "result": "MUSIC_SOURCE_ROUTE: 8 checks, 0 failures",
+      "sha256": "7e0f011a13964bf690bb6f5053ea3b55c57c6bf53ab9c0efedafcfc28a159d13"
+    }
+  ],
+  "files": {
+    "Solmere.exe": {
+      "sha256": "d34d36f3be1a6c49c56525ae86469b92e4f417ddf0b43cf00dd80c385c4b0562",
+      "bytes": 109268480
+    },
+    "Solmere.pck": {
+      "sha256": "42ac8d68752c765f1c537e636ca4c51c4feba807261d7ad78f698574df2ec560",
+      "bytes": 404021364
+    }
+  },
+  "visual_review": "20 UI pages, 4 native modules; native wheel scroll to final confirmation line and cancel"
+}

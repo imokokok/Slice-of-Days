@@ -1,9 +1,9 @@
 extends Control
 
-const SUPPORTED := ["cooking", "sound_sampling", "photography", "optical_illusion", "archives"]
+const SUPPORTED := ["cooking", "photography", "optical_illusion", "archives"]
 const PAPER := Color("faf7ee")
 const INK := Color("31658b")
-const MUTED := Color("698594")
+const MUTED := Color("526b77")
 const TERRACOTTA := Color("31658b")
 const SEA := Color("31658b")
 const SAGE := Color("8caa87")
@@ -32,8 +32,6 @@ var value_slider: HSlider
 var value_label: Label
 var stage_ready := false
 var completed := false
-var playback_active := false
-var playback_cursor := 0.0
 var cooking_phase := "select"
 var prepared_tokens: Array[String] = []
 var cooking_preps: Array[Dictionary] = []
@@ -78,7 +76,6 @@ func _ready() -> void:
 	_update_state()
 	WorldSound.set_active(true)
 	WorldSound.set_location(GameState.current_location)
-	set_process(module_id == "sound_sampling")
 	queue_redraw()
 
 
@@ -247,14 +244,12 @@ func _build_module_control(parent: Control) -> void:
 		value_slider.value = 0.58 if module_id == "cooking" else (0.5 if module_id == "photography" else 0.0)
 		value_slider.value_changed.connect(_on_value_changed)
 		parent.add_child(value_slider)
-	elif module_id == "sound_sampling":
-		preload("res://scripts/ui/components/interface_palette.gd").words(parent,"片段按选择顺序播放，来源标记始终保留。",Vector2(22,454),280,17,MUTED)
 	else:
 		preload("res://scripts/ui/components/interface_palette.gd").words(parent,"保留来源；无法确认的地方，可以留下空格。",Vector2(22,454),280,17,MUTED)
 
 
 func _toggle_token(token_id: String) -> void:
-	if completed or playback_active:
+	if completed:
 		return
 	if module_id=="cooking" and cooking_phase=="cook":
 		if selected_tokens.has(token_id) and not added_tokens.has(token_id):
@@ -291,7 +286,7 @@ func _on_value_changed(_value: float) -> void:
 
 
 func _perform_primary_action() -> void:
-	if completed or playback_active:
+	if completed:
 		return
 	var minimum := int(interaction.get("min_select", 0))
 	if selected_tokens.size() < minimum:
@@ -300,11 +295,6 @@ func _perform_primary_action() -> void:
 	match module_id:
 		"cooking":
 			_advance_cooking()
-		"sound_sampling":
-			playback_active = true
-			playback_cursor = 0.0
-			primary_button.disabled = true
-			status_label.text = LocalizationSystem.text("正在试听这条短轨。来源标记与声音片段一起经过播放头……")
 		"photography":
 			var exposure := value_slider.value
 			if exposure < 0.28 or exposure > 0.76:
@@ -448,19 +438,6 @@ func _selected_token_data() -> Array:
 	return result
 
 
-func _process(delta: float) -> void:
-	if not playback_active:
-		return
-	playback_cursor += delta / 2.4
-	if playback_cursor >= 1.0:
-		playback_cursor = 1.0
-		playback_active = false
-		stage_ready = true
-		status_label.text = LocalizationSystem.text("试听完成。现在可以交付有授权的版本，或把边界不明的片段留作私人采样。")
-	_update_state()
-	queue_redraw()
-
-
 func _update_state() -> void:
 	if is_instance_valid(prep_board):
 		prep_board.items.assign(selected_tokens)
@@ -490,7 +467,7 @@ func _update_state() -> void:
 		selection_label.text=LocalizationSystem.text("实际下锅：%s" % (" → ".join(cooked_labels) if not cooked_labels.is_empty() else "等待你决定"))
 	for token_id in token_buttons:
 		_style_button(token_buttons[token_id], selected_tokens.has(str(token_id)))
-		token_buttons[token_id].disabled = completed or playback_active
+		token_buttons[token_id].disabled = completed
 		if module_id == "cooking":
 			if cooking_phase=="select":
 				token_buttons[token_id].disabled=completed or not EconomySystem.ingredient_available(str(token_id))
@@ -500,7 +477,7 @@ func _update_state() -> void:
 				token_buttons[token_id].disabled=true
 			token_buttons[token_id].modulate=Color("fff2b5") if str(token_id)==pending_ingredient else Color.WHITE
 	_update_module_value()
-	primary_button.disabled = completed or playback_active or selected_tokens.size() < minimum
+	primary_button.disabled = completed or selected_tokens.size() < minimum
 	if module_id=="cooking": _update_cooking_state(minimum)
 	var record := _interaction_record()
 	for choice_id in choice_buttons:
@@ -600,8 +577,6 @@ func _update_module_value() -> void:
 			var heat := value_slider.value
 			var reading: Dictionary=COOKING.heat_reading(heat)
 			value_label.text = LocalizationSystem.text("火候 %d%% · %s · %s" % [roundi(heat * 100),str(reading.get("label","")),str(reading.get("detail",""))])
-		"sound_sampling":
-			value_label.text = LocalizationSystem.text("试听进度 %d%%" % roundi(playback_cursor * 100))
 		"photography":
 			value_label.text = LocalizationSystem.text("曝光 %+d · %s" % [roundi((value_slider.value - 0.5) * 200), "细节可辨" if value_slider.value >= 0.28 and value_slider.value <= 0.76 else "细节丢失"])
 		"optical_illusion":
@@ -712,9 +687,6 @@ func _draw() -> void:
 		return
 	var art=preload("res://scripts/ui/components/handmade_assets.gd")
 	match module_id:
-		"sound_sampling":
-			draw_texture_rect(art.texture("tape_workstation"),Rect2(64,170,854,565),false)
-			_draw_sound()
 		"photography":
 			if background_texture: draw_texture_rect(background_texture,Rect2(177,269,634,361),false)
 			draw_texture_rect(art.texture("photo_mat"),Rect2(67,154,865,575),false)
@@ -723,21 +695,6 @@ func _draw() -> void:
 			draw_texture_rect(art.texture("window_frame"),Rect2(84,155,826,576),false)
 			_draw_perspective()
 		"archives": _draw_archives()
-
-func _draw_sound() -> void:
-	# Waveforms are an abstract visualization; cursor follows actual audition time.
-	for track in 3:
-		var y := 338.0+track*74
-		draw_line(Vector2(178,y),Vector2(806,y),Color(SEA,.16),1)
-		if track<selected_tokens.size():
-			var unsafe := selected_tokens[track] in ["cafe_cups","old_hinge"]
-			for wave in 40:
-				var x := 185+wave*15.5
-				var height := 5.0+absf(sin(float(wave*3+track)))*19.0
-				draw_line(Vector2(x,y-height),Vector2(x,y+height),Color(GOLD if unsafe else SEA,.8),2)
-	if playback_active or playback_cursor>0:
-		var x := lerpf(177,807,playback_cursor)
-		draw_line(Vector2(x,310),Vector2(x,520),GOLD,3)
 
 func _draw_photography() -> void:
 	var frame := Rect2(187,275,610,345)

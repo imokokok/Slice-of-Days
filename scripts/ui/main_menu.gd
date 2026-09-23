@@ -3,7 +3,7 @@ extends Control
 const PAPER := Color("fff8eb")
 const PAPER_SOFT := Color("f1dfc7")
 const INK := Color("31658b")
-const MUTED := Color("698594")
+const MUTED := Color("526b77")
 const TERRACOTTA := Color("c85f43")
 const TEAL := Color("4f7d83")
 const SAGE := Color("7d8f59")
@@ -188,7 +188,7 @@ func _build_modal_shell() -> void:
 	style.shadow_color = Color(INK, 0.30)
 	style.shadow_size = 0
 	style.shadow_offset = Vector2(0, 8)
-	modal_panel.add_theme_stylebox_override("panel", Production.paper("paper_large",Color("faf4e5"),20))
+	modal_panel.add_theme_stylebox_override("panel", Production.paper("paper_wide",Color("faf4e5"),20))
 	modal_overlay.add_child(modal_panel)
 	modal_overlay.visible = false
 

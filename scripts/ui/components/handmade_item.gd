@@ -20,8 +20,21 @@ func _ready() -> void:
 	caption_back.add_theme_stylebox_override("panel",preload("res://scripts/ui/components/interface_palette.gd").face(Color("faf7ee"),2,0)); add_child(caption_back)
 	label = preload("res://scripts/ui/components/interface_palette.gd").words(self,caption,Vector2(4,size.y-30),size.x-8,19)
 	label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	label.max_lines_visible=2; label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	tooltip_text=LocalizationSystem.text(caption)
 	for state in ["mouse_entered","mouse_exited","focus_entered","focus_exited","button_down","button_up"]: connect(state,_feedback)
-	resized.connect(func(): art.size=Vector2(size.x-12,size.y-38); label.position.y=size.y-30; label.size.x=size.x-8; caption_back.position.y=size.y-34; caption_back.size.x=size.x)
+	resized.connect(_layout_caption)
+	_layout_caption()
+func _layout_caption() -> void:
+	if not is_instance_valid(label): return
+	var width:=maxf(40,size.x-12)
+	label.custom_maximum_size.x=width
+	label.size.x=width
+	# Include the Label's actual line spacing and fallback CJK font metrics.
+	var height:=maxf(34,label.get_minimum_size().y+8)
+	caption_back.position=Vector2(0,size.y-height); caption_back.size=Vector2(size.x,height)
+	label.position=Vector2(6,size.y-height+4); label.size=Vector2(width,height-8)
+	art.size=Vector2(size.x-12,maxf(24,size.y-height-6))
 func _feedback() -> void:
 	queue_redraw()
 	if not is_instance_valid(art): return
@@ -29,6 +42,9 @@ func _feedback() -> void:
 	motion=create_tween()
 	motion.tween_property(art,"position:y",7.0 if is_pressed() else -2.0 if is_hovered() or has_focus() else 4.0,.01 if SettingsSystem.reduced_motion() else .12)
 func _draw() -> void:
-	modulate.a=.42 if disabled else 1.0
+	# Availability must not make the name disappear with the illustration.
+	modulate.a=1.0
+	if is_instance_valid(art): art.self_modulate=Color(.68,.71,.69) if disabled else Color.WHITE
+	if is_instance_valid(label): label.add_theme_color_override("font_color",Color("56655e") if disabled else Color("38423e"))
 	if selected or has_focus() or is_hovered():
 		draw_line(Vector2(12,size.y-2),Vector2(size.x-12,size.y-2),Color("315e79") if has_focus() else Color("eed577"),4 if selected else 2,true)

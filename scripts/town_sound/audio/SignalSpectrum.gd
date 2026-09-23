@@ -16,9 +16,9 @@ static func read(instance: AudioEffectSpectrumAnalyzerInstance, gain := 1.0) -> 
 static func from_wav(wav: AudioStreamWAV, seconds: float) -> PackedFloat32Array:
 	# Analyze saved PCM during playback, including completely offline sessions.
 	var data := PackedFloat32Array(); data.resize(6)
-	if wav==null or wav.format!=AudioStreamWAV.FORMAT_16_BITS: return data
+	if wav==null or wav.format!=AudioStreamWAV.FORMAT_16_BITS or wav.mix_rate<=0 or not is_finite(seconds): return data
 	var stride := 4 if wav.stereo else 2
-	var start := int(seconds*wav.mix_rate)*stride
+	var start := int(maxf(seconds,0)*wav.mix_rate)*stride
 	var count := mini(512,(wav.data.size()-start)/stride)
 	if count<16: return data
 	for band in 6:
@@ -27,6 +27,7 @@ static func from_wav(wav: AudioStreamWAV, seconds: float) -> PackedFloat32Array:
 		var a := 0.0; var b := 0.0
 		for i in count:
 			var value := wav.data.decode_s16(start+i*stride)/32768.0
+			if wav.stereo: value=(value+wav.data.decode_s16(start+i*stride+2)/32768.0)*.5
 			value*=.5-.5*cos(TAU*i/float(count-1))
 			var c := value+coefficient*a-b; b=a; a=c
 		var magnitude := sqrt(maxf(0,a*a+b*b-coefficient*a*b))/count

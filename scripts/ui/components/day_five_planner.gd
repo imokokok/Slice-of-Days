@@ -4,7 +4,17 @@ var status: Label
 func _ready() -> void: name="DayFivePlanner"; rebuild()
 func rebuild() -> void:
 	for child in get_children(): remove_child(child); child.queue_free()
-	if not CharacterSystem.switch_unlocked(): return
+	if not CharacterSystem.switch_unlocked():
+		PALETTE.words(self,"今天的时间",Vector2.ZERO,1100,32,PALETTE.INK)
+		PALETTE.words(self,"第 %d 天 · %s · %s" % [GameState.current_day,GameState.current_role,GameState.clock_text()],Vector2(0,58),1100,22,PALETTE.MUTED)
+		var blocks: Array=GameState.schedule_for(GameState.current_role,GameState.current_day).get("blocks",[])
+		for i in blocks.size():
+			var span: Array=blocks[i]
+			PALETTE.words(self,GuidanceSystem.time_text(int(span[0]))+" — "+GuidanceSystem.time_text(int(span[1]))+" · 今天的活动时间",Vector2(0,123+i*56),1000,24,PALETTE.INK)
+		PALETTE.words(self,GameState.current_time_guidance(),Vector2(0,250),1060,23,PALETTE.INK)
+		PALETTE.words(self,"23:59 前回家。午夜到来时，旅程进入下一天。",Vector2(0,325),1060,23,PALETTE.MUTED)
+		PALETTE.words(self,"先过好今天。另一位主角的视角会随旅程展开；此时不能切换角色。",Vector2(0,437),1060,23,PALETTE.INK)
+		return
 	PALETTE.words(self,"今天余下的时间",Vector2(0,0),900,32,PALETTE.INK)
 	PALETTE.words(self,"现在 "+GuidanceSystem.time_text(GameState.current_minute)+" · 切换视角共用同一个小镇时钟",Vector2(0,50),1100,21,PALETTE.MUTED)
 	for i in 2:

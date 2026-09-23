@@ -30,7 +30,7 @@ func run() -> void:
 	# ingredients such as tomato are only available after the real buy/deliver
 	# chain, which is covered by test_v3_economy.
 	await _exercise("cooking", ["lemon", "bread", "cheese"], "careful_menu", 0.58)
-	await _exercise("sound_sampling", ["rain_awning", "bus_brake", "distant_flute"], "planned_route", -1.0)
+	# Sound uses the real recorder and studio; see test_music_source_route.gd.
 	await _exercise("photography", ["reflection", "people"], "photograph_reflection", 0.5)
 	await _exercise("optical_illusion", ["photo_door", "map_door"], "preserve_contradiction", 0.35)
 	await _exercise("archives", ["undated_photo", "tide_log", "station_ticket"], "build_cross_index", -1.0)

@@ -43,7 +43,7 @@ func _ready() -> void:
 	var style := StyleBoxFlat.new(); style.bg_color=Color("e6e7d8"); style.set_corner_radius_all(5); style.set_border_width_all(2); style.border_color=Color("8b8264")
 	screen.add_theme_stylebox_override("panel",style); screen.mouse_filter=MOUSE_FILTER_IGNORE; face.add_child(screen)
 	var window_words := p.words(face,"实时画面 · 随声音变化",Vector2(95,215),414,16)
-	window_words.add_theme_color_override("font_color",Color("7a785f"))
+	window_words.add_theme_color_override("font_color",p.MUTED)
 	record_button=_button("● 开始录音",Vector2(580,338),Vector2(210,65),toggle_recording)
 	record_button.name="RecordToggle"
 	mark_button=_button("留下标记",Vector2(580,435),Vector2(210,43),mark_recording); mark_button.disabled=true

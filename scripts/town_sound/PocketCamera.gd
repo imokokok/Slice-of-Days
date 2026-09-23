@@ -101,16 +101,16 @@ func _ready() -> void:
 	enter_viewfinder.call_deferred()
 
 func _label(parent: Node, text: String, at: Vector2, dimensions: Vector2, font_size: int) -> Label:
+	var caption := Panel.new(); caption.position=at; caption.size=dimensions; caption.mouse_filter=MOUSE_FILTER_IGNORE
+	caption.add_theme_stylebox_override("panel",preload("res://scripts/ui/components/interface_palette.gd").face(Color("faf5e8"),3,0)); parent.add_child(caption)
 	var label:=Label.new()
 	label.text=LocalizationSystem.text(text)
-	label.position=at
-	label.size=dimensions
+	label.position=Vector2(8,3)
+	label.size=dimensions-Vector2(16,6)
 	label.mouse_filter=MOUSE_FILTER_IGNORE
 	label.add_theme_font_size_override("font_size",font_size)
-	label.add_theme_color_override("font_color",Color("f1ead6"))
-	label.add_theme_color_override("font_shadow_color",Color("253d46"))
-	label.add_theme_constant_override("shadow_offset_y",2)
-	parent.add_child(label)
+	label.add_theme_color_override("font_color",Color("38423e"))
+	caption.add_child(label)
 	return label
 
 func enter_viewfinder() -> void:
@@ -125,10 +125,10 @@ func enter_viewfinder() -> void:
 	_focusing=false
 	hold_layer.hide()
 	finder_layer.show()
-	hint.modulate.a=1
+	hint.get_parent().modulate.a=1
 	var tween:=create_tween()
-	tween.tween_interval(2)
-	tween.tween_property(hint,"modulate:a",0,.3)
+	tween.tween_interval(8)
+	tween.tween_property(hint.get_parent(),"modulate:a",0,.3)
 	update_preview()
 
 func leave_viewfinder() -> void:

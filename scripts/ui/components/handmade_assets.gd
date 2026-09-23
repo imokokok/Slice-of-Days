@@ -8,7 +8,7 @@ static func texture(id: String) -> Texture2D:
 	if licensed != null: return licensed
 	if id=="recipe_book":
 		if not cache.has("doodle_book"):
-			var book := AtlasTexture.new(); book.atlas=preload("res://art/ui/pocket_doodles/book.png"); book.region=Rect2(35,88,1465,872); cache["doodle_book"]=book
+			var book := AtlasTexture.new(); book.atlas=preload("res://art/ui/pocket_doodles/book-refined.png"); book.region=Rect2(35,88,1465,872); cache["doodle_book"]=book
 		return cache["doodle_book"]
 	if id == "pretty_can": id = "sea_beans"
 	if not IDS.has(id) and not id in ["tote","tape_workstation","photo_mat","archive_sheet","window_frame","rod_clean","float","tackle_mat"]: id = "tag"

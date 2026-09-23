@@ -1,0 +1,52 @@
+{
+  "logical_size": [
+    1600,
+    900
+  ],
+  "window_size": [
+    1280,
+    720
+  ],
+  "pages": [
+    "bag",
+    "camera",
+    "chess",
+    "collage",
+    "collage_materials",
+    "confirm",
+    "contemplation",
+    "day_schedule",
+    "dossier",
+    "fieldbook",
+    "fish_journal",
+    "fishing",
+    "gallery",
+    "household",
+    "kitchen",
+    "letter_desk",
+    "letter_materials",
+    "long_dialogue",
+    "map",
+    "menu",
+    "menu_settings",
+    "mobile_recorder",
+    "notebook",
+    "pause",
+    "procurement",
+    "recipe",
+    "recipe_editor",
+    "settings",
+    "shop",
+    "sound_library",
+    "sound_library_saved",
+    "studio",
+    "studio_filled",
+    "studio_recorder",
+    "studio_recording",
+    "studio_saved",
+    "tarot",
+    "tarot_table"
+  ],
+  "text_entries": 608,
+  "note": "Actual rendered states, not a claim of exhaustive story-branch QA."
+}

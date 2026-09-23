@@ -26,52 +26,18 @@ func _feedback(active: bool) -> void:
 	feedback_tween=create_tween()
 	feedback_tween.tween_property(self,"self_modulate",Color.WHITE if active else Color(.94,.96,.98),.01 if SettingsSystem.reduced_motion() else .14)
 func refresh() -> void:
-	var dark := variant in ["choice","pause","camera","guidance"]
+	var dark := variant in ["primary","choice","pause","camera","guidance"]
 	for state in ["normal","hover","pressed","focus","disabled"]:
-		var face := StyleBoxFlat.new()
-		face.set_corner_radius_all(10 if variant=="choice" else 3)
-		face.set_content_margin_all(10)
-		face.bg_color=Color.TRANSPARENT
-		if dark: face.bg_color=Color("254b66")
-		elif variant=="archive": face.bg_color=Color("eee0c6",.7)
-		elif variant=="goods": face.bg_color=Color("eee3cd",.75)
-		elif variant=="tab": face.bg_color=Color("f1e3c8")
-		elif variant=="paper": face.bg_color=PaperLanguage.WHITE
-		elif variant=="outlined": face.set_border_width_all(1); face.border_color=Color("9d9988",.36)
-		if state in ["hover","pressed"] or (state=="normal" and selected): face.bg_color=Color("f0d982",1.0 if state=="pressed" else .86 if selected else .38)
-		if variant=="paper" and state in ["hover","pressed"]: face.bg_color=Color("eddbb9") if state=="pressed" else Color("f6ebd6")
-		if variant=="choice" and (state in ["hover","pressed"] or selected): face.bg_color=Color("eed577")
-		if variant=="guidance" and (state in ["hover","pressed"] or selected): face.bg_color=Color("eed577")
-		if variant=="tab" and (state in ["hover","pressed"] or selected): face.bg_color=Color("eed577")
-		if state=="focus":
-			face.bg_color=Color.TRANSPARENT; face.set_border_width_all(2); face.border_color=PaperLanguage.YELLOW if dark else PaperLanguage.BLUE
-		if dark and (state in ["hover","pressed"] or (state=="normal" and selected)): face.bg_color=Color("eed577")
-		if state=="disabled": face.bg_color=Color("dce4e6")
-		add_theme_stylebox_override(state,face)
-		if not dark and state!="focus" and Production.available("paper_label"):
-			var tint := Color("f8eedb")
-			if variant in ["archive","goods","tab"]: tint=Color("e7e3cd")
-			if state=="hover": tint=Color("f1dfb8")
-			if state=="pressed" or selected: tint=Color("d7ddba")
-			if state=="disabled": tint=Color("e5e0d5")
-			add_theme_stylebox_override(state,Production.paper("paper_tab" if variant=="tab" else "paper_label",tint,10))
-	add_theme_color_override("font_color",PaperLanguage.WHITE if dark and not selected else Color("4b493b"))
+		add_theme_stylebox_override(state,Production.button_face(variant,state,selected))
+	add_theme_color_override("font_color",PaperLanguage.WHITE if dark and not selected else Production.INK)
 	add_theme_color_override("font_hover_color",Production.INK)
 	add_theme_color_override("font_pressed_color",Production.INK)
 	add_theme_color_override("font_hover_pressed_color",Production.INK)
-	add_theme_color_override("font_focus_color",PaperLanguage.WHITE if dark and not selected else Color("4b493b"))
+	add_theme_color_override("font_focus_color",PaperLanguage.WHITE if dark and not selected else Production.INK)
 	add_theme_color_override("font_disabled_color",Production.MUTED_INK)
 	add_theme_font_override("font",PaperLanguage.body_font)
 	if not has_theme_font_size_override("font_size"): add_theme_font_size_override("font_size",20)
+
 func _draw() -> void:
-	if Production.available("paper_label") and variant not in ["choice","pause","camera","guidance"]:
-		if selected or has_focus(): draw_line(Vector2(14,size.y-5),Vector2(size.x-14,size.y-5),Color("5b716c"),2,true)
-		return
-	if variant not in ["choice","pause","camera","guidance"]:
-		# A stable drawn edge, not random per-frame jitter or a second hit target.
-		var ink := Color("665840",.16 if disabled else .82 if selected or has_focus() else .55 if is_hovered() else .28)
-		var edge := PackedVector2Array([Vector2(5,2),Vector2(size.x*.43,3),Vector2(size.x-4,1),Vector2(size.x-2,size.y*.47),Vector2(size.x-4,size.y-2),Vector2(size.x*.51,size.y-3),Vector2(3,size.y-1),Vector2(2,size.y*.4),Vector2(5,2)])
-		draw_polyline(edge,ink,2 if selected or has_focus() else 1.3,true)
-	if variant=="pause":
-		draw_line(Vector2(20,size.y-1),Vector2(size.x-20,size.y-1),Color("ffffff",.15),1)
-		if has_focus() or is_hovered(): draw_line(Vector2(0,8),Vector2(0,size.y-8),PaperLanguage.YELLOW,4,true)
+	# No additional random contour over the native focus/state surface.
+	if selected: draw_line(Vector2(13,size.y-4),Vector2(35,size.y-4),Color("526d61"),2,true)

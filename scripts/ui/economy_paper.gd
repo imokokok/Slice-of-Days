@@ -18,7 +18,7 @@ func _ready() -> void:
 	style.bg_color = Color("eef3f4")
 	style.set_content_margin_all(32)
 	style.set_corner_radius_all(12)
-	paper.add_theme_stylebox_override("panel",preload("res://scripts/ui/production_assets.gd").paper("paper_large",Color("faf4e5"),32))
+	paper.add_theme_stylebox_override("panel",preload("res://scripts/ui/production_assets.gd").surface(Color("faf5e8"),32))
 	add_child(paper)
 	var scroll := ScrollContainer.new()
 	paper.add_child(scroll)
@@ -29,7 +29,7 @@ func _ready() -> void:
 	build()
 	preload("res://scripts/ui/solmere_motion.gd").paper_open(paper,SettingsSystem.reduced_motion())
 
-func label(text: String, size := 21, color := Color("31658b")) -> Label:
+func label(text: String, size := 21, color := Color("405653")) -> Label:
 	var item := Label.new()
 	item.text = LocalizationSystem.text(text)
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -94,7 +94,7 @@ func restaurant() -> void:
 		var description := str(receipt.title)+"\n"
 		for line in receipt.line_items: description += "%s ×%d   %d元\n" % [line.name,line.quantity,line.total]
 		description += "合计 %d 元  %s" % [receipt.total,str(receipt.stamp)]
-		label(description,18,Color("31658b")); receipt_count+=1
+		label(description,18,Color("405653")); receipt_count+=1
 	if receipt_count==0: label("还没有这次采购的小票。\n\n买到食材后，小票会留在这里。",19)
 	body=outer
 

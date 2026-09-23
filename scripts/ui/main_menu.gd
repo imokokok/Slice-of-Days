@@ -2,7 +2,7 @@ extends Control
 
 const PAPER := Color("fff8eb")
 const PAPER_SOFT := Color("f1dfc7")
-const INK := Color("31658b")
+const INK := Color("405653")
 const MUTED := Color("526b77")
 const TERRACOTTA := Color("c85f43")
 const TEAL := Color("4f7d83")
@@ -50,36 +50,14 @@ func _draw() -> void:
 
 
 func _build_living_cover() -> void:
-	var blue := ColorRect.new()
-	blue.color = COVER_BLUE
-	blue.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	blue.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(blue)
-	var menu_paper := Panel.new(); menu_paper.name="JourneyPaper"
-	menu_paper.position=Vector2(898,140); menu_paper.size=Vector2(545,592)
-	menu_paper.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	menu_paper.add_theme_stylebox_override("panel",Production.paper("paper_tall",Color("f8efdc"),24))
-	add_child(menu_paper)
-	var map := TextureRect.new(); map.name="TownPostcard"
-	map.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; map.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	map.texture=preload("res://art/ui/pocket_doodles/folded_map.png")
-	map.position=Vector2(48,162); map.size=Vector2(810,520)
-	map.mouse_filter=Control.MOUSE_FILTER_IGNORE; add_child(map)
-	_make_label(self,"海风、日常，和一些值得留下的小事。",Vector2(116,710),Vector2(710,38),21,Color("f6eddb"))
-	var title := Label.new()
-	title.text = "Solmere"
-	title.position = Vector2(930, 192)
-	title.size = Vector2(470, 126)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var title_font := SystemFont.new()
-	title_font.font_names = PackedStringArray(["Segoe Print", "Bradley Hand ITC", "Comic Sans MS", "Microsoft YaHei UI"])
-	title_font.font_weight = 300
-	title.add_theme_font_override("font", title_font)
-	title.add_theme_font_size_override("font_size", 76)
-	title.add_theme_color_override("font_color", Color("415e68"))
-	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(title)
+	var cover := TextureRect.new(); cover.name="CoastalCover"
+	cover.texture=preload("res://art/ui/title-screen-background.png")
+	cover.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; cover.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	cover.set_anchors_and_offsets_preset(PRESET_FULL_RECT); cover.mouse_filter=Control.MOUSE_FILTER_IGNORE; add_child(cover)
+	# The existing illustration already carries the title; never print a second logo.
+	var caption := _make_label(self,"海风、日常，和一些值得留下的小事。",Vector2(500,433),Vector2(720,38),22,Color("344f53"))
+	caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+
 
 func _process(_delta: float) -> void:
 	if entering: return
@@ -92,55 +70,25 @@ func _process(_delta: float) -> void:
 				child.focus_mode = Control.FOCUS_ALL
 
 func _build_navigation() -> void:
-	navigation = Control.new()
-	navigation.position = Vector2(1005,358)
-	navigation.size = Vector2(330,182)
-	navigation.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(navigation)
-	for y in [0,228 if SaveManager.has_any_save() else 180]:
-		var rule := ColorRect.new()
-		rule.position = Vector2(0,y)
-		rule.size = Vector2(330,1)
-		rule.color = Color("8e8268",.34)
-		rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		navigation.add_child(rule)
+	navigation=Control.new(); navigation.name="JourneyNavigation"; navigation.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	navigation.position=Vector2(452,580); navigation.size=Vector2(784,72); add_child(navigation)
 	var titles := ["新游戏","章节","设置"]
 	var names := ["NewGame","Chapters","Settings"]
 	var actions := [_launch_new_game,_show_chapters,_show_settings]
 	if SaveManager.has_any_save(): titles.push_front("继续旅程"); names.push_front("Continue"); actions.push_front(_continue_latest)
-	var menu_font := SystemFont.new()
-	menu_font.font_names = PackedStringArray(["Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Arial", "sans-serif"])
-	menu_font.font_weight = 300
+	var offset := (784-titles.size()*196)*.5
 	for i in titles.size():
-		var button := Button.new()
-		button.name = names[i]
-		button.text = LocalizationSystem.text(titles[i])
-		button.position = Vector2(40,24+i*44)
-		button.size = Vector2(250,40)
-		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		button.disabled = true
-		button.focus_mode = Control.FOCUS_ALL
-		button.flat = true
-		button.add_theme_font_size_override("font_size",23)
-		button.add_theme_font_override("font",menu_font)
-		button.add_theme_constant_override("outline_size",0)
-		for state in ["normal","hover","pressed","focus","disabled","hover_pressed"]:
-			button.add_theme_stylebox_override(state,StyleBoxEmpty.new())
-		button.add_theme_color_override("font_color",Color.WHITE)
-		button.add_theme_color_override("font_hover_color",Color("fffdf6"))
-		button.add_theme_color_override("font_focus_color",Color("eed577"))
-		button.add_theme_color_override("font_pressed_color",Color("f4dfb0"))
-		button.add_theme_color_override("font_shadow_color",Color("183e4e",.8))
-		button.add_theme_constant_override("shadow_offset_y",1)
-		for state in ["normal","hover","pressed","disabled"]:
-			button.add_theme_stylebox_override(state,Production.paper("paper_label",Color("e6e0c8") if state=="normal" else Color("d5ddc4") if state=="pressed" else Color("edddb6"),8))
-		for state in ["font_color","font_hover_color","font_focus_color","font_pressed_color"]: button.add_theme_color_override(state,Color("415e68"))
-		button.add_theme_color_override("font_shadow_color",Color.TRANSPARENT)
-		navigation.add_child(button)
-		button.pressed.connect(actions[i])
+		var button := preload("res://scripts/ui/components/solmere_button.gd").new()
+		button.name=names[i]; button.text=LocalizationSystem.text(titles[i]); button.variant="primary" if i==0 else "paper"
+		button.position=Vector2(offset+i*196,0); button.size=Vector2(180,62)
+		button.disabled=true; button.add_theme_font_size_override("font_size",24)
+		navigation.add_child(button); button.pressed.connect(actions[i])
 	for i in 2:
-		var extra := preload("res://scripts/ui/components/solmere_button.gd").new(); extra.name=["Credits","Quit"][i]; extra.variant="camera"; extra.text=LocalizationSystem.text(["制作人员","退出"][i]); extra.position=Vector2(645+i*185,814); extra.size=Vector2(150,38); add_child(extra); extra.add_theme_font_size_override("font_size",16); extra.pressed.connect([_show_credits,_show_quit_confirmation][i])
-	navigation.modulate.a = 1
+		var extra := preload("res://scripts/ui/components/solmere_button.gd").new()
+		extra.name=["Credits","Quit"][i]; extra.variant="paper"; extra.text=LocalizationSystem.text(["制作人员","退出"][i])
+		extra.position=Vector2(1230+i*170,826); extra.size=Vector2(154,44); extra.add_theme_font_size_override("font_size",18)
+		add_child(extra); extra.pressed.connect([_show_credits,_show_quit_confirmation][i])
+	navigation.modulate.a=1
 
 
 func _refresh_navigation_language(_locale := "") -> void:
@@ -188,7 +136,7 @@ func _build_modal_shell() -> void:
 	style.shadow_color = Color(INK, 0.30)
 	style.shadow_size = 0
 	style.shadow_offset = Vector2(0, 8)
-	modal_panel.add_theme_stylebox_override("panel", Production.paper("paper_wide",Color("faf4e5"),20))
+	modal_panel.add_theme_stylebox_override("panel", Production.surface(Color("faf5e8"),20))
 	modal_overlay.add_child(modal_panel)
 	modal_overlay.visible = false
 

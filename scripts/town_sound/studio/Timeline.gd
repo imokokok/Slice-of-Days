@@ -32,7 +32,7 @@ func _draw() -> void:
 	for second in range(0, 61, 5):
 		var x := float(second) / 60.0 * size.x
 		draw_line(Vector2(x, 24), Vector2(x, 302), Color("d5d2c5"))
-		draw_string(ThemeDB.fallback_font, Vector2(x + 2, 17), str(second), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("5b665d"))
+		draw_string(ThemeDB.fallback_font, Vector2(x + 2, 17), str(second), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("5b665d"))
 	for track in 4:
 		draw_rect(Rect2(0, 32 + track * 66, size.x, 62), Color(0.6, 0.6, 0.5, 0.06))
 	for i in arrangement.clips.size():
@@ -43,9 +43,9 @@ func _draw() -> void:
 			color.a = 0.3
 		draw_rect(rect, color)
 		if i == selected:
-			draw_rect(rect, Color("31658b"), false, 2)
-			draw_rect(Rect2(rect.position, Vector2(minf(12, rect.size.x / 3), rect.size.y)), Color("31658b"))
-			draw_rect(Rect2(rect.end.x - minf(12, rect.size.x / 3), rect.position.y, minf(12, rect.size.x / 3), rect.size.y), Color("31658b"))
+			draw_rect(rect, Color("526d61"), false, 2)
+			draw_rect(Rect2(rect.position, Vector2(minf(12, rect.size.x / 3), rect.size.y)), Color("526d61"))
+			draw_rect(Rect2(rect.end.x - minf(12, rect.size.x / 3), rect.position.y, minf(12, rect.size.x / 3), rect.size.y), Color("526d61"))
 		var source := arrangement.load_pcm(clip.sample_id)
 		if not source.is_empty():
 			var key := str(clip.sample_id)
@@ -68,15 +68,15 @@ func _draw() -> void:
 				var height := float(peak_cache[key][clampi(int(source_time / duration * 300), 0, 299)]) * 15
 				var center := rect.position + Vector2(pixel, 35)
 				draw_line(center - Vector2(0, maxf(1, height)), center + Vector2(0, maxf(1, height)), Color("506052"), 1)
-		draw_string(get_theme_default_font(), rect.position + Vector2(5, 17), LocalizationSystem.text(str(clip.name)), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 10, 12, Color("273d31"))
+		draw_string(get_theme_default_font(), rect.position + Vector2(5, 17), LocalizationSystem.text(str(clip.name)), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 10, 16, Color("273d31"))
 	if range_begin >= 0 and range_end >= 0:
 		var begin := minf(range_begin, range_end)
 		var end := maxf(range_begin, range_end)
 		var region := Rect2(begin / 60.0 * size.x, 32 + range_track * 66, (end - begin) / 60.0 * size.x, 62)
 		draw_rect(region, Color(0.95, 0.67, 0.22, 0.32))
-		draw_rect(region, Color("31658b"), false, 2)
+		draw_rect(region, Color("526d61"), false, 2)
 	var cursor := playhead / 60.0 * size.x
-	draw_line(Vector2(cursor, 22), Vector2(cursor, 302), Color("31658b"), 2)
+	draw_line(Vector2(cursor, 22), Vector2(cursor, 302), Color("526d61"), 2)
 
 func _get_drag_data(_at: Vector2) -> Variant:
 	return null

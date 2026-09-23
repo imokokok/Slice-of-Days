@@ -6,13 +6,14 @@ var detail: VBoxContainer
 var illustration: TextureRect
 func _ready() -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT); theme=P.theme_for_tools()
-	var back := Panel.new(); back.set_anchors_and_offsets_preset(PRESET_FULL_RECT); back.add_theme_stylebox_override("panel",P.face(P.CREAM,0,0)); add_child(back)
-	P.words(self,"海边笔记 · 每一次遇见",Vector2(78,48),1080,34)
-	var close := preload("res://scripts/ui/components/solmere_button.gd").new(); close.text=LocalizationSystem.text("返回")+" · "+SettingsSystem.binding_text("ui_cancel"); close.position=Vector2(1290,42); close.size=Vector2(230,48); close.pressed.connect(queue_free); add_child(close)
-	var scroll := ScrollContainer.new(); scroll.position=Vector2(78,145); scroll.size=Vector2(495,370); add_child(scroll)
-	illustration=TextureRect.new(); illustration.position=Vector2(130,550); illustration.size=Vector2(350,190); illustration.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; illustration.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED; illustration.mouse_filter=MOUSE_FILTER_IGNORE; add_child(illustration)
+	var dim := ColorRect.new(); dim.color=Color("263d39",.45); dim.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(dim)
+	var book := preload("res://scripts/ui/components/book_surface.gd").new(); book.position=Vector2(155,110); book.size=Vector2(1290,685); add_child(book)
+	P.words(self,"海边笔记 · 每一次遇见",Vector2(220,159),540,30)
+	var close := preload("res://scripts/ui/components/solmere_button.gd").new(); close.text=LocalizationSystem.text("返回")+" · "+SettingsSystem.binding_text("ui_cancel"); close.position=Vector2(1210,40); close.size=Vector2(230,48); close.pressed.connect(queue_free); add_child(close)
+	var scroll := ScrollContainer.new(); scroll.position=Vector2(220,240); scroll.size=Vector2(495,310); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(scroll)
+	illustration=TextureRect.new(); illustration.position=Vector2(280,567); illustration.size=Vector2(350,170); illustration.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; illustration.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED; illustration.mouse_filter=MOUSE_FILTER_IGNORE; add_child(illustration)
 	var rows := VBoxContainer.new(); rows.size_flags_horizontal=SIZE_EXPAND_FILL; rows.add_theme_constant_override("separation",16); scroll.add_child(rows)
-	var detail_scroll := ScrollContainer.new(); detail_scroll.position=Vector2(643,145); detail_scroll.size=Vector2(815,635); detail_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(detail_scroll)
+	var detail_scroll := ScrollContainer.new(); detail_scroll.position=Vector2(850,160); detail_scroll.size=Vector2(510,575); detail_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(detail_scroll)
 	detail=VBoxContainer.new(); detail.size_flags_horizontal=SIZE_EXPAND_FILL; detail.add_theme_constant_override("separation",19); detail_scroll.add_child(detail)
 	var catches: Array=FISH.state().catches.duplicate(true); catches.reverse()
 	for caught: Dictionary in catches:
@@ -21,9 +22,9 @@ func _ready() -> void:
 		button.pressed.connect(_select.bind(caught))
 	if catches.is_empty():
 		var empty := Label.new(); empty.text=LocalizationSystem.text("还没有鱼获记录。\n钓到后，无论收下或放生，\n都可以在这里翻看。"); rows.add_child(empty)
-		_words("先认识这里的海鱼",28)
 		for species: Dictionary in FISH.SPECIES:
-			var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.text=LocalizationSystem.text(species.name)+" · "+LocalizationSystem.text("资料"); button.custom_minimum_size.y=52; detail.add_child(button); button.pressed.connect(_select.bind({"id":species.id}))
+			var button := preload("res://scripts/ui/components/solmere_button.gd").new(); button.text=LocalizationSystem.text(species.name)+" · "+LocalizationSystem.text("资料"); button.custom_minimum_size.y=52; rows.add_child(button); button.pressed.connect(_select.bind({"id":species.id}))
+		_select({"id":FISH.SPECIES[0].id})
 	else: _select(catches[0])
 	close.grab_focus()
 func _words(text: String, point := 23) -> Label:

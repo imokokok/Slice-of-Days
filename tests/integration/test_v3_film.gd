@@ -21,7 +21,7 @@ func run()->void:
 	film.capture_root=test_root+"/raw"
 	film.library.root_path=test_root+"/developed"
 	root.get_node("MetaExperience").catalog.toggles.marginalia=false
-	gs.begin_new_game("A")
+	root.get_node("ChapterSystem").start_new_game()
 	gs.current_location="cafe"
 	gs.current_minute=660
 	check(not film.camera_available(false),"A starts without bypassing the camera purchase choice")
@@ -147,7 +147,8 @@ func run()->void:
 	letter.queue_free()
 	display.queue_free()
 	await process_frame
-	gs.begin_new_game("B")
+	root.get_node("ChapterSystem").start_new_game()
+	gs.switch_to_role("B",2,true)
 	gs.current_location="cafe"
 	gs.current_minute=660
 	check(not film.camera_available(false),"B's fresh game starts without the camera")
@@ -162,7 +163,7 @@ func run()->void:
 	var expired_id:=str(film.active_roll().id)
 	money=int(gs.money)
 	check(film.dropoff(expired_id,"standard").ok and gs.money==money-12,"Shop help applies the first Standard price naturally")
-	check(int(film.state().rolls[expired_id].ready_day)==2 and int(film.state().rolls[expired_id].ready_minute)==600,"Standard pickup is actually scheduled for next morning")
+	check(int(film.state().rolls[expired_id].ready_day)==gs.current_day+1 and int(film.state().rolls[expired_id].ready_minute)==600,"Standard pickup is actually scheduled for next morning")
 	check(save.save_game() and save.load_game() and film.state().rolls[expired_id].state=="PROCESSING","Processing and first-discount state survive reload")
 	print("V3_FILM ","PASS" if failures==0 else "FAIL"," checks=",checks," failures=",failures)
 	quit(failures)

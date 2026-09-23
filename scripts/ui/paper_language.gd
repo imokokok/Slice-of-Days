@@ -1,6 +1,6 @@
 extends Node
 ## Shared visual grammar for controls created by every scene and extension.
-const BLUE := Color("31658b")
+const BLUE := Color("405653")
 const WHITE := Color("faf7ee")
 const YELLOW := Color("eed577")
 const MUTED := Color("526b77")
@@ -48,26 +48,14 @@ func speech(node: Node) -> bool:
 
 func button_style(button: Button, in_scene := false) -> void:
 	for state in ["normal","hover","pressed","focus","disabled"]:
-		var style := StyleBoxFlat.new()
-		style.bg_color={"normal":Color(BLUE,.06),"hover":Color(YELLOW,.45),"pressed":YELLOW,"focus":Color.TRANSPARENT,"disabled":Color(MUTED,.08)}[state]
-		style.set_corner_radius_all(6)
-		if state=="focus": style.set_border_width_all(2)
-		style.border_width_bottom=1 if state in ["hover","pressed","focus"] else 0
-		style.border_color=YELLOW if in_scene else BLUE
-		style.content_margin_left=10; style.content_margin_right=10
-		style.content_margin_top=5; style.content_margin_bottom=5
-		button.add_theme_stylebox_override(state,style)
-		if not in_scene and state in ["normal","hover","pressed","disabled"] and Production.available("paper_label"):
-			var tint: Color={"normal":Color("f5ead7"),"hover":Color("f0e0ba"),"pressed":Color("d8dcbc"),"disabled":Color("e5e0d6")}[state]
-			button.add_theme_stylebox_override(state,Production.paper("paper_label",tint,10))
-	for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:
-		button.add_theme_color_override(state,WHITE if in_scene else BLUE)
+		button.add_theme_stylebox_override(state,Production.button_face("choice" if in_scene else "paper",state))
+	for state in ["font_color","font_focus_color"]:
+		button.add_theme_color_override(state,WHITE if in_scene else Production.INK)
+	for state in ["font_hover_color","font_pressed_color","font_hover_pressed_color"]: button.add_theme_color_override(state,Production.INK)
 	button.add_theme_color_override("font_disabled_color",Production.MUTED_INK)
 	if DisplayServer.get_name()!="headless": button.add_theme_font_override("font",body_font)
 	button.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
-	if in_scene:
-		button.add_theme_color_override("font_outline_color",Color("173c5d",.9))
-		button.add_theme_constant_override("outline_size",3)
+
 
 func _style(node: Control) -> void:
 	if not is_instance_valid(node) or not node.is_inside_tree() or node.is_queued_for_deletion(): return
@@ -76,12 +64,14 @@ func _style(node: Control) -> void:
 	if _context(node,["map_paper.gd","fish_journal.gd","transport_panel.gd"]): return
 	if _context(node,["direction_card.gd","goods_card.gd","gameplay_shell.gd"]): return
 	if node.is_in_group("solid_hud"): return
-	if _context(node,["star_gazing_controller.gd","constellation_controller.gd","economy_paper.gd","StudioScreen.gd","myriorama_tarot/scripts/table.gd","native_module_game.gd","save_slots.gd","shop_panel.gd","film_paper.gd","confirm_sheet.gd","travel_card.gd","main_menu.gd","PocketCamera.gd","recorder_lite.gd","shutter_button.gd","living_objects.gd","media_browser.gd","guidance_toasts.gd","runtime_menu.gd","solmere_button.gd","paper_page.gd","portfolio_item.gd","runtime_debug.gd","flowing_thought.gd","workshop.gd"]): return
+	if _context(node,["star_gazing_controller.gd","constellation_controller.gd","economy_paper.gd","StudioScreen.gd","myriorama_tarot/scripts/table.gd","native_module_game.gd","save_slots.gd","shop_panel.gd","film_paper.gd","confirm_sheet.gd","travel_card.gd","main_menu.gd","PocketCamera.gd","recorder_lite.gd","shutter_button.gd","living_objects.gd","media_browser.gd","guidance_toasts.gd","runtime_menu.gd","solmere_button.gd","household_panel.gd","RecorderScreen.gd","paper_page.gd","portfolio_item.gd","runtime_debug.gd","flowing_thought.gd","workshop.gd"]): return
 	if speech(node): return
 	if node is Button:
+		if node.has_theme_stylebox_override("normal"): return
 		button_style(node,speech(node))
 		if node.has_meta("paper_selected") and bool(node.get_meta("paper_selected")): selected_button(node,true)
 	elif node is Panel or node is PanelContainer:
+		if node.has_theme_stylebox_override("panel"): return
 		var current := node.get_theme_stylebox("panel")
 		var paper := StyleBoxFlat.new()
 		if current is StyleBoxFlat:
@@ -90,7 +80,7 @@ func _style(node: Control) -> void:
 		paper.set_corner_radius_all(10); paper.set_border_width_all(0)
 		paper.border_color=Color(BLUE,.32)
 		paper.bg_color=WHITE if _context(node,["journal.gd","economy_paper.gd"]) else Color("edf3f4")
-		node.add_theme_stylebox_override("panel",Production.paper("paper_large",WHITE,14) if Production.available("paper_large") else paper)
+		node.add_theme_stylebox_override("panel",Production.surface(WHITE,14))
 
 	elif node is LineEdit or node is TextEdit:
 		for state in ["normal","focus","read_only"]:
@@ -102,6 +92,7 @@ func _style(node: Control) -> void:
 		node.add_theme_color_override("caret_color",BLUE)
 		node.add_theme_color_override("selection_color",Color(YELLOW,.65))
 	elif node is Label:
+		if node.has_theme_color_override("font_color"): return
 		if DisplayServer.get_name()!="headless":
 			node.add_theme_font_override("font",body_font)
 		var color := node.get_theme_color("font_color")

@@ -1,0 +1,87 @@
+{
+  "date": "2026-09-24",
+  "baseline": "8b1cd298dd99336bf1982d20581abc1e4075f2f9",
+  "engine": "Godot 4.7.2",
+  "isolated_save": true,
+  "results": [
+    {
+      "log": "ui-refine-resources",
+      "result": "RESOURCE_INTEGRATION: 204 checks, 0 failures",
+      "sha256": "04b87b2d9bbc4e85e5f8210015a55cbd422a2f677bee8bf7b1c37e368548be65"
+    },
+    {
+      "log": "ui-refine-readability",
+      "result": "UI_READABILITY: 108 checks, 0 failures",
+      "sha256": "54c802b2754714172c534065bb4f639f6520b5ba551334f07d7fc0bd6c4f32cd"
+    },
+    {
+      "log": "ui-reference-flow",
+      "result": "UI_REFERENCE_REVIEW: 18 checks, 0 failures",
+      "sha256": "80768453d49e0b60e35383fdd1ca1b4d60d8979472073e8277d5783bb5ba07d0"
+    },
+    {
+      "log": "ui-refine-homes",
+      "result": "HOME_INTERIORS: 47 checks / 0 failures",
+      "sha256": "e24a489c46fc01be209528c8e1ed006a0201e860fa40f46f91f6e016ba3a6797"
+    },
+    {
+      "log": "ui-refine-music",
+      "result": "MUSIC_SOURCE_ROUTE: 8 checks, 0 failures",
+      "sha256": "7e0f011a13964bf690bb6f5053ea3b55c57c6bf53ab9c0efedafcfc28a159d13"
+    },
+    {
+      "log": "ui-refine-fish",
+      "result": "FISH FIELD NOTES checks=21 failures=0",
+      "sha256": "41d31c5f8b0b26c50d889aa752fd9c939656ad531c8a033984b9842ca029b620"
+    },
+    {
+      "log": "ui-refine-film",
+      "result": "V3_FILM PASS checks=80 failures=0",
+      "sha256": "d170c3daf199a40ec04c640d53790b17a48f7a1b675674b58fa8ccfb6fe42822"
+    },
+    {
+      "log": "ui-refine-tarot",
+      "result": "MYRIORAMA ENTRY PASS",
+      "sha256": "0f4d496c90615b0e1bc411dc7e5a35e0d902f4de0375382f721da46080f7a7dc"
+    },
+    {
+      "log": "ui-packed-readability",
+      "result": "UI_READABILITY: 108 checks, 0 failures",
+      "sha256": "54c802b2754714172c534065bb4f639f6520b5ba551334f07d7fc0bd6c4f32cd"
+    },
+    {
+      "log": "ui-packed-flow",
+      "result": "UI_REFERENCE_REVIEW: 18 checks, 0 failures",
+      "sha256": "80768453d49e0b60e35383fdd1ca1b4d60d8979472073e8277d5783bb5ba07d0"
+    },
+    {
+      "log": "ui-packed-resources",
+      "result": "RESOURCE_INTEGRATION: 204 checks, 0 failures",
+      "sha256": "04b87b2d9bbc4e85e5f8210015a55cbd422a2f677bee8bf7b1c37e368548be65"
+    }
+  ],
+  "files": {
+    "Solmere.exe": {
+      "sha256": "d34d36f3be1a6c49c56525ae86469b92e4f417ddf0b43cf00dd80c385c4b0562",
+      "bytes": 109268480
+    },
+    "Solmere.pck": {
+      "sha256": "09f44195bf9470f9c2eb10e8cacc932254f3469db2e4deacc04fafcd8d5c8da4",
+      "bytes": 405445348
+    }
+  },
+  "capture_index": "ui_reference_review/capture-index.json",
+  "visual_review": {
+    "states": 38,
+    "logical_size": [
+      1600,
+      900
+    ],
+    "window_size": [
+      1280,
+      720
+    ],
+    "native_observation": "Fresh exported executable menu observed. Godot loaded the exported PCK in a native window; actual Record click produced changing live picture, waveform and timer, reached the 60 second limit, and Save changed the collection from 0 to 1. Final provenance-only text fix verified in source and packed regression.",
+    "not_claimed": "Every narrative branch, platform or display ratio; full repaint of existing game artwork."
+  }
+}

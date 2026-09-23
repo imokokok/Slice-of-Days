@@ -180,4 +180,5 @@ func _unhandled_input(event: InputEvent) -> void:
 func _open_journal() -> void:
 	if is_instance_valid(journal): return
 	journal=preload("res://scripts/ui/fish_journal.gd").new(); add_child(journal)
-	journal.tree_exited.connect(func(): cast_button.grab_focus())
+	journal.tree_exited.connect(func():
+		if is_instance_valid(cast_button) and cast_button.is_inside_tree() and not is_queued_for_deletion(): cast_button.grab_focus())

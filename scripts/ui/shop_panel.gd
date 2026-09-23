@@ -53,7 +53,7 @@ func _refresh() -> void:
 	for i in stock.size():
 		var item: Dictionary=stock[i]
 		var b := ITEM.new(); b.name="Select_"+str(item.id); b.item_id=item.id
-		b.caption={"hotel_307_tag":"307 房牌","misprint_postcard":"海湾明信片","crooked_cup":"缺口杯"}.get(str(item.id),str(item.name)); b.size=Vector2(175,150)
+		b.caption={"hotel_307_tag":"307 房牌","misprint_postcard":"海湾明信片","crooked_cup":"缺口杯","pretty_can":"彩绘空罐","ticket_bundle":"旧公交票"}.get(str(item.id),str(item.name)); b.size=Vector2(175,150)
 		if shop_id=="produce_stall":
 			b.position=Vector2(49+(i%3)*261,48) if i<3 else Vector2(343,334)
 			b.size=Vector2(210,220) if i<3 else Vector2(210,175)

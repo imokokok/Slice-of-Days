@@ -68,22 +68,49 @@ static func paper(kind := "paper_wide", tint := Color("faf4e5"), margin := 14) -
 		face.content_margin_top=minf(margin,6); face.content_margin_bottom=minf(margin,6)
 	return face
 
+static func surface(tint := Color("faf5e8"), margin := 18) -> StyleBoxFlat:
+	var face := StyleBoxFlat.new()
+	face.bg_color=tint; face.set_content_margin_all(margin)
+	face.set_corner_radius_all(3); face.set_border_width_all(1)
+	face.border_color=Color("8a816b",.5)
+	face.shadow_color=Color("252d29",.16); face.shadow_size=4; face.shadow_offset=Vector2(0,3)
+	return face
+
+static func button_face(variant: String, state: String, selected := false) -> StyleBoxFlat:
+	var primary := variant in ["primary","choice","pause","camera","guidance"]
+	var active := state in ["hover","pressed"] or selected
+	var face := StyleBoxFlat.new()
+	face.set_content_margin_all(10); face.content_margin_top=6; face.content_margin_bottom=6
+	face.set_corner_radius_all(3)
+	face.bg_color=Color("faf5e8")
+	if variant in ["tab","archive","goods"]: face.bg_color=Color("f3eddd")
+	if primary: face.bg_color=Color("415c57")
+	if active: face.bg_color=Color("e7dbb6") if not primary else Color("eddda9")
+	face.border_color=Color("797463",.35)
+	if variant in ["paper","outlined"] or primary: face.set_border_width_all(1)
+	elif variant=="tab" or active: face.border_width_bottom=2 if active else 1
+	if selected: face.border_color=Color("526d61"); face.border_width_bottom=3
+	if state=="disabled": face.bg_color=Color("e8e4d9"); face.border_color=Color("c6c0b0")
+	if state=="focus":
+		face.bg_color=Color.TRANSPARENT; face.set_border_width_all(2); face.border_color=Color("aa7a38")
+	return face
+
 static func apply_theme(theme: Theme) -> void:
 	if not available("paper_label"): return
 	for type in ["Button", "OptionButton"]:
 		for state in ["normal", "hover", "pressed", "disabled"]:
 			var tint: Color = {"normal":Color("f5e9d2"),"hover":Color("eee0b9"),"pressed":Color("d8dcb9"),"disabled":Color("e1ded3")}[state]
-			theme.set_stylebox(state, type, paper("paper_label", tint, 10))
+			theme.set_stylebox(state, type, button_face("paper",state))
 		for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_focus_color"]: theme.set_color(state,type,INK)
 		theme.set_color("font_disabled_color",type,MUTED_INK)
 	for type in ["TextEdit", "LineEdit"]:
 		for state in ["normal", "read_only"]:
-			theme.set_stylebox(state,type,paper("paper_wide",Color("fffaf0"),12))
+			theme.set_stylebox(state,type,surface(Color("fffaf0"),12))
 		for state in ["font_color","font_selected_color","font_readonly_color","caret_color"]: theme.set_color(state,type,INK)
 		theme.set_color("font_placeholder_color",type,MUTED_INK)
 		theme.set_color("selection_color",type,Color("ded5ac"))
 	for type in ["Panel", "PanelContainer", "PopupPanel", "AcceptDialog"]:
-		theme.set_stylebox("panel",type,paper("paper_large",Color("faf4e5"),18))
+		theme.set_stylebox("panel",type,surface(Color("faf5e8"),18))
 	# A filled paper silhouette becomes a solid block when tinted as an icon.
 	for state in ["checked", "checked_disabled"]: theme.set_icon(state,"CheckBox",preload("res://art/ui/check-on.svg"))
 	for state in ["unchecked", "unchecked_disabled"]: theme.set_icon(state,"CheckBox",preload("res://art/ui/check-off.svg"))

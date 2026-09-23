@@ -1,6 +1,6 @@
 extends Control
-## The book is native geometry, independent from every interactive page element.
-var backing: Texture2D=preload("res://art/ui/pocket_doodles/book.png")
+## Generated paper artwork stays separate from real, readable page controls.
+var backing: Texture2D=preload("res://art/ui/pocket_doodles/book-refined.png")
 var spread := true
 var ruled := false
 func _ready() -> void:

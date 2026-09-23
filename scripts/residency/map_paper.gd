@@ -9,8 +9,8 @@ var points: Dictionary = {
 	"bus_stop":Vector2(298,602), "cafe":Vector2(242,489), "produce_stall":Vector2(389,422),
 	"night_market":Vector2(484,451), "town_entrance":Vector2(128,376), "print_shop":Vector2(784,286),
 	"handcraft_shop":Vector2(387,347), "library":Vector2(553,359), "record_store":Vector2(815,506),
-	"chess_stall":Vector2(791,412), "tarot_stall":Vector2(858,368), "residence":Vector2(200,193),
-	"dorm":Vector2(298,211), "port":Vector2(788,725), "park":Vector2(1175,470)
+	"chess_stall":Vector2(791,412), "tarot_stall":Vector2(858,368), "residence":Vector2(186,176),
+	"dorm":Vector2(315,228), "port":Vector2(788,725), "park":Vector2(1175,470)
 }
 var dragging := false
 var map_font := SystemFont.new()

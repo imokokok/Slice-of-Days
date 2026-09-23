@@ -6,6 +6,10 @@ const Waveform = preload("res://scripts/town_sound/audio/WaveformView.gd")
 var recorder: FieldRecorder
 var store := Store.new()
 var player: AudioStreamPlayer
+var playback: AudioStreamPlayer
+var levels: Array[float] = []
+var live_screen: Control
+var workspace: Control
 var draft: AudioStreamWAV
 var source_picker: OptionButton
 var device_row: HBoxContainer
@@ -41,7 +45,7 @@ var previous_auto_accept_quit := true
 var draft_context: Dictionary = {}
 
 func _draw() -> void:
-	if not compact: draw_rect(Rect2(Vector2.ZERO, size), Color("f1eddf"))
+	pass # The scene remains visible around the physical recorder and notes.
 
 func _ready() -> void:
 	add_to_group("town_sound_workspace")
@@ -54,11 +58,15 @@ func _ready() -> void:
 	add_child(recorder)
 	player = AudioStreamPlayer.new()
 	player.bus = "Music"
+	playback=player
 	add_child(player)
 	_build_ui()
 	get_node("/root/SoundSettings").input_changed.connect(func(_device: String) -> void: _refresh_devices())
 	load("res://scripts/town_sound/record_shop/PresetRecords.gd").ensure_presets()
 	recorder.meter_changed.connect(func(peak: float, seconds: float) -> void:
+		levels.append(peak)
+		if levels.size()>95: levels.pop_front()
+		waveform.peaks=PackedFloat32Array(levels); waveform.queue_redraw()
 		meter.value = clampf((linear_to_db(maxf(peak, 0.00001)) + 60.0) / 60.0, 0.0, 1.0)
 		timer_label.text = "%02d:%05.2f" % [int(seconds) / 60, fmod(seconds, 60.0)]
 		compact_timer.text = "● " + timer_label.text)
@@ -76,37 +84,7 @@ func _ready() -> void:
 	_refresh_controls()
 
 func _build_theme() -> void:
-	var skin := Theme.new()
-	skin.default_font_size = 17
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Microsoft YaHei UI", "PingFang SC", "Noto Sans CJK SC"])
-	skin.default_font = font
-	skin.set_color("font_color", "Label", Color("303932"))
-	skin.set_color("font_color", "Button", Color("303932"))
-	skin.set_color("font_color", "LineEdit", Color("303932"))
-	skin.set_color("font_placeholder_color", "LineEdit", Color("7b8076"))
-	skin.set_color("font_disabled_color", "Button", Color("9b9d92"))
-	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color("e3e5d9") if state != "hover" else Color("e9cc7a")
-		if state == "pressed":
-			style.bg_color = Color("b9c8b7")
-		if state == "disabled":
-			style.bg_color = Color("e7e5dc")
-		style.set_corner_radius_all(8)
-		style.content_margin_left = 16
-		style.content_margin_right = 16
-		style.content_margin_top = 10
-		style.content_margin_bottom = 10
-		if state == "focus":
-			style.bg_color = Color.TRANSPARENT
-			style.border_color = Color("ab633e")
-			style.set_border_width_all(2)
-		skin.set_stylebox(state, "Button", style)
-		if state in ["normal", "focus"]:
-			skin.set_stylebox(state, "LineEdit", style)
-	preload("res://scripts/ui/production_assets.gd").apply_theme(skin)
-	theme = skin
+	theme=preload("res://scripts/ui/components/interface_palette.gd").theme_for_tools()
 
 func _label(text: String, font_size: int = 17) -> Label:
 	var label := Label.new()
@@ -115,151 +93,90 @@ func _label(text: String, font_size: int = 17) -> Label:
 	return label
 
 func _button(text: String, action: Callable) -> Button:
-	var button := Button.new()
+	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
+	button.variant="paper"
 	button.text = LocalizationSystem.text(text)
 	button.pressed.connect(action)
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	return button
 
-func _build_ui() -> void:
-	page_scroll = ScrollContainer.new()
-	page_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	page_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	add_child(page_scroll)
-	var margin := MarginContainer.new()
-	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	for edge in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + edge, 32)
-	page_scroll.add_child(margin)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 14)
-	margin.add_child(column)
-	var heading := HBoxContainer.new()
-	column.add_child(heading)
-	var title := _label("TOWN SOUND / 城市采样", 30)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	heading.add_child(title)
-	heading.add_child(_button("返回小镇", request_close))
-	heading.add_child(_button("♪ 声音设置 / 测试音", func() -> void:
-		if recorder.capturing:
-			status_label.text = LocalizationSystem.text("请先停止录音，再切换声音设备。")
-			return
-		get_node("/root/SoundSettings").show_dialog()))
-	heading.add_child(_label("FIELD NOTES   /   01", 15))
-	column.add_child(_label("把今天听见的东西留下来。R 开始/停止 · Ctrl/Cmd+S 保存 · Esc 返回", 18))
-	tutorial_label = _label("")
-	tutorial_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	column.add_child(tutorial_label)
-	var body := HBoxContainer.new()
-	body.add_theme_constant_override("separation", 24)
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_child(body)
-	var left := VBoxContainer.new()
-	left.custom_minimum_size.x = 440
-	left.add_theme_constant_override("separation", 12)
-	body.add_child(left)
-	left.add_child(_label("01  /  TOWN RECORDER", 21))
-	source_picker = OptionButton.new()
-	source_picker.add_item(LocalizationSystem.text("小镇声音 · 游戏环境与音效（默认）"))
-	source_picker.add_item(LocalizationSystem.text("真实人声 · 使用麦克风（可选）"))
-	source_picker.item_selected.connect(func(_index: int) -> void: _refresh_devices())
-	left.add_child(source_picker)
-	source_hint = _label("", 14)
-	source_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	left.add_child(source_hint)
-	left.add_child(_button("听听身边 · 环境互动", func() -> void:
-		get_node("/root/WorldSound").play_detail()
-		status_label.text = LocalizationSystem.text(get_node("/root/WorldSound").detail_label())))
-	left.add_child(_button("收起面板 · 边逛边录", func() -> void: set_compact(true)))
-	device_row = HBoxContainer.new()
-	left.add_child(device_row)
-	devices = OptionButton.new()
-	devices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	devices.clip_text = true
-	devices.item_selected.connect(func(index: int) -> void:
-		get_node("/root/SoundSettings").select_input(str(devices.get_item_metadata(index))))
-	device_row.add_child(devices)
-	refresh_button = _button("刷新 / 重试", _refresh_devices)
-	device_row.add_child(refresh_button)
+func _place(node: Control, at: Vector2, extent: Vector2) -> Control:
+	node.position=at; node.size=extent; workspace.add_child(node); return node
 
-	meter = ProgressBar.new()
-	meter.max_value = 1.0
-	meter.show_percentage = false
-	meter.custom_minimum_size.y = 12
-	left.add_child(meter)
-	timer_label = _label("00:00.00", 48)
-	left.add_child(timer_label)
-	var transport := HBoxContainer.new()
-	left.add_child(transport)
-	record_button = _button("●  REC / 录制", _start_recording)
-	record_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	transport.add_child(record_button)
-	stop_button = _button("■  STOP / 停止", _stop)
-	transport.add_child(stop_button)
-	waveform = Waveform.new()
-	waveform.custom_minimum_size.y = 74
-	left.add_child(waveform)
-	left.add_child(_label("NAME THIS SOUND", 14))
-	name_input = LineEdit.new()
-	name_input.max_length = 60
-	name_input.placeholder_text = LocalizationSystem.text("例如：下午五点的钥匙")
-	left.add_child(name_input)
-	var actions := HBoxContainer.new()
-	left.add_child(actions)
-	preview_button = _button("▶ 试听", _preview_draft)
-	actions.add_child(preview_button)
-	save_button = _button("保存录音", _save_draft)
-	actions.add_child(save_button)
-	discard_button = _button("放弃本段", _discard_draft)
-	actions.add_child(discard_button)
-	left.add_child(_label("每段最长 60 秒 · 本机保存 · 不上传", 14))
-	var right := VBoxContainer.new()
-	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right.add_theme_constant_override("separation", 12)
-	body.add_child(right)
-	count_label = _label("02  /  RECORDED SOUNDS", 21)
-	right.add_child(count_label)
-	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size.y = 300
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right.add_child(scroll)
-	library = VBoxContainer.new()
-	library.add_theme_constant_override("separation", 10)
-	library.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(library)
-	status_label = _label("准备好了。选择麦克风，按 REC 开始采样。", 16)
-	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	status_label.custom_minimum_size.y = 48
-	column.add_child(status_label)
-	column.add_child(_button("进入 STUDIO / 编排声音", func() -> void:
-		if not can_edit_here():
-			status_label.text = LocalizationSystem.text("录音已在本机保存。请先抵达唱片店，再使用编曲工作台。")
-			return
-		if recorder.capturing or draft != null:
-			status_label.text = LocalizationSystem.text("请先停止并保存，或放弃当前录音。")
-			return
-		player.stop()
-		var studio = load("res://scripts/town_sound/studio/StudioScreen.gd").new()
-		studio.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-		add_child(studio)
-		margin.hide()
-		studio.tree_exited.connect(func() -> void: margin.show())))
-	column.get_child(column.get_child_count() - 1).visible = can_edit_here()
-	column.add_child(_button("LOCAL RECORDINGS / 唱片店", func() -> void:
-		if not can_edit_here(): return
-		if recorder.capturing or draft != null:
-			status_label.text = LocalizationSystem.text("请先保存或放弃当前录音。")
-			return
-		player.stop()
-		var shelf = load("res://scripts/town_sound/record_shop/RecordShelf.gd").new()
-		shelf.host = self
-		add_child(shelf)
-		margin.hide()
-		shelf.tree_exited.connect(func() -> void: margin.show())))
-	column.get_child(column.get_child_count() - 1).visible = can_edit_here()
-	if not can_edit_here(): column.add_child(_label("素材随身保存；编曲、试听成品与压片，请到唱片店。", 16))
+func _open_studio() -> void:
+	if not can_edit_here(): return
+	if recorder.capturing or draft != null:
+		status_label.text=LocalizationSystem.text("请先停止并保存，或放弃当前录音。"); return
+	player.stop()
+	var studio=load("res://scripts/town_sound/studio/StudioScreen.gd").new()
+	studio.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(studio); page_scroll.hide()
+	studio.tree_exited.connect(func(): page_scroll.show())
+
+func _open_record_shelf() -> void:
+	if not can_edit_here(): return
+	if recorder.capturing or draft != null:
+		status_label.text=LocalizationSystem.text("请先保存或放弃当前录音。"); return
+	player.stop()
+	var shelf=load("res://scripts/town_sound/record_shop/RecordShelf.gd").new(); shelf.host=self
+	add_child(shelf); page_scroll.hide(); shelf.tree_exited.connect(func(): page_scroll.show())
+
+func _build_ui() -> void:
+	var copy := BackBufferCopy.new(); copy.name="LiveWorldFrame"; copy.copy_mode=BackBufferCopy.COPY_MODE_VIEWPORT; add_child(copy)
+	page_scroll=ScrollContainer.new(); page_scroll.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	page_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(page_scroll)
+	workspace=Control.new(); workspace.name="RecorderWorkspace"; workspace.custom_minimum_size=Vector2(1600,900); page_scroll.add_child(workspace)
+	var dim := ColorRect.new(); dim.color=Color("263d39",.50); _place(dim,Vector2.ZERO,Vector2(1600,900))
+	var title := _label("声音采集",36); title.add_theme_color_override("font_color",Color("fff7e7")); _place(title,Vector2(65,42),Vector2(720,54))
+	var help := _label("R 录制 / 停止 · Ctrl+S 保存 · Esc 返回",20); help.add_theme_color_override("font_color",Color("fff7e7")); _place(help,Vector2(65,101),Vector2(900,32))
+	_place(_button("收起",request_close),Vector2(1385,55),Vector2(150,48))
+	_place(_button("声音设置",func():
+		if recorder.capturing: status_label.text=LocalizationSystem.text("请先停止录音，再切换声音设备。"); return
+		get_node("/root/SoundSettings").show_dialog()),Vector2(1195,55),Vector2(165,48))
+	var shell := TextureRect.new(); shell.name="RecorderBody"
+	var region := AtlasTexture.new(); region.atlas=preload("res://art/ui/pocket_doodles/recorder-refined.png"); region.region=Rect2(48,128,1460,730)
+	shell.texture=region; shell.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; shell.mouse_filter=MOUSE_FILTER_IGNORE
+	_place(shell,Vector2(35,147),Vector2(1010,610))
+	_place(_label("随身录音机",27),Vector2(150,337),Vector2(480,38))
+	var screen := preload("res://scripts/ui/components/live_sound_window.gd").new()
+	screen.source=self; screen.name="LiveRecordingPicture"; live_screen=screen
+	_place(screen,Vector2(101,394),Vector2(430,226))
+	var caption := _label("实时声景",17); _place(caption,Vector2(151,369),Vector2(400,26))
+	meter=ProgressBar.new(); meter.max_value=1; meter.show_percentage=false
+	_place(meter,Vector2(101,628),Vector2(430,8))
+	source_picker=OptionButton.new(); source_picker.add_item(LocalizationSystem.text("小镇环境声音")); source_picker.add_item(LocalizationSystem.text("麦克风 · 真实人声"))
+	source_picker.item_selected.connect(func(_i:int):_refresh_devices()); _place(source_picker,Vector2(576,369),Vector2(400,44))
+	source_hint=_label("",17); source_hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; _place(source_hint,Vector2(579,425),Vector2(386,51))
+	device_row=HBoxContainer.new(); _place(device_row,Vector2(576,480),Vector2(400,40))
+	devices=OptionButton.new(); devices.size_flags_horizontal=SIZE_EXPAND_FILL; devices.clip_text=true
+	devices.item_selected.connect(func(i:int):get_node("/root/SoundSettings").select_input(str(devices.get_item_metadata(i)))); device_row.add_child(devices)
+	refresh_button=_button("重试",_refresh_devices); device_row.add_child(refresh_button)
+	timer_label=_label("00:00.00",39); _place(timer_label,Vector2(579,521),Vector2(270,54))
+	var knob=preload("res://scripts/ui/components/recorder_knob.gd").new(); knob.name="RecordingGain"
+	_place(knob,Vector2(891,504),Vector2(78,78)); knob.value=recorder.input_gain; knob.accessibility_name=LocalizationSystem.text("录音增益")
+	knob.value_changed.connect(func(value:float):recorder.input_gain=value)
+	_place(_label("增益",16),Vector2(908,585),Vector2(70,27))
+	record_button=_button("● 录制",_start_recording); record_button.variant="primary"; _place(record_button,Vector2(576,585),Vector2(164,52))
+	stop_button=_button("■ 停止",_stop); _place(stop_button,Vector2(752,585),Vector2(120,52))
+	waveform=Waveform.new(); waveform.mouse_filter=MOUSE_FILTER_IGNORE; _place(waveform,Vector2(102,640),Vector2(430,24))
+	name_input=LineEdit.new(); name_input.max_length=60; name_input.placeholder_text=LocalizationSystem.text("给这段声音起个名字")
+	_place(name_input,Vector2(101,674),Vector2(430,44))
+	preview_button=_button("试听",_preview_draft); _place(preview_button,Vector2(576,674),Vector2(105,44))
+	save_button=_button("保存录音",_save_draft); save_button.variant="primary"; _place(save_button,Vector2(694,674),Vector2(160,44))
+	discard_button=_button("放弃",_discard_draft); _place(discard_button,Vector2(868,674),Vector2(105,44))
+	var note := Panel.new(); note.name="RecordingNotes"; note.add_theme_stylebox_override("panel",preload("res://scripts/ui/production_assets.gd").surface(Color("faf5e8"),24))
+	_place(note,Vector2(1084,180),Vector2(450,559))
+	count_label=_label("声音收藏",26); _place(count_label,Vector2(1116,209),Vector2(390,42))
+	tutorial_label=_label("",19); tutorial_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; _place(tutorial_label,Vector2(1116,267),Vector2(382,55))
+	var scroll := ScrollContainer.new(); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	_place(scroll,Vector2(1116,348),Vector2(387,355))
+	library=VBoxContainer.new(); library.add_theme_constant_override("separation",22); library.size_flags_horizontal=SIZE_EXPAND_FILL; scroll.add_child(library)
+	_place(_button("听听身边的声音",func():get_node("/root/WorldSound").play_detail(); status_label.text=LocalizationSystem.text(get_node("/root/WorldSound").detail_label())),Vector2(74,781),Vector2(250,46))
+	_place(_button("边逛边录",func():set_compact(true)),Vector2(346,781),Vector2(194,46))
+	if can_edit_here():
+		_place(_button("进入 STUDIO · 编排",_open_studio),Vector2(1084,774),Vector2(265,50))
+		_place(_button("唱片店",_open_record_shelf),Vector2(1370,774),Vector2(164,50))
+	status_label=_label("准备好了。",20); status_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	status_label.add_theme_color_override("font_color",Color("fff7e7")); _place(status_label,Vector2(74,845),Vector2(1450,44))
 	delete_dialog = ConfirmationDialog.new()
 	delete_dialog.title = LocalizationSystem.text("删除这段录音？")
 	delete_dialog.dialog_text = LocalizationSystem.text("将从录音库移除，文件会移到本地 samples/trash 回收目录。")
@@ -328,6 +245,7 @@ func _start_recording() -> void:
 	if draft != null or (source_picker.selected == 1 and devices.selected < 0):
 		return
 	waveform.set_audio(null)
+	levels.clear()
 	timer_label.text = "00:00.00"
 	var source_mode := "game" if source_picker.selected == 0 else "microphone"
 	draft_context = _capture_context(source_mode)
@@ -403,11 +321,9 @@ func _refresh_library() -> void:
 		child.queue_free()
 	row_buttons.clear()
 	var items := store.list_samples()
-	count_label.text = "02  /  RECORDED SOUNDS  %02d / 20" % items.size()
-	var prompts := ["在小镇录下一段背景声", "试试环境互动的短音", "换个地点，寻找另一种声音", "可选：用麦克风加一段人声"]
-	tutorial_label.text = "MAKE A SONG FROM WHERE YOU ARE\n"
-	for i in range(4):
-		tutorial_label.text += ("✓ " if items.size() > i else "○ ") + str(i + 1) + ". " + LocalizationSystem.text(prompts[i]) + ("    " if i % 2 == 0 else "\n")
+	count_label.text=LocalizationSystem.text("声音收藏  ·  %02d / 20"%items.size())
+	tutorial_label.text=LocalizationSystem.text("把听见的片刻留在这里。
+保存后，可以带去唱片店编排。")
 	if items.is_empty():
 		library.add_child(_label("这里还很安静。\n录下第一种声音，它就会留在这里。", 18))
 	for item in items:
@@ -429,6 +345,7 @@ func _refresh_library() -> void:
 		rename.text = LocalizationSystem.text(str(item.name))
 		rename.max_length = 60
 		rename.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		rename.custom_minimum_size.x=110
 		row.add_child(rename)
 		var rename_button := _button("改名", func() -> void:
 			if store.rename_sample(item.id, rename.text):
@@ -482,7 +399,8 @@ func _sample_memory_text(item: Dictionary) -> String:
 	var place := location
 	if has_node("/root/TravelSystem"):
 		place = TravelSystem.location_name(location)
-	return "%s采集 · 第%d天 %02d:%02d · %s · %s" % [role, day, minute / 60, minute % 60, place, source]
+	var credit := role+"采集 · " if has_node("/root/CharacterSystem") and CharacterSystem.switch_unlocked() else ""
+	return credit+"第%d天 %02d:%02d · %s · %s" % [day, minute / 60, minute % 60, place, source]
 
 func _play_sample(item: Dictionary) -> void:
 	var wav := store.load_audio(item)

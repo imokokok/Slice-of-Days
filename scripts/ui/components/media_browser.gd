@@ -36,14 +36,16 @@ func refresh() -> void:
 		if entries.is_empty(): _empty_recorder()
 		else: show_entry(clampi(chosen,0,entries.size()-1))
 		return
-	_label("照片 / Gallery",Vector2(12,-8),Vector2(660,60)).add_theme_font_size_override("font_size",31)
+	_label("照片收藏",Vector2(12,-8),Vector2(660,60)).add_theme_font_size_override("font_size",31)
 	for i in 3:
 		var filter_id: String=["all","today","here"][i]
 		var filter_button := _button(["全部照片","今天拍的","在这里拍的"][i],Vector2(12+i*164,53),Vector2(150,40),func() -> void: photo_filter=filter_id; refresh())
-		filter_button.add_theme_font_size_override("font_size",16); filter_button.selected=photo_filter==filter_id
+		filter_button.variant="tab"; filter_button.refresh(); filter_button.add_theme_font_size_override("font_size",20); filter_button.selected=photo_filter==filter_id
 	if entries.is_empty():
 		_label("还没有冲洗完成的照片。拍摄后到杂货店送洗，照片会进入这里。" if photo_filter=="all" else "这里暂时没有照片。可以换一个分类看看。",Vector2(350,245),Vector2(570,100))
-		var coast := preload("res://scripts/ui/components/interface_art.gd").new(); coast.position=Vector2(150,229); coast.size=Vector2(135,99); add_child(coast)
+		var camera := TextureRect.new(); var atlas := AtlasTexture.new()
+		atlas.atlas=preload("res://art/ui/pocket_doodles/objects.png"); atlas.region=Rect2(1024,0,512,512)
+		camera.texture=atlas; camera.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; camera.position=Vector2(111,179); camera.size=Vector2(204,190); camera.mouse_filter=MOUSE_FILTER_IGNORE; add_child(camera)
 		return
 	var scroll := ScrollContainer.new(); scroll.position=Vector2(5,111); scroll.size=Vector2(1180,474); add_child(scroll)
 	var grid := GridContainer.new(); grid.columns=4 if kind=="photo" else 1; grid.add_theme_constant_override("h_separation",16); grid.add_theme_constant_override("v_separation",16); scroll.add_child(grid)
@@ -77,38 +79,39 @@ func show_entry(index: int) -> void:
 	else:
 		progress=null; _recorder_face()
 		player.stream=store.load_audio(item); current_duration=float(item.duration)
-		var title := LineEdit.new(); title.text=str(item.name); title.position=Vector2(294,41); title.size=Vector2(490,43); add_child(title)
+		var title := LineEdit.new(); title.text=str(item.name); title.position=Vector2(58,113); title.size=Vector2(510,43); add_child(title)
 		for state in ["normal","focus"]: title.add_theme_stylebox_override(state,StyleBoxEmpty.new())
 		title.add_theme_font_size_override("font_size",25)
-		_button("✓",Vector2(795,41),Vector2(42,42),func() -> void:
+		_button("✓",Vector2(602,113),Vector2(42,42),func() -> void:
 			if store.rename_sample(str(item.id),title.text):
 				item.name=title.text.strip_edges().left(60)
 				for record in GameState.artifacts.get("samples",[]):
 					if str(record.get("id",""))==str(item.id): record.title=item.name
 				ResidencySystem._sync_sources(); ResidencySystem.persist()
 			else: owner_ui.feedback.text=LocalizationSystem.text(store.last_error)).tooltip_text=LocalizationSystem.text("保存录音名称")
-		_label("Day %02d  ·  %s" % [int(item.get("game_day",0)),str(item.created_at).left(10)],Vector2(294,91),Vector2(596,31)).add_theme_font_size_override("font_size",14)
-		var waveform := preload("res://scripts/residency/sound_paper.gd").new(); waveform.wav=player.stream; waveform.position=Vector2(294,143); waveform.size=Vector2(624,112); add_child(waveform)
-		progress=HSlider.new(); progress.position=Vector2(294,267); progress.size=Vector2(624,24); progress.max_value=maxf(.01,float(item.duration)); progress.step=.01; add_child(progress)
+		_label("Day %02d  ·  %s" % [int(item.get("game_day",0)),str(item.created_at).left(10)],Vector2(58,175),Vector2(596,31)).add_theme_font_size_override("font_size",14)
+		var waveform := preload("res://scripts/residency/sound_paper.gd").new(); waveform.wav=player.stream; waveform.position=Vector2(58,237); waveform.size=Vector2(624,112); add_child(waveform)
+		progress=HSlider.new(); progress.position=Vector2(58,373); progress.size=Vector2(624,24); progress.max_value=maxf(.01,float(item.duration)); progress.step=.01; add_child(progress)
 		progress.value_changed.connect(func(value: float) -> void:
 			if player.playing or player.stream_paused: player.seek(value))
-		elapsed=_label("",Vector2(294,294),Vector2(624,28)); elapsed.add_theme_font_size_override("font_size",14)
-		var play := _button("播放 / 暂停",Vector2(565,330),Vector2(80,68),_toggle_play)
+		elapsed=_label("",Vector2(58,406),Vector2(624,28)); elapsed.add_theme_font_size_override("font_size",14)
+		var play := _button("播放 / 暂停",Vector2(315,453),Vector2(80,68),_toggle_play)
 		# Accessible name stays on the real button; the drawn play symbol is decorative.
 		play.add_theme_color_override("font_color",Color.TRANSPARENT); play.add_theme_color_override("font_hover_color",Color.TRANSPARENT); play.add_theme_color_override("font_focus_color",Color.TRANSPARENT); play.add_theme_color_override("font_pressed_color",Color.TRANSPARENT)
 		playback_icon=preload("res://scripts/ui/components/ink_icon.gd").new(); playback_icon.kind="play"; playback_icon.position=Vector2(14,9); playback_icon.size=Vector2(50,50); play.add_child(playback_icon)
-		_button("− 5s",Vector2(438,344),Vector2(95,44),_seek_by.bind(-5.0))
-		_button("+ 5s",Vector2(677,344),Vector2(95,44),_seek_by.bind(5.0))
-		var scroll := ScrollContainer.new(); scroll.position=Vector2(280,414); scroll.size=Vector2(655,171); add_child(scroll)
+		_button("− 5s",Vector2(180,467),Vector2(95,44),_seek_by.bind(-5.0))
+		_button("+ 5s",Vector2(420,467),Vector2(95,44),_seek_by.bind(5.0))
+		var scroll := ScrollContainer.new(); scroll.position=Vector2(755,120); scroll.size=Vector2(415,410); add_child(scroll)
 		var rows := VBoxContainer.new(); rows.size_flags_horizontal=SIZE_EXPAND_FILL; scroll.add_child(rows)
 		for i in entries.size():
 			var row: Dictionary=entries[i]
 			var entry := preload("res://scripts/ui/components/solmere_button.gd").new(); entry.name="RecordingItem_"+str(i); entry.alignment=HORIZONTAL_ALIGNMENT_LEFT
-			entry.text="▷  "+str(row.name); entry.custom_minimum_size=Vector2(625,48); entry.selected=i==chosen; entry.disabled=bool(row.get("missing",false)); rows.add_child(entry); entry.add_theme_font_size_override("font_size",18); entry.pressed.connect(show_entry.bind(i))
-			var time := _label(_clock(float(row.duration)),Vector2.ZERO,Vector2(70,42)); remove_child(time); entry.add_child(time); time.position=Vector2(544,8); time.add_theme_font_size_override("font_size",15)
-		var remove := _button("删除",Vector2(845,592),Vector2(76,36),func() -> void:
+			entry.text=""; entry.tooltip_text=str(row.name); entry.custom_minimum_size=Vector2(390,58); entry.selected=i==chosen; entry.disabled=bool(row.get("missing",false)); rows.add_child(entry); entry.pressed.connect(show_entry.bind(i))
+			var name_label := Label.new(); name_label.text="▷  "+str(row.name); name_label.position=Vector2(12,15); name_label.size=Vector2(284,30); name_label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS; name_label.mouse_filter=MOUSE_FILTER_IGNORE; name_label.add_theme_font_size_override("font_size",18); entry.add_child(name_label)
+			var time := _label(_clock(float(row.duration)),Vector2.ZERO,Vector2(70,42)); remove_child(time); entry.add_child(time); time.position=Vector2(310,17); time.add_theme_font_size_override("font_size",15)
+		var remove := _button("删除",Vector2(597,566),Vector2(76,36),func() -> void:
 			var confirm := preload("res://scripts/ui/components/confirm_sheet.gd").new()
-			confirm.heading="删除录音？"; confirm.description="将永久删除「%s」和本地声音文件。" % str(item.name); confirm.confirm_text="删除"
+			confirm.heading="删除录音？"; confirm.description="将「%s」移到本地录音回收目录。" % str(item.name); confirm.confirm_text="删除"
 			owner_ui.add_child(confirm)
 			confirm.accepted.connect(func() -> void:
 				player.stop()
@@ -139,18 +142,17 @@ func _seek_by(seconds: float) -> void:
 func _card_style() -> StyleBoxFlat:
 	var face := StyleBoxFlat.new(); face.bg_color=Color("fffcf4"); face.set_corner_radius_all(3); face.set_border_width_all(1); face.border_color=Color("beb7a6",.3); return face
 func _recorder_face() -> void:
-	var card := Panel.new(); card.position=Vector2(257,12); card.size=Vector2(700,627)
-	var face := StyleBoxFlat.new(); face.bg_color=PALETTE.CREAM; face.set_corner_radius_all(5); face.set_border_width_all(2); face.border_color=Color("806c4c"); card.add_theme_stylebox_override("panel",face); card.mouse_filter=MOUSE_FILTER_IGNORE; add_child(card); move_child(card,0)
-	# Inset sound window, readable controls and small speaker perforations.
-	var sound_window := Panel.new(); sound_window.position=Vector2(22,116); sound_window.size=Vector2(656,159); sound_window.add_theme_stylebox_override("panel",PALETTE.face(Color("e6e7d8"),4)); sound_window.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(sound_window)
-	var badge := TextureRect.new(); var region := AtlasTexture.new()
-	region.atlas=preload("res://art/ui/pocket_doodles/objects.png"); region.region=Rect2(0,512,512,512)
-	badge.texture=region; badge.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; badge.position=Vector2(606,25); badge.size=Vector2(65,65); badge.mouse_filter=MOUSE_FILTER_IGNORE; card.add_child(badge)
-	_button("＋ 新录音",Vector2(459,586),Vector2(290,43),owner_ui._home_action.bind("recorder"))
+	_label("声音收藏",Vector2(12,-8),Vector2(660,60)).add_theme_font_size_override("font_size",31)
+	_button("＋ 新录音",Vector2(915,5),Vector2(260,46),owner_ui._home_action.bind("recorder"))
+
 func _empty_recorder() -> void:
 	_recorder_face()
-	_label("录音机 / Recorder",Vector2(296,54),Vector2(560,60)).add_theme_font_size_override("font_size",29)
-	_label("还没有录音。\n把今天听到的小镇声音留下来。",Vector2(296,223),Vector2(560,100))
+	var badge := TextureRect.new(); var atlas := AtlasTexture.new()
+	atlas.atlas=preload("res://art/ui/pocket_doodles/objects.png"); atlas.region=Rect2(0,512,512,512)
+	badge.texture=atlas; badge.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; badge.position=Vector2(141,196); badge.size=Vector2(200,190); badge.mouse_filter=MOUSE_FILTER_IGNORE; add_child(badge)
+	_label("这里还很安静。",Vector2(404,222),Vector2(600,52)).add_theme_font_size_override("font_size",29)
+	_label("把今天听到的小镇声音留下来。\n保存的录音可以试听、改名，也能带到唱片店编排。",Vector2(405,290),Vector2(620,96))
+
 func _label(value: String, at: Vector2, dimensions: Vector2) -> Label:
 	var label := PALETTE.words(self,value,at,dimensions.x,20,PALETTE.INK); label.size=dimensions; return label
 func _button(value: String, at: Vector2, dimensions: Vector2, action: Callable) -> Button:

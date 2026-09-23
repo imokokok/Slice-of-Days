@@ -79,8 +79,8 @@ func run() -> void:
 	else: check(false,"Run with --audio-driver WASAPI to verify live spectrum")
 	change_scene_to_file("res://scenes/main_menu.tscn"); await settle()
 	var menu=current_scene
-	var postcard=menu.get_node("TownPostcard"); var paper=menu.get_node("JourneyPaper")
-	check(not postcard.get_rect().intersects(paper.get_rect()),"Postcard cannot cover main menu controls")
+	var cover=menu.get_node("CoastalCover"); var navigation=menu.get_node("JourneyNavigation")
+	check(cover.texture!=null and cover.mouse_filter==Control.MOUSE_FILTER_IGNORE and menu.get_children().find(cover)<menu.get_children().find(navigation),"Coastal illustration stays behind working menu controls")
 	menu._show_credits(); await settle(); check(menu.modal_overlay.visible,"Real credits entry opens")
 	menu._hide_modal(); check(not menu.modal_overlay.visible,"Credits dismisses cleanly")
 	root.get_node("ChapterSystem").start_new_game(); gs.switch_to_role("B",2,true); gs.current_location="night_market"; gs.current_minute=660

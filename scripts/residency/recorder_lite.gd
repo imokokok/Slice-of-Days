@@ -33,7 +33,7 @@ func _ready() -> void:
 	world_frame.name="LiveWorldFrame"; add_child(world_frame)
 	face=Control.new(); face.position=Vector2(300,140); face.size=Vector2(1000,600); face.mouse_filter=MOUSE_FILTER_IGNORE; add_child(face)
 	var shell := TextureRect.new()
-	var region := AtlasTexture.new(); region.atlas=preload("res://art/ui/pocket_doodles/recorder_shell.png"); region.region=Rect2(48,128,1460,730)
+	var region := AtlasTexture.new(); region.atlas=preload("res://art/ui/pocket_doodles/recorder-refined.png"); region.region=Rect2(48,128,1460,730)
 	shell.texture=region; shell.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; shell.size=face.size; shell.mouse_filter=MOUSE_FILTER_IGNORE; face.add_child(shell)
 	var p=preload("res://scripts/ui/components/interface_palette.gd")
 	p.words(face,"随身录音机",Vector2(111,187),420,26)

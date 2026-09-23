@@ -21,10 +21,12 @@ func run() -> void:
 	room._start_conversation("xia_touming")
 	await process_frame
 	var talk = room.conversation
+	if not is_instance_valid(talk): check(false,"Xia is present during her fixed afternoon shift"); quit(1); return
 	talk.typewriter = false
 	check(talk.offer.get("module","") == "tarot","Xia naturally invites the player after greeting")
 	for i in range(talk.lines.size()): talk._advance()
 	await process_frame
+	talk._choose_invitation("accept"); talk._advance(); await process_frame
 	var index := -1
 	for i in range(room.objects.size()):
 		if room.objects[i].get("kind","") == "tarot": index = i
@@ -33,8 +35,16 @@ func run() -> void:
 	room._select_object(index)
 	room.stage.player_x = room._hotspot_x(index)
 	room._open_selected()
+	await process_frame
+	var confirmations=get_nodes_in_group("native_confirmation")
+	check(confirmations.size()==1,"The real invitation opens one activity confirmation")
+	if confirmations.is_empty(): quit(1); return
+	confirmations[0].accepted.emit()
 	await create_timer(0.8).timeout
 	var host = current_scene
+	if host.get_script().resource_path!="res://scripts/ui/extension_host.gd":
+		check(false,"Actual tarot entrance must reach its extension host")
+		quit(1); return
 	check(host.module_id == "tarot" and host.experience.deck.size() == 18,"Invitation table loads uploaded Myriorama with eighteen cards")
 	check(not host._experience_completed(),"Opening or reading help cannot complete the story")
 	host.experience.truth_draft = "尚未说完的推理"

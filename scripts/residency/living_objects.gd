@@ -1,7 +1,7 @@
 extends "res://scripts/residency/paper_overlay.gd"
 ## The same physical folio holds every carried object, with separate private pages.
 const CANVAS = preload("res://scripts/residency/living_canvas.gd")
-const BLUE := Color("31658b")
+const BLUE := Color("405653")
 const LEMON := Color("eed577")
 const TAB = preload("res://scripts/residency/paper_tab.gd")
 const PALETTE = preload("res://scripts/ui/components/interface_palette.gd")
@@ -66,7 +66,7 @@ func build() -> void:
 	frame.bg_color=Color.TRANSPARENT
 	body.add_theme_stylebox_override("panel",frame)
 	_layout_frame()
-	var paper_mode := mode in ["notebook","today","dossier","knowledge","fieldbook"]
+	var paper_mode := mode in ["notebook","today","dossier","knowledge","fieldbook","gallery","day_schedule","sound_library"]
 	if paper_mode:
 		var paper := preload("res://scripts/ui/components/book_surface.gd").new()
 		paper.spread=mode in ["notebook","today"] or (mode=="dossier" and archive_tab=="days")
@@ -75,20 +75,20 @@ func build() -> void:
 		if not paper.spread:
 			var spine := preload("res://scripts/ui/components/interface_art.gd").new(); spine.kind="folio"; spine.position=Vector2(26,22); spine.size=Vector2(16,700); body.add_child(spine)
 	elif mode not in ["pause","settings","map","sound_library"]:
-		var clean := StyleBoxFlat.new(); clean.bg_color=Color("eff3f3"); clean.set_corner_radius_all(12)
+		var clean := StyleBoxFlat.new(); clean.bg_color=Color("faf5e8"); clean.set_corner_radius_all(12)
 		body.add_theme_stylebox_override("panel",clean)
 	feedback=label(body,"",Vector2(80,702),Vector2(1170,30),16,BLUE)
 	if mode in ["pause","settings"]:
 		var menu := preload("res://scripts/ui/components/runtime_menu.gd").new()
 		menu.owner_ui=self; menu.settings=mode=="settings"; body.add_child(menu)
 		return
-	var names := ["随身本  Notebook","档案  Archive","相机  Camera","录音机  Recorder"]
+	var names := ["随身本","档案","照片","声音收藏"]
 	var targets := ["notebook","dossier","gallery","sound_library"]
 	for i in (0 if mode=="map" else 4):
 		var chosen: bool=mode==targets[i] or (i==0 and mode in ["home","map","today","knowledge","fieldbook","bag","day_schedule"])
-		var b := button(body,names[i],Vector2(212+i*222,-42),Vector2(214,39),_switch_object.bind(targets[i]))
+		var b := button(body,names[i],Vector2(406+i*166,-38),Vector2(154,39),_switch_object.bind(targets[i]))
 		b.name="ObjectTab_"+targets[i]; b.variant="tab"; b.selected=chosen; b.refresh()
-		b.add_theme_font_size_override("font_size",17)
+		b.add_theme_font_size_override("font_size",20)
 	var back := button(body,"×",Vector2(1290,0 if mode=="map" else -42),Vector2(42,38),close)
 	back.tooltip_text=SettingsSystem.binding_text("ui_cancel")+" "+LocalizationSystem.text("收起")
 	back.name="CloseCarriedObject"
@@ -137,21 +137,26 @@ func _switch_object(target: String) -> void:
 
 func _archive() -> void:
 	if archive_tab=="overview":
-		_hand("Solmere",Vector2(95,52),Vector2(540,98),70)
-		_hand("For dreams,
-and the life after.",Vector2(980,66),Vector2(280,70),23)
-		var titles := ["旅居说明","关于自己","生活记录","居民留字","自由拼贴","写给小镇"]
-		var translations := ["WELCOME","PERSONAL","LIFE LOG","RECOGNITION","COLLAGE","LETTER"]
-		var keys := ["requirements","personal","life","recognition","days","final"]
-		var icons := ["requirements","personal","life","star","book","mail"]
-		for i in 6:
+		_hand("一路留下的事",Vector2(92,58),Vector2(900,62),42)
+		label(body,"把照片、声音与居民的留字，收进自己的档案。",Vector2(96,127),Vector2(1060,40),22,PALETTE.MUTED)
+		var hero := button(body,"",Vector2(90,211),Vector2(492,405),func(): archive_tab="days"; build())
+		hero.variant="paper"; hero.name="ArchiveSection_days"; hero.refresh()
+		var cover := TextureRect.new(); var atlas := AtlasTexture.new()
+		atlas.atlas=preload("res://art/ui/pocket_doodles/objects.png"); atlas.region=Rect2(512,0,512,512)
+		cover.texture=atlas; cover.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; cover.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		cover.position=Vector2(120,28); cover.size=Vector2(252,216); cover.mouse_filter=MOUSE_FILTER_IGNORE; hero.add_child(cover)
+		label(hero,"自由拼贴",Vector2(34,266),Vector2(420,43),29,BLUE)
+		label(hero,"添加生活素材，编成属于你的这一页。",Vector2(34,323),Vector2(420,54),20,PALETTE.MUTED)
+		var titles := ["生活记录","居民留字","关于自己","旅居说明","写给小镇"]
+		var keys := ["life","recognition","personal","requirements","final"]
+		for i in keys.size():
 			var target: String=keys[i]
-			var card := button(body,"",Vector2(92+(i%3)*390,194+(i/3)*233),Vector2(360,212),func() -> void: archive_tab=target; build())
-			card.variant="archive"; card.refresh(); card.name="ArchiveSection_"+target
-			_icon(card,icons[i],Vector2(142,27),Vector2(76,76))
-			var title := label(card,titles[i],Vector2(12,117),Vector2(336,36),25,BLUE); title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-			var subtitle := label(card,translations[i],Vector2(12,158),Vector2(336,27),14,BLUE); subtitle.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+			var row := button(body,"%02d    %s    →"%[i+1,LocalizationSystem.text(titles[i])],Vector2(660,211+i*79),Vector2(570,66),func(): archive_tab=target; build())
+			row.variant="tab"; row.alignment=HORIZONTAL_ALIGNMENT_LEFT; row.refresh(); row.name="ArchiveSection_"+target
+			row.add_theme_font_size_override("font_size",25)
 		return
+
+
 	var keys := ["requirements","personal","life","recognition","days","final"]
 	var titles := ["旅居说明","关于自己","生活记录","居民留字","自由拼贴","写给小镇"]
 	var translations := ["Welcome","Personal","Life Log","Recognition","Collage","Letter"]
@@ -338,9 +343,10 @@ func _show_detail(id: String) -> void:
 	else: label(detail,str(item.get("text",item.get("title",""))),Vector2(50,90),Vector2(1160,430),24,BLUE)
 
 func _tab(cn: String, en: String, at: Vector2, dimensions: Vector2, _palette: int, chosen: bool, action: Callable) -> Button:
-	var tab_button := button(body,cn+"\n"+en,at,dimensions,action)
+	var tab_button := button(body,en if SettingsSystem.language()=="en" else cn,at,dimensions,action)
+	tab_button.variant="tab"; tab_button.refresh()
 	tab_button.selected=chosen
-	tab_button.add_theme_font_size_override("font_size",15)
+	tab_button.add_theme_font_size_override("font_size",22)
 	return tab_button
 
 func _official(text: String, at: Vector2, dimensions: Vector2, point: int) -> Label:
@@ -363,8 +369,8 @@ func _notebook_page() -> void:
 	var categories := [["today","今天","TODAY"],["heard","听说了","LEADS"],["connections","回音","CONNECTIONS"],["people","人物","PEOPLE"],["places","地点","PLACES"],["personal","私人","PERSONAL"],["materials","收藏","MATERIALS"]]
 	for i in categories.size():
 		var key: String=categories[i][0]
-		var b := button(body,str(categories[i][1])+"\n"+str(categories[i][2]),Vector2(40,102+i*72),Vector2(162,64),func() -> void: notebook_section=key; build())
-		b.selected=notebook_section==key; b.add_theme_font_size_override("font_size",16); b.alignment=HORIZONTAL_ALIGNMENT_LEFT
+		var b := button(body,str(categories[i][2]) if SettingsSystem.language()=="en" else str(categories[i][1]),Vector2(40,102+i*72),Vector2(162,64),func() -> void: notebook_section=key; build())
+		b.variant="tab"; b.selected=notebook_section==key; b.refresh(); b.add_theme_font_size_override("font_size",22); b.alignment=HORIZONTAL_ALIGNMENT_LEFT
 	_hand("Day %02d" % GameState.current_day,Vector2(242,90),Vector2(370,54),34)
 	if notebook_section=="connections": _connections_page(); return
 	if notebook_section in ["people","places","materials"]:

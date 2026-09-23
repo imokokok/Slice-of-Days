@@ -8,8 +8,8 @@ const Guidance = preload("res://extensions/myriorama_tarot/scripts/card_guidance
 const Truth = preload("res://extensions/myriorama_tarot/scripts/truth_engine.gd")
 const GOLD := Color("eed577")
 const CREAM := Color("faf7ee")
-const MUTED := Color("adbaaf")
-const INK := Color("101d23")
+const MUTED := Color("52675f")
+const INK := Color("38423e")
 const SAVE_PATH := "user://table-session-v1.json"
 const VISUAL_DECK_SIZE := 78
 const REVERSED_ENABLED := false
@@ -73,6 +73,7 @@ func _ready() -> void:
 	var theme_resource := Theme.new()
 	theme_resource.default_font = font
 	theme_resource.default_font_size = 20
+	preload("res://scripts/ui/production_assets.gd").apply_theme(theme_resource)
 	theme = theme_resource
 	sound = Node.new()
 	sound.set_script(Sound)
@@ -101,7 +102,7 @@ func _ready() -> void:
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.resized.connect(func(): cloth_material.set_shader_parameter("surface_size", bg.size))
 	var tint := ColorRect.new()
-	tint.color = Color(0.015, 0.025, 0.035, 0.42)
+	tint.color = Color("e9e3d1",.95)
 	tint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(tint)
 	tint.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -128,15 +129,15 @@ func _layout() -> void:
 		stage.scale = Vector2.ONE * fit
 		stage.position = (size - stage.size * fit) / 2.0
 
-func box(parent: Node, rect: Rect2, opacity: float = 0.92) -> Panel:
+func box(parent: Node, rect: Rect2, _opacity: float = 0.92) -> Panel:
 	var p := Panel.new()
 	p.position = rect.position
 	p.size = rect.size
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("214860", opacity)
-	style.border_color = Color(0.65, 0.54, 0.33, 0.7)
+	style.bg_color = Color("faf5e8")
+	style.border_color = Color("8a816b",.45)
 	style.set_border_width_all(1)
-	style.set_corner_radius_all(8)
+	style.set_corner_radius_all(3)
 	style.shadow_color = Color(0, 0, 0, 0.3)
 	style.shadow_size = 0
 	p.add_theme_stylebox_override("panel", style)
@@ -151,7 +152,7 @@ func label(parent: Node, text: String, rect: Rect2, font_size: int = 20, color: 
 	l.position = rect.position
 	l.size = rect.size
 	l.add_theme_font_size_override("font_size", font_size)
-	l.add_theme_color_override("font_color", color)
+	l.add_theme_color_override("font_color", Color("86622d") if color==GOLD else INK if color==CREAM or color.get_luminance()>.55 else color)
 	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if centered:
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -509,7 +510,7 @@ func open_modal() -> Control:
 	modal.size = Vector2(1600, 900)
 	stage.add_child(modal)
 	var shade := ColorRect.new()
-	shade.color = Color(0.01, 0.02, 0.03, 0.88)
+	shade.color = Color("263d39",.55)
 	shade.size = modal.size
 	modal.add_child(shade)
 	return modal
@@ -668,7 +669,7 @@ func scroll_text(parent: Control, text: String, rect: Rect2, font_size: int) -> 
 	body.custom_minimum_size.x = rect.size.x - 22
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.add_theme_font_size_override("font_size", font_size)
-	body.add_theme_color_override("font_color", CREAM)
+	body.add_theme_color_override("font_color", INK)
 	scroll.add_child(body)
 
 func remember_exchange(player: String, host: String) -> void:

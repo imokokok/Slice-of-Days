@@ -31,6 +31,7 @@ var redo_button: Button
 
 func _ready() -> void:
 	add_to_group("meta_modal")
+	theme=preload("res://scripts/ui/components/interface_palette.gd").theme_for_tools()
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	if has_node("/root/WorldSound"):
 		get_node("/root/WorldSound").lock_monitor(true)
@@ -41,7 +42,7 @@ func _ready() -> void:
 		return
 	_configure_role_project()
 	previous_edit=_edit_snapshot()
-	var backdrop := ColorRect.new(); backdrop.color=Color("edf3f4"); backdrop.set_anchors_and_offsets_preset(PRESET_FULL_RECT); backdrop.mouse_filter=MOUSE_FILTER_IGNORE; add_child(backdrop)
+	var backdrop := ColorRect.new(); backdrop.color=Color("f3eddd"); backdrop.set_anchors_and_offsets_preset(PRESET_FULL_RECT); backdrop.mouse_filter=MOUSE_FILTER_IGNORE; add_child(backdrop)
 	player = AudioStreamPlayer.new()
 	player.bus = "Music"
 	add_child(player)
@@ -52,15 +53,15 @@ func _ready() -> void:
 	var margin := MarginContainer.new()
 	margin.size_flags_horizontal = SIZE_EXPAND_FILL
 	for edge in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + edge, 24)
+		margin.add_theme_constant_override("margin_" + edge, 48)
 	scroll.add_child(margin)
 	root_column = VBoxContainer.new()
-	root_column.add_theme_constant_override("separation", 12)
+	root_column.add_theme_constant_override("separation", 18)
 	margin.add_child(root_column)
 	var header := HBoxContainer.new()
 	root_column.add_child(header)
 	var role_label := " · %s" % GameState.current_role if has_node("/root/CharacterSystem") and CharacterSystem.switch_unlocked() else ""
-	header.add_child(label("唱片店 · 声音工作台%s" % role_label, 26))
+	var heading := label("唱片店 · 声音工作台%s" % role_label, 32); heading.size_flags_horizontal=SIZE_EXPAND_FILL; header.add_child(heading)
 	tutorial=label("先从素材区放入一段声音，再试听。",19)
 	root_column.add_child(tutorial)
 	header.add_child(button("♪ 声音设置", func() -> void: get_node("/root/SoundSettings").show_dialog()))
@@ -71,7 +72,7 @@ func _ready() -> void:
 			queue_free()
 		else:
 			status.text = LocalizationSystem.text(model.error)))
-	var transport := HBoxContainer.new()
+	var transport := HFlowContainer.new(); transport.add_theme_constant_override("h_separation",10); transport.add_theme_constant_override("v_separation",8)
 	root_column.add_child(transport)
 	transport.add_child(button("▶ 播放", play))
 	transport.add_child(button("Ⅱ 暂停", pause))
@@ -90,7 +91,7 @@ func _ready() -> void:
 	transport.add_child(clock_label)
 	undo_button=button("撤销",_undo_edit); redo_button=button("重做",_redo_edit); undo_button.disabled=true; redo_button.disabled=true
 	transport.add_child(undo_button); transport.add_child(redo_button)
-	var edit_tools := HBoxContainer.new()
+	var edit_tools := HFlowContainer.new(); edit_tools.add_theme_constant_override("h_separation",10)
 	root_column.add_child(edit_tools)
 	var mode_group := ButtonGroup.new()
 	var move_tool := button("↔ 移动片段", func() -> void:
@@ -211,12 +212,12 @@ func _configure_role_project() -> void:
 func label(text: String, font_size: int = 16) -> Label:
 	var node := Label.new()
 	node.text = LocalizationSystem.text(text)
-	node.add_theme_font_size_override("font_size", font_size)
+	node.add_theme_font_size_override("font_size", maxi(18,font_size))
 	return node
 
 func button(text: String, action: Callable) -> Button:
 	var node := preload("res://scripts/ui/components/solmere_button.gd").new()
-	node.variant="outlined"; node.add_theme_font_size_override("font_size",16)
+	node.variant="primary" if text in ["▶ 播放","制作唱片"] else "paper"; node.custom_minimum_size.y=43; node.add_theme_font_size_override("font_size",20)
 	node.text = LocalizationSystem.text(text)
 	node.pressed.connect(action)
 	return node

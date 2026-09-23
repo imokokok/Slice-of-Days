@@ -42,8 +42,16 @@ func talk(npc: String) -> void:
 	if not is_instance_valid(panel): return
 	panel.typewriter=false
 	var limit := 0
+	var captured_identity_choice := false
+	var captured_meeting_choice := false
 	while is_instance_valid(panel) and not panel.closing and limit<100:
 		if is_instance_valid(panel.vendor_choices):
+			if not captured_identity_choice and gs.current_day in [3,4] and chapter.identity_response(npc).is_empty():
+				await capture("day-%d-identity-response"%gs.current_day)
+				captured_identity_choice=true
+			elif not captured_meeting_choice and gs.current_day==4 and not chapter.story().meeting_arranged:
+				await capture("day-4-meeting-choice")
+				captured_meeting_choice=true
 			panel.vendor_choices.get_child(0).pressed.emit()
 		else: panel._advance()
 		await process_frame
@@ -255,6 +263,7 @@ func run() -> void:
 	check(gs.role_states.A.money==a_money,"A money survives overnight")
 	var music_memory: Dictionary=root.get_node("RelationshipSystem").npc_memory("xanni")
 	check(music_memory.actual_met_A and not music_memory.actual_met_B and music_memory.perceived_same_person,"NPC actual encounters are separate from perceived identity")
+	check(music_memory.identity_stage=="assumes_same_person","first encounter starts the explicit identity progression")
 	check(preload("res://scripts/town_sound/data/SampleStore.gd").new().list_samples().is_empty(),"B does not inherit A's audio library")
 	await inspect_other()
 	check(not chapter.story().B_searching and not chapter.story().B_noticing,"Day 2 trace does not prematurely start search")
@@ -275,22 +284,30 @@ func run() -> void:
 	await travel("handcraft_shop"); await letter()
 	check(chapter.day_state().main_completed,"Day 3 actual letter completes main task")
 	await inspect_other()
+	check(chapter.observation_summary("A").kinds.size()>=2,"Day 3 recognition uses two different kinds of sourced object")
 	await travel("handcraft_shop"); await talk("mossner")
 	check(chapter.story().A_searching,"real clue then conversation starts search")
+	check(chapter.identity_response("mossner","A")=="clarify","Day 3 dialogue records A's identity response")
+	check(root.get_node("RelationshipSystem").identity_stage("mossner")=="notices_inconsistency","Day 3 conversation advances NPC identity memory")
 	await end_day()
 	check(gs.current_role=="B" and gs.current_day==4,"Day 4 returns to B")
 	await travel("chess_stall"); await chess()
 	await inspect_other(); await travel("chess_stall"); await talk("naonao")
 	check(chapter.story().meeting_arranged,"real dialogue choice arranges meeting")
+	check(chapter.identity_response("naonao","B")=="clarify","Day 4 dialogue records B's identity response before the meeting choice")
+	check(root.get_node("RelationshipSystem").identity_stage("naonao")=="suspects_two_people","Day 4 evidence and choice advance suspicion")
 	await end_day()
 	check(gs.current_day==5 and not root.get_node("CharacterSystem").switch_unlocked(),"Day 5 starts before reveal; switching locked")
 	await travel("print_shop"); current_scene._open_meeting(); await process_frame
 	await capture("day-five-meeting")
 	var meeting=current_scene.conversation
-	meeting.next.pressed.emit(); meeting.next.pressed.emit()
-	check(not root.get_node("CharacterSystem").switch_unlocked(),"reading first beats does not unlock")
+	check(meeting.lines.size()>=4 and meeting.lines.any(func(line: String)->bool:return line.contains("《")),"meeting reflects actual observed objects")
+	for beat_index in meeting.lines.size()-1:
+		meeting.next.pressed.emit()
+		check(not root.get_node("CharacterSystem").switch_unlocked(),"reading a non-final meeting beat does not unlock")
 	meeting.next.pressed.emit(); await settle()
 	check(root.get_node("CharacterSystem").switch_unlocked(),"only actual final meeting acknowledgement unlocks")
+	check(root.get_node("RelationshipSystem").identity_stage("mossner")=="identity_confirmed" and root.get_node("RelationshipSystem").identity_stage("naonao")=="identity_confirmed","meeting confirms identity for NPCs who held evidence")
 	var original: Dictionary=gs.role_states.duplicate(true)
 	var shared: Dictionary=gs.shared_state.public_traces.duplicate(true)
 	var minute: int=gs.current_minute
@@ -320,6 +337,7 @@ func run() -> void:
 	var cooking_before: int=gs.current_minute
 	await native("cooking",["tomato","herbs","sea_beans"],"careful_menu")
 	check(gs.current_minute==cooking_before+90 and modules.latest_outcome("cooking").context.current_character=="A","A's actual cooking cost and result route correctly")
+	check(modules.latest_outcome("cooking").craft_perspective=="cross_domain" and chapter.story().cross_domain_practice.A.has("cooking"),"first opposite-domain completion becomes optional Day 5 practice")
 	await travel("chess_stall"); await chess()
 	check(modules.latest_outcome("chess").context.current_character=="A","A actually completes the existing chess game")
 	check(gs.role_states.B.inventory==b_before.inventory and gs.role_states.B.money==b_before.money,"A's completed cross-domain activities do not alter B's wallet or items")
@@ -330,10 +348,19 @@ func run() -> void:
 	var music_before: int=gs.current_minute
 	await studio()
 	check(gs.current_minute>=music_before+60 and modules.latest_outcome("sound_sampling").context.current_character=="B","B creates actual music and pays its real time cost")
+	check(modules.latest_outcome("sound_sampling").craft_perspective=="cross_domain" and chapter.story().cross_domain_practice.B.has("sound_sampling"),"B's opposite-domain completion keeps its own perspective record")
 	await ensure_time(90); await travel("handcraft_shop"); await letter()
 	check(modules.latest_outcome("ghostwriting").context.current_character=="B","B actually completes and saves a private letter")
 	check(gs.role_states.A.inventory==a_before.inventory and gs.role_states.A.money==a_before.money,"B's completed cross-domain activities preserve A's private accounts")
 	check(save.save_game("user://stage2_cross_domain.json"),"cross-domain outcomes save after real completion")
+	var ending_preview: Control=load("res://scenes/ending.tscn").instantiate()
+	root.add_child(ending_preview); await process_frame
+	await capture("day-five-ending-summary")
+	var reflection_scroll: ScrollContainer=ending_preview.get_node("ReflectionScroll")
+	check(reflection_scroll.get_v_scroll_bar().max_value>reflection_scroll.size.y,"ending reflection exposes overflow through a real scroll range")
+	reflection_scroll.scroll_vertical=int(reflection_scroll.get_v_scroll_bar().max_value)
+	await process_frame; await capture("day-five-ending-summary-scrolled")
+	ending_preview.queue_free(); await process_frame
 	for role in ["A","B"]:
 		if gs.current_role!=role: await switch_at_planner()
 		for module in ["sound_sampling","cooking","ghostwriting","chess"]:

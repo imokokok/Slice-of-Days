@@ -32,6 +32,8 @@ var encounter_finished := false
 var shared_choice_offered := false
 var narrative_heard := false
 var meeting_decision := false
+var identity_response_decided := false
+var identity_reaction_heard := false
 
 func _ready() -> void:
 	if not ResidentProfileSystem.is_core(npc):
@@ -48,7 +50,7 @@ func _ready() -> void:
 	speaker_label = speech_card.speaker_label
 	text_label = speech_card.text_label
 	hint_label = speech_card.hint_label
-	hint_label.text = SettingsSystem.binding_text("dialogue_advance")+" 继续 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
+	hint_label.text = SettingsSystem.binding_text("dialogue_advance")+" "+LocalizationSystem.text("继续")+" · "+SettingsSystem.binding_text("ui_cancel")+" "+LocalizationSystem.text("离开")
 	typewriter = bool(GameState.shared_state.get("typewriter",true)) and not SettingsSystem.reduced_motion()
 	if shop_id.is_empty() or npc == "beetman":
 		_build_conversation()
@@ -91,6 +93,9 @@ func _build_conversation() -> void:
 		_append("npc","它平时没这么喜欢陌生人。刚才还躲在我腿后面。")
 		return
 	if records_story:
+		var reaction := DialogueSystem.identity_reaction_lines(npc)
+		identity_reaction_heard=not reaction.is_empty()
+		for beat in reaction: _append(str(beat[0]),str(beat[1]))
 		for beat in DialogueSystem.linear_conversation(npc): _append(str(beat[0]),str(beat[1]))
 	elif starting_topic != "minigame_hook":
 		for line in DialogueSystem.reply(npc,starting_topic): _append("npc",line)
@@ -124,6 +129,9 @@ func _advance() -> void:
 
 func _finish() -> void:
 	if closing: return
+	if narrative_heard and GameState.current_day in [3,4] and ChapterSystem.identity_response(npc).is_empty() and not identity_response_decided:
+		_choice_box([["说明：这些不是我的经历。","clarify"],["先记下疑问，等见面再说。","defer"]],_identity_response_choice)
+		return
 	if narrative_heard and GameState.current_day==4 and not meeting_decision:
 		_choice_box([["好，明天在社区中心见。","meet"],["我再想一想。","later"]],_meeting_choice)
 		return
@@ -157,6 +165,7 @@ func _finish() -> void:
 		return
 	var snapshot := GameState.to_save_data().duplicate(true)
 	if narrative_heard: ChapterSystem.on_conversation_completed(npc)
+	if identity_reaction_heard: DialogueSystem.complete_identity_reaction(npc)
 	if records_story: DialogueSystem.complete_linear_conversation(npc)
 	if encounter_finished:
 		var facts: Array=GameState.shared_state.get("knowledge_"+GameState.current_role,[])
@@ -191,6 +200,20 @@ func _share_loop_material(id: String) -> void:
 	if id.is_empty(): _finish(); return
 	var result := CoreLoopSystem.share_material(npc,id)
 	_append("npc",str(result.message)); index=lines.size()-1; _show_line()
+
+func _identity_response_choice(choice: String) -> void:
+	_clear_choices()
+	var snapshot := GameState.to_save_data().duplicate(true)
+	if not ChapterSystem.record_identity_response(npc,choice) or not SaveManager.save_or_report("回应未能保存"):
+		GameState.load_save_data(snapshot)
+		text_label.text=LocalizationSystem.text("这次回应暂时没能保存，请再试一次。")
+		text_label.visible_characters=-1
+		return
+	identity_response_decided=true
+	var response := "明白。那我会把这些经历分开记，不再先替你认下。" if choice=="clarify" else "好。我们先保留这个疑问，等两边都在场时再说清。"
+	_append("npc",response)
+	index=lines.size()-1
+	_show_line()
 
 func _show_vendor_choices() -> void:
 	if is_instance_valid(vendor_choices): return
@@ -243,6 +266,7 @@ func _restart_vendor(topic: String) -> void:
 	line_ids.clear()
 	index = 0
 	vendor_committed = false
+	identity_reaction_heard = false
 	starting_topic = topic
 	_build_conversation()
 	SaveManager.save_or_report("继续谈话后保存失败")
@@ -284,7 +308,7 @@ func _input(event: InputEvent) -> void:
 
 func _choice_box(options: Array, action: Callable) -> void:
 	if is_instance_valid(vendor_choices): return
-	hint_label.text=SettingsSystem.binding_text("ui_accept")+" 回应 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
+	hint_label.text=SettingsSystem.binding_text("ui_accept")+" "+LocalizationSystem.text("回应")+" · "+SettingsSystem.binding_text("ui_cancel")+" "+LocalizationSystem.text("离开")
 	vendor_choices=VBoxContainer.new()
 	for option in options:
 		var button := preload("res://scripts/ui/components/dialogue_choice.gd").new()
@@ -296,7 +320,7 @@ func _choice_box(options: Array, action: Callable) -> void:
 func _clear_choices() -> void:
 	vendor_choices.get_parent().remove_child(vendor_choices)
 	vendor_choices.queue_free(); vendor_choices=null; speech_card.choices=null
-	hint_label.text=SettingsSystem.binding_text("dialogue_advance")+" 继续 · "+SettingsSystem.binding_text("ui_cancel")+" 离开"
+	hint_label.text=SettingsSystem.binding_text("dialogue_advance")+" "+LocalizationSystem.text("继续")+" · "+SettingsSystem.binding_text("ui_cancel")+" "+LocalizationSystem.text("离开")
 	hint_label.show()
 
 func _show_invitation_choices() -> void:

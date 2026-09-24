@@ -24,6 +24,9 @@ func _ready() -> void :
 	ink.canvas = self
 	ink.z_index = 3
 	add_child(ink)
+	# Container layout assigns the final size after _ready. Reproject existing
+	# food then, otherwise opening the workbench places it at the top-left.
+	resized.connect(refresh_foods)
 	refresh_foods()
 
 func center() -> Vector2: return size * 0.5

@@ -608,7 +608,7 @@
   },
   {
     "id": "oil",
-    "name": "食用油",
+    "name": "橄榄油",
     "category": "seasoning",
     "color": "d6b454",
     "tags": [
@@ -1501,5 +1501,41 @@
     "friction": 0.7,
     "bounce": 0.04,
     "model": "rock"
+  },
+  {
+    "id": "resignation_letter", "name": "辞职信", "category": "odd",
+    "color": "c98dbe", "tags": ["odd", "paper", "non_food"],
+    "weirdness": 0.95, "needs_cook": false, "mass": 0.02,
+    "friction": 0.85, "bounce": 0.0, "model": "resignation_letter"
+  },
+  {
+    "id": "alarm_clock", "name": "闹钟", "category": "odd",
+    "color": "d96c47", "tags": ["odd", "metal", "non_food"],
+    "weirdness": 0.95, "needs_cook": false, "mass": 0.35,
+    "friction": 0.7, "bounce": 0.02, "model": "alarm_clock", "cuttable": false
+  },
+  {
+    "id": "yarn_ball", "name": "毛线团", "category": "odd",
+    "color": "de7566", "tags": ["odd", "textile", "non_food"],
+    "weirdness": 0.9, "needs_cook": false, "mass": 0.05,
+    "friction": 0.9, "bounce": 0.03, "model": "yarn_ball"
+  },
+  {
+    "id": "tennis_ball", "name": "网球", "category": "odd",
+    "color": "b8d834", "tags": ["odd", "rubber", "non_food"],
+    "weirdness": 0.95, "needs_cook": false, "mass": 0.057,
+    "friction": 0.75, "bounce": 0.12, "model": "tennis_ball"
+  },
+  {
+    "id": "dentures", "name": "假牙", "category": "odd",
+    "color": "e38084", "tags": ["odd", "resin", "non_food"],
+    "weirdness": 1.0, "needs_cook": false, "mass": 0.06,
+    "friction": 0.6, "bounce": 0.04, "model": "dentures", "cuttable": false
+  },
+  {
+    "id": "sponge", "name": "海绵", "category": "odd",
+    "color": "eab645", "tags": ["odd", "porous", "non_food"],
+    "weirdness": 0.9, "needs_cook": false, "mass": 0.025,
+    "friction": 0.95, "bounce": 0.01, "model": "sponge"
   }
 ]

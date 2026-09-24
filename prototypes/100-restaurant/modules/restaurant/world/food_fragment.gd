@@ -37,8 +37,21 @@ func _ready() -> void :
 func _draw() -> void :
 
 	var flesh: = preload("res://modules/restaurant/assets/cooking_appearance.gd").edge_color(definition, heat)
+	var library = preload("res://modules/restaurant/assets/sprite_library.gd")
+	var id := str(definition.get("id", ""))
+	var authored: bool = library.handdrawn_manifest().has(id)
 	for i in range(polygon.size()):
 		var a: = polygon[i]
 		var b: = polygon[(i + 1) % polygon.size()]
 		if a.distance_to(b) > 14:
-			draw_line(a, b, flesh, 2.5, true)
+			if authored:
+				# Convex collision support can span transparent gaps in a painted
+				# mushroom cluster. Never outline those gaps as a visible triangle.
+				var segments := ceili(a.distance_to(b) / 0.6)
+				for step in segments:
+					var start := a.lerp(b, float(step) / segments)
+					var finish := a.lerp(b, float(step + 1) / segments)
+					if library.authored_alpha_at(id, (start + finish) / 2 - art_offset) > 0.35:
+						draw_line(start, finish, flesh, 1.0, true)
+			else:
+				draw_line(a, b, flesh, 2.5, true)

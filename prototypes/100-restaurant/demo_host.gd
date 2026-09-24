@@ -7,6 +7,17 @@ var module: Node
 
 func _ready() -> void :
 	_enter_restaurant()
+	# Opt-in release QA: capture this real playable window without OS mouse
+	# automation or replacing the exported main scene with a test scene.
+	for argument in OS.get_cmdline_user_args():
+		if argument.begins_with("--preview-capture=") and DisplayServer.get_name() != "headless":
+			_capture_live_preview.call_deferred(argument.trim_prefix("--preview-capture="))
+
+func _capture_live_preview(path: String) -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	print("LIVE_PREVIEW_CAPTURE ", get_viewport().get_texture().get_image().save_png(path))
 
 func _enter_restaurant() -> void :
 	module = Restaurant.instantiate()

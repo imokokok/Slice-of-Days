@@ -1,5 +1,7 @@
 # 100饭店工程约束
 
+2026-09-25 用户手绘素材为必须使用的原作。修改素材或物品映射前读 `docs/HANDDRAWN_ASSETS_20260925.md`；13 张 PNG 与 `modules/restaurant/assets/handdrawn_manifest.json` 保持来源及 SHA-256 可核验，不用旧图集覆盖、重绘或清除原生透明边缘。世界、切片、摆盘与菜谱共用入口；专架物品必须能取用并扣除库存。验证使用 `tests/test_handdrawn_assets.gd`（可带 GPU 输出前缀）、`tests/test_seasoning.gd` 和完整流程回归。
+
 **2026-09-25 当前三大主参考：Little Chef、Venba、Cooking Simulator（烹饪模拟器）。** 分工：Little Chef 负责整体游玩、物件交互与 UI；Venba 负责烹饪过程、菜谱与逐步引导；Cooking Simulator 负责仿真操作、物理反馈、食物状态与声音逻辑。具体实施前先读 `docs/CORE_EXPERIENCE_REFERENCE.md` 顶部的当前生效指导；旧文档里 Good Pizza 为最高参考的排序已失效。沿用当前第一人称 2D 工程和用户确认的厨房图，不因参考确认更换引擎或转成 3D。
 
 菜谱与引导改动前读 `docs/RECIPE_GUIDE_20260925.md`。书架和展开页保持同源；步骤从真实切配、熟度和装盘推进，不能由计时或确认按钮伪造。历史顺序缺失时明示状态推断。验证使用 `tests/test_recipe_guide.gd`、`tests/test_recipe_diy.gd` 和 GPU `tests/capture_recipe_guide.gd`。

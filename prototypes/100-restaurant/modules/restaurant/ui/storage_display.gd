@@ -110,7 +110,7 @@ func _build_items() -> void :
 	for spec in [["oil", Vector2(367, 458), Vector2(64, 167), 1.85], ["pepper", Vector2(436, 491), Vector2(56, 125), 1.25], ["salt", Vector2(441, 572), Vector2(34, 51), 0.54], ["sugar", Vector2(480, 559), Vector2(38, 64), 0.65], ["soy_sauce", Vector2(513, 541), Vector2(30, 76), 0.68]]:
 		if catalog.has(spec[0]): _slot(_content, catalog[spec[0]], spec[1], spec[2], spec[3], Color("493b2d"))
 	var odd: = []
-	for id in ["baseball_bat", "computer_mouse", "slipper", "perfume", "doll", "lipstick", "rubber_duck", "rock"]:
+	for id in ["resignation_letter", "alarm_clock", "yarn_ball", "tennis_ball", "dentures", "eraser", "sponge", "baseball_bat", "computer_mouse", "slipper", "rubber_duck", "rock"]:
 		if catalog.has(id): odd.append(catalog[id])
 	for item in definitions:
 		if item.get("category", "") == "odd" and not odd.has(item): odd.append(item)
@@ -197,6 +197,7 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 func _transparent_button(button: Button, _header: bool = false) -> void :
 	var normal: = StyleBoxEmpty.new()
 	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("disabled", normal)
 	var hover: = StyleBoxFlat.new()
 	hover.bg_color = Color.TRANSPARENT
 	hover.border_color = Color("8b7d62")

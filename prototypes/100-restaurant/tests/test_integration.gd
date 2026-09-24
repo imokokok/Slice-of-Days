@@ -117,7 +117,14 @@ func _test_modals() -> void:
 	_check_modal_bounds("pantry")
 	game._pantry_category = "odd"
 	game._refresh_pantry()
-	_expect(game._pantry_grid.get_child_count() == 24, "pantry category filters odd ingredients")
+	var expected_odd_names: Array = []
+	for item in game.session.active_ingredients():
+		if item.category == "odd": expected_odd_names.append(str(item.name))
+	var displayed_names: Array = []
+	for button in game._pantry_grid.get_children(): displayed_names.append(str(button.text).split("\n")[0])
+	expected_odd_names.sort()
+	displayed_names.sort()
+	_expect(displayed_names == expected_odd_names, "pantry category shows every odd ingredient and no unrelated food")
 	game._pantry_search = "袜子"
 	game._refresh_pantry()
 	_expect(game._pantry_grid.get_child_count() == 1, "Chinese ingredient search works")

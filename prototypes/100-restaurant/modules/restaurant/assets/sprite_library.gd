@@ -5,8 +5,62 @@ static var _cache: Dictionary = {}
 static var _sheets: Dictionary = {}
 const WHOLE := ["shrimp","mushroom","cheese","chicken","pork","beef","fish","tofu","potato","carrot","cucumber","corn","lotus_root","bread","sausage","salmon","watermelon","durian","century_egg","blue_cheese"]
 static var _bounds: Dictionary = {}
+static var _handdrawn: Dictionary = {}
+static var _outlines: Dictionary = {}
+static var _authored_pixels: Dictionary = {}
 const MYSTERY := ["baseball_bat","computer_mouse","slipper","sock","perfume","doll","lipstick","rubber_duck","rock"]
+static func handdrawn_manifest() -> Dictionary:
+	if _handdrawn.is_empty():
+		_handdrawn = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/assets/handdrawn_manifest.json"))
+	return _handdrawn
+
+static func handdrawn_food(id: String) -> Texture2D:
+	var entry: Dictionary = handdrawn_manifest().get(id, {})
+	if entry.is_empty(): return null
+	var key := "handdrawn:" + id
+	if _cache.has(key): return _cache[key]
+	var source: Texture2D = load(entry.path)
+	if source == null: return null
+	var pixels := source.get_image()
+	if pixels.is_compressed(): pixels.decompress()
+	var b: Array = entry.bounds
+	# The original file is untouched. Select transparent canvas bounds only;
+	# retain ALL authored colour and alpha, including antialiased brush edges.
+	var region := pixels.get_region(Rect2i(b[0], b[1], b[2], b[3]))
+	_authored_pixels[id] = region
+	var result := ImageTexture.create_from_image(region)
+	_cache[key] = result
+	return result
+
+static func body_outline(id: String) -> PackedVector2Array:
+	if _outlines.has(id): return _outlines[id]
+	var texture := handdrawn_food(id)
+	if texture == null: return PackedVector2Array()
+	var mask := BitMap.new()
+	mask.create_from_image_alpha(texture.get_image(), 0.1)
+	var points := PackedVector2Array()
+	var rect := fit(texture, Vector2.ZERO, Vector2(78, 78))
+	for polygon in mask.opaque_to_polygons(Rect2i(Vector2i.ZERO, mask.get_size()), 1.0):
+		for point in polygon:
+			points.append((rect.position + point / texture.get_size() * rect.size) * 0.61)
+	# Stable convex support approximation, sharing the rendered art's coordinates.
+	var hull := Geometry2D.convex_hull(points)
+	if hull.size() > 1 and hull[0].is_equal_approx(hull[-1]): hull.remove_at(hull.size() - 1)
+	_outlines[id] = hull
+	return hull
+
+static func authored_alpha_at(id: String, body_point: Vector2) -> float:
+	var texture := handdrawn_food(id)
+	if texture == null: return 0.0
+	var rect := fit(texture, Vector2.ZERO, Vector2(78, 78))
+	var uv := (body_point / 0.61 - rect.position) / rect.size
+	if uv.x < 0 or uv.y < 0 or uv.x >= 1 or uv.y >= 1: return 0.0
+	var pixels: Image = _authored_pixels[id]
+	return pixels.get_pixelv(Vector2i(uv * texture.get_size())).a
+
 static func food(id: String) -> Texture2D:
+	var authored := handdrawn_food(id)
+	if authored != null: return authored
 	if id in MYSTERY and id!="sock": return mapped_sprite("odd_objects",str(MYSTERY.find(id)))
 	if _catalog.is_empty():
 		var data = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/data/ingredients.json"))

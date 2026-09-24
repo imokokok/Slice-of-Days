@@ -446,13 +446,20 @@ func spawn_ingredient(definition: Dictionary) -> bool:
 	body.set_meta("lineage", [])
 	body.set_meta("surface_sauce", {"volume_ml": 0.0, "composition_ml": {}, "mixedness": 0.0, "layered": false})
 	if body.get_meta("is_container", false): body.set_meta("remaining_ml", float(definition.get("container_ml", 240.0)))
-	var source_polygon: = PackedVector2Array()
-	for i in range(32): source_polygon.append(Vector2.from_angle(i * TAU / 32.0) * 24.0)
+	var source_polygon := preload("res://modules/restaurant/assets/sprite_library.gd").body_outline(str(definition.id))
+	var authored_shape := not source_polygon.is_empty()
+	if not authored_shape:
+		for i in range(32): source_polygon.append(Vector2.from_angle(i * TAU / 32.0) * 24.0)
 	body.set_meta("fragment_polygon", source_polygon)
 	var collision: = CollisionShape2D.new()
-	var shape: = CircleShape2D.new()
-	shape.radius = 18.0
-	collision.shape = shape
+	if authored_shape:
+		var shape := ConvexPolygonShape2D.new()
+		shape.points = source_polygon
+		collision.shape = shape
+	else:
+		var shape := CircleShape2D.new()
+		shape.radius = 18.0
+		collision.shape = shape
 	body.add_child(collision)
 	_foods.add_child(body)
 	_make_food_visual(body, definition)
@@ -937,6 +944,8 @@ func get_dispense_mode(definition: Dictionary) -> String:
 func ingredient_operation_hint(definition: Dictionary) -> String:
 	var mode: = get_dispense_mode(definition)
 	if mode.is_empty():
+		if not bool(definition.get("cuttable", true)):
+			return "硬质奇物，菜刀切不开；可以整件放入锅中实验"
 		return "拖到砧板切配，或拖入锅中；松手放下"
 	var action: String = {"powder": "撒粉", "pour": "倾倒", "squeeze": "挤酱"}[mode]
 	return "移到锅上方，按住左键持续%s；松开停止" % action
@@ -990,10 +999,7 @@ func _sync_held_foreground() -> void :
 			_held_foreground.add_child(_held_proxy)
 	if is_instance_valid(source) and is_instance_valid(_held_proxy):
 		source.visible = false
-		_held_proxy.transform = source.get_global_transform_with_canvas()
-		if _squeezing and get_dispense_mode(_held.get_meta("definition", {})) == "squeeze":
-
-			_held_proxy.scale *= Vector2(1.0 + squeeze_pressure * 0.12, 1.0 - squeeze_pressure * 0.16)
+		_held_proxy.transform = source.get_global_transform_with_canvas() * _container_art_transform()
 
 		for property_name in ["cut", "heat", "softness"]:
 			if property_name in source:
@@ -1034,9 +1040,29 @@ func _squeeze_region() -> Rect2:
 func _nozzle_world_position() -> Vector2:
 	if not is_instance_valid(_held): return Vector2.ZERO
 	var def: Dictionary = _held.get_meta("definition", {})
+	var art = preload("res://modules/restaurant/assets/sprite_library.gd")
+	var entry: Dictionary = art.handdrawn_manifest().get(str(def.get("id", "")), {})
+	var source := _held.get_node_or_null("FoodArt") as Node2D
+	if entry.has("nozzle_uv") and source != null:
+		var texture: Texture2D = art.food(str(def.id))
+		var rect: Rect2 = art.fit(texture, Vector2.ZERO, Vector2(78, 78))
+		var uv: Array = entry.nozzle_uv
+		return source.global_transform * _container_art_transform() * (rect.position + rect.size * Vector2(uv[0], uv[1]))
 	var mode: = get_dispense_mode(def)
 	var compression: = squeeze_pressure * 4.0 if mode == "squeeze" else 0.0
 	return _held.global_position + Vector2(0, 24.0 - compression).rotated(_held.rotation)
+
+func _container_art_transform() -> Transform2D:
+	if not is_instance_valid(_held) or not _squeezing: return Transform2D.IDENTITY
+	var definition: Dictionary = _held.get_meta("definition", {})
+	var entry: Dictionary = preload("res://modules/restaurant/assets/sprite_library.gd").handdrawn_manifest().get(str(definition.get("id", "")), {})
+	# Top-opening bottles turn toward the pan; the authored mustard tube is
+	# already cap-down. The stream uses this exact same visual transform.
+	var angle := PI if entry.has("nozzle_uv") and float(entry.nozzle_uv[1]) < 0.5 else 0.0
+	var deformation := Vector2.ONE
+	if get_dispense_mode(definition) == "squeeze":
+		deformation = Vector2(1.0 + squeeze_pressure * 0.12, 1.0 - squeeze_pressure * 0.16)
+	return Transform2D(angle, Vector2.ZERO).scaled(deformation)
 
 func _stop_squeezing() -> void :
 	_squeezing = false
@@ -1322,6 +1348,9 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 	if not is_instance_valid(body) or body.is_queued_for_deletion() or body == _held:
 		return result
 	if bool(body.get_meta("is_container", false)) or bool(body.get_meta("dispensed", false)):
+		return result
+	if not bool(body.get_meta("definition", {}).get("cuttable", true)):
+		interaction.emit("notice", "%s是硬质奇物，菜刀切不开；可以整件入锅。" % body.get_meta("title", "这件材料"))
 		return result
 	if int(body.get_meta("cut_depth", 0)) >= max_depth or _foods.get_child_count() >= 63:
 		return result

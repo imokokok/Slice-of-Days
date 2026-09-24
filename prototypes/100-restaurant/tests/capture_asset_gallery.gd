@@ -23,7 +23,9 @@ func run() -> void:
 		for y in image.get_height():
 			for x in image.get_width():
 				var c:=image.get_pixel(x,y)
-				if c.a > 0.0 and c.a < 0.045:
+				# Authored PNGs have genuine low-alpha brush edges. Their pixels
+				# are verified against the source in test_handdrawn_assets.gd.
+				if not art.handdrawn_manifest().has(str(rows[i].id)) and c.a > 0.0 and c.a < 0.045:
 					push_error("Residual translucent rectangle: " + rows[i].id)
 					errors += 1
 				if c.a>0.1 and minf(c.r,c.b)-c.g>0.78:

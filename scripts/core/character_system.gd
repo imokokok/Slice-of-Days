@@ -45,15 +45,16 @@ func portrait_path(role := "") -> String:
 func switch_unlocked() -> bool:
 	return GameState.current_day==5 and bool(ChapterSystem.story().reveal_completed) and bool(GameState.shared_state.get("character_switch_enabled",false))
 func can_switch() -> bool:
-	return switch_unlocked() and can_manage_schedule()
+	return switch_unlocked() and SceneRouter.active_space_id.is_empty() and can_manage_schedule()
 func can_manage_schedule() -> bool:
-	if SceneRouter.transitioning or not SceneRouter.active_space_id.is_empty(): return false
+	if SceneRouter.transitioning: return false
 	if not GameplayModuleSystem.pending_module_id().is_empty(): return false
 	if not get_tree().get_nodes_in_group("world_tool").is_empty(): return false
 	var scene := get_tree().current_scene
-	if scene==null or scene.scene_file_path!=SceneRouter.TOWN_DAY: return false
+	if scene==null or scene.scene_file_path not in [SceneRouter.TOWN_DAY,SceneRouter.INTERACTIVE_SPACE]: return false
 	var shell := scene.get_node_or_null("GameplayShell")
-	if shell==null or is_instance_valid(shell.tool) or not is_instance_valid(shell.overlay) or str(shell.overlay.mode)!="day_schedule": return false
+	if shell==null or is_instance_valid(shell.tool) or not is_instance_valid(shell.overlay): return false
+	if str(shell.overlay.mode)!="day_schedule" and not (str(shell.overlay.mode)=="notebook" and str(shell.overlay.notebook_section)=="me"): return false
 	for modal in get_tree().get_nodes_in_group("meta_modal"):
 		if modal!=shell.overlay and not modal.is_queued_for_deletion() and modal.is_visible_in_tree(): return false
 	return not is_instance_valid(scene.get("conversation"))
@@ -72,6 +73,7 @@ func switch_character() -> bool:
 	GameState.current_minute=minute
 	GameState.clock_remainder=remainder
 	GameState.current_location=location
+	LifeSystem.begin_day()
 	GameState.shared_state.get_or_add("street_positions",{})["%s_5_%s"%[target,scene.segment_id]]=x
 	GameState.commit_active_role_state()
 	if not SaveManager.save_or_report("切换视角未能保存"):

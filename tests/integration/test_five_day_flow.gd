@@ -28,7 +28,7 @@ func capture(name: String) -> void:
 func travel(location: String) -> void:
 	# Exercise the existing travel service. Omit only the transit-card animation.
 	if gs.current_location!=location:
-		await ensure_time(root.get_node("TravelSystem")._shortest_walk_minutes(gs.current_location,location))
+		await ensure_time(int(ceil(root.get_node("TravelSystem")._shortest_walk_minutes(gs.current_location,location)/root.get_node("LifeSystem").walk_multiplier())))
 		var result: Dictionary=root.get_node("TravelSystem").travel(location,"walk")
 		check(bool(result.get("ok",false)),"travel to "+location)
 	router.active_space_id=""
@@ -131,6 +131,13 @@ func ensure_time(minutes: int) -> void:
 			router.leave_space(); await settle()
 		var shell=current_scene.get_node("GameplayShell")
 		shell.open_paper("day_schedule"); await process_frame
+		var planner=shell.overlay.find_child("DayFivePlanner",true,false)
+		planner.tab="plan"; planner.rebuild(); await process_frame
+		var join=shell.overlay.find_child("CombineFlexibleTime",true,false)
+		if join!=null:
+			join.pressed.emit(); await process_frame
+			shell.overlay.close(); await process_frame
+			continue
 		var button=shell.overlay.find_child("WaitForWindow",true,false)
 		check(button!=null and not button.disabled,"next real time block remains available")
 		button.pressed.emit(); await process_frame
@@ -166,6 +173,7 @@ func end_day() -> void:
 	check(save.save_game() and save.load_game(),"overnight save and reload preserves day and role")
 func studio() -> void:
 	var hours: Dictionary=root.get_node("WorldGraph").location_status("record_store")
+	await ensure_time(maxi(60,int(hours.opens)-gs.current_minute+60))
 	if gs.current_minute<int(hours.opens): check(gs.use_free_time(int(hours.opens)-gs.current_minute),"wait for record shop opening consumes actual free time")
 	check(modules.entry_check("sound_sampling",60).ok,"music fits the actual shop hours and character schedule")
 	var recorder=load("res://scripts/town_sound/RecorderScreen.gd").new()
@@ -198,6 +206,7 @@ func studio() -> void:
 	recorder.queue_free(); await process_frame
 func letter() -> void:
 	await wait_for_opening("handcraft_shop")
+	await ensure_time(modules.required_minutes("ghostwriting"))
 	check(router.gameplay_module("ghostwriting","street:handcraft_shop"),"real letter host starts")
 	await settle()
 	var host=current_scene
@@ -257,6 +266,7 @@ func chess() -> void:
 	host._complete(); await settle()
 func wait_for_opening(location: String) -> void:
 	var hours: Dictionary=root.get_node("WorldGraph").location_status(location)
+	if gs.current_minute<int(hours.opens): await ensure_time(int(hours.opens)-gs.current_minute+10)
 	if gs.current_minute<int(hours.opens):
 		check(gs.use_free_time(int(hours.opens)-gs.current_minute),"wait for "+location+" opening consumes actual free time")
 	await process_frame
@@ -367,10 +377,12 @@ func run() -> void:
 	await travel("night_market"); router.active_space_id="restaurant"
 	check(root.get_node("EconomySystem").accept_procurement().ok,"Day 5 A accepts a real restaurant order")
 	await travel("produce_stall")
-	if gs.current_minute<630: check(gs.use_free_time(630-gs.current_minute),"wait for the produce shop uses actual time")
+	await wait_for_opening("produce_stall")
+	await ensure_time(20)
 	for ingredient in ["tomato","herbs","sea_beans"]: check(root.get_node("EconomySystem").purchase("produce_stall",ingredient).ok,"A buys own cooking ingredient")
 	await travel("night_market"); router.active_space_id="restaurant"
 	check(root.get_node("EconomySystem").deliver_procurement().ok,"A's own receipts reimburse A")
+	await ensure_time(90)
 	var cooking_before: int=gs.current_minute
 	await native("cooking",["tomato","herbs","sea_beans"],"careful_menu")
 	check(gs.current_minute==cooking_before+90 and modules.latest_outcome("cooking").context.current_character=="A","A's actual cooking cost and result route correctly")

@@ -149,9 +149,9 @@ func finish_recording_for_exit() -> bool:
 	return true
 
 func _process(delta: float) -> void:
-	switch_button.visible=CharacterSystem.switch_unlocked()
+	switch_button.visible=true
 	switch_button.disabled=_blocked() or is_instance_valid(overlay) or is_instance_valid(tool)
-	switch_button.text=LocalizationSystem.text_with_values("日程与视角 · %s", [GameState.current_role])
+	switch_button.text=LocalizationSystem.text_with_values("日程与视角 · %s", [GameState.current_role]) if CharacterSystem.switch_unlocked() else LocalizationSystem.text("今天的计划")
 	var minute := GameState.current_minute
 	var period := "Morning" if minute < 720 else "Afternoon" if minute < 960 else "Late Afternoon" if minute < 1140 else "Evening"
 	var period_key := str(GameState.current_day)+period

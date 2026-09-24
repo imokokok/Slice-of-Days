@@ -28,10 +28,11 @@ func run() -> void:
 	check(root.get_node("CharacterSystem").profile("A").inner_tension.contains("放下"),"A chooses among genuine interests")
 	check(gs.active_time_blocks().size()>gs.schedule_for("B",1).blocks.size(),"A has more fragmented time than B")
 	var total := free_minutes(gs.active_time_blocks())
-	gs.current_minute=600
+	gs.current_minute=480
 	check(not gs.can_fit_now(120),"long activity initially does not fit A's fragment")
 	var minute: int=gs.current_minute
 	check(gs.combine_flexible_time(),"A can move a private arrangement through the actual schedule service")
+	gs.combine_flexible_time()
 	check(gs.current_minute==minute and gs.can_fit_now(120),"rearranging unlocks longer work without rewinding the clock")
 	check(free_minutes(gs.active_time_blocks())==total,"moving private time does not create extra free minutes")
 	var saved: Dictionary=gs.to_save_data().duplicate(true)
@@ -67,8 +68,12 @@ func run() -> void:
 	check(not gs.complete_next_commitment().ok,"restaurant shift cannot be completed at home")
 	gs.current_location="night_market"
 	var money: int=gs.money
-	check(gs.complete_next_commitment().ok and gs.current_minute==1080 and gs.money==money+195,"attendance consumes the real fixed block and pays once")
-	check(not gs.complete_next_commitment().ok and gs.money==money+195,"shift cannot be paid twice")
+	root.get_node("SceneRouter").active_space_id="restaurant"
+	check(gs.complete_next_commitment().ok and gs.current_minute==840 and gs.money==money,"attendance opens actual cooking without instant pay")
+	await process_frame
+	while root.get_node("SceneRouter").transitioning: await process_frame
+	check(not gs.complete_next_commitment().ok and gs.money==money,"active kitchen cannot start another paid shift")
+	root.get_node("GameplayModuleSystem").cancel_session()
 	check(not chapter.day_state().main_completed,"ordinary shift attendance does not auto-complete cooking")
 	gs.switch_to_role("A",5,true); chapter.story().meeting_arranged=true; gs.current_location="print_shop"
 	check(chapter.meeting_lines().any(func(s: String)->bool:return s.contains("海风路17号")),"meeting recovers the shared address")

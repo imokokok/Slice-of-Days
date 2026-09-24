@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-25",
+  "checks": {
+    "daily-life-test.log": "DAILY_LIFE: 74 checks / 0 failures",
+    "life-five-day-flow.log": "FIVE_DAY_FLOW: PASS checks=223 failures=0",
+    "life-architecture.log": "ARCHITECTURE_AUDIT: PASS checks=42 failures=0",
+    "life-packed-test.log": "DAILY_LIFE: 74 checks / 0 failures",
+    "life-packed-capture.log": "DAILY_LIFE_CAPTURE: 4 pages / 0 failures"
+  },
+  "original_art_files": 275,
+  "changed_original_art_files": 0,
+  "files": {
+    "Solmere.exe": {
+      "bytes": 109268480,
+      "sha256": "d34d36f3be1a6c49c56525ae86469b92e4f417ddf0b43cf00dd80c385c4b0562"
+    },
+    "Solmere.pck": {
+      "bytes": 412575580,
+      "sha256": "289dce68da5f3a1e7d25b6891b1b0321e3796a2cf98cff894291bf1ac08bd7f4"
+    }
+  },
+  "upstream_base": "c6b97e7893e581c3be546ef13b68b82af9bc8eca"
+}

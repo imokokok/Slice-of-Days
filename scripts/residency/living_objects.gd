@@ -366,11 +366,13 @@ func _browser(kind: String) -> void:
 	browser.kind=kind; browser.owner_ui=self; browser.position=Vector2(65,50); body.add_child(browser)
 
 func _notebook_page() -> void:
-	var categories := [["today","今天","TODAY"],["heard","听说了","LEADS"],["connections","回音","CONNECTIONS"],["people","人物","PEOPLE"],["places","地点","PLACES"],["personal","私人","PERSONAL"],["materials","收藏","MATERIALS"]]
+	var categories := [["me","今天的我","MY DAY"],["today","今天","TODAY"],["heard","听说了","LEADS"],["connections","回音","CONNECTIONS"],["people","人物","PEOPLE"],["places","地点","PLACES"],["personal","私人","PERSONAL"],["materials","收藏","MATERIALS"]]
 	for i in categories.size():
 		var key: String=categories[i][0]
-		var b := button(body,str(categories[i][2]) if SettingsSystem.language()=="en" else str(categories[i][1]),Vector2(40,102+i*72),Vector2(162,64),func() -> void: notebook_section=key; build())
+		var b := button(body,str(categories[i][2]) if SettingsSystem.language()=="en" else str(categories[i][1]),Vector2(40,95+i*65),Vector2(162,58),func() -> void: notebook_section=key; build())
 		b.variant="tab"; b.selected=notebook_section==key; b.refresh(); b.add_theme_font_size_override("font_size",22); b.alignment=HORIZONTAL_ALIGNMENT_LEFT
+	if notebook_section=="me":
+		var planner := preload("res://scripts/ui/components/day_five_planner.gd").new(); planner.position=Vector2(236,85); planner.scale=Vector2.ONE*.88; body.add_child(planner); return
 	_hand("Day %02d" % GameState.current_day,Vector2(242,90),Vector2(370,54),34)
 	if notebook_section=="connections": _connections_page(); return
 	if notebook_section in ["people","places","materials"]:
@@ -554,6 +556,7 @@ func _notebook_collection(section: String) -> void:
 			var facts: Array=KnowledgeSystem.facts().filter(func(fact: Dictionary) -> bool: return str(fact.get("source_npc_id",""))==str(id) or str(fact.get("subject_id",""))==str(id))
 			words.text=LocalizationSystem.text("\n".join(facts.map(func(fact: Dictionary) -> String: return str(fact.get("text","")))) if not facts.is_empty() else "在小镇遇见过。下一次，听听对方的故事。")
 			entry.add_child(words)
+			var facets := Label.new(); facets.custom_minimum_size=Vector2(935,70); facets.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; facets.text=PeoplePuzzleSystem.text_for(str(id)); entry.add_child(facets)
 	elif section=="places":
 		for id in ResidencySystem.state().visits:
 			var b := preload("res://scripts/ui/components/solmere_button.gd").new(); b.text=TravelSystem.location_name(str(id))+"   →"; b.alignment=HORIZONTAL_ALIGNMENT_LEFT; b.custom_minimum_size=Vector2(965,62); rows.add_child(b)

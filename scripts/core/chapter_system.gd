@@ -89,6 +89,7 @@ func start_new_game(_start_role := "A") -> void:
 	GameState.shared_state["npc_memory"]={}
 	story()
 	GameState.switch_to_role("A",1,true)
+	LifeSystem.begin_day()
 	GameState.current_location="bus_stop"
 	GameState.shared_state["street_layout_version"]=6
 	GameState.shared_state["street_positions"]={"A_1_main_street":150.0}
@@ -272,6 +273,7 @@ func advance_chapter(midnight := false) -> Dictionary:
 	if midnight and GameState.current_minute<1440: return {"ok":false,"reason":"还没有到午夜。"}
 	if not midnight and not bool(check.ok): return check
 	var current := current_chapter()
+	LifeSystem.close_day()
 	EchoSystem.close_day()
 	var completed: Array=GameState.shared_state.get("completed_chapters",[])
 	if not completed.has(current.id): completed.append(current.id)
@@ -284,6 +286,7 @@ func advance_chapter(midnight := false) -> Dictionary:
 		return {"ok":true,"complete":true}
 	var next := next_chapter()
 	GameState.switch_to_role(str(next.role),int(next.day),true)
+	LifeSystem.begin_day()
 	align_saved_chapter()
 	EchoSystem.begin_day()
 	chapter_started.emit(next)

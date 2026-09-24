@@ -227,6 +227,7 @@ func complete_linear_conversation(npc: String) -> void:
 	if not ResidentProfileSystem.is_core(npc): return
 	CoreLoopSystem.encounter(npc)
 	EconomySystem.chat_completed(npc)
+	LifeSystem.talked(npc)
 	var key := "linear_talk_counts_"+GameState.current_role
 	var counts: Dictionary = GameState.shared_state.get(key,{})
 	counts[npc] = int(counts.get(npc,0))+1

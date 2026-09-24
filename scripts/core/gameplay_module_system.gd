@@ -140,6 +140,7 @@ func begin_session(module_id: String, source_event_id := "", rollback_snapshot: 
 		"role": GameState.current_role,
 		"context": {"current_character":GameState.current_role,"day":GameState.current_day,"location":GameState.current_location},
 		"day": GameState.current_day,
+		"start_minute": GameState.current_minute,
 		"source_event_id": source_event_id,
 		"rollback_snapshot": rollback_snapshot.duplicate(true),
 	}

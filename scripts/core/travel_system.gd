@@ -77,7 +77,7 @@ func route(from_id: String, to_id: String, method: String, role: String, minute:
 	var duration := walking
 	var label := "步行"
 	match method:
-		"walk": pass
+		"walk": duration=int(ceil(walking/LifeSystem.walk_multiplier(role)))
 		"bus":
 			if not transport.bus_stops.has(from_id) or not transport.bus_stops.has(to_id): return {"available":false, "reason":"请在公交站或住宅、观景台站点上下车。"}
 			var interval := int(transport.bus_night_interval if minute >= int(transport.bus_night_start) else transport.bus_interval)
@@ -144,6 +144,7 @@ func travel(to_id: String, method: String) -> Dictionary:
 		return {"ok":false,"message":"余额不足，本次出行已撤销。"}
 	if method == "bus":
 		GameState.add_journal_entry({"kind":"ticket", "text":"一张公交票 · " + location_name(to_id)})
+	LifeSystem.change({"body":-duration*0.09 if method=="walk" else -1},"步行到了"+location_name(to_id)+"。" if method=="walk" else "乘车到了"+location_name(to_id)+"。")
 	GameState.current_location = to_id
 	if method == "walk": _walk_keepsake(from_id,to_id)
 	elif method == "bus":

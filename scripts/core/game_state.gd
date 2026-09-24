@@ -202,6 +202,7 @@ func schedule_for(role: String, day: int) -> Dictionary:
 			result[key] = role_override[key]
 	var rearranged: Dictionary=shared_state.get("flexible_schedule",{}).get("%s_%d"%[role,day],{})
 	if role=="A" and rearranged.has("blocks"): result.blocks=rearranged.blocks.duplicate(true)
+	if is_instance_valid(get_node_or_null("/root/LifeSystem")): result=LifeSystem.schedule_override(role,day,result)
 	return result
 
 
@@ -232,6 +233,7 @@ func combine_flexible_time() -> bool:
 	blocks[index][1]=int(preview.moved_to)
 	blocks.remove_at(index+1)
 	shared_state.get_or_add("flexible_schedule",{})["%s_%d"%[current_role,current_day]]={"blocks":blocks}
+	LifeSystem.edited("重新安排了私人整理的时间。")
 	add_journal_entry({"kind":"personal_schedule","text":"把 %s 的私人整理延到 %s，留一段时间给正在做的事。"%[_minute_text(int(preview.start)),_minute_text(int(preview.moved_to))]})
 	commit_active_role_state()
 	if not SaveManager.save_or_report("日程调整未能保存"):
@@ -284,34 +286,21 @@ func advance_world_clock(real_seconds: float) -> void:
 	if real_seconds <= 0.0 or not is_finite(real_seconds): return
 	if current_minute>=1440: return
 	if current_minute>=1439 and (current_location!=CoreLoopSystem.home() or SceneRouter.active_space_id!=("home_a" if current_role=="A" else "home_b")): return
-	if bool(shared_state.get("pending_commitment", false)):
-		return
-	# Fragmented schedules contain unavailable gaps. Natural world time may reach
-	# a block boundary, but must never leak through it.
-	if current_block_remaining() <= 0:
-		if current_day==5:
-			clock_remainder=0.0
-			return # Day 5 waits/switches are explicit planner actions.
-		if not advance_to_next_free_block():
-			clock_remainder = 0.0
-			return
 	var seconds_per_minute := float(calendar_data.get("real_seconds_per_game_minute", REAL_SECONDS_PER_GAME_MINUTE))
 	seconds_per_minute = maxf(seconds_per_minute, 0.1)
 	clock_remainder += real_seconds
 	var minutes := int(floor((clock_remainder + 0.0000001) / seconds_per_minute))
 	if minutes == 0: return
-	var usable_minutes := mini(minutes, current_block_remaining())
-	clock_remainder = maxf(0.0, clock_remainder - usable_minutes * seconds_per_minute)
-	spend_time(usable_minutes)
-	if usable_minutes < minutes:
-		# Time spent during an unavailable gap is not carried into the next block.
-		clock_remainder = 0.0
+	clock_remainder = maxf(0.0, clock_remainder - minutes * seconds_per_minute)
+	spend_time(minutes)
 
 func spend_time(minutes: int) -> bool:
 	if minutes <= 0:
 		return true
 	var at_home := current_location==CoreLoopSystem.home() and SceneRouter.active_space_id==("home_a" if current_role=="A" else "home_b")
+	var before := current_minute
 	current_minute = mini(current_minute + minutes,1440 if at_home else 1439)
+	LifeSystem.tick(current_minute-before)
 	refresh_appointments()
 	commit_active_role_state()
 	state_changed.emit()
@@ -332,6 +321,7 @@ func can_fit_at(role: String, day: int, minute: int, minutes: int) -> bool:
 	if minutes < 0:
 		return false
 	if minute+minutes>1439: return false
+	if is_instance_valid(get_node_or_null("/root/LifeSystem")) and LifeSystem.work_fits(role,minute,minutes): return true
 	if minute>=1320 and day in range(1,5): return true
 	for block in schedule_for(role, day).get("blocks", []):
 		var start := int(block[0])
@@ -385,41 +375,7 @@ func _commitment_due_before_next_block() -> Dictionary:
 
 
 func complete_next_commitment() -> Dictionary:
-	var commitment := next_commitment()
-	if commitment.is_empty():
-		return {"ok": false, "message": "今天已经没有待处理的固定工作。"}
-	var required_location := str(commitment.get("location", ""))
-	if not required_location.is_empty() and current_location != required_location:
-		return {"ok": false, "message": "需要先到%s。" % str(commitment.get("location_label", "指定地点"))}
-	var commitment_id := _commitment_token(commitment)
-	if completed_commitments.has(commitment_id):
-		return {"ok": false, "message": "这段工作已经完成。"}
-	var return_by := int(commitment.get("return_by", commitment.get("start", 0)))
-	if current_minute < return_by:
-		return {"ok": false, "message": "%s前到工作地点即可。现在还有%d分钟可安排。" % [_minute_text(return_by), return_by - current_minute]}
-	if current_minute > int(commitment.get("start", 0)) + int(commitment.get("late_grace", 10)):
-		_miss_commitment(commitment)
-		return {"ok": false, "message": "已经错过这段工作的开始时间。"}
-	var minutes := maxi(0, int(commitment.get("end", current_minute)) - current_minute)
-	current_minute += minutes
-	clock_remainder = 0.0
-	refresh_appointments()
-	completed_commitments.append(commitment_id)
-	shared_state.erase("pending_commitment")
-	var payment := int(commitment.get("pay", 0))
-	if payment > 0:
-		earn_money(payment, str(commitment.get("label", "工作收入")), {"work_minutes":minutes,"commitment":commitment_id})
-	var commitment_kind := str(commitment.get("kind", "work"))
-	var journal_text := "%s · 用时%d分钟" % [str(commitment.get("label", "完成日程")), minutes]
-	if payment > 0:
-		journal_text += " · 收入%d元" % payment
-	add_journal_entry({"id": "commitment_%s" % commitment_id, "kind": commitment_kind, "text": journal_text})
-	commit_active_role_state()
-	state_changed.emit()
-	var message := "完成%s，用时%d分钟。" % [str(commitment.get("label", "日程")), minutes]
-	if payment > 0:
-		message = "完成%s，用时%d分钟，收入%d元。" % [str(commitment.get("label", "工作")), minutes, payment]
-	return {"ok": true, "minutes": minutes, "payment": payment, "message": message}
+	return LifeSystem.start_shift()
 
 
 func _miss_commitment(commitment: Dictionary) -> void:
@@ -427,6 +383,8 @@ func _miss_commitment(commitment: Dictionary) -> void:
 	if completed_commitments.has(commitment_id):
 		return
 	completed_commitments.append(commitment_id)
+	LifeSystem.change({"security":-8,"clarity":-4},"错过饭店班次，这班没有收入。")
+	RelationshipSystem.add_flags("shi_yongqi",["missed_shift_d%d"%current_day])
 	shared_state.erase("pending_commitment")
 	add_journal_entry({"id": "missed_commitment_%s" % commitment_id, "kind": "missed_work", "text": "错过固定日程：%s。今天没有获得这笔收入。" % str(commitment.get("label", "工作"))})
 
@@ -708,6 +666,8 @@ func refresh_appointments() -> Array[Dictionary]:
 		changed.append(appointment)
 		if status == "missed":
 			_add_missed_appointment_journal(appointment)
+			if is_instance_valid(get_node_or_null("/root/LifeSystem")):
+				LifeSystem.change({"security":-6,"clarity":-3},"没有赶上约定："+str(appointment.get("label",appointment_id)))
 	return changed
 
 

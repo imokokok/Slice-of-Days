@@ -253,6 +253,8 @@ func ingredient_name(id: String) -> String:
 	return {"sardine":"欧洲沙丁鱼","sea_bream":"金头鲷"}.get(id,"这种食材")
 
 func cooking_cost(original: Dictionary) -> Dictionary:
+	var shift := LifeSystem.active_shift()
+	if not shift.is_empty(): return {"minutes":int(shift.actual_end)-int(shift.actual_start)}
 	var order := active_order()
 	return {"minutes":int(config.work.restaurant.minutes)} if not order.is_empty() and bool(order.get("delivered",false)) and not bool(order.get("completed",false)) else original
 
@@ -263,11 +265,12 @@ func finish_cooking(outcome: Dictionary, tokens: Array) -> void:
 	var order := active_order()
 	if order.is_empty() or not bool(order.get("delivered",false)) or bool(order.get("paid",false)): return
 	order.merge({"completed":true,"accepted":true,"paid":true,"placed_contribution":true,"outcome":outcome.duplicate(true)},true)
-	GameState.earn_money(int(config.work.restaurant.pay),"料理班次工资",{"work_minutes":int(config.work.restaurant.minutes),"kind":"income","issuer":"night_market","source":str(order.id)})
+	if not str(GameState.shared_state.get("pending_module",{}).get("source_event_id","")).begins_with("shift:"):
+		GameState.earn_money(int(config.work.restaurant.pay),"额外料理委托报酬",{"work_minutes":int(config.work.restaurant.minutes),"kind":"income","issuer":"night_market","source":str(order.id)})
 	RelationshipSystem.record_encounter("shi_yongqi",str(order.id)+"_served",["一起完成采购和出餐"])
 	var index := maxi(0,GameState.module_states.get("cooking",{}).get("outcomes",[]).size()-1)
 	ResidencySystem.accept_contribution("module_cooking_%d" % index,"night_market",{"accepted":true,"source":"restaurant_served"})
-	GameState.message_posted.emit("班次完成 · 工资 +%d · 工作记录已入袋，营业时间可向店主领取证明。" % int(config.work.restaurant.pay))
+	GameState.message_posted.emit("出餐完成 · 实际收入已记入账目，工作记录已入袋。")
 	changed.emit()
 
 func name_collection(id: String, nickname: String, note: String, slot: String) -> bool:

@@ -133,7 +133,8 @@ func _basket() -> void:
 		var label := Label.new(); label.text=LocalizationSystem.text("篮子空着，还没选东西。"); rows.add_child(label)
 	var quote := EconomySystem.cart_quote(shop_id)
 	P.words(right,"合计  %d 元" % int(quote.get("total",0)),Vector2(24,499),480,28)
-	P.words(right,"结账后，小票和物品一起收好。",Vector2(24,545),480,18,P.MUTED)
+	var concern := LifeSystem.spending_concern(int(quote.get("total",0)))
+	P.words(right,concern if not concern.is_empty() else "结账后，小票和物品一起收好。",Vector2(24,545),480,18,P.MUTED)
 	purchase_button=_btn(right,"结账 · %d 元" % int(quote.get("total",0)),Vector2(24,586),Vector2(480,52),_checkout)
 	purchase_button.name="Checkout"
 	purchase_button.disabled=buying or not bool(quote.ok) or int(quote.get("total",0))>GameState.money or not EconomySystem.shop_open(shop_id)

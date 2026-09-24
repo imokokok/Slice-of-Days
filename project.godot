@@ -55,6 +55,9 @@ CoreLoopSystem="*res://scripts/core/core_loop_system.gd"
 UIStateSystem="*res://scripts/core/ui_state_system.gd"
 HouseholdSystem="*res://scripts/core/household_system.gd"
 
+LifeSystem="*res://scripts/core/life_system.gd"
+PeoplePuzzleSystem="*res://scripts/core/people_puzzle_system.gd"
+
 [display]
 
 window/size/viewport_width=1600

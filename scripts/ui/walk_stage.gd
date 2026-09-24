@@ -173,7 +173,7 @@ func _walk_axis() -> float:
 	return 0.0
 
 func move_player(axis: float, delta: float, hurry := false) -> void:
-	var target := axis * SPEED * (1.6 if hurry else 1.0) if enabled else 0.0
+	var target := axis * SPEED * LifeSystem.walk_multiplier() * (1.6 if hurry else 1.0) if enabled else 0.0
 	if enabled and not is_zero_approx(axis) and not is_equal_approx(facing, signf(axis)):
 		velocity = 0.0
 		facing = move_toward(facing,signf(axis),delta*12.0)

@@ -127,6 +127,8 @@ func _advance() -> void:
 	if index < lines.size(): _show_line()
 	else: _finish()
 
+var puzzle_offered := false
+
 func _finish() -> void:
 	if closing: return
 	if narrative_heard and GameState.current_day in [3,4] and ChapterSystem.identity_response(npc).is_empty() and not identity_response_decided:
@@ -145,6 +147,12 @@ func _finish() -> void:
 		if not materials.is_empty():
 			_choice_box([["给你看看《"+str(materials[0].title)+"》",str(materials[0].id)],["下次再带给你看。",""]],_share_loop_material)
 			return
+	if records_story and not puzzle_offered:
+		puzzle_offered=true
+		var puzzle := PeoplePuzzleSystem.offer(npc)
+		if not puzzle.is_empty():
+			text_label.text=str(puzzle.text); text_label.visible_characters=-1
+			_choice_box(puzzle.choices,_puzzle_action); return
 	if npc == "beetman" and not shop_id.is_empty():
 		if not vendor_committed:
 			var before := GameState.to_save_data().duplicate(true)
@@ -359,3 +367,8 @@ func _meeting_choice(choice: String) -> void:
 		return
 	meeting_decision=true
 	_finish()
+
+func _puzzle_action(action: String) -> void:
+	_clear_choices()
+	var result := PeoplePuzzleSystem.act(npc,action)
+	_append("npc",str(result.message)); index=lines.size()-1; _show_line()

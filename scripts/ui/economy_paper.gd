@@ -93,7 +93,7 @@ func _build_clipboard() -> void:
 	var p=preload("res://scripts/ui/components/interface_palette.gd")
 	var work: Dictionary=EconomySystem.config.work.restaurant
 	p.words(restaurant_frame,"潮汐饭店",Vector2(130,143),600,32,p.INK)
-	p.words(restaurant_frame,"采购与班次   /   %d 分钟   /   工资 %d 元" % [work.minutes,work.pay],Vector2(130,191),650,18,p.MUTED)
+	p.words(restaurant_frame,"额外料理委托   /   %d 分钟   /   报酬 %d 元" % [work.minutes,work.pay],Vector2(130,191),650,18,p.MUTED)
 	p.words(restaurant_frame,"第 %d 天   %s   ·   余额 %d 元" % [GameState.current_day,GameState.clock_text(),GameState.money],Vector2(850,179),430,18,p.INK)
 	var rule := ColorRect.new(); rule.position=Vector2(130,228); rule.size=Vector2(1180,1); rule.color=Color("c3b798"); restaurant_frame.add_child(rule)
 	body=_clipboard_column(Vector2(130,252),Vector2(680,344)); body.name="ProcurementList"
@@ -106,7 +106,7 @@ func _build_clipboard() -> void:
 		var delivered := bool(order.get("delivered",false))
 		label(("✓  " if delivered or count>0 else "□  ")+str(row[1])+"    "+("已交付" if delivered else "已备齐" if count>0 else "待采购"),20)
 	label("菜摊 10:30—18:30  ·  杂货店 08:00—22:00\n先垫采购费，交材料时凭小票报销。",17,p.MUTED)
-	label("交材料 → 做菜出餐 → 工资到账\n完成后向店主领取收入证明。",17,p.MUTED)
+	label("交材料 → 做菜出餐 → 委托报酬到账\n14:00的固定班次另在随身本里安排，同一份出餐不会重复付酬。",17,p.MUTED)
 	var separator := ColorRect.new(); separator.position=Vector2(838,254); separator.size=Vector2(1,340); separator.color=Color("c3b798"); restaurant_frame.add_child(separator)
 	body=_clipboard_column(Vector2(878,252),Vector2(405,344)); body.name="ProcurementReceipts"
 	label("采购小票",23)
@@ -130,9 +130,9 @@ func _build_clipboard() -> void:
 		elif not bool(order.get("completed",false)):
 			var end := GameState.current_minute+int(work.minutes)
 			var entry := GameplayModuleSystem.entry_check("cooking")
-			button("开始工作 · %d 分钟 · 预计 %02d:%02d 下班" % [work.minutes,end/60,end%60],_start_shift,not bool(entry.ok)).name="StartRestaurantWork"
+			button("开始这份委托 · %d 分钟 · 预计 %02d:%02d 完成" % [work.minutes,end/60,end%60],_start_shift,not bool(entry.ok)).name="StartRestaurantWork"
 			if not bool(entry.ok): note=str(entry.reason)
-		else: label("✓  本班已结算，小票与工资记录已收好。",21)
+		else: label("✓  这份委托已结算，小票与收入记录已收好。",21)
 	if body.get_child_count()>0 and body.get_child(0) is Button:
 		body.get_child(0).variant="primary"; body.get_child(0).refresh()
 	body=VBoxContainer.new(); body.position=Vector2(1040,622); body.size=Vector2(242,55); restaurant_frame.add_child(body)

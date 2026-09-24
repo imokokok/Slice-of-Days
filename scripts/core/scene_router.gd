@@ -128,6 +128,7 @@ func request_gameplay(module_id: String, source := "") -> bool:
 	confirmation.heading=str(GameplayModuleSystem.modules.get(module_id,{}).get("name","开始活动"))
 	confirmation.description=("当前视角 "+GameState.current_role+"\n"+ChapterSystem.exchange_motivation(module_id)+"\n" if CharacterSystem.switch_unlocked() else "")+"预计最多 %d 分钟，完成时结算实际耗时。\n取消可以保留原来的时间。"%int(check.minutes)
 	confirmation.confirm_text="开始工作" if module_id=="cooking" else "开始"
+	if not LifeSystem.thought().is_empty(): confirmation.description+="\n"+LifeSystem.thought()
 	if module_id=="cooking": confirmation.heading="准备开始工作？"
 	get_tree().current_scene.add_child(confirmation)
 	confirmation.accepted.connect(func():

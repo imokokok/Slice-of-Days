@@ -43,11 +43,11 @@ func _ready() -> void:
 		if child is Label or child is Button or child is TextureRect: child.hide()
 		elif child is Panel and child != host.get("room_dialogue"): child.hide()
 	_build_pocket_objects()
-	clock_back=Panel.new(); clock_back.name="ClockBackdrop"; clock_back.add_to_group("solid_hud"); clock_back.position=Vector2(30,23); clock_back.size=Vector2(215,47); clock_back.mouse_filter=MOUSE_FILTER_IGNORE
+	clock_back=Panel.new(); clock_back.name="ClockBackdrop"; clock_back.add_to_group("solid_hud"); clock_back.position=Vector2(30,23); clock_back.size=Vector2(240,91); clock_back.mouse_filter=MOUSE_FILTER_IGNORE
 	var clock_face := HUD.face(HUD.SPEECH,7,0); clock_face.set_border_width_all(1); clock_face.border_color=HUD.PAPER_EDGE; clock_back.add_theme_stylebox_override("panel",clock_face); add_child(clock_back)
 	clock_label = Label.new()
-	clock_label.position = Vector2(42,30)
-	clock_label.size = Vector2(330,32)
+	clock_label.position = Vector2(47,34)
+	clock_label.size = Vector2(215,65)
 	clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	clock_label.add_theme_font_override("font",hud_font)
 	clock_label.add_theme_font_size_override("font_size",18)
@@ -102,7 +102,7 @@ func _ready() -> void:
 	ResidencySystem.changed.connect(_papers_changed)
 	last_material_count = ResidencySystem.state().materials.size()
 	switch_button=preload("res://scripts/ui/components/solmere_button.gd").new()
-	switch_button.variant="outlined"; switch_button.position=Vector2(265,23); switch_button.size=Vector2(190,47)
+	switch_button.variant="outlined"; switch_button.position=Vector2(285,23); switch_button.size=Vector2(190,47)
 	switch_button.pressed.connect(func(): open_paper("day_schedule"))
 	add_child(switch_button)
 
@@ -113,7 +113,7 @@ func _build_pocket_objects() -> void:
 	for i in 6:
 		var item=preload("res://scripts/ui/components/pocket_object_button.gd").new()
 		item.name="Pocket_"+modes[i]; item.title=titles[i]; item.action=actions[i]; item.object_index=i
-		item.size=Vector2(100,100) if i<4 else Vector2(86,88)
+		item.size=Vector2(88,92)
 		item.pressed.connect(open_tool.bind(modes[i]) if i in [2,3] else open_paper.bind(modes[i]))
 		pocket_objects.append(item); add_child(item)
 	folder=pocket_objects[1]
@@ -157,13 +157,13 @@ func _process(delta: float) -> void:
 	var period_key := str(GameState.current_day)+period
 	if last_time_period != period_key:
 		last_time_period=period_key; time_notice_age=0
-		clock_label.text=CoreLoopSystem.day_stamp()+"   "+GameState.clock_text()
+		clock_label.text=_clock_ticket()
 	time_notice_age+=delta
 	var clear_view := not is_instance_valid(overlay) and not is_instance_valid(tool) and not _blocked()
 	for i in pocket_objects.size():
 		var item := pocket_objects[i]
 		item.visible=clear_view
-		item.position=Vector2((size.x-400)*.5+i*100,8) if i<4 else Vector2(size.x-196+(i-4)*94,size.y-112)
+		item.position=Vector2(30+i*94,size.y-112)
 		item.disabled=(i==2 and not FilmSystem.camera_available(false)) or not bool(UIStateSystem.policy().notebook)
 		item.tooltip_text=item.title+" · "+SettingsSystem.binding_text(item.action)
 		if i==2 and item.disabled: item.tooltip_text="先在杂货店取得相机"
@@ -173,7 +173,7 @@ func _process(delta: float) -> void:
 	guidance_tick -= delta
 	if guidance_tick <= 0:
 		guidance_tick = 1.0
-		clock_label.text=CoreLoopSystem.day_stamp()+"   "+GameState.clock_text()
+		clock_label.text=_clock_ticket()
 		_update_active_direction()
 	next_button.visible = clear_view and not next_button.text.is_empty()
 	if last_location != GameState.current_location:
@@ -205,12 +205,15 @@ func _process(delta: float) -> void:
 	hints.visible = clear_view and not id.is_empty()
 	hints.size.y=72 if hint_label.text.contains("\n") else 49
 	hint_label.size.y=hints.size.y-18
-	hints.position = Vector2((size.x-hints.size.x)*.5,size.y-hints.size.y-26)
+	hints.position = Vector2(size.x-hints.size.x-36,size.y-hints.size.y-26)
 	next_button.position=Vector2(size.x-next_button.size.x-36,35)
 	hints.modulate.a = 1.0
 	hint_debug.fade = "in" if hint_age < .2 else "hold" if hints.visible else "hidden"
 	hints.tooltip_text = hint_label.get_parsed_text()
 	hint_label.add_theme_color_override("default_color",HUD.SPEECH_INK)
+
+func _clock_ticket() -> String:
+	return CoreLoopSystem.day_stamp()+"   "+GameState.clock_text()+"\n"+LocalizationSystem.text("零钱")+"  "+str(GameState.money)+" 元"
 
 func _activate_context() -> void:
 	if not bool(UIStateSystem.policy().notebook) or _blocked() or is_instance_valid(overlay) or is_instance_valid(tool) or focus_opening: return

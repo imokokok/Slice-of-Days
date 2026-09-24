@@ -2,10 +2,10 @@ extends Control
 
 const SUPPORTED := ["cooking", "photography", "optical_illusion", "archives"]
 const PAPER := Color("faf7ee")
-const INK := Color("31658b")
-const MUTED := Color("526b77")
-const TERRACOTTA := Color("31658b")
-const SEA := Color("31658b")
+const INK := Color("405653")
+const MUTED := Color("6a7162")
+const TERRACOTTA := Color("946748")
+const SEA := Color("58736a")
 const SAGE := Color("8caa87")
 const GOLD := Color("eed577")
 const BOARD := Rect2(42, 122, 920, 610)

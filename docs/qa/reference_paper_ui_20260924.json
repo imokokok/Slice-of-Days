@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-24",
+  "base_commit": "dd16dc9bca6e0d36180f0d3d93b84c58fe32b68f",
+  "source_tests": {
+    "reference_paper_ui": 23,
+    "shop_work_routes": 29,
+    "ui_readability": 108
+  },
+  "packed_tests": {
+    "reference_paper_ui": 23,
+    "shop_work_routes": 29
+  },
+  "failures": 0,
+  "asset_audit": {
+    "clipboard_bright_pink_pixels": 0,
+    "cassette_bright_pink_pixels": 0,
+    "transparent_backgrounds": true
+  },
+  "native_review": {
+    "application": "SOLMERE_Windows_20260924/Solmere.exe",
+    "window_id": 10884452,
+    "observed": [
+      "continue game",
+      "bottom pocket icons",
+      "Escape opens cassette pause",
+      "settings button opens real sliders and display controls"
+    ]
+  },
+  "files": {
+    "Solmere.exe": {
+      "bytes": 109268480,
+      "sha256": "d34d36f3be1a6c49c56525ae86469b92e4f417ddf0b43cf00dd80c385c4b0562"
+    },
+    "Solmere.pck": {
+      "bytes": 411858000,
+      "sha256": "262d0b78cc88f29dbb9a924afe33fddba86d83ec0f71b36795aa1aaf39f0b44c"
+    }
+  }
+}

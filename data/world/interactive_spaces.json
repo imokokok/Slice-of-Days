@@ -165,6 +165,7 @@
     },
     {
       "id": "grocery",
+      "street_counter": true,
       "location_id": "cafe",
       "name": "杂货店",
       "objects": [

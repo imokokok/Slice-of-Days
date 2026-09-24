@@ -1,5 +1,6 @@
 extends Control
 const PAPER = preload("res://scripts/residency/living_objects.gd")
+const HUD = preload("res://scripts/ui/components/interface_palette.gd")
 const PROMPT_OUTLINE := Color("173c5d")
 var host: Control
 var stage: Control
@@ -43,18 +44,18 @@ func _ready() -> void:
 		elif child is Panel and child != host.get("room_dialogue"): child.hide()
 	_build_pocket_objects()
 	clock_back=Panel.new(); clock_back.name="ClockBackdrop"; clock_back.add_to_group("solid_hud"); clock_back.position=Vector2(30,23); clock_back.size=Vector2(215,47); clock_back.mouse_filter=MOUSE_FILTER_IGNORE
-	var clock_face := StyleBoxFlat.new(); clock_face.bg_color=Color("254b66"); clock_face.set_corner_radius_all(7); clock_back.add_theme_stylebox_override("panel",clock_face); add_child(clock_back)
+	var clock_face := HUD.face(HUD.SPEECH,7,0); clock_face.set_border_width_all(1); clock_face.border_color=HUD.PAPER_EDGE; clock_back.add_theme_stylebox_override("panel",clock_face); add_child(clock_back)
 	clock_label = Label.new()
 	clock_label.position = Vector2(42,30)
 	clock_label.size = Vector2(330,32)
 	clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	clock_label.add_theme_font_override("font",hud_font)
 	clock_label.add_theme_font_size_override("font_size",18)
-	clock_label.add_theme_color_override("font_color",Color("fff6df"))
+	clock_label.add_theme_color_override("font_color",HUD.SPEECH_INK)
 	clock_label.add_theme_color_override("font_outline_color",PROMPT_OUTLINE)
 	clock_label.add_theme_constant_override("outline_size",0)
 	clock_label.add_theme_color_override("font_shadow_color",Color("254552",0.8))
-	clock_label.add_theme_constant_override("shadow_offset_x",1)
+	clock_label.add_theme_constant_override("shadow_offset_x",0)
 	clock_label.add_theme_constant_override("shadow_offset_y",0)
 	clock_label.mouse_filter = MOUSE_FILTER_IGNORE
 	add_child(clock_label)
@@ -76,7 +77,7 @@ func _ready() -> void:
 	add_child(next_button)
 	# The readable prompt is also the mouse/controller route to the same action.
 	hints = preload("res://scripts/ui/components/solmere_button.gd").new()
-	hints.variant = "guidance"
+	hints.variant = "paper"
 	hints.name = "ContextHints"
 	hints.position = Vector2(480,825)
 	hints.size = Vector2(640,49)
@@ -89,11 +90,11 @@ func _ready() -> void:
 	hint_label.size = Vector2(604,32)
 	hint_label.add_theme_font_override("normal_font",hud_font)
 	hint_label.add_theme_font_size_override("normal_font_size",20)
-	hint_label.add_theme_color_override("default_color",Color("fff6df"))
+	hint_label.add_theme_color_override("default_color",HUD.SPEECH_INK)
 	hint_label.add_theme_color_override("default_outline_color",PROMPT_OUTLINE)
 	hint_label.add_theme_constant_override("outline_size",0)
 	hint_label.add_theme_color_override("font_shadow_color",Color("203945",0.9))
-	hint_label.add_theme_constant_override("shadow_offset_x",1)
+	hint_label.add_theme_constant_override("shadow_offset_x",0)
 	hint_label.add_theme_constant_override("shadow_offset_y",0)
 	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint_label.mouse_filter = MOUSE_FILTER_IGNORE
@@ -209,7 +210,7 @@ func _process(delta: float) -> void:
 	hints.modulate.a = 1.0
 	hint_debug.fade = "in" if hint_age < .2 else "hold" if hints.visible else "hidden"
 	hints.tooltip_text = hint_label.get_parsed_text()
-	hint_label.add_theme_color_override("default_color",Color("254b66") if hints.is_hovered() or hints.button_pressed else Color("fff6df"))
+	hint_label.add_theme_color_override("default_color",HUD.SPEECH_INK)
 
 func _activate_context() -> void:
 	if not bool(UIStateSystem.policy().notebook) or _blocked() or is_instance_valid(overlay) or is_instance_valid(tool) or focus_opening: return

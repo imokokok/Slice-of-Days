@@ -26,7 +26,7 @@ func _refresh() -> void:
 		face.content_margin_left=25; face.content_margin_right=12
 		face.content_margin_top=10; face.content_margin_bottom=10
 		face.bg_color=Palette.SPEECH
-		face.set_border_width_all(1); face.border_color=Color("91a7ad")
+		face.set_border_width_all(1); face.border_color=Palette.PAPER_EDGE
 		if state=="hover": face.bg_color=Color("f6e8b2")
 		if state=="normal" and selected: face.bg_color=Palette.LEMON
 		if state=="normal" and has_focus() and not selected: face.bg_color=Color("f6e8b2")

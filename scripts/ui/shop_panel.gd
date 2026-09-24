@@ -12,6 +12,7 @@ var budget_label: Label
 var status_label: Label
 var purchase_button: Button
 var basket_button: Button
+var checkout_button: Button
 var right: Control
 var mode := "shelf"
 var buying := false
@@ -31,7 +32,7 @@ func _ready() -> void:
 	item_list=Control.new(); item_list.position=Vector2(70,170); item_list.size=Vector2(845,590); add_child(item_list)
 	right=Control.new(); right.position=Vector2(975,165); right.size=Vector2(550,645); add_child(right)
 	selection_panel=right
-	status_label=P.words(self,"点击货品看价签，再放进篮子。",Vector2(80,815),1080,20)
+	status_label=P.words(self,"点击货品看价签，选好后直接点「结账」。",Vector2(80,815),1080,20)
 	_btn(self,"买过的东西 / 小票",Vector2(1180,815),Vector2(345,48),func(): mode="history"; _refresh_right())
 	if shop_id=="grocery":
 		_btn(self,"摄影 · 冲洗",Vector2(80,754),Vector2(235,44),func(): FilmSystem.open_counter(self))
@@ -99,9 +100,15 @@ func _tag() -> void:
 	var count := 0
 	for q in EconomySystem.cart(shop_id).values(): count+=int(q)
 	basket_button=ITEM.new(); basket_button.item_id="basket"; basket_button.caption="打开购物篮 · %d 件" % count
-	basket_button.position=Vector2(36,430); basket_button.size=Vector2(470,212)
+	basket_button.position=Vector2(36,430); basket_button.size=Vector2(470,130)
 	basket_button.pressed.connect(func():mode="basket"; _refresh_right()); right.add_child(basket_button)
 	basket_button.name="OpenBasket"
+	var quote := EconomySystem.cart_quote(shop_id)
+	checkout_button=_btn(right,"结账 · %d 件 / %d 元" % [count,int(quote.get("total",0))],Vector2(30,582),Vector2(470,54),_checkout)
+	checkout_button.name="ShelfCheckout"; checkout_button.variant="primary"
+	checkout_button.refresh()
+	checkout_button.disabled=buying or count==0 or not bool(quote.ok) or int(quote.get("total",0))>GameState.money or not EconomySystem.shop_open(shop_id)
+	checkout_button.tooltip_text=LocalizationSystem.text("先选一件货品" if count==0 else "余额不足" if int(quote.get("total",0))>GameState.money else "付款并收取小票")
 func _scroll(at: Vector2, extent: Vector2) -> VBoxContainer:
 	var scroll := ScrollContainer.new(); scroll.position=at; scroll.size=extent; scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; right.add_child(scroll)
 	var rows := VBoxContainer.new(); rows.size_flags_horizontal=SIZE_EXPAND_FILL; rows.add_theme_constant_override("separation",12); scroll.add_child(rows)

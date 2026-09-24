@@ -6,7 +6,7 @@ const FEET := 820.0
 const SIDEWALK_EDGE := 846.0
 const ROAD := 863.0
 
-static func rain_amount(day: int, minute: int) -> float:
+static func rain_amount(day: int, minute: float) -> float:
 	# One coastal weather system follows the saved day/time, never a block hash.
 	var windows := {2:Vector2(780,1110),3:Vector2(420,630),5:Vector2(630,750)}
 	if not windows.has(day): return 0.0
@@ -62,7 +62,7 @@ static func clear_arrival(desired: float, hotspots: Array, left: float, right: f
 		if bodies.all(func(x: float) -> bool: return absf(x-candidate)>=95): return candidate
 	return desired
 
-static func daylight(minute: int) -> Color:
+static func daylight(minute: float) -> Color:
 	# Apply one continuous coastal light cycle to every world element. The
 	# transition is driven by the sun's position, rather than a binary dark
 	# overlay: morning is cool, late afternoon turns amber, and blue hour fades

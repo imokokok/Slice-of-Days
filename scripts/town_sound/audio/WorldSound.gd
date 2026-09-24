@@ -104,19 +104,18 @@ func set_weather(value: String) -> void:
 	if weather == next: return
 	weather = next
 	if weather == "clear":
-		weather_player.stop()
 		return
 	_refresh_rain()
 
 func _refresh_rain() -> void:
 	var sample := Production.sound("ambience_indoor_rain" if indoors else "ambience_rain")
 	weather_player.stream=sample if sample!=null else make_weather_rain()
-	weather_player.volume_db=-24.0 if indoors else -20.0
+	weather_player.volume_db=-70.0
 	if active and weather=="rain" and AudioServer.get_driver_name()!="Dummy": weather_player.play()
 
 func _refresh_nature() -> void:
 	if not active or natural==null: return
-	var minute := GameState.current_minute
+	var minute := WorldAtmosphere.minute if WorldAtmosphere.initialized else float(GameState.current_minute)
 	var profile := "ambience_room" if indoors else "ambience_night" if minute>=19*60 or minute<6*60 else "ambience_wind" if minute>=17*60 else "ambience_day"
 	if profile==natural_profile: return
 	var sample := Production.sound(profile)
@@ -128,8 +127,8 @@ func _refresh_nature() -> void:
 	if AudioServer.get_driver_name()=="Dummy": return
 	natural.play()
 	nature_transition=create_tween().set_parallel(true)
-	nature_transition.tween_property(natural,"volume_db",-26.0 if indoors else -23.0,.7)
-	nature_transition.tween_property(natural_previous,"volume_db",-55.0,.7)
+	nature_transition.tween_property(natural,"volume_db",-26.0 if indoors else -23.0,3.0)
+	nature_transition.tween_property(natural_previous,"volume_db",-55.0,3.0)
 	nature_transition.chain().tween_callback(natural_previous.stop)
 
 
@@ -145,6 +144,10 @@ func _start_ambience_job(place: String) -> void:
 
 func _process(_delta: float) -> void:
 	_refresh_nature()
+	if weather_player.playing:
+		var target_volume := db_to_linear(-24.0 if indoors else -20.0)*WorldAtmosphere.rain if weather=="rain" else 0.0
+		weather_player.volume_linear=move_toward(weather_player.volume_linear,target_volume,minf(_delta,.1)*.025)
+		if weather=="clear" and weather_player.volume_linear<=.0001: weather_player.stop()
 	if active and not indoors and weather!="rain" and GameState.current_minute>=6*60 and GameState.current_minute<18*60:
 		next_bird-=_delta
 		if next_bird<=0:

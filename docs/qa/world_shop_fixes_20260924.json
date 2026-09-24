@@ -1,0 +1,101 @@
+{
+  "date": "2026-09-24",
+  "scope": "Continuous atmosphere, storefront shopping, work entry, restored original actors and paper HUD",
+  "source_final": [
+    {
+      "test": "test_atmosphere_transition",
+      "checks": 15,
+      "failures": 0,
+      "log_sha256": "4549536c45da7e3e7abb330d9a117c7ddb40a6c3c5a60732165b2f3c4ff15191"
+    },
+    {
+      "test": "test_shop_work_routes",
+      "checks": 29,
+      "failures": 0,
+      "log_sha256": "6fca58d4bfca29837817afcc6962ac260cd44ff204c3e99762963d0207c72ef6"
+    },
+    {
+      "test": "test_restored_presentation",
+      "checks": 21,
+      "failures": 0,
+      "log_sha256": "522367c8269faaf43f0150e4c88ab1b694dbc515c558dcf3578cd38cc02d4195"
+    },
+    {
+      "test": "test_home_interiors",
+      "checks": 47,
+      "failures": 0,
+      "log_sha256": "c97881284f702cfe6dc4b83ad06607824456cbe70c80e49bdfc849acf05408f1"
+    },
+    {
+      "test": "test_ui_readability",
+      "checks": 108,
+      "failures": 0,
+      "log_sha256": "fa2ceaf9621b4a7510a5a670d414b53e668dd48738f805342586a89a54d30915"
+    },
+    {
+      "test": "test_street_motion",
+      "checks": 37,
+      "failures": 0,
+      "log_sha256": "28f3bab5fe2ef04f2e4ba863a7673869365c44130ca3f33916514e16007d997f"
+    }
+  ],
+  "packed_final": [
+    {
+      "test": "test_atmosphere_transition",
+      "checks": 15,
+      "failures": 0,
+      "log_sha256": "4549536c45da7e3e7abb330d9a117c7ddb40a6c3c5a60732165b2f3c4ff15191"
+    },
+    {
+      "test": "test_shop_work_routes",
+      "checks": 29,
+      "failures": 0,
+      "log_sha256": "6fca58d4bfca29837817afcc6962ac260cd44ff204c3e99762963d0207c72ef6"
+    },
+    {
+      "test": "test_restored_presentation",
+      "checks": 21,
+      "failures": 0,
+      "log_sha256": "522367c8269faaf43f0150e4c88ab1b694dbc515c558dcf3578cd38cc02d4195"
+    },
+    {
+      "test": "test_street_motion",
+      "checks": 37,
+      "failures": 0,
+      "log_sha256": "28f3bab5fe2ef04f2e4ba863a7673869365c44130ca3f33916514e16007d997f"
+    }
+  ],
+  "earlier_functional_regression": {
+    "test": "test_five_day_flow",
+    "checks": 229,
+    "failures": 0,
+    "log_sha256": "2abec29b566efc9413c28bfaf69c3c51e7ef776d111367998afce779bf02dba5"
+  },
+  "earlier_regression_note": "Full five-day regression ran after gameplay fixes, before the final HUD color adjustments. Original character rendering was restored and checked in the final targeted suites.",
+  "native_observation": "Exported PCK launched with a visible window. Night scene, common character baseline and warm storefront light visually checked. Final screenshots are engine-rendered frames.",
+  "files": {
+    "Solmere.exe": {
+      "sha256": "d34d36f3be1a6c49c56525ae86469b92e4f417ddf0b43cf00dd80c385c4b0562",
+      "bytes": 109268480
+    },
+    "Solmere.pck": {
+      "sha256": "82a678c37d2820046db3ed947476bee357fa9868566225b7dc214fb6e6a7f335",
+      "bytes": 410081456
+    }
+  },
+  "integrated_main": "656b8cdd4d95e9edcf115dde6235ddbc06cfda2a",
+  "merged_kitchen_regression": [
+    {
+      "test": "test_cooking_rhythm",
+      "status": "PASS",
+      "failures": 0,
+      "log_sha256": "ac829ac7d3c17dcd67c0e9eca17d943a6a20d401794b8f92f871f27ca8b8564a"
+    },
+    {
+      "test": "test_kitchen_supplied_art",
+      "status": "PASS",
+      "failures": 0,
+      "log_sha256": "bf3680a774c44950efe373fc5c50a612aa72fc1ed62362c7411916c93638e169"
+    }
+  ]
+}

@@ -32,7 +32,8 @@ func _ready() -> void:
 	sea_view.texture=preload("res://art/ui/handmade/fishing_sea.jpg")
 	sea_view.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; sea_view.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	sea_view.set_anchors_and_offsets_preset(PRESET_FULL_RECT); sea_view.mouse_filter=MOUSE_FILTER_IGNORE; add_child(sea_view)
-	sea_view.modulate=preload("res://scripts/ui/street_composition.gd").daylight(GameState.current_minute)
+	WorldAtmosphere.ensure_initialized()
+	sea_view.modulate=WorldAtmosphere.light
 	var caption := Panel.new(); caption.position=Vector2(54,43); caption.size=Vector2(650,62)
 	caption.add_theme_stylebox_override("panel",P.face(P.CREAM,7,0)); caption.mouse_filter=MOUSE_FILTER_IGNORE; add_child(caption)
 	P.words(self,("港湾" if GameState.current_location=="port" else "观景台下")+" · 海边钓位",Vector2(76,54),800,31,P.INK)
@@ -86,6 +87,7 @@ func _act() -> void:
 			if progress>=1: _land()
 	_refresh()
 func _process(delta: float) -> void:
+	sea_view.modulate=WorldAtmosphere.light
 	if is_instance_valid(journal): return
 	sea_clock+=delta
 	if is_instance_valid(bobber):

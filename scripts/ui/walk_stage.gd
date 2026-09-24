@@ -68,6 +68,7 @@ func presented_hotspots() -> Array[Dictionary]:
 	return result
 
 func _ready() -> void:
+	WorldAtmosphere.ensure_initialized()
 	# World depth is entirely below the sibling HUD and modal layers.
 	z_index=-2
 	var finish := ShaderMaterial.new()
@@ -88,6 +89,7 @@ func _ready() -> void:
 	WorldSound.set_indoor(indoor)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_update_world_finish()
 
 func _process(delta: float) -> void:
 	idle_time += delta
@@ -112,16 +114,17 @@ func _process(delta: float) -> void:
 		axis = _walk_axis()
 	move_player(axis, delta, Input.is_action_pressed("move_fast"))
 	_update_world_finish()
+	if WorldAtmosphere.changing: queue_redraw()
 	if not is_equal_approx(previous_player_x, player_x) or not is_equal_approx(previous_camera_x, camera_x) or not is_equal_approx(previous_facing, facing) or not is_equal_approx(previous_gait, gait_weight):
 		queue_redraw()
 
 func _update_world_finish() -> void:
 	if indoor:
 		material = null
-		if is_instance_valid(original_resident): original_resident.material.set_shader_parameter("amount",0.0)
+		if is_instance_valid(original_resident) and original_resident.material is ShaderMaterial: original_resident.material.set_shader_parameter("amount",0.0)
 		return
 	if not material is ShaderMaterial: return
-	var light := Composition.daylight(GameState.current_minute)
+	var light := WorldAtmosphere.light
 	var weather := _weather_kind()
 	if weather != weather_last:
 		weather_last = weather
@@ -130,12 +133,12 @@ func _update_world_finish() -> void:
 	material.set_shader_parameter("daylight", Vector3(light.r,light.g,light.b))
 	material.set_shader_parameter("amount", 0.0 if indoor else 1.0)
 	var lights := _night_lights()
-	var night_light := preload("res://scripts/ui/coast_backdrop.gd").weights(GameState.current_minute).z
+	var night_light := WorldAtmosphere.blend.z
 	material.set_shader_parameter("local_lights",lights)
 	material.set_shader_parameter("light_count",lights.size())
 	material.set_shader_parameter("night_strength",night_light)
 	for label: Label in world_labels.values(): label.modulate = light
-	if is_instance_valid(original_resident):
+	if is_instance_valid(original_resident) and original_resident.material is ShaderMaterial:
 		original_resident.material.set_shader_parameter("camera_offset", Vector2(camera_x,0))
 		original_resident.material.set_shader_parameter("daylight", Vector3(light.r,light.g,light.b))
 		original_resident.material.set_shader_parameter("amount", 0.0 if indoor else 1.0)
@@ -194,7 +197,7 @@ func nearest() -> Dictionary:
 	return nearest_of([])
 
 func nearest_interactable() -> Dictionary:
-	return nearest_of(["door","home","object","exit","shop","module","transport","fishing","closed","meeting","echo","event"])
+	return nearest_of(["door","home","object","exit","shop","counter","module","transport","fishing","closed","meeting","echo","event"])
 
 func nearest_of(kinds: Array) -> Dictionary:
 	var result: Dictionary = {}
@@ -214,8 +217,8 @@ func nearest_of(kinds: Array) -> Dictionary:
 func _draw() -> void:
 	dialogue_scenery.clear()
 	for label: Label in world_labels.values(): label.hide()
-	var night := GameState.current_minute >= 1080
-	if indoor: draw_rect(Rect2(0, 0, 1600, 900), Color("111c2c") if night else Color("687b83"))
+	var night := WorldAtmosphere.blend.z
+	if indoor: draw_rect(Rect2(0, 0, 1600, 900), Color("687b83").lerp(Color("111c2c"),night))
 	# The lighthouse panorama is a rear layer.  Buildings and trees draw above
 	# it, while the road draws last beneath the people in the foreground.
 	var illustrated := _draw_atlas() if indoor else true
@@ -278,7 +281,7 @@ func _draw() -> void:
 	_draw_atmosphere()
 
 func _weather_kind() -> String:
-	return "rain" if Composition.rain_amount(GameState.current_day,GameState.current_minute)>.03 and not indoor else "clear"
+	return "rain" if WorldAtmosphere.rain>.001 and not indoor else "clear"
 
 func _draw_atmosphere() -> void:
 	if indoor: return
@@ -286,7 +289,7 @@ func _draw_atmosphere() -> void:
 	if _weather_kind() != "rain": return
 	# Hand-drawn rain strokes: sparse, angled and layered so the weather reads
 	# as atmosphere instead of a particle-system overlay.
-	var rain := Composition.rain_amount(GameState.current_day,GameState.current_minute)
+	var rain := WorldAtmosphere.rain
 	for layer in 2:
 		for i in 44:
 			var x := fposmod(i*83.0-idle_time*(18+layer*12)+camera_x*.12,1680)-40
@@ -301,40 +304,19 @@ func _draw_atmosphere() -> void:
 
 func _draw_atlas() -> bool:
 	if indoor:
-		var texture := Atlas.plate(Atlas.room(room_kind))
-		if texture == null: return false
-		draw_texture_rect(texture,Rect2(0,0,1600,900),false)
+		var row := Atlas.room(room_kind)
+		if row.is_empty(): return false
+		# Blend authored light variants over the same room, never switch at 17/19h.
+		var weights := WorldAtmosphere.blend
+		var accumulated := 0.0
+		for i in 3:
+			if weights[i] <= .00001: continue
+			var texture := Atlas.plate_for_phase(row,i)
+			if texture == null: continue
+			accumulated += weights[i]
+			draw_texture_rect(texture,Rect2(0,0,1600,900),false,Color(1,1,1,weights[i]/accumulated))
 		return true
-	if places.is_empty(): return false
-	if route_id == "lookout_route":
-		_draw_lookout_approach()
-		return true
-	for i in places.size():
-		var place: Dictionary = places[i]
-		var block_width := float(place.get("width", 1600))
-		var left := float(place.x) - block_width / 2.0 - camera_x
-		if left > 1600 or left + block_width < 0: continue
-		if str(place.id) == "chess_stall":
-			_draw_chess_stall(left, block_width)
-			continue
-		if str(place.id) == "bus_stop":
-			_draw_bus_stop(left, block_width)
-			continue
-		var texture := Atlas.plate(Atlas.street(str(place.id)))
-		if texture == null: continue
-		# Each plate owns one opaque world rectangle. Crop its overscan rather
-		# than dissolving two buildings together into a double image.
-		var overscan := 80.0 / (block_width + 160.0)
-		draw_texture_rect_region(texture, Rect2(left,0,block_width,900),
-			Rect2(texture.get_width()*overscan,0,texture.get_width()*(1.0-2.0*overscan),texture.get_height()))
-	# A crisp planted divider gives each join a physical edge in the scene.
-	# It remains behind the player and never blocks horizontal movement.
-	for i in places.size():
-		if i == 0 and route_id != "lookout_route": continue
-		var seam_x := float(places[i].x) - float(places[i].get("width",1600)) / 2.0 - camera_x
-		if seam_x < -90 or seam_x > 1690: continue
-		_draw_street_divider(seam_x)
-	return true
+	return false
 
 func _draw_global_coast() -> bool:
 	# The supplied panorama is exactly the width of the joined street
@@ -347,14 +329,14 @@ func _draw_global_coast() -> bool:
 func _draw_street_divider(x: float) -> void:
 	var ground_offset := _ground_at(x + camera_x) - 713.0
 	draw_set_transform(Vector2(0,ground_offset))
-	var night := GameState.current_minute >= 1140
-	var leaves := Color("344843") if night else Color("596749")
-	var leaves_light := Color("42594b") if night else Color("738050")
+	var night := WorldAtmosphere.blend.z
+	var leaves := Color("596749").lerp(Color("344843"),night)
+	var leaves_light := Color("738050").lerp(Color("42594b"),night)
 	draw_rect(Rect2(x-9,570,18,143),Color("4c5142"))
 	draw_colored_polygon(PackedVector2Array([Vector2(x,72),Vector2(x-13,200),Vector2(x-31,314),Vector2(x-42,477),Vector2(x-38,605),Vector2(x+23,617),Vector2(x+43,515),Vector2(x+31,348),Vector2(x+13,208)]),leaves)
 	draw_colored_polygon(PackedVector2Array([Vector2(x,80),Vector2(x+12,221),Vector2(x+28,392),Vector2(x+23,544),Vector2(x+4,595),Vector2(x-4,403)]),leaves_light)
-	draw_rect(Rect2(x-54,675,108,38),Color("7c8070") if night else Color("cabf9e"))
-	draw_rect(Rect2(x-59,671,118,8),Color("919381") if night else Color("e2d7b6"))
+	draw_rect(Rect2(x-54,675,108,38),Color("cabf9e").lerp(Color("7c8070"),night))
+	draw_rect(Rect2(x-59,671,118,8),Color("e2d7b6").lerp(Color("919381"),night))
 	draw_set_transform(Vector2.ZERO)
 
 func _ground_at(world_x: float) -> float:
@@ -394,10 +376,7 @@ func coast_art_rect() -> Rect2:
 func _scene_art_tint() -> Color:
 	# Outdoor lighting is now applied once, by the common world material.
 	if not indoor: return Color.WHITE
-	match Atlas.phase(GameState.current_minute):
-		2: return Color("596c89")
-		1: return Color("edc6a4")
-	return Color.WHITE
+	return Color.WHITE*WorldAtmosphere.blend.x+Color("edc6a4")*WorldAtmosphere.blend.y+Color("596c89")*WorldAtmosphere.blend.z
 
 func _sync_original_resident() -> void:
 	if not is_instance_valid(original_resident): return
@@ -438,7 +417,7 @@ func _draw_chess_stall(left: float, width: float) -> void:
 	var art_origin := Vector2(left+(width-art_size.x)*0.5,713-art_size.y*0.95)
 	draw_texture_rect(CHESS_ART,Rect2(art_origin,art_size),false,tint)
 
-func _draw_street(night: bool) -> void:
+func _draw_street(night: float) -> void:
 	_draw_sea(night)
 	_draw_street_middle()
 	_draw_foreground_road()
@@ -524,7 +503,7 @@ func _world_label(key: String, rect: Rect2, text: String, color: Color, point :=
 	label.position=rect.position; label.size=rect.size
 	label.text=LocalizationSystem.text(text)
 	label.add_theme_color_override("font_color",color)
-	label.modulate=Composition.daylight(GameState.current_minute)
+	label.modulate=WorldAtmosphere.light
 	label.show()
 
 func _draw_event_notice(x: float) -> void:
@@ -537,8 +516,8 @@ func _draw_event_notice(x: float) -> void:
 	draw_set_transform(Vector2.ZERO)
 	dialogue_scenery.append(Rect2(x-23,y-22,46,72))
 
-func _draw_sea(night: bool) -> void:
-	var sky := Color("3862d0") if not night else Color("243647")
+func _draw_sea(night: float) -> void:
+	var sky := Color("3862d0").lerp(Color("243647"),night)
 	draw_rect(Rect2(0, 70, 1600, 648), sky)
 	var offset := fmod(camera_x * 0.018, 110.0)
 	draw_colored_polygon(PackedVector2Array([Vector2(-150 - offset, 470), Vector2(190 - offset, 299), Vector2(351 - offset, 312), Vector2(479 - offset, 416), Vector2(719 - offset, 349), Vector2(950 - offset, 423), Vector2(1148 - offset, 248), Vector2(1360 - offset, 254), Vector2(1690 - offset, 459), Vector2(1690, 610), Vector2(-150, 610)]), Color("85bac6") if not night else Color("354e60"))

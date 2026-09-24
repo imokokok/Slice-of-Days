@@ -84,7 +84,9 @@ func restaurant() -> void:
 			button("交材料并核对报销",func() -> void: status = str(EconomySystem.deliver_procurement().message); build(),str(summary.status) != "deliver")
 		elif not bool(order.get("completed",false)):
 			var end := GameState.current_minute+int(work.minutes)
-			button("上料理台 · %d 分钟 · 预计 %02d:%02d 下班" % [work.minutes,end/60,end%60],_start_shift,not GameState.can_fit_now(int(work.minutes)))
+			var entry := GameplayModuleSystem.entry_check("cooking")
+			button("开始工作 · %d 分钟 · 预计 %02d:%02d 下班" % [work.minutes,end/60,end%60],_start_shift,not bool(entry.ok)).name="StartRestaurantWork"
+			if not bool(entry.ok): label(str(entry.reason),19,Color("9b583e"))
 		else: label("这一班已结算。原小票、工资记录和作品都已收好。",19)
 	body=receipt_rows
 	label("今天的小票",26)
@@ -99,11 +101,14 @@ func restaurant() -> void:
 	body=outer
 
 func _start_shift() -> void:
-	var minutes := int(EconomySystem.config.work.restaurant.minutes)
-	var sheet := preload("res://scripts/ui/components/confirm_sheet.gd").new(); sheet.heading="开始料理班次？"; sheet.description="本次班次预计 %d 分钟。进入料理台后可查看采购要求和真实食材库存。" % minutes; sheet.confirm_text="上料理台"; add_child(sheet)
-	sheet.accepted.connect(func() -> void:
-		if SceneRouter.request_gameplay("cooking","restaurant_procurement:"+str(EconomySystem.active_order().id)): queue_free()
-		else: sheet.queue_free())
+	# The router owns the one confirmation. Nesting a confirmation here caused
+	# its native_confirmation guard to reject every accepted work request.
+	if SceneRouter.request_gameplay("cooking","restaurant_procurement:"+str(EconomySystem.active_order().get("id",""))):
+		queue_free()
+	else:
+		var entry := GameplayModuleSystem.entry_check("cooking")
+		status=str(entry.get("reason","")) if not bool(entry.ok) else "请先处理当前打开的确认，再开始工作。"
+		build()
 
 func grocery() -> void:
 	label("日用品、餐厅备料和每天新摆出来的旧物都在柜台旁。摄影货架负责胶卷、冲洗和取照片。",21)

@@ -13,17 +13,18 @@ func _ready() -> void:
 	focus_mode=FOCUS_ALL; mouse_default_cursor_shape=CURSOR_POINTING_HAND
 	clip_text=true; flat=false; autowrap_mode=TextServer.AUTOWRAP_OFF
 	for state in ["normal","hover","pressed","disabled","focus"]:
-		var color := PALETTE.DEEP if state=="normal" else Color("356580") if state=="hover" else Color("183d56")
+		var color := PALETTE.SPEECH if state=="normal" else Color("eee4c9") if state=="hover" else Color("ded2b0")
 		var frame := PALETTE.face(color,8,0)
-		if state=="focus": frame.bg_color=Color.TRANSPARENT; frame.set_border_width_all(2); frame.border_color=PALETTE.LEMON
+		frame.set_border_width_all(1); frame.border_color=PALETTE.PAPER_EDGE
+		if state=="focus": frame.bg_color=Color.TRANSPARENT; frame.set_border_width_all(2); frame.border_color=PALETTE.SPEECH_INK
 		add_theme_stylebox_override(state,frame)
 		add_theme_color_override("font_"+("color" if state=="normal" else state+"_color"),Color.TRANSPARENT)
 	heading=PALETTE.words(self,"",Vector2(16,10),288,15,PALETTE.LEMON); heading.hide()
-	title=PALETTE.words(self,"",Vector2(16,12),288,22,PALETTE.CREAM)
-	context=PALETTE.words(self,"",Vector2(16,73),288,18,Color("d8e5e9"))
+	title=PALETTE.words(self,"",Vector2(16,12),288,22,PALETTE.SPEECH_INK)
+	context=PALETTE.words(self,"",Vector2(16,73),288,18,PALETTE.SPEECH_MUTED)
 	for words in [title,context]:
 		words.max_lines_visible=2 if words==title else 1; words.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
-	route=PALETTE.words(self,"",Vector2(16,112),288,17,PALETTE.CREAM)
+	route=PALETTE.words(self,"",Vector2(16,112),288,17,PALETTE.SPEECH_INK)
 	for signal_name in ["mouse_entered","mouse_exited","focus_entered","focus_exited","button_down","button_up"]: connect(signal_name,queue_redraw)
 
 func present(value: Dictionary) -> void:
@@ -48,6 +49,6 @@ func present(value: Dictionary) -> void:
 
 func _draw() -> void:
 	if not is_instance_valid(route): return
-	draw_line(Vector2(24,route.position.y-9),Vector2(size.x-24,route.position.y-9),Color("c8dbe3",.24),1,true)
-	draw_line(Vector2(0,20),Vector2(0,52),PALETTE.LEMON,3,true)
+	draw_line(Vector2(24,route.position.y-9),Vector2(size.x-24,route.position.y-9),Color("a69b81",.3),1,true)
+	draw_line(Vector2(0,20),Vector2(0,52),PALETTE.SAGE,3,true)
 	if has_focus() or is_hovered(): draw_circle(Vector2(size.x-22,28),3,PALETTE.LEMON)

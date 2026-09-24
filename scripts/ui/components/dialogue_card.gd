@@ -27,7 +27,7 @@ func _ready() -> void:
 	mouse_filter=MOUSE_FILTER_IGNORE
 	var face := Palette.face(Palette.SPEECH,12,0)
 	face.set_border_width_all(1)
-	face.border_color=Color("91a7ad")
+	face.border_color=Palette.PAPER_EDGE
 	add_theme_stylebox_override("panel",face)
 	content=Control.new(); content.mouse_filter=MOUSE_FILTER_IGNORE; add_child(content)
 	speaker_label=_label(17,Palette.SEA)

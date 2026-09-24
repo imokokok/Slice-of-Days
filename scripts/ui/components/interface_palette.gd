@@ -8,9 +8,10 @@ const LEMON := Color("eed577")
 const SAGE := Color("849776")
 const MUTED := Color("52675f")
 const MIST := Color("e8eff0")
-const SPEECH := Color("fffdf6")
-const SPEECH_INK := Color("26343d")
-const SPEECH_MUTED := Color("4f6470")
+const SPEECH := Color("f6efdd")
+const SPEECH_INK := Color("394b40")
+const SPEECH_MUTED := Color("656958")
+const PAPER_EDGE := Color("b6aa8b")
 
 static func face(color: Color, radius := 8, margin := 12) -> StyleBoxFlat:
 	var result := StyleBoxFlat.new()

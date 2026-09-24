@@ -13,8 +13,10 @@ static func room(id: String) -> Dictionary:
 static func phase(minute: int) -> int:
 	return 2 if minute >= 1140 or minute < 360 else 1 if minute >= 1020 else 0
 static func plate(row: Dictionary) -> Texture2D:
+	return plate_for_phase(row,phase(GameState.current_minute))
+static func plate_for_phase(row: Dictionary, at_phase: int) -> Texture2D:
 	if row.is_empty(): return null
-	var page := int(row.pages[phase(GameState.current_minute)])
+	var page := int(row.pages[clampi(at_phase,0,2)])
 	if not textures.has(page):
 		# Keep only the most recently visited plates, not all 99 full-resolution images.
 		if textures.size() >= 32: textures.erase(textures.keys()[0])

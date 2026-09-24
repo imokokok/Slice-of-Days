@@ -15,35 +15,25 @@ func _ready() -> void:
 	var sky_material := ShaderMaterial.new(); sky_material.shader=preload("res://scripts/ui/coast_sky.gdshader")
 	sky_material.set_shader_parameter("dusk_sky",DUSK); sky_material.set_shader_parameter("night_sky",NIGHT); sky_material.set_shader_parameter("rain_sky",RAIN)
 	panorama.material=sky_material; panorama.show_behind_parent=true; add_child(panorama)
+	WorldAtmosphere.ensure_initialized()
+	_process(0.0)
 
-static func weights(minute: int) -> Vector3:
-	var t := posmod(minute,1440)
-	if t<330: return Vector3(0,0,1)
-	if t<480:
-		var dawn := float(t-330)/150
-		return Vector3(dawn,0,1-dawn)
-	if t<1020: return Vector3(1,0,0)
-	if t<1110:
-		var sunset := float(t-1020)/90
-		return Vector3(1-sunset,sunset,0)
-	if t<1200:
-		var evening := float(t-1110)/90
-		return Vector3(0,1-evening,evening)
-	return Vector3(0,0,1)
+static func weights(minute: float) -> Vector3:
+	return preload("res://scripts/ui/world_atmosphere.gd").sky_weights(minute)
 
 func _process(_delta: float) -> void:
 	if not is_instance_valid(stage): return
 	var area: Rect2=stage.coast_art_rect() if stage.route_id=="lookout_route" else Rect2(-stage.camera_x,0,8000,900)
 	panorama.position=area.position; panorama.size=area.size
-	panorama.material.set_shader_parameter("blend",weights(GameState.current_minute))
-	var light := preload("res://scripts/ui/street_composition.gd").daylight(GameState.current_minute)
+	panorama.material.set_shader_parameter("blend",WorldAtmosphere.blend)
+	var light := WorldAtmosphere.light
 	panorama.material.set_shader_parameter("light",Vector3(light.r,light.g,light.b))
-	panorama.material.set_shader_parameter("rain",preload("res://scripts/ui/street_composition.gd").rain_amount(GameState.current_day,GameState.current_minute))
+	panorama.material.set_shader_parameter("rain",WorldAtmosphere.rain)
 	queue_redraw()
 func _draw() -> void:
 	if not is_instance_valid(stage) or not is_inside_tree(): return
 	var area: Rect2 = stage.coast_art_rect() if stage.route_id=="lookout_route" else Rect2(-stage.camera_x,0,8000,900)
-	var blend := weights(GameState.current_minute)
+	var blend := WorldAtmosphere.blend
 	# Gentle water movement stays behind the street and is anchored to the coast.
 	var t := Time.get_ticks_msec()*.001
 	for i in 28:

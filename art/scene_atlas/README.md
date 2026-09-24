@@ -1,5 +1,13 @@
 # Scene atlas
 
+## Current presentation — 2026-09-24
+
+The reference-atlas exterior renderer and street preloading are retired. Exteriors use simple native facades and the approved hand-drawn cutouts in `art/user_scenes/`, grounded on the shared curb. The supplied coast panorama is retained. Old exterior atlas files are archived, not active street backgrounds.
+
+Home and other existing room interiors are retained. Their day/dusk/night plates now follow the continuous `WorldAtmosphere` presentation clock. The original protagonist artwork, resident sheets, fallback people and original walk rendering are retained. Names, schedules, narrative and interactions are unchanged.
+
+The following describes the historical import, not the current exterior renderer:
+
 Source: the user-provided `SOLMERE_全场景参考图册.pdf`, 99 pages. Each numbered JPEG is the corresponding embedded illustration, extracted without the PDF's caption and footer and encoded at quality 93. No new scenery was generated. The source PDF is retained outside the repository.
 
 `data/world/scene_atlas.json` records page captions, the fifteen exterior locations, nine existing interiors, and door/workbench/bench coordinates. The renderer uses day plates from 06:00, dusk from 17:00 and night from 19:00. At 21:00 the lookout switches from its entrance to the sea terrace; its telescope still opens the existing 3D puzzle.

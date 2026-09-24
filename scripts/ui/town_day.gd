@@ -62,9 +62,8 @@ func _ready() -> void:
 	street.composition_anchor = 800.0
 	for index in street_order.size():
 		street.places.append({"id": street_order[index], "name": _location_name(street_order[index]), "kind":locations[street_order[index]].kind, "interior":locations[street_order[index]].interior, "x": _world_x(index, Composition.center_local(street_order[index])), "width":BLOCK_WIDTH})
-	# Load this connected street before walking so a new plate never stalls a boundary crossing.
-	for location_id in street_order:
-		Atlas.plate(Atlas.street(location_id))
+	# Exteriors use the simple street geometry and approved hand-drawn cutouts.
+	# The AI reference atlas is reserved for existing interiors.
 	var saved: Dictionary = GameState.shared_state.get("street_positions", {})
 	var layout := int(GameState.shared_state.get("street_layout_version",0))
 	if layout == 4:
@@ -216,6 +215,7 @@ func _time_guidance_text() -> String:
 func _spaces_at(location_id: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for space in interactive_spaces:
+		if bool(space.get("street_counter",false)): continue
 		if str(space.get("location_id", "")) == location_id:
 			result.append(space)
 	return result
@@ -667,6 +667,9 @@ func _rebuild_hotspots() -> void:
 		var own_home := CoreLoopSystem.home()
 		if GameState.current_location == own_home:
 			street.hotspots.append({"x":center, "kind":"home", "reach":street.DOOR_REACH, "label":"回家"})
+	elif GameState.current_location == "cafe":
+		var hours := WorldGraph.location_status("cafe")
+		street.hotspots.append({"x":center,"kind":"counter","id":"grocery","reach":street.DOOR_REACH,"label":"和老板说话 · 购买杂货" if bool(hours.open) else "杂货店 · 休息中（08:00—22:00）"})
 	else:
 		var rooms := _spaces_at(GameState.current_location)
 		for i in rooms.size():
@@ -705,6 +708,7 @@ func _interact() -> void:
 		"door":
 			if not _guard_pocket_audio(): SceneRouter.enter_space(str(item.id))
 		"shop": _open_shop(str(item.id))
+		"counter": _open_grocery_counter()
 		"transport":
 			if not is_instance_valid(pocket_panel): _show_pocket_panel(preload("res://scripts/ui/transport_panel.gd").new())
 		"fishing":
@@ -716,8 +720,9 @@ func _interact() -> void:
 		"event": _open_event(str(item.id))
 
 func _talk_to_nearest() -> void:
-	var item: Dictionary = street.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation"])
+	var item: Dictionary = street.nearest_of(["person", "npc", "resident", "shopkeeper", "invitation", "counter"])
 	match str(item.get("kind", "")):
+		"counter": _open_grocery_counter()
 		"person", "npc", "resident": _talk_nearby(str(item.id))
 		"shopkeeper": _talk_shopkeeper(str(item.id))
 		"invitation": _talk_nearby(str(item.id), "minigame_hook")
@@ -823,6 +828,30 @@ func _open_shop(shop_id: String) -> void:
 	if is_instance_valid(conversation) and conversation.has_method("resume_from_shop"):
 		panel.tree_exited.connect(conversation.resume_from_shop)
 	_show_pocket_panel(panel)
+
+func _open_grocery_counter() -> void:
+	if GameState.current_location != "cafe" or is_instance_valid(pocket_panel) or is_instance_valid(conversation): return
+	var hours := WorldGraph.location_status("cafe")
+	if not bool(hours.open): _show_line("杂货店", str(hours.reason)); return
+	# The owner speaks from the existing storefront. No second interior or
+	# additional roaming story resident is created for this service counter.
+	_clear_dialogue()
+	event_panel.speaker_label.text=LocalizationSystem.text("杂货店老板")
+	event_panel.text_label.text=LocalizationSystem.text("想带点什么？挑好放一起，我给你结账。胶卷和冲洗也可以在这里办。")
+	event_panel.text_label.visible_characters=-1
+	event_panel.hint_label.text=SettingsSystem.binding_text("ui_cancel")+" · "+LocalizationSystem.text("离开")
+	var choices := VBoxContainer.new()
+	for action in ["shop","film","leave"]:
+		var choice := preload("res://scripts/ui/components/dialogue_choice.gd").new()
+		choice.name="Grocery_"+action
+		choice.text=LocalizationSystem.text({"shop":"购买杂货","film":"摄影与冲洗","leave":"先走了"}[action])
+		choice.pressed.connect(func():
+			event_overlay.hide()
+			if action=="shop": _open_shop("grocery")
+			elif action=="film": FilmSystem.open_counter(self))
+		choices.add_child(choice); dialogue_choices.append(choice)
+	event_panel.attach_choices(choices)
+	dialogue_choices[0].grab_focus()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not get_tree().get_nodes_in_group("world_tool").is_empty(): return

@@ -42,9 +42,8 @@ void fragment() {
 	color = mix(vec3(dot(color, vec3(0.2126, 0.7152, 0.0722))), color, 0.90);
 	// Sun-warmed highlights, gently lifted marine shadows; no sepia wash.
 	color = color * vec3(0.965, 0.977, 0.952) + vec3(0.020, 0.018, 0.012);
-	float fiber = (grain(floor(world_pixel)) - 0.5) * 0.022;
-	fiber += (grain(floor(world_pixel / 3.0)) - 0.5) * 0.012;
-	vec3 pigment = clamp(color + fiber, vec3(0.0), vec3(1.0));
+	// Keep the source brushwork; do not add noise to simple temporary geometry.
+	vec3 pigment = clamp(color, vec3(0.0), vec3(1.0));
 	color = pigment * daylight;
 	for (int i=0; i<16; i++) {
 		if (i>=light_count) { break; }

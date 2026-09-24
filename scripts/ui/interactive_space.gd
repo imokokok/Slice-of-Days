@@ -31,6 +31,10 @@ var roster_minute := -1
 
 
 func _ready() -> void:
+	if SceneRouter.active_space_id=="grocery":
+		SceneRouter.active_space_id=""
+		SceneRouter.town_day.call_deferred()
+		return
 	_load_active_space()
 	if space.is_empty():
 		SceneRouter.leave_space()

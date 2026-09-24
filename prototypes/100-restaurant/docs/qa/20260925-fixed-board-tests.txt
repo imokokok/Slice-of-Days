@@ -1,0 +1,14 @@
+Fixed cutting board targeted regression
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: cut-batch stability, 42 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: real knife mouse drag, 20 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: slice cooking continuity, 37 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: restaurant integration, 126 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org

@@ -9,3 +9,5 @@
 验证至少包括：Godot `--headless --path . --quit-after 120` 无脚本错误、受影响模块的定向测试、`tests/test_integration.gd`、实际启动当前工程。逐项状态写入 `docs/COOKING_PROGRESS.md`，运行结果与限制写入 `docs/VALIDATION.md`，并按“已实现并验证 / 已实现但未验证 / 近似实现 / 尚未实现”分类。
 
 本轮补充：柜格取物须扣除可见库存，调料台不放米饭；菜谱外侧与展开页共用渲染源；锅溢出按体积而不是小份数量。实施与验证见 docs/STOCK_RECIPE_PAN_20260925.md。
+
+2026-09-25 最新操作修正：菜板固定在右侧备菜区，取消拖动，覆盖旧文档中可拖动菜板的要求；保留刀切及切块整批入锅。验证使用 tests/test_cut_batch_stability.gd 和 tests/test_knife_drag.gd，结果记录在 docs/VALIDATION.md。

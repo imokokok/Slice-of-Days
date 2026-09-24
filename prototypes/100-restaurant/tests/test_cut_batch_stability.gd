@@ -19,8 +19,8 @@ func _run() -> void:
 	var world = game.world
 	world.audio.muted = true
 
-	# Put one intact ingredient on the real board, then move the board through
-	# the same pointer path used by a player.  Its station and cargo must agree.
+	# Drag the board's empty area toward the pan using real input events.
+	# The fixed station and its food must remain in the preparation area.
 	world.spawn_ingredient(game._definition("tomato"))
 	var whole: RigidBody2D = world._held
 	whole.position = world.cutting_board.rect().get_center()
@@ -29,13 +29,12 @@ func _run() -> void:
 	var old_board: Vector2 = world.cutting_board.position
 	var old_food: Vector2 = whole.position
 	_mouse(old_board + Vector2(14, 14), "down")
-	_mouse(old_board + Vector2(-76, -16), "move")
-	_mouse(old_board + Vector2(-76, -16), "up")
+	_mouse(world.pan.point(Vector2(810, 560)), "move")
+	_mouse(world.pan.point(Vector2(810, 560)), "up")
 	await process_frame
-	var board_delta: Vector2 = world.cutting_board.position - old_board
-	_expect(board_delta.length() > 50.0, "cutting board is physically draggable from an empty area")
-	_expect(world._stations.chop == world.cutting_board.rect(), "moved cutting board updates its real cutting station")
-	_expect(whole.position.distance_to(old_food + board_delta) < 1.0 and whole.get_meta("on_board", false), "food rides with the moved cutting board")
+	_expect(world.cutting_board.position == old_board, "dragging the board toward the pan leaves it fixed in place")
+	_expect(world._stations.chop == Rect2(old_board, world.cutting_board.SIZE), "fixed cutting station retains its original bounds")
+	_expect(whole.position.distance_to(old_food) < 1.0 and whole.get_meta("on_board", false), "dragging an empty board area does not carry its food away")
 
 	# Make eight pieces from one lineage.  A single drag must enroll all of them
 	# without any shared spawn position or solver ejection.

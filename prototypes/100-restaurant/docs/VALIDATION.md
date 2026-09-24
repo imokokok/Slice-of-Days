@@ -103,3 +103,11 @@ Windows 试玩版于 2026-09-11 00:42 导出，导出命令退出码 0；测试�
 - 已检查四张 GPU 实际渲染截图：qa/20260925-stock.png、20260925-book.png、20260925-small-sauce.png、20260925-full-pan.png。分别展示柜格留空、共用菜谱扉页、10 ml 小量不溢出、总量超过 1500 ml 后只溢出超量部分。截图中的满锅水量由测试设置，出酱和溢出经过实际生产代码。
 - headless 启动无脚本错误，记录 qa/20260925-stock-smoke.txt；Windows release 导出退出码 0，已启动“100饭店”（PID 38988，Responding=True）。未进行系统鼠标下的完整人工操作验收。
 - 容积/密度/流体仍是明确记录的二维近似；跨班库存存档、采购补货和实录音频尚未实现。详见 STOCK_RECIPE_PAN_20260925.md。
+
+## 2026-09-25 固定菜板回归
+
+- 菜板空白处向锅内拖拽的引擎鼠标事件不再移动菜板、切割区域或板上的食材；移除了整个菜板拖动入口及旧操作提示。
+- `test_cut_batch_stability.gd` 42 项、`test_knife_drag.gd` 20 项、`test_slice_cooking_continuity.gd` 37 项、`test_integration.gd` 126 项，共 225 项通过。覆盖菜板固定、刀刃实际切割、8 块同源食材一次入锅、切片烹饪与装盘连续性。日志：`qa/20260925-fixed-board-tests.txt`。
+- `--headless --path . --quit-after 120` 通过，无脚本错误。此次执行上述定向回归，没有将旧版本的全套结果计入本次。
+- 运行 GPU 捕获并检查 `qa/20260925-fixed-board.png`：切块在锅内，菜板保持右侧备菜区位置。截图通过生产切割及入锅代码布置，不代表系统鼠标手工试玩。
+- Windows release 导出退出码 0，更新了原试玩路径。系统鼠标完整人工流程本次尚未验证。

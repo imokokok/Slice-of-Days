@@ -411,7 +411,6 @@ func set_controls_enabled(value: bool) -> void :
 	if not value:
 		if is_instance_valid(sponge): sponge.release_tool()
 		for tool in utensils: tool.release_tool()
-		if is_instance_valid(cutting_board): cutting_board.release_board()
 		_stop_squeezing()
 		if _knife_held:
 			_release_knife()

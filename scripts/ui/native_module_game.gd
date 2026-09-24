@@ -10,6 +10,7 @@ const SAGE := Color("8caa87")
 const GOLD := Color("eed577")
 const BOARD := Rect2(42, 122, 920, 610)
 const COOKING = preload("res://scripts/core/cooking_mechanics.gd")
+const SUPPLIED_KITCHEN_ART = preload("res://scripts/ui/components/kitchen_art_catalog.gd")
 
 var cooking_pan: Texture2D=preload("res://art/ui/enamel-cooking-pan.png")
 var illustrated_pot: Button
@@ -52,6 +53,11 @@ var stir_buttons: Dictionary = {}
 var seasoning_buttons: Dictionary = {}
 var plating_buttons: Dictionary = {}
 var cooking_feedback: Control
+var ingredient_pages: Array[Dictionary] = []
+var ingredient_page := 0
+var ingredient_page_label: Label
+var ingredient_previous_button: Button
+var ingredient_next_button: Button
 
 
 func _ready() -> void:
@@ -62,6 +68,8 @@ func _ready() -> void:
 		return
 	prototype = GameplayModuleSystem.prototype_for(module_id)
 	interaction = prototype.get("interaction", {})
+	if module_id=="cooking":
+		interaction["tokens"]=SUPPLIED_KITCHEN_ART.append_to(interaction.get("tokens",[]))
 	var background_path := str(prototype.get("background_path", ""))
 	if not background_path.is_empty() and ResourceLoader.exists(background_path):
 		var loaded = load(background_path)
@@ -153,11 +161,18 @@ func _build_cooking_ui() -> void:
 	cooking_history_label=p.words(self,"",Vector2(1260,365),218,17,p.MUTED)
 	ingredient_art=Control.new(); ingredient_art.mouse_filter=MOUSE_FILTER_IGNORE; add_child(ingredient_art)
 	var tokens: Array=interaction.get("tokens",[])
+	_build_ingredient_pages(tokens)
+	ingredient_previous_button=_button(self,"上一架",Vector2(1222,623),Vector2(118,34),false)
+	ingredient_previous_button.variant="quiet"; ingredient_previous_button.refresh(); ingredient_previous_button.pressed.connect(_change_ingredient_page.bind(-1))
+	ingredient_page_label=p.words(self,"",Vector2(930,629),278,17,p.MUTED)
+	ingredient_page_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
+	ingredient_next_button=_button(self,"下一架",Vector2(1350,623),Vector2(118,34),false)
+	ingredient_next_button.variant="quiet"; ingredient_next_button.refresh(); ingredient_next_button.pressed.connect(_change_ingredient_page.bind(1))
 	for i in tokens.size():
 		var token: Dictionary=tokens[i]
 		var b := preload("res://scripts/ui/components/handmade_item.gd").new()
 		b.item_id=str(token.id); b.caption=str(token.label)
-		b.position=Vector2(70+i*160,646); b.size=Vector2(142,141)
+		b.position=Vector2(70+(i%8)*180,658); b.size=Vector2(142,139)
 		b.name="Ingredient_"+str(token.id); b.pressed.connect(_toggle_token.bind(str(token.id)))
 		token_buttons[str(token.id)]=b; add_child(b)
 	for i in 2:
@@ -203,6 +218,74 @@ func _kitchen_picture(index: int, at: Vector2, extent: Vector2) -> void:
 	atlas.region=Rect2((index%3)*512,floori(index/3.0)*512,512,512)
 	var picture := TextureRect.new(); picture.texture=atlas; picture.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 	picture.position=at; picture.size=extent; picture.mouse_filter=MOUSE_FILTER_IGNORE; add_child(picture)
+
+
+func _build_ingredient_pages(tokens: Array) -> void:
+	ingredient_pages.clear()
+	var shelf_order: Array[String]=[]
+	var shelves: Dictionary={}
+	for value in tokens:
+		var token: Dictionary=value
+		var shelf := str(token.get("shelf","常备食材"))
+		if not shelves.has(shelf):
+			shelf_order.append(shelf)
+			shelves[shelf]=[]
+		(shelves[shelf] as Array).append(str(token.get("id","")))
+	for shelf in shelf_order:
+		var ids: Array=shelves[shelf]
+		var pages_in_shelf := ceili(ids.size()/8.0)
+		for local_page in pages_in_shelf:
+			var begin := local_page*8
+			ingredient_pages.append({
+				"label":shelf,
+				"local_page":local_page+1,
+				"local_total":pages_in_shelf,
+				"ids":ids.slice(begin,mini(begin+8,ids.size())),
+			})
+	ingredient_page=clampi(ingredient_page,0,maxi(0,ingredient_pages.size()-1))
+
+
+func _change_ingredient_page(direction: int) -> void:
+	if cooking_phase!="select" or ingredient_pages.is_empty(): return
+	ingredient_page=clampi(ingredient_page+direction,0,ingredient_pages.size()-1)
+	_refresh_ingredient_shelf()
+	for token_id in _visible_ingredient_ids():
+		var button: Button=token_buttons.get(token_id)
+		if is_instance_valid(button) and not button.disabled:
+			button.grab_focus()
+			break
+
+
+func _visible_ingredient_ids() -> Array[String]:
+	var result: Array[String]=[]
+	if module_id!="cooking": return result
+	if cooking_phase!="select":
+		result.assign(selected_tokens)
+	elif not ingredient_pages.is_empty():
+		for id in ingredient_pages[ingredient_page].ids: result.append(str(id))
+	return result
+
+
+func _refresh_ingredient_shelf() -> void:
+	if module_id!="cooking" or not is_instance_valid(ingredient_page_label): return
+	for button in token_buttons.values(): button.visible=false
+	var visible_ids := _visible_ingredient_ids()
+	for i in visible_ids.size():
+		var button: Button=token_buttons.get(visible_ids[i])
+		if not is_instance_valid(button): continue
+		button.position=Vector2(70+i*180,658)
+		button.visible=true
+	var browsing := cooking_phase=="select"
+	ingredient_previous_button.visible=browsing
+	ingredient_next_button.visible=browsing
+	if browsing and not ingredient_pages.is_empty():
+		var page: Dictionary=ingredient_pages[ingredient_page]
+		var suffix := " · %d/%d" % [int(page.local_page),int(page.local_total)] if int(page.local_total)>1 else ""
+		ingredient_page_label.text=LocalizationSystem.text("%s%s　整架 %d/%d" % [str(page.label),suffix,ingredient_page+1,ingredient_pages.size()])
+		ingredient_previous_button.disabled=ingredient_page<=0
+		ingredient_next_button.disabled=ingredient_page>=ingredient_pages.size()-1
+	else:
+		ingredient_page_label.text=LocalizationSystem.text("本锅三样 · 下锅顺序可改")
 
 func _open_recipe_book() -> void:
 	if not get_tree().get_nodes_in_group("recipe_book").is_empty(): return
@@ -439,6 +522,7 @@ func _selected_token_data() -> Array:
 
 
 func _update_state() -> void:
+	_refresh_ingredient_shelf()
 	if is_instance_valid(prep_board):
 		prep_board.items.assign(selected_tokens)
 		for token_id in added_tokens: prep_board.items.erase(token_id)
@@ -667,11 +751,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not get_tree().get_nodes_in_group("native_confirmation").is_empty(): return
 	if not event.is_pressed() or event.is_echo():
 		return
-	if event is InputEventKey and event.keycode >= KEY_1 and event.keycode <= KEY_5:
+	if event is InputEventKey and event.keycode >= KEY_1 and event.keycode <= KEY_8:
 		var index := int(event.keycode - KEY_1)
-		var tokens: Array = interaction.get("tokens", [])
-		if index < tokens.size():
-			_toggle_token(str(tokens[index].get("id", "")))
+		if module_id=="cooking":
+			var visible_ids := _visible_ingredient_ids()
+			if index<visible_ids.size(): _toggle_token(visible_ids[index])
+		else:
+			var tokens: Array = interaction.get("tokens", [])
+			if index < tokens.size(): _toggle_token(str(tokens[index].get("id", "")))
 	elif event.is_action_pressed("restart_module"):
 		_perform_primary_action()
 	elif event.is_action_pressed("ui_cancel"):

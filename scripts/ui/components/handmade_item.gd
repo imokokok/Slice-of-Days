@@ -1,6 +1,6 @@
 extends Button
 ## Individually visible, focusable merchandise; never an invisible hotspot.
-const ART = preload("res://scripts/ui/components/handmade_assets.gd")
+const ART = preload("res://scripts/ui/components/cooking_ingredients.gd")
 var item_id := ""
 var caption := ""
 var caption_back: Panel

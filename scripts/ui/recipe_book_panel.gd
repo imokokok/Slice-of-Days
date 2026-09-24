@@ -2,6 +2,7 @@ extends Control
 signal follow_recipe(recipe: Dictionary)
 const BOOK = preload("res://scripts/core/recipe_book.gd")
 const ART = preload("res://scripts/ui/components/handmade_assets.gd")
+const INGREDIENT_ART = preload("res://scripts/ui/components/cooking_ingredients.gd")
 const P = preload("res://scripts/ui/components/interface_palette.gd")
 var ingredients: Array=[]
 var heat := 0.58
@@ -81,7 +82,7 @@ func _build() -> void:
 	if not chosen.is_empty():
 		P.words(body,str(chosen.title),Vector2(852,143),515,30)
 		P.words(body,"来自 "+str(chosen.author),Vector2(854,190),500,18,P.MUTED)
-		for i in chosen.ingredients.size(): ART.picture(body,str(chosen.ingredients[i]),Vector2(852+i*167,234),Vector2(147,117))
+		for i in chosen.ingredients.size(): _ingredient_picture(body,str(chosen.ingredients[i]),Vector2(852+i*167,234),Vector2(147,117))
 		var notes_scroll := ScrollContainer.new(); notes_scroll.position=Vector2(853,367); notes_scroll.size=Vector2(512,118); notes_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; body.add_child(notes_scroll)
 		var note := P.words(notes_scroll,str(chosen.get("notes","")),Vector2.ZERO,495,21)
 		note.size_flags_horizontal=SIZE_EXPAND_FILL
@@ -111,7 +112,7 @@ func _editor() -> void:
 	notes_field=TextEdit.new(); notes_field.name="RecipeNotes"; notes_field.placeholder_text=LocalizationSystem.text("食材顺序、火候、想留给做菜人的话……"); notes_field.text=str(chosen.get("notes","")); notes_field.position=Vector2(225,350); notes_field.size=Vector2(475,165); notes_field.wrap_mode=TextEdit.LINE_WRAPPING_BOUNDARY; body.add_child(notes_field)
 	notes_field.text_changed.connect(func():
 		if notes_field.text.length()>1600: notes_field.text=notes_field.text.left(1600))
-	for i in ingredients.size(): ART.picture(body,str(ingredients[i]),Vector2(851+i*165,150),Vector2(145,110))
+	for i in ingredients.size(): _ingredient_picture(body,str(ingredients[i]),Vector2(851+i*165,150),Vector2(145,110))
 	P.words(body,"在这里画下你的菜",Vector2(853,282),500,22,P.MUTED)
 	drawing=preload("res://scripts/ui/components/recipe_drawing.gd").new(); drawing.position=Vector2(852,326); drawing.size=Vector2(511,270); drawing.strokes=chosen.get("strokes",[]).duplicate(true); body.add_child(drawing)
 	_btn("撤回一笔",Vector2(846,752),Vector2(225,48),func():
@@ -125,6 +126,16 @@ func _save() -> void:
 	var result := BOOK.save_recipe(_draft(),false,true)
 	message.text=str(result.message)
 	if result.ok: chosen=result.recipe; section="mine"; editing=false; _build()
+
+
+func _ingredient_picture(parent: Node, id: String, at: Vector2, extent: Vector2) -> TextureRect:
+	var picture := TextureRect.new()
+	picture.texture=INGREDIENT_ART.texture(id)
+	picture.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	picture.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	picture.position=at; picture.size=extent; picture.mouse_filter=MOUSE_FILTER_IGNORE
+	parent.add_child(picture)
+	return picture
 
 func _file(importing: bool) -> void:
 	var dialog := FileDialog.new(); dialog.use_native_dialog=true; dialog.access=FileDialog.ACCESS_FILESYSTEM

@@ -2,6 +2,7 @@ extends Node
 ## Resource-chain orchestration; GameState remains the currency/inventory/time authority.
 signal changed
 const CONFIG_PATH := "res://data/economy/economy_config.json"
+const SUPPLIED_KITCHEN_ART = preload("res://scripts/ui/components/kitchen_art_catalog.gd")
 var config: Dictionary = {}
 var catalog: Dictionary = {}
 var mutating := false
@@ -232,7 +233,7 @@ func deliver_procurement() -> Dictionary:
 	return {"ok":true,"message":"材料已放到操作台，报销 %d 元。小票盖好章，仍留在资料袋里。" % total}
 
 func ingredient_available(id: String) -> bool:
-	return int(GameState.inventory.get(id,0)) > 0 or (active_order().is_empty() and id in config.procurement.pantry)
+	return int(GameState.inventory.get(id,0)) > 0 or SUPPLIED_KITCHEN_ART.is_supplied_ingredient(id) or (active_order().is_empty() and id in config.procurement.pantry)
 
 func cooking_check(tokens: Array) -> Dictionary:
 	for id in tokens:
@@ -245,6 +246,7 @@ func cooking_check(tokens: Array) -> Dictionary:
 	return {"ok":true}
 
 func ingredient_name(id: String) -> String:
+	if SUPPLIED_KITCHEN_ART.is_supplied_ingredient(id): return SUPPLIED_KITCHEN_ART.ingredient_name(id)
 	for shop: Dictionary in catalog.values():
 		for item: Dictionary in shop.get("items",[]):
 			if str(item.id)==id: return str(item.name)

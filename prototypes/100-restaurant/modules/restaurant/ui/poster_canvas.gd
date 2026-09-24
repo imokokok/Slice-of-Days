@@ -11,6 +11,7 @@ var stickers: Array = []
 var ink: = Color("284a42")
 var brush_width: = 4.0
 var editable: = true
+var draw_paper: = true
 var selected_index: = -1
 var mode: = "select":
 	set(value):
@@ -506,7 +507,8 @@ func _pixel(point: Array) -> Vector2:
 	return Vector2(float(point[0]) * size.x, float(point[1]) * size.y)
 
 func _draw() -> void :
-	draw_style_box(_paper_style(), Rect2(Vector2.ZERO, size))
+	if draw_paper:
+		draw_style_box(_paper_style(), Rect2(Vector2.ZERO, size))
 
 func _draw_brush() -> void :
 	for stroke in strokes:

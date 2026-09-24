@@ -45,7 +45,7 @@ func refresh_foods() -> void :
 			var art: = Node2D.new()
 			art.set_script(source.get_script())
 			for property in source.get_property_list():
-				if str(property.name) in ["definition", "cut", "heat", "softness", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state"]:
+				if str(property.name) in ["definition", "cut", "heat", "softness", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
 					art.set(property.name, source.get(property.name))
 			art.scale = source.scale * 2.8
 			art.z_index = 1
@@ -65,6 +65,7 @@ func refresh_foods() -> void :
 func add_to_plate(body: RigidBody2D) -> void :
 	if not is_instance_valid(body) or not body.get_meta("enrolled", false): return
 	if not body.get_meta("plated", false):
+		game.world.leave_pan_residue(body)
 		var index: = _visuals.size()
 		body.set_meta("plated", true)
 		body.freeze = true

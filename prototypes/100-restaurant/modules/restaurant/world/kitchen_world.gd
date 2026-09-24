@@ -21,6 +21,7 @@ var plate: Node2D
 var cutting_board: Node2D
 var utensils: Array[Node2D] = []
 var sponge: Node2D
+var cloth: Node2D
 var plate_presentation: Dictionary = {}
 var audio: Node
 var _customer: Dictionary = {}
@@ -163,6 +164,9 @@ func _ready() -> void :
 	sponge = preload("res://modules/restaurant/world/cleaning_sponge.gd").new()
 	sponge.world = self
 	add_child(sponge)
+	cloth = preload("res://modules/restaurant/world/cleaning_cloth.gd").new()
+	cloth.world = self
+	add_child(cloth)
 	var floating: = preload("res://modules/restaurant/world/floating_tools.gd").new()
 	floating.world = self
 	add_child(floating)
@@ -282,6 +286,7 @@ func _physics_process(_delta: float) -> void :
 			_on_pan_exited(body)
 
 func _land_on_plate(body: RigidBody2D) -> void :
+	leave_pan_residue(body)
 	if body.get_meta("overflow", false) or body.get_meta("is_container", false): return
 	body.set_meta("plated", true)
 	body.set_meta("pending", false)
@@ -410,6 +415,7 @@ func set_controls_enabled(value: bool) -> void :
 				body.remove_meta("modal_freeze")
 	if not value:
 		if is_instance_valid(sponge): sponge.release_tool()
+		if is_instance_valid(cloth): cloth.release_tool()
 		for tool in utensils: tool.release_tool()
 		_stop_squeezing()
 		if _knife_held:
@@ -597,6 +603,7 @@ func _release_drag_group() -> void :
 func _pickup(body: RigidBody2D) -> void :
 	if is_instance_valid(_held) or _knife_held or has_active_utensil() or pan.active:
 		return
+	body.stop_board_settle()
 	if bool(body.get_meta("enrolled", false)):
 		food_removed_from_pan.emit(body)
 		body.set_meta("enrolled", false)
@@ -693,6 +700,9 @@ func accept_food(body: RigidBody2D, accepted: bool) -> void :
 	body.set_meta("pending", false)
 	body.set_meta("enrolled", accepted)
 	if accepted:
+		if not body.get_meta("plated", false):
+			pan.residue.transfer_to_food(body)
+			body.set_meta("residue_deposited", false)
 		body.set_meta("container_location", "pan")
 		var displaced := minf(pan.water_ml, maxf(0.0, pan_contents_ml() - PAN_CAPACITY_ML))
 		if displaced > 0.0:
@@ -748,6 +758,9 @@ func describe_body(body: RigidBody2D) -> Dictionary:
 		"container": str(body.get_meta("container_location", "worktop")),
 		"surface_sauce": body.get_meta("surface_sauce", {}).duplicate(true)
 	}
+	state["pan_carryover"] = body.get_meta("pan_carryover", {}).duplicate(true)
+	state["cut_style"] = str(body.get_meta("cut_style", "whole"))
+	state["source_fraction"] = float(body.get_meta("source_fraction", 1.0))
 	var polygon: PackedVector2Array = body.get_meta("fragment_polygon", PackedVector2Array())
 	var encoded: Array = []
 	for point in polygon: encoded.append([snappedf(point.x, 0.01), snappedf(point.y, 0.01)])
@@ -801,7 +814,7 @@ func set_plated(value: bool) -> void :
 	var index: = 0
 	for body in _foods.get_children():
 		if bool(body.get_meta("enrolled", false)):
-
+			leave_pan_residue(body)
 			body.set_meta("plated", true)
 			body.freeze = true
 			body.global_position = plate.center + Vector2(-60 + float(index % 4) * 40, - float(index / 4) * 15)
@@ -891,6 +904,7 @@ func discard_held() -> bool:
 
 func get_held_name() -> String:
 	if is_instance_valid(sponge) and sponge.active: return "清洁海绵"
+	if is_instance_valid(cloth) and cloth.active: return "抹布"
 	for utensil in utensils:
 		if utensil.active: return utensil.title
 	if _knife_held:
@@ -993,7 +1007,7 @@ func _sync_held_foreground() -> void :
 
 			for property in source.get_property_list():
 				var property_name: = str(property.name)
-				if property_name in ["definition", "cut", "heat", "softness", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state"]:
+				if property_name in ["definition", "cut", "heat", "softness", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
 					_held_proxy.set(property_name, source.get(property_name))
 			_held_proxy.z_index = 1
 			_held_foreground.add_child(_held_proxy)
@@ -1374,6 +1388,9 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 		body.set_meta("enrolled", false)
 	var definition: Dictionary = body.get_meta("definition", {})
 	var art_offset: Vector2 = body.get_meta("art_offset", Vector2.ZERO)
+	var parent_area := _polygon_area(polygon)
+	var root_area := float(body.get_meta("root_area", parent_area))
+	var cut_style := preload("res://modules/restaurant/assets/cut_state_library.gd").style_for(body.get_meta("cut_axis", Vector2.ZERO), local_normal, str(body.get_meta("cut_style", "slice")))
 	for index in range(2):
 		var piece: PackedVector2Array = first if index == 0 else second
 		var center: = _polygon_centroid(piece)
@@ -1391,10 +1408,15 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 		fragment.linear_damp = 2.5
 		fragment.angular_damp = 4.0
 		fragment.physics_material_override = body.physics_material_override
-		for key in ["id", "title", "definition", "saved_heat"]:
+		for key in ["id", "title", "definition", "saved_heat", "softness", "hydration", "cooking_heat"]:
 			if body.has_meta(key):
 				fragment.set_meta(key, body.get_meta(key))
-		fragment.set_meta("title", str(definition.get("name", "食材")) + " · 切块")
+		fragment.set_meta("title", str(definition.get("name", "食材")) + (" · 小块" if cut_style == "dice" else " · 切片"))
+		fragment.set_meta("root_area", root_area)
+		fragment.set_meta("source_fraction", _polygon_area(piece) / root_area)
+		fragment.set_meta("cut_axis", local_normal)
+		fragment.set_meta("cut_style", cut_style)
+		fragment.set_meta("cut_variant", posmod(int(body.get_meta("cut_variant", 0)) + index, 3))
 		fragment.set_meta("cut", true)
 		fragment.set_meta("cut_depth", int(body.get_meta("cut_depth", 0)) + 1)
 		fragment.set_meta("enrolled", false)
@@ -1406,7 +1428,14 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 		var parent_lineage: Array = body.get_meta("lineage", []).duplicate(true)
 		parent_lineage.append(str(body.get_meta("instance_uid", body.get_instance_id())))
 		fragment.set_meta("lineage", parent_lineage)
-		fragment.set_meta("surface_sauce", body.get_meta("surface_sauce", {}).duplicate(true))
+		var ratio := _polygon_area(piece) / parent_area
+		var coating: Dictionary = body.get_meta("surface_sauce", {}).duplicate(true)
+		coating["volume_ml"] = float(coating.get("volume_ml", 0.0)) * ratio
+		for key in coating.get("composition_ml", {}): coating.composition_ml[key] *= ratio
+		fragment.set_meta("surface_sauce", coating)
+		var carryover: Dictionary = body.get_meta("pan_carryover", {}).duplicate(true)
+		for key in carryover: carryover[key].mass_kg *= ratio
+		fragment.set_meta("pan_carryover", carryover)
 		fragment.set_meta("last_cut_time", _time)
 		fragment.set_meta("fragment_polygon", centered)
 		fragment.set_meta("art_offset", art_offset - center)
@@ -1421,6 +1450,9 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 		visual.definition = definition
 		visual.polygon = centered
 		visual.art_offset = art_offset - center
+		visual.cut_style = cut_style
+		visual.cut_variant = int(fragment.get_meta("cut_variant"))
+		visual.source_fraction = float(fragment.get_meta("source_fraction"))
 		visual.heat = float(body.get_meta("saved_heat", 0.0))
 		fragment.add_child(visual)
 		_foods.add_child(fragment)
@@ -1429,10 +1461,8 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 		fragment.rotation = body.rotation
 		fragment.linear_velocity = body.linear_velocity + normal.normalized() * (12.0 if index == 0 else -12.0)
 		if body.get_meta("on_board", false):
-			fragment.set_meta("on_board", true)
-			fragment.freeze = true
-			fragment.linear_velocity = Vector2.ZERO
-			fragment.angular_velocity = 0
+			var side := 1.0 if index == 0 else -1.0
+			fragment.begin_board_settle(Rect2(_board_food_min(), _board_food_max() - _board_food_min()), normal.normalized() * 24.0 * side, side * (1.7 if cut_style == "slice" else 0.8))
 		result.append(fragment)
 	body.collision_layer = 0
 	body.collision_mask = 0
@@ -1482,6 +1512,11 @@ func _polygon_area(polygon: PackedVector2Array) -> float:
 
 func has_active_utensil() -> bool:
 	if is_instance_valid(sponge) and sponge.active: return true
+	if is_instance_valid(cloth) and cloth.active: return true
 	for tool in utensils:
 		if tool.active: return true
 	return false
+
+func leave_pan_residue(body: RigidBody2D) -> void:
+	if body.get_meta("container_location", "") == "pan" and not body.get_meta("plated", false):
+		pan.residue.deposit(body)

@@ -1,6 +1,8 @@
 param([Parameter(Mandatory=$true)][string]$GodotPath)
 $ErrorActionPreference = 'Stop'
 $projectPath = Split-Path -Parent $PSScriptRoot
+& $GodotPath --headless --path $projectPath --script tests/test_cut_clean_share.gd
+if ($LASTEXITCODE -ne 0) { throw 'Cut, cleaning and sharing tests failed' }
 & $GodotPath --headless --path $projectPath --script tests/test_handdrawn_assets.gd
 if ($LASTEXITCODE -ne 0) { throw 'Hand-drawn asset tests failed' }
 & $GodotPath --headless --path $projectPath --script tests/test_shelf_pages.gd

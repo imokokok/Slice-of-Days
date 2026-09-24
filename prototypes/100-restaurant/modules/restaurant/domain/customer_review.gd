@@ -41,6 +41,12 @@ static func compose(snapshot: Dictionary, customer: Dictionary, catalog: Diction
 			if not seasonings.has(title): seasonings.append(title)
 	var reason: = "plain"
 	var details: Array[String] = []
+	for trace in snapshot.get("pan_carryover", {}).values():
+		if float(trace.get("mass_kg", 0)) >= 0.00005:
+			details.append("还有上一锅留下的%s味；两道菜之间把空锅擦洗一下会更清爽。" % str(trace.get("title", "调料")))
+			for tag in trace.get("tags", []):
+				if customer.get("dislikes", []).has(tag) and not avoided.has(str(trace.title)):
+					avoided.append(str(trace.title))
 	if not burnt.is_empty() and not bool(customer.get("likes_burnt", false)):
 		reason = "burnt"
 		details.append("%s已经焦了，苦味很明显。" % _names(burnt))

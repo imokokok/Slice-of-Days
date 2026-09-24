@@ -16,6 +16,10 @@ var softness: = 0.0:
 		if is_instance_valid(_art):
 			_art.set("softness", softness)
 var _art: Node2D
+var cut_style := "slice"
+var cut_variant := 0
+var source_fraction := 0.5
+var _face: Polygon2D
 
 func _ready() -> void :
 	var mask: = Polygon2D.new()
@@ -32,7 +36,31 @@ func _ready() -> void :
 	_art.position = art_offset
 	_art.scale = Vector2.ONE * 0.61
 	mask.add_child(_art)
+	var texture := preload("res://modules/restaurant/assets/cut_state_library.gd").texture(str(definition.get("id", "")), cut_style, cut_variant)
+	if texture != null:
+		_face = Polygon2D.new()
+		_face.polygon = polygon
+		_face.texture = texture
+		var uv := PackedVector2Array()
+		for point in polygon:
+			# Shared source-space UVs preserve the relationship between adjacent pieces.
+			uv.append(((point - art_offset) / 48.0 + Vector2.ONE * 0.5) * texture.get_size())
+		_face.uv = uv
+		_face.modulate.a = clampf(1.35 - source_fraction, 0.4, 1.0)
+		var shader := ShaderMaterial.new()
+		shader.shader = preload("res://modules/restaurant/assets/cooking_surface.gdshader")
+		_face.material = shader
+		mask.add_child(_face)
+		_update_face()
 	queue_redraw()
+
+func _process(_delta: float) -> void:
+	_update_face()
+
+func _update_face() -> void:
+	if not is_instance_valid(_face): return
+	var appearance := preload("res://modules/restaurant/assets/cooking_appearance.gd").state(definition, heat)
+	for key in appearance: _face.material.set_shader_parameter(key, appearance[key])
 
 func _draw() -> void :
 

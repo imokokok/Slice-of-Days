@@ -61,14 +61,14 @@ func _test_new_paper_recipe() -> Dictionary:
 	game._title_input.text = "第一张自己的菜谱"
 	game._author_input.text = "纸上主厨"
 	game._notes_input.text = "这是一张自主创作的菜谱，还没有实际下锅。"
-	await _click_text("放入公共菜谱")
+	await _click_text("收进我的菜谱")
 	_expect(publications.is_empty() and game.repository.load_recipes().is_empty(), "metadata alone cannot publish completely blank paper without a dish")
 	_expect(game.modal.visible and game._modal_kind == "recipe_editor" and not game._editor_status.text.is_empty(), "blank-save rejection keeps the editor open with a visible reason")
 	await _click_text("把菜名放到纸上")
 	await _click_text("星星")
 	_expect(game._recipe_canvas.has_content(), "explicit text and decoration make a DIY paper creation")
 	var expected_paper: Dictionary = game._recipe_canvas.export_data()
-	await _click_text("放入公共菜谱")
+	await _click_text("收进我的菜谱")
 	await _layout()
 	_expect(publications.size() == 1, "paper-only recipe emits one publication without requiring a cooked dish")
 	if publications.is_empty():

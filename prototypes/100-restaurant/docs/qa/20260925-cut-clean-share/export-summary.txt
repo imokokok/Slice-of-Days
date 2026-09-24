@@ -1,0 +1,5 @@
+Windows Desktop export: exit 0
+EXE SHA256: 63f06b57dbca784d295c5f77db359bc953812bd29252cce31a2932c15175af11
+Fresh process: PID 11044, title 100饭店, Responding=True
+Source and exported EXE headless startup: 120 frames, exit 0
+Live production viewport inspected; screenshot kept local because it contains existing personal recipes.

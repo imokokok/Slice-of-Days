@@ -51,9 +51,9 @@ func run() -> void:
 		if not points.is_empty():
 			left = INF
 			for point in points: left = minf(left, point.x)
-		var cut_point: Vector2 = remainder.to_global(Vector2(left + 6.0, 0))
 		world._time += 0.4
-		world._perform_knife_sweep(cut_point - Vector2(0, 40), cut_point + Vector2(0, 40))
+		# Settling may rotate the remainder: parallel strokes follow its local axis.
+		world._perform_knife_sweep(remainder.to_global(Vector2(left + 6.0, -40)), remainder.to_global(Vector2(left + 6.0, 40)))
 		await process_frame
 	world.put_knife_back()
 	var pieces: Array = world._foods.get_children()

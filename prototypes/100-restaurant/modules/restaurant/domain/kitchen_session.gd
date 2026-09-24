@@ -219,6 +219,7 @@ func set_heat_level(level: String) -> bool:
 
 func plate() -> Dictionary:
 	var tags: Array = []
+	var carryover: Dictionary = {}
 	var unique: Dictionary = {}
 	var quality_sum: float = 0.0
 	var weird_sum: float = 0.0
@@ -227,6 +228,12 @@ func plate() -> Dictionary:
 	var cut_count: int = 0
 	var combined: Array = dish + garnishes
 	for item in combined:
+		for trace_id in item.get("pan_carryover", {}):
+			var trace: Dictionary = item.pan_carryover[trace_id]
+			if not carryover.has(trace_id):
+				carryover[trace_id] = trace.duplicate(true)
+				carryover[trace_id].mass_kg = 0.0
+			carryover[trace_id].mass_kg += float(trace.get("mass_kg", 0))
 		var id: String = str(item.get("id", ""))
 		if not _catalog.has(id):
 			continue
@@ -258,6 +265,10 @@ func plate() -> Dictionary:
 			for tag in data.get("tags", []):
 				if not tags.has(tag):
 					tags.append(tag)
+	for trace in carryover.values():
+		if float(trace.mass_kg) >= 0.00005:
+			for tag in trace.get("tags", []):
+				if not tags.has(tag): tags.append(tag)
 	var count: int = combined.size()
 	var weirdness: float = 0.0
 	if not unique.is_empty():
@@ -266,6 +277,7 @@ func plate() -> Dictionary:
 		if tags.has("sweet") and tags.has("seafood"):
 			weirdness = minf(1.0, weirdness + 0.18)
 	return {
+		"pan_carryover": carryover,
 		"ingredients": combined.duplicate(true),
 		"presentation": presentation.duplicate(true),
 		"water_ml": water_ml,

@@ -28,6 +28,12 @@ var _last_transport: = 0
 var pan_back: Node2D
 var pan_front: Node2D
 var faucet_art: Node2D
+var residue = preload("res://modules/restaurant/world/pan_residue.gd").new()
+
+func is_empty_for_cleaning() -> bool:
+	for body in world._foods.get_children():
+		if not body.is_queued_for_deletion() and not body.get_meta("plated", false) and (body.get_meta("enrolled", false) or body.get_meta("pending", false)) and contains(body.position): return false
+	return true
 
 func _ready() -> void :
 	z_index = 3
@@ -57,6 +63,7 @@ func _process(delta: float) -> void :
 	if world.controls_enabled:
 		if active and _tipping: set_angle(move_toward(angle, deg_to_rad(110), delta * 3.8))
 		if faucet_on and under_tap():
+			if is_empty_for_cleaning(): residue.waste_kg += residue.wipe(delta * 0.00018 * faucet_amount)
 			var incoming: = delta * 180 * faucet_amount
 			var accepted: float = minf(incoming, world.pan_free_ml())
 			water_heat *= water_ml / maxf(water_ml + accepted, 1)

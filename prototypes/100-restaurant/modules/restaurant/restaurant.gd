@@ -409,7 +409,7 @@ func _show_intro() -> void :
 	_text("100 RESTAURANT  /  自由烹饪", 14, ACCENT)
 	_text("老板把今天的厨房交给你。\n给客人做一顿正常的午餐，或者一场意想不到的味觉实验。", 23, CREAM)
 	_text("客人会说出想吃的味道。直接从冰箱、架子和篮子取材，在砧板用刀切开，放入锅里控制火候，再装盘出餐。收班获得营业收入的 30%。")
-	_text("86 种可用材料  ·  拿取 / 切配 / 下锅  ·  自由组合\n原创菜谱留存  ·  手绘海报  ·  各有偏好的街坊")
+	_text("%d 种可用材料  ·  拿取 / 切配 / 下锅  ·  自由组合\n原创菜谱留存  ·  手绘海报  ·  各有偏好的街坊" % session.active_ingredients().size())
 	var row: = _row(modal_body)
 	_button(row, "开始今天的营业", _start_shift, 270)
 	_button(row, "先在厨房练习", func(): _started = true;_close_modal();_notify("准备期不限时。点击右上角“暂停 / 帮助”可开始营业。"), 240)
@@ -435,13 +435,15 @@ func _show_pause() -> void :
 func _show_help() -> void :
 	_open_modal("help", "从一颗番茄开始", 870)
 	_text("01  取材", 22, ACCENT)
-	_text("86 种可用材料都摆在冷藏柜、常温架和篮子里。点击取一份，移动鼠标到台面再点击放下；已放下的食材可以拖拽。TAB 可搜索。")
+	_text("%d 种材料分层放在冰箱和奇物架上，箭头可翻层。每件取出后原位留空。点击拿取，再点击放下；台面上的食材可以拖拽。TAB 可搜索。" % session.active_ingredients().size())
 	_text("02  切配与入锅", 22, ACCENT)
-	_text("食材完整取出，放稳在右侧砧板。按住刀柄，让刀刃划过食材，切成的每块都可以单独拖进锅里；松开鼠标就放下刀。")
+	_text("食材放在固定的右侧菜板。按住刀柄划过食材；顺着同方向切成片，交叉切成块。切片会落稳，拖住其中一片可把同批切块一起送入锅中。")
 	_text("03  掌握火候", 22, ACCENT)
-	_text("点击灶台开关火。中火下 6–11 秒为适宜火候，超过 14 秒焦糊；小火更慢，大火更快；每块单独计时，离锅停止受热。锅最多 6 份 / 块。按住锅边的铲柄拖进锅内，左右推拌、向上翻动，拖起时斜握铲柄，松开归位。调料拿到锅上方，按住左键撒、倒或挤，松开停止；实际落锅的一份调料计入料理，瓶子留在手里。")
+	_text("在灶台选火力，观察变色、焦边与沸腾。每块独立受热；锅容纳 6 份原料、最多 48 个切块，总容量 1500 ml。拿起铲子推拌；调料瓶口对准锅，按住出料、松开停止。")
 	_text("04  留下你的招牌", 22, ACCENT)
-	_text("点击盘子逐份装盘、拖动旋转或淋酱。可选拍照，再到“菜谱”手动加入照片，纸面默认空白。按住锅柄自由拖动，同时按住鼠标右键可倾倒食物。顶部菜谱、海报、暂停按钮都能用鼠标操作。")
+	_text("点击盘子装盘、旋转或淋酱，也可拖锅时按住右键倾倒。拍下成品，在菜谱纸上画画、贴照片、写做法。保存后点“分享这一页”，朋友用浏览器就能看，也能导回游戏。")
+	_text("05  下一锅之前", 22, ACCENT)
+	_text("关火并装盘后，拖起水槽旁的抹布，在水流下打湿，再拖过空锅擦掉残留。脏抹布可冲洗；未清洁的锅会把上一道菜的味道带进下一道菜。海绵用来擦台面溢出的水和调料。")
 	_button(modal_body, "知道了，回厨房", _close_modal)
 
 func _focus(title: String, hint: String) -> void :
@@ -493,6 +495,7 @@ func _food_entered(id: String, cut: bool, body: RigidBody2D) -> void :
 		session.dish[-1]["physics_id"] = key
 		_food_by_physics[key] = body
 	world.accept_food(body, accepted)
+	if accepted: session.dish[-1].merge(world.describe_body(body), true)
 	_notify(session.last_notice)
 
 func _food_removed(body: RigidBody2D) -> void :
@@ -504,6 +507,7 @@ func _food_removed(body: RigidBody2D) -> void :
 			body.set_meta("cut", session.dish[i].get("cut", false))
 			session.dish.remove_at(i)
 	_food_by_physics.erase(key)
+	world.leave_pan_residue(body)
 	if session.dish.is_empty() and not body.get_meta("poured", false):
 		session.set_heating(false)
 
@@ -783,10 +787,10 @@ func _show_recipe_editor(record: Dictionary = {}) -> void :
 	var actions: = _row(modal_body)
 	_tool_button(actions, "把菜名放到纸上", func(): _recipe_canvas.add_text(_title_input.text, _recipe_canvas.ink), 220)
 	_tool_button(actions, "把做法放到纸上", func(): _recipe_canvas.add_text(_notes_input.text, _recipe_canvas.ink), 220)
-	_button(actions, "保存修改" if not _editing_recipe_id.is_empty() else "放入公共菜谱", _save_recipe, 220)
+	_button(actions, "保存修改" if not _editing_recipe_id.is_empty() else "收进我的菜谱", _save_recipe, 220)
 	if not _editing_recipe_id.is_empty():
 		_tool_button(actions, "另存为新菜谱", func(): _save_recipe(true), 220)
-	_tool_button(actions, "暂不公开", _close_modal, 160)
+	_tool_button(actions, "先收起纸页", _close_modal, 160)
 	if _recipe_dish.get("ingredients", []).is_empty():
 		_editor_status.text = "还没做菜也能 DIY：在纸上写字、画画或放照片，取名后保存。"
 
@@ -1061,7 +1065,7 @@ func _snapshot_photo() -> void :
 
 func _save_recipe(as_copy: bool = false) -> void :
 	if _title_input.text.strip_edges().is_empty():
-		_editor_status.text = "先在右侧填写菜名，再放入公共菜谱。"
+		_editor_status.text = "先在右侧填写菜名，再收进我的菜谱。"
 		return
 	var clean_dish: Dictionary = _recipe_dish.duplicate(true)
 	for entry in clean_dish.get("ingredients", []):
@@ -1214,12 +1218,35 @@ func _view_recipe(record: Dictionary) -> void :
 	follow.disabled = sequence.is_empty() or session.phase == "closed"
 	follow.tooltip_text = "收班后可翻阅，重新进入厨房后再跟做。" if session.phase == "closed" else "按真实切配、入锅和熟度推进；不会替你做菜。"
 	if not record.get("reference", false):
-		_paper_action(row, "继续 DIY", func(): _show_recipe_editor(record), "book", 220)
+		_paper_action(row, "继续 DIY", func(): _show_recipe_editor(record), "book", 180)
+		_paper_action(row, "分享这一页", func(): _share_recipe_page(record), "book", 180)
 		_button(row, "喜欢这道菜", func():
 			var liked: bool = repository.like_recipe(str(record.get("id", "")))
-			_notify("谢谢，你的喜欢已记下。" if liked else "这次没有新增喜欢：" + repository.get_last_error()), 180)
+			_notify("谢谢，你的喜欢已记下。" if liked else "这次没有新增喜欢：" + repository.get_last_error()), 150)
 	_paper_action(row, "翻到目录", _show_cookbook, "arrow", 210)
 	if session.phase == "closed": _text("今天已经收班。先收好做法，下次营业再试。", 16)
+
+func _share_recipe_page(record: Dictionary) -> void:
+	var dialog := FileDialog.new()
+	dialog.title = "分享这一页 · 朋友用浏览器就能看"
+	dialog.access = FileDialog.ACCESS_FILESYSTEM
+	dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+	dialog.filters = PackedStringArray(["*.html ; 图文菜谱（内附可编辑菜谱文件）", "*.json ; 只导出这一页的可编辑菜谱"])
+	dialog.current_file = "kitchen_recipe.html"
+	dialog.size = Vector2i(1000, 660)
+	modal.add_child(dialog)
+	dialog.file_selected.connect(func(path: String):
+		var error: Error
+		if path.get_extension().to_lower() == "json":
+			error = repository.export_recipe_to(str(record.id), path)
+		else:
+			var image: Image = _recipe_stand.viewport.get_texture().get_image()
+			var png := "" if image == null else Marshalls.raw_to_base64(image.save_png_to_buffer())
+			error = repository.export_reading_page(str(record.id), path, png, session.ingredients)
+		_text("这一页已保存。把文件发给朋友即可观看；页面下方也能下载菜谱带回游戏。" if error == OK else "未能保存：" + repository.get_last_error(), 17, ACCENT)
+		dialog.queue_free())
+	dialog.canceled.connect(dialog.queue_free)
+	dialog.popup_centered()
 
 func _build_recipe_guide() -> void:
 	_guide_bar = PanelContainer.new()

@@ -28,7 +28,15 @@ func _ready() -> void:
 				mask.clip_children = CanvasItem.CLIP_CHILDREN_ONLY
 				mask.position.x = side * 4
 				anchor.add_child(mask)
-				var piece = art.duplicate()
+				# Node.duplicate does not preserve non-exported script properties.
+				# Reconstruct explicitly, otherwise every cut ingredient becomes tomato.
+				var piece = preload("res://modules/restaurant/assets/food_art.gd").new()
+				piece.definition = definition
+				piece.shadows = false
+				piece.heat = art.heat
+				piece.softness = art.softness
+				piece.cut = true
+				piece.scale = art.scale
 				mask.add_child(piece)
 			art.free()
 		else: anchor.add_child(art)

@@ -37,6 +37,9 @@ func _draw() -> void :
 		_noodles(base)
 		return
 	var painted: Texture2D = preload("res://modules/restaurant/assets/sprite_library.gd").food(id)
+	if cut:
+		var sliced := preload("res://modules/restaurant/assets/cut_state_library.gd").texture(id, "slice")
+		if sliced != null: painted = sliced
 	if painted:
 		if _cooking_material == null:
 			_cooking_material = ShaderMaterial.new()

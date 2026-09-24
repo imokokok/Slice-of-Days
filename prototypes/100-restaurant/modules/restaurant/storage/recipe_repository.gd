@@ -116,6 +116,40 @@ func export_to(path: String) -> Error:
 		return ERR_INVALID_PARAMETER
 	return _write_document(path, _recipes, [], false)
 
+func export_recipe_to(recipe_id: String, path: String) -> Error:
+	load_recipes()
+	var index := _find_index(recipe_id)
+	if index < 0 or _is_storage_path(path):
+		last_error = "请选取已保存的菜谱，导出到新的文件。"
+		return ERR_INVALID_PARAMETER
+	return _write_document(path, [_recipes[index]], [], false)
+
+func export_reading_page(recipe_id: String, path: String, page_png: String, catalog: Array) -> Error:
+	load_recipes()
+	last_error = ""
+	var index := _find_index(recipe_id)
+	if index < 0 or _is_storage_path(path) or path.get_extension().to_lower() != "html" or page_png.is_empty() or not _valid_thumbnail(page_png):
+		last_error = "菜谱或纸面预览不可用，请保存为新的 HTML 文件。"
+		return ERR_INVALID_PARAMETER
+	var content := preload("res://modules/restaurant/storage/recipe_share.gd").document(_recipes[index], page_png, catalog)
+	var temporary := path + ".tmp"
+	var file := FileAccess.open(temporary, FileAccess.WRITE)
+	if file == null:
+		last_error = "分享页无法写入，请选择可写文件夹。"
+		return FileAccess.get_open_error()
+	file.store_string(content)
+	file.flush()
+	var error := file.get_error()
+	file.close()
+	if error == OK: error = DirAccess.rename_absolute(temporary, path)
+	if error != OK: last_error = "分享页没有保存成功，原文件保持不变。"
+	return error
+
+func _is_storage_path(path: String) -> bool:
+	var absolute := ProjectSettings.globalize_path(path).simplify_path().replace("\\", "/").to_lower()
+	var stored := ProjectSettings.globalize_path(storage_path).simplify_path().replace("\\", "/").to_lower()
+	return absolute in [stored, stored + ".bak", stored + ".tmp"]
+
 func import_from(path: String) -> Dictionary:
 	load_recipes()
 	last_error = ""

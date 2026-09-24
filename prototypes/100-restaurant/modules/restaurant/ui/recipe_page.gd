@@ -25,6 +25,8 @@ func setup(value: Dictionary) -> void:
 		add_child(paper)
 		paper.import_data(record.poster)
 		paper.editable = false
+		# The book supplies its own paper; keep the authored ink and photos intact.
+		paper.draw_paper = false
 		paper.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		paper.position = Vector2(42, 170)
 		paper.custom_minimum_size = Vector2.ZERO

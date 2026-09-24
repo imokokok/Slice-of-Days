@@ -42,7 +42,7 @@ func _process(_delta: float) -> void :
 			else:
 				proxy.set_script(source.get_script())
 				for property in source.get_property_list():
-					if str(property.name) in ["controller", "definition", "cut", "heat", "softness", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state"]:
+					if str(property.name) in ["controller", "definition", "cut", "heat", "softness", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
 						proxy.set(property.name, source.get(property.name))
 			add_child(proxy)
 			copies[id] = {"source": source, "proxy": proxy}

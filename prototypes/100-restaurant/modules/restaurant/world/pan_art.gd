@@ -6,6 +6,13 @@ func _draw() -> void :
 	var tex: = preload("res://modules/restaurant/assets/sprite_library.gd").gear(0)
 	# Restore vertical body so the pan reads as a deep vessel.
 	if tex: draw_texture_rect(tex, Rect2(684, 534, 384, 112), false)
+	if controller.residue.total_kg() > 0.000001:
+		var index := 0
+		for item in controller.residue.components.values():
+			var pigment := Color(str(item.color))
+			pigment.a = clampf(float(item.mass_kg) * 950.0, 0.05, 0.7)
+			_ellipse(Vector2(764 + (index % 4) * 29, 573 + (index / 4) * 6), Vector2(16, 5), pigment)
+			index += 1
 	var water: float = controller.water_ml
 	if water > 0:
 		var fill: float = controller.world.pan_fill_ratio()

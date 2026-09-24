@@ -1,0 +1,61 @@
+{
+	"recipes": [
+		{
+			"author": "测试主厨",
+			"created_at": "2026-09-24 23:10:10 UTC",
+			"dish": {
+				"ingredients": [
+					{
+						"cut": true,
+						"heat": 7.0,
+						"id": "onion"
+					}
+				]
+			},
+			"id": "shared_page",
+			"likes": 0,
+			"notes": "把洋葱切成薄片。小火翻炒到柔软，再添半杯水。\n关火前尝一口，留一点甜给今天。",
+			"poster": {
+				"caption": "",
+				"stickers": [
+					{
+						"color": "66533cff",
+						"kind": "text",
+						"position": [
+							0.5,
+							0.18
+						],
+						"scale": 0.18,
+						"text": "洋葱小锅"
+					},
+					{
+						"cut": true,
+						"heat": 7.0,
+						"id": "onion",
+						"kind": "ingredient",
+						"position": [
+							0.27,
+							0.63
+						],
+						"scale": 0.2
+					},
+					{
+						"color": "66533cff",
+						"kind": "text",
+						"position": [
+							0.7,
+							0.62
+						],
+						"scale": 0.11,
+						"text": "切片 · 炒软\n添水 · 煮开"
+					}
+				],
+				"strokes": [],
+				"version": 1
+			},
+			"thumbnail": "",
+			"title": "慢慢煮一锅洋葱"
+		}
+	],
+	"schema_version": 1
+}

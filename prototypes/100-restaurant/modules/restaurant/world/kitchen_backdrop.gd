@@ -9,6 +9,8 @@ const ROOM = preload("res://modules/restaurant/assets/kitchen_reference_playable
 const FONT = preload("res://modules/restaurant/assets/fonts/noto_serif_sc.ttf")
 func _draw() -> void :
 	draw_texture_rect(ROOM, Rect2(0, 0, 1600, 900), false)
+	# Only replace the old baked-in towel rectangle. The rest is the approved room.
+	draw_texture_rect_region(preload("res://modules/restaurant/assets/cut_states/counter_patch.png"), Rect2(342.7,685.5,238.5,126.6), Rect2(329,780,229,144))
 	# Separate small signs leave the illustrated room and chalkboard visible.
 	draw_string(FONT, Vector2(58, 55), "100饭店", HORIZONTAL_ALIGNMENT_LEFT, -1, 34, Color("fff0b8"))
 	draw_string(FONT, Vector2(58, 80), "好好吃饭，也好好生活", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("eadbc4"))

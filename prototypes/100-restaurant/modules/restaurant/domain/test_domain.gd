@@ -52,7 +52,8 @@ func _score(ids: Array, heat: float, kind: String = "regular", likes: Array = []
 
 func _test_catalog() -> void:
 	var session = _fresh()
-	_expect(session.ingredients.size() == 88, "catalog has exactly 88 ingredients")
+	_expect(session.ingredients.size() == 97, "catalog has 97 definitions after supplied odd-item additions")
+	_expect(session.active_ingredients().size() == 95, "95 ingredients are available; fish stays disabled")
 	var ids: Dictionary = {}
 	var categories: Dictionary = {"basic": 0, "seasoning": 0, "sweet": 0, "odd": 0}
 	for ingredient in session.ingredients:
@@ -66,7 +67,7 @@ func _test_catalog() -> void:
 		_expect(float(ingredient.get("mass", 0.0)) > 0.0, "positive mass for " + id)
 		_expect(float(ingredient.get("friction", -1.0)) >= 0.0 and float(ingredient.get("friction", 2.0)) <= 1.0, "friction range for " + id)
 		_expect(float(ingredient.get("bounce", -1.0)) >= 0.0 and float(ingredient.get("bounce", 2.0)) <= 1.0, "bounce range for " + id)
-	_expect(categories == {"basic": 32, "seasoning": 16, "sweet": 16, "odd": 24}, "all category counts")
+	_expect(categories == {"basic": 32, "seasoning": 16, "sweet": 16, "odd": 33}, "catalog categories include supplied odd items")
 
 func _test_cooking_and_tastes() -> void:
 	var raw: Dictionary = _score(["egg", "shrimp"], 0.0, "gourmet", ["protein", "umami"])

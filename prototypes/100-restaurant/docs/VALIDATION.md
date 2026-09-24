@@ -1,5 +1,19 @@
 # 验证记录
 
+## 2026-09-25 切配、残味清洁与单页菜谱
+
+本轮证据目录：`qa/20260925-cut-clean-share/`，具体修复与边界见 `CUT_CLEAN_SHARE_20260925.md`。
+
+- 最终 GPU 专项 **89 项通过**：48 张切面资源读取（42 有效、6 备用），实际连续切割与酱汁守恒，落板位移/转角/暂停/停稳，有限残味转移到下道菜及评价，关火与空锅检查，实际擦拭接触及冲洗，输入事件拾取/移动/释放抹布，菜谱食材身份，分享注入转义、单页私密隔离、独立库重新导入。日志 `gpu-final.txt`。
+- 后段完整回归 **26 套件全部通过**（`regression-final.txt`）：domain 552、integration 126、high fidelity 15、knife 35、knife drag 20、cut batch 42、slice continuity 37、layout 18、stock/pan/recipe 25、collage 39、collage input 68、paper recipe 30、DIY 75、tape editing 75、tape tools 30、seasoning 148、spatula 29、heat 23、interactions 35、reviews 33、free pan 9、workstations 17、comfort 90，另存储、海报存储和 97 张图 alpha 审计（0 错误）。
+- 首段回归中手绘 227、柜层 260、引导 40、录音 150 均通过，交付前补留完整输出 `assets-and-guide.txt`。首轮 domain 因旧目录数量断言失败，按当前 97 个定义 / 95 个可用及四分类更新后复验通过；未删除功能检查。原始首轮日志 `regression-first.txt` 保留失败及修复背景。
+- 最后纸页背景融合改动后重新跑 5 个相关套件：切配/清洁/分享 86、引导 40、DIY 75、拼贴 39、拼贴输入 68，全过。GPU 的额外 3 项涉及正常 DIY 页输出及修订后 JSON；不累计重复执行的检查数。见 `final-affected.txt`。
+- GPU 证据 `proof-board.png`、`proof-clean.png`、`proof-recipe.png`、`cut-faces.png` 逐图检查。修正了图集相邻格串图问题，运行时按 alpha 范围提取独立纹理。新纸页不再把白色编辑纸框生硬叠在旧纸上。
+- `proof-page.html` 是独立测试存档的实际导出页，已在浏览器查看图文；内嵌 JSON 经过提取和引擎导入断言，`proof-recipe.json` 与最终纸页一致。没有上传玩家私人菜谱。
+- 源码与 Windows 导出包各 headless 120 帧启动通过、退出 0，无脚本错误，见 `smoke-final.txt` 和 `export-smoke.txt`。Windows Release 导出退出 0；导出记录确认包含 3 张新 PNG、recipe_share、cleaning_cloth、pan_residue。EXE SHA-256：`63f06b57dbca784d295c5f77db359bc953812bd29252cce31a2932c15175af11`。
+- 已启动最终 `AfterHoursKitchen.exe`，重新查询确认窗口标题“100饭店”、Responding=True（PID 11044），并从该导出包生产主场景抓取 `work/qa-cut-clean-share/live-export.png` 查看实际画面。抹布、菜谱及材料层入口正常显示。该图包含本机既有私人作品，只留本地；提交的截图均来自独立测试存档。
+- 验证方式是 Godot 场景方法、引擎输入事件、GPU 实际帧以及浏览器页面；没有接管系统鼠标，没有宣称人工连续营业或逐条人耳试听。二维物理、有限残味标签与做法推断属于近似。
+
 ## 2026-09-25 追加番茄素材归档
 
 核对 `df995921916e28abe9a9c7634fd6bc34.jpg` 为 RGB JPEG、1079 × 1527、白底；归档 SHA-256 为 `682335f386a407c78cd7141c0049c4e9c37c2f83cd019be4cb2eeba17cd0bea9`，与提供原件字节一致。去底生成候选因改变笔触未采用；未更新运行时清单、试玩包，也未将旧回归数写成本次验证。游戏替换尚待透明原图或程序去底方式确认。

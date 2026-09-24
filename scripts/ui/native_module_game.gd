@@ -14,6 +14,8 @@ const SUPPLIED_KITCHEN_ART = preload("res://scripts/ui/components/kitchen_art_ca
 
 var cooking_pan: Texture2D=preload("res://art/ui/enamel-cooking-pan.png")
 var illustrated_pot: Button
+var plated_dish: Control
+var cooking_recipe_strip: Control
 var ingredient_art: Control
 var prep_board: Button
 var module_id := ""
@@ -58,6 +60,7 @@ var ingredient_page := 0
 var ingredient_page_label: Label
 var ingredient_previous_button: Button
 var ingredient_next_button: Button
+var plating_preview_choice := "space"
 
 
 func _ready() -> void:
@@ -144,20 +147,21 @@ func _build_cooking_ui() -> void:
 	prep_board.prepared.connect(func(id: String):
 		if cooking_phase=="prep" and prepared_tokens.size()<selected_tokens.size() and id==selected_tokens[prepared_tokens.size()]:
 			_choose_prep_option(0))
-	if preload("res://scripts/ui/production_assets.gd").available("pot_body"):
-		illustrated_pot=preload("res://scripts/ui/components/cooking_pot.gd").new()
-		illustrated_pot.position=Vector2(480,170); illustrated_pot.size=Vector2(422,390); add_child(illustrated_pot)
-		illustrated_pot.pressed.connect(_use_cooking_pot)
+	illustrated_pot=preload("res://scripts/ui/components/cooking_pot.gd").new()
+	illustrated_pot.position=Vector2(480,170); illustrated_pot.size=Vector2(422,390); add_child(illustrated_pot)
+	illustrated_pot.pressed.connect(_use_cooking_pot)
+	if preload("res://scripts/ui/production_assets.gd").available("kitchen_salt"):
 		preload("res://scripts/ui/production_assets.gd").picture(self,"kitchen_salt",Vector2(312,174),Vector2(56,76))
-	else:
-		_kitchen_picture(1,Vector2(480,197),Vector2(390,390))
-		_kitchen_picture(2,Vector2(485,218),Vector2(422,342))
 	_kitchen_picture(5,Vector2(75,158),Vector2(184,115))
 	cooking_feedback=preload("res://scripts/ui/cooking_pan_feedback.gd").new()
 	cooking_feedback.position=Vector2(480,170); cooking_feedback.size=Vector2(422,390); cooking_feedback.layered_pot=is_instance_valid(illustrated_pot); add_child(cooking_feedback)
+	plated_dish=preload("res://scripts/ui/components/cooking_plate.gd").new()
+	plated_dish.position=Vector2(480,170); plated_dish.size=Vector2(422,390); plated_dish.visible=false; add_child(plated_dish)
 	art.picture(self,"recipe_book",Vector2(940,176),Vector2(592,426),true)
 	instruction_label=p.words(self,"从下面取三样食材。先后顺序，也是一道菜的记忆。",Vector2(994,215),218,20)
 	selection_label=p.words(self,"",Vector2(1260,215),220,18)
+	cooking_recipe_strip=preload("res://scripts/ui/components/cooking_recipe_strip.gd").new()
+	cooking_recipe_strip.position=Vector2(1260,284); cooking_recipe_strip.size=Vector2(220,72); add_child(cooking_recipe_strip)
 	cooking_history_label=p.words(self,"",Vector2(1260,365),218,17,p.MUTED)
 	ingredient_art=Control.new(); ingredient_art.mouse_filter=MOUSE_FILTER_IGNORE; add_child(ingredient_art)
 	var tokens: Array=interaction.get("tokens",[])
@@ -185,10 +189,15 @@ func _build_cooking_ui() -> void:
 		var stir_button := _button(self,str(stir_data[i][1]),Vector2(974+i*264,482),Vector2(250,42),false)
 		stir_button.variant="quiet"; stir_button.refresh(); stir_button.pressed.connect(_stir.bind(stir_id))
 		stir_buttons[stir_id]=stir_button
-	var seasoning_data := [["brighten","提一点亮味"],["salt","补一小撮盐"],["rest","保留本味"]]
+	var seasoning_data := [["brighten","提一点亮味","wasabi"],["salt","补一小撮盐","salt_shaker"],["rest","保留本味",""]]
 	for i in seasoning_data.size():
 		var seasoning_id := str(seasoning_data[i][0])
 		var seasoning_button := _button(self,str(seasoning_data[i][1]),Vector2(974+i*174,482),Vector2(164,42),false)
+		var seasoning_art_id := str(seasoning_data[i][2])
+		if not seasoning_art_id.is_empty():
+			seasoning_button.icon=preload("res://scripts/ui/components/cooking_ingredients.gd").texture(seasoning_art_id)
+			seasoning_button.expand_icon=true
+			seasoning_button.add_theme_constant_override("icon_max_width",28)
 		seasoning_button.variant="quiet"; seasoning_button.refresh(); seasoning_button.pressed.connect(_choose_seasoning.bind(seasoning_id))
 		seasoning_buttons[seasoning_id]=seasoning_button
 	var plating_data := [["space","留一点空白"],["generous","堆得丰盛"],["share","分成小碟"]]
@@ -196,6 +205,8 @@ func _build_cooking_ui() -> void:
 		var plating_id := str(plating_data[i][0])
 		var plating_button := _button(self,str(plating_data[i][1]),Vector2(974+i*174,482),Vector2(164,42),false)
 		plating_button.variant="quiet"; plating_button.refresh(); plating_button.pressed.connect(_choose_plating.bind(plating_id))
+		plating_button.mouse_entered.connect(_preview_plating.bind(plating_id))
+		plating_button.focus_entered.connect(_preview_plating.bind(plating_id))
 		plating_buttons[plating_id]=plating_button
 	var x := 986
 	for choice in prototype.get("choices",[]):
@@ -309,6 +320,7 @@ func _reset_cooking(refresh := true) -> void:
 	cooking_phase="select"
 	prepared_tokens.clear(); cooking_preps.clear(); added_tokens.clear(); cooking_additions.clear(); cooking_stirs.clear()
 	cooking_score=0; pending_ingredient=""; seasoning_choice=""; seasoning_label=""; plating_choice=""; plating_label=""; stage_ready=false
+	plating_preview_choice="space"
 	if is_instance_valid(value_slider): value_slider.value=.58
 	status_label.text=LocalizationSystem.text("还没有消耗任何食材。可以重新挑三样，顺序会决定下锅顺序。")
 	if refresh: _update_state()
@@ -501,11 +513,21 @@ func _choose_plating(choice: String) -> void:
 		"generous":"热气和分量都被留在中央，看起来像一顿认真招待。",
 		"share":"把同一锅分成几份，每个人都能先尝到自己的那一口。",
 	}
-	plating_choice=choice; plating_label=str(labels.get(choice,choice))
+	plating_choice=choice; plating_label=str(labels.get(choice,choice)); plating_preview_choice=choice
 	cooking_phase="serve"; stage_ready=true
 	status_label.text=LocalizationSystem.text(str(messages.get(choice,"料理已经装盘。")))+LocalizationSystem.text(" %s，可以决定怎样出餐。" % str(COOKING.grade(cooking_score).get("label","完成成菜")))
 	WorldSound.play_ui("check")
 	_update_state()
+	if is_instance_valid(plated_dish): plated_dish.appear()
+
+
+func _preview_plating(choice: String) -> void:
+	if completed or cooking_phase!="plating": return
+	plating_preview_choice=choice
+	if is_instance_valid(plated_dish):
+		var preparation: Dictionary={}
+		for token_id in prepared_tokens: preparation[token_id]=true
+		plated_dish.update_dish(added_tokens,preparation,choice,float(value_slider.value),cooking_additions)
 
 
 func _token_data(token_id: String) -> Dictionary:
@@ -623,14 +645,31 @@ func _update_cooking_state(minimum: int) -> void:
 	if is_instance_valid(illustrated_pot):
 		var preparation: Dictionary={}
 		for token_id in prepared_tokens: preparation[token_id]=true
-		illustrated_pot.update_recipe(added_tokens,preparation,float(value_slider.value))
+		illustrated_pot.update_recipe(added_tokens,preparation,float(value_slider.value),cooking_phase,cooking_additions)
 		illustrated_pot.disabled=completed or not ((cooking_phase=="cook" and not pending_ingredient.is_empty()) or (cooking_phase=="stir" and cooking_stirs.size()<4))
 		illustrated_pot.accessibility_name=LocalizationSystem.text("轻推锅底" if cooking_phase=="stir" else primary_button.text)
 		illustrated_pot.tooltip_text="" if illustrated_pot.disabled else illustrated_pot.accessibility_name
+		illustrated_pot.visible=cooking_phase not in ["plating","serve"]
+	if is_instance_valid(plated_dish):
+		var plate_preparation: Dictionary={}
+		for token_id in prepared_tokens: plate_preparation[token_id]=true
+		plated_dish.visible=cooking_phase in ["plating","serve"]
+		plated_dish.update_dish(added_tokens,plate_preparation,plating_choice if not plating_choice.is_empty() else plating_preview_choice,float(value_slider.value),cooking_additions)
+	if is_instance_valid(cooking_recipe_strip):
+		var strip_ids: Array[String]=[]
+		if cooking_phase in ["select","prep"]:
+			strip_ids.assign(selected_tokens)
+		else:
+			strip_ids.assign(added_tokens)
+			for token_id in selected_tokens:
+				if not strip_ids.has(token_id): strip_ids.append(token_id)
+		var strip_preparation: Dictionary={}
+		for token_id in prepared_tokens: strip_preparation[token_id]=true
+		cooking_recipe_strip.update_recipe(strip_ids,strip_preparation,cooking_additions,-1 if cooking_phase in ["select","prep"] else added_tokens.size())
 	if is_instance_valid(cooking_feedback):
 		cooking_feedback.heat=value_slider.value
 		cooking_feedback.ingredient_count=added_tokens.size()
-		cooking_feedback.active=cooking_phase in ["cook","stir","taste","plating","serve"]
+		cooking_feedback.active=cooking_phase in ["cook","stir","taste"]
 
 
 func _cooking_instruction() -> String:

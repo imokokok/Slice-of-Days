@@ -3,11 +3,42 @@ extends RefCounted
 const FOOD = preload("res://art/ui/pocket_doodles/edible_food.png")
 const ART = preload("res://scripts/ui/components/handmade_assets.gd")
 const SUPPLIED = preload("res://scripts/ui/components/kitchen_art_catalog.gd")
+const PREPARED_COMMON = preload("res://art/ui/kitchen_open_redraw/prepared_common_atlas.png")
+const PREPARED_PEPPERS = preload("res://art/ui/kitchen_open_redraw/prepared_peppers_atlas.png")
+const PREPARED_COMMON_INDEX := {
+	"mushrooms":0,"potato":1,"carrot":2,"beet":3,
+	"eggplant":4,"zucchini":5,"lemon":6,"bread":7,
+	"cheese":8,"tomato":9,"herbs":10,"sardine":11,"sea_bream":11,
+}
+const PREPARED_PEPPER_INDEX := {
+	"bell_pepper_yellow":0,"bell_pepper_purple":1,"bell_pepper_orange":2,"bell_pepper_dark":3,
+	"bell_pepper_bronze":4,"bell_pepper_white":5,"bell_pepper_red":6,"bell_pepper_green":7,
+}
 static var cache: Dictionary={}
+
+static func _atlas_cell(atlas: Texture2D, columns: int, rows: int, index: int, key: String) -> Texture2D:
+	if cache.has(key): return cache[key]
+	var cell := Vector2(atlas.get_width()/float(columns),atlas.get_height()/float(rows))
+	var region := AtlasTexture.new()
+	region.atlas=atlas
+	region.region=Rect2(Vector2((index%columns)*cell.x,floori(index/float(columns))*cell.y),cell)
+	cache[key]=region
+	return region
+
+static func prepared_texture(id: String) -> Texture2D:
+	if PREPARED_COMMON_INDEX.has(id):
+		return _atlas_cell(PREPARED_COMMON,4,3,int(PREPARED_COMMON_INDEX[id]),"prepared_common_"+id)
+	if PREPARED_PEPPER_INDEX.has(id):
+		return _atlas_cell(PREPARED_PEPPERS,4,2,int(PREPARED_PEPPER_INDEX[id]),"prepared_pepper_"+id)
+	return null
+
 static func can_cut(id: String) -> bool:
 	if SUPPLIED.is_supplied_ingredient(id): return SUPPLIED.can_cut(id)
 	return id not in ["sea_beans","star_salt"]
 static func texture(id: String, prepared := false) -> Texture2D:
+	if prepared:
+		var redrawn := prepared_texture(id)
+		if redrawn: return redrawn
 	if SUPPLIED.is_supplied_ingredient(id): return SUPPLIED.texture(id,prepared)
 	if id=="cheese" or (id=="bread" and not prepared):
 		return ART.texture(id)

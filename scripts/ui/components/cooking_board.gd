@@ -1,6 +1,6 @@
 extends Button
-## The board is a real preparation control. Food is cut into source-image strips;
-## the knife gesture changes the preparation recorded with the final dish.
+## The board is a real preparation control. Dedicated prepared art is preserved
+## intact; only ingredients without a prepared drawing use the fallback split.
 signal prepared(item_id: String)
 const KIT = preload("res://art/ui/pocket_doodles/kitchen_objects.png")
 const ART = preload("res://scripts/ui/components/cooking_ingredients.gd")
@@ -35,7 +35,8 @@ func _draw() -> void:
 		var texture := ART.texture(items[i],cuts.has(items[i]))
 		var center := Vector2(82+i*102,119)
 		var dimensions := texture.get_size()*minf(83.0/texture.get_width(),116.0/texture.get_height())
-		if cuts.has(items[i]) and ART.can_cut(items[i]) and items[i] not in ["tomato","herbs","bread","lemon"]:
+		var has_prepared_drawing := ART.prepared_texture(items[i])!=null
+		if cuts.has(items[i]) and ART.can_cut(items[i]) and not has_prepared_drawing and items[i] not in ["tomato","herbs","bread","lemon"]:
 			for part in 3:
 				var source := Rect2(part*texture.get_width()/3.0,0,texture.get_width()/3.0,texture.get_height())
 				var dest := Rect2(center-dimensions*.5+Vector2(part*(dimensions.x/3+5),0),Vector2(dimensions.x/3,dimensions.y))

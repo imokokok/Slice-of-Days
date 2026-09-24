@@ -32,6 +32,10 @@ func run() -> void:
 	var frozen := INGREDIENT_ART.texture("ice_block",false)
 	var softened := INGREDIENT_ART.texture("ice_block",true)
 	check(frozen!=null and softened!=null and frozen.resource_path!=softened.resource_path,"The ice block should use both supplied preparation states")
+	for id in ["mushrooms","potato","carrot","beet","eggplant","zucchini","lemon","bread","cheese","tomato","herbs","sardine","sea_bream","bell_pepper_yellow","bell_pepper_purple","bell_pepper_orange","bell_pepper_dark","bell_pepper_bronze","bell_pepper_white","bell_pepper_red","bell_pepper_green"]:
+		var raw_texture := INGREDIENT_ART.texture(id,false)
+		var prepared_texture := INGREDIENT_ART.texture(id,true)
+		check(raw_texture!=null and prepared_texture!=null and raw_texture!=prepared_texture,"Prepared cooking art should differ from the raw ingredient: "+id)
 
 	var state=root.get_node("GameState")
 	var gameplay=root.get_node("GameplayModuleSystem")
@@ -64,13 +68,27 @@ func run() -> void:
 	if OS.get_cmdline_user_args().has("--screenshots"): await _capture("phase-prep")
 	for step in 3: scene._choose_prep_option(step%2)
 	check(scene.cooking_phase=="cook","The supplied art selection should complete ingredient-specific preparation")
+	if OS.get_cmdline_user_args().has("--screenshots"): await _capture("phase-prepared")
 	for id in scene.selected_tokens:
 		var token: Dictionary=scene._token_data(id)
 		var window: Array=token.get("heat_window",[0.4,0.7])
 		scene.value_slider.value=(float(window[0])+float(window[1]))*.5
 		scene._toggle_token(id); scene._perform_primary_action()
 	check(scene.added_tokens==scene.selected_tokens,"The same supplied art should reach the pan in the chosen order")
+	check(scene.illustrated_pot.cooking_phase=="stir" and scene.illustrated_pot.addition_states.size()==3,"The illustrated pot should receive the live cooking states")
+	check(scene.cooking_recipe_strip.ingredients==scene.added_tokens,"The live recipe page should illustrate the actual pan order")
 	if OS.get_cmdline_user_args().has("--screenshots"): await _capture("phase-pan")
+	for _stir in 2: scene._stir("fold")
+	scene._perform_primary_action()
+	if OS.get_cmdline_user_args().has("--screenshots"): await _capture("phase-taste")
+	var expected: String=str(load("res://scripts/core/cooking_mechanics.gd").seasoning_target(scene._selected_token_data()))
+	scene._choose_seasoning(expected)
+	check(scene.plated_dish.visible and scene.cooking_phase=="plating","Tasting should reveal an ingredient-accurate plating preview")
+	scene._preview_plating("share")
+	check(scene.plated_dish.plating_mode=="share","Hovering a plating choice should preview its arrangement")
+	scene._choose_plating("share")
+	check(scene.cooking_phase=="serve" and scene.plated_dish.visible,"The chosen plated dish should remain visible for serving")
+	if OS.get_cmdline_user_args().has("--screenshots"): await _capture("phase-plating")
 	print("KITCHEN_SUPPLIED_ART_TEST: ","PASS" if failures==0 else "FAIL"," failures=",failures)
 	gameplay.cancel_session(); scene.queue_free(); await process_frame
 	quit(failures)

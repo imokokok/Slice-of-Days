@@ -4,10 +4,15 @@ const FONT = preload("res://modules/restaurant/assets/fonts/noto_serif_sc.ttf")
 var record: Dictionary = {}
 var _image: Texture2D
 var _collage: Control
+var _dish_sketch: Control
 
 func setup(value: Dictionary) -> void:
 	record = value.duplicate(true)
 	_image = null
+	if is_instance_valid(_dish_sketch):
+		remove_child(_dish_sketch)
+		_dish_sketch.queue_free()
+		_dish_sketch = null
 	if is_instance_valid(_collage):
 		remove_child(_collage)
 		_collage.queue_free()
@@ -26,6 +31,16 @@ func setup(value: Dictionary) -> void:
 		paper.size = Vector2(476, 476.0 * 460.0 / 850.0)
 		paper.visible = paper.has_content()
 		_collage = paper
+	if _image == null and (not is_instance_valid(_collage) or not _collage.visible) and not record.get("dish", {}).get("ingredients", []).is_empty():
+		var sketch = preload("res://modules/restaurant/ui/recipe_vignette.gd").new()
+		sketch.stage = "plate"
+		sketch.entries = preload("res://modules/restaurant/domain/recipe_method.gd").targets(record)
+		sketch.catalog = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/data/ingredients.json"))
+		sketch.position = Vector2(66, 210)
+		sketch.size = Vector2(166, 95)
+		sketch.scale = Vector2.ONE * 2.5
+		add_child(sketch)
+		_dish_sketch = sketch
 	queue_redraw()
 
 func _ready() -> void:
@@ -37,7 +52,11 @@ func _draw() -> void:
 		var p := Vector2(17 + fmod(i * 157.7, 526), 18 + fmod(i * 89.1, 720))
 		draw_line(p, p + Vector2(4 + i % 9, 0.5), Color("cbb991", 0.20), 1)
 	draw_line(Vector2(30, 25), Vector2(30, 730), Color("c68d6c", 0.4), 1.5)
-	_words(str(record.get("title", "厨房食谱")), Vector2(58, 81), 31, Color("76523d"), 435)
+	var title := str(record.get("title", "厨房食谱"))
+	if title.length() <= 14:
+		_words(title, Vector2(58, 81), 31, Color("76523d"), 435)
+	else:
+		for i in range(3): _words(title.substr(i * 20, 20), Vector2(58, 42 + i * 25), 21, Color("76523d"), 435)
 	draw_polyline(PackedVector2Array([Vector2(57, 96), Vector2(277, 99), Vector2(492, 95)]), Color("b47050"), 2, true)
 	_words("100饭店  /  每一餐，慢慢记下来", Vector2(59, 126), 16, Color("847456"), 435)
 	if record.is_empty():
@@ -50,6 +69,8 @@ func _draw() -> void:
 			var photo_size := _image.get_size()
 			photo_size *= minf(472.0 / photo_size.x, 272.0 / photo_size.y)
 			draw_texture_rect(_image, Rect2(Vector2(280, 308) - photo_size * 0.5, photo_size), false)
+		elif is_instance_valid(_dish_sketch):
+			_words("成品状态示意 · 拍照后可保留实际摆盘", Vector2(65, 465), 16, Color("847456"), 450)
 		elif not is_instance_valid(_collage) or not _collage.visible:
 			_words("这一页还没有照片", Vector2(160, 318), 21, Color("847456"), 310)
 		_words("主厨  " + str(record.get("author", "匿名主厨")), Vector2(57, 491), 19, Color("76523d"), 448)

@@ -44,28 +44,32 @@ func _on_exit() -> void :
 	box.add_theme_constant_override("separation", 24)
 	layer.add_child(box)
 	var font: = FontVariation.new()
-	font.base_font = load("res://modules/restaurant/assets/fonts/noto_sans_sc.ttf")
+	font.base_font = load("res://modules/restaurant/assets/fonts/noto_serif_sc.ttf")
 	font.variation_opentype = {2003265652: 400.0}
 	var title: = Label.new()
-	title.text = "已回到主游戏示例"
+	title.text = "100饭店  /  收好今天的回忆"
 	title.add_theme_font_override("font", font)
 	title.add_theme_font_size_override("font_size", 34)
 	title.add_theme_color_override("font_color", Color("284b47"))
 	box.add_child(title)
 	var info: = Label.new()
-	info.text = "示例钱包：¥ %.2f\n小游戏已释放场景，由主游戏接管。" % demo_wallet
+	info.text = "主厨的钱包  ¥ %.2f\n围裙挂好了，菜谱也留在原处。" % demo_wallet
 	info.add_theme_font_override("font", font)
 	info.add_theme_font_size_override("font_size", 20)
 	info.add_theme_color_override("font_color", Color("64756a"))
 	box.add_child(info)
-	var again: = Button.new()
-	again.text = "再进入饭店"
+	var again = preload("res://modules/restaurant/ui/paper_action.gd").new()
+	again.text = "再做一顿饭"
+	again.symbol = "book"
+	again.add_theme_color_override("font_color", Color("284b47"))
 	again.custom_minimum_size.y = 54
 	again.add_theme_font_override("font", font)
 	again.pressed.connect( func(): layer.queue_free();_enter_restaurant())
 	box.add_child(again)
-	var close: = Button.new()
-	close.text = "退出演示"
+	var close = preload("res://modules/restaurant/ui/paper_action.gd").new()
+	close.text = "合上今天"
+	close.symbol = "arrow"
+	close.add_theme_color_override("font_color", Color("284b47"))
 	close.custom_minimum_size.y = 48
 	close.add_theme_font_override("font", font)
 	close.pressed.connect( func(): get_tree().quit())

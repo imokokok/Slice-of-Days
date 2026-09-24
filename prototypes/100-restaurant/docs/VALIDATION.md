@@ -1,5 +1,14 @@
 # 验证记录
 
+## 2026-09-25 厨房手记与跟做
+
+- 7 组定向回归 **514 项通过**：recipe guide 40、recipe DIY 75、stock/volume/shared recipe 25、collage GUI 68、paper recipe 30、recorded audio 150、integration 126。原始日志 `qa/20260925-recipe-tests.txt`。未把此前全部检查计入本次。
+- 新测试通过引擎鼠标事件点跟做，再使用生产取物、切割、整批拖动、热量/吸水、摆盘方法检查完整链条。水量和水温由夹具设置，20 秒热量通过 session.tick 推进；没有声称手动完成接水和全程烹饪。
+- 首次测试直接调用摆盘内部方法，未走实际入口的关火逻辑，故完成断言失败；改从 `_interact("plate")` 进入后通过。长标题测试确实发现面板被撑宽/撑高，修复为标题栏省略并保留右页完整换行，再复验通过。
+- GPU 使用 RTX 4050 / OpenGL，检查目录、做法前后页、实际成品照片、底部引导、收班页、60 字菜名及 1152×681 小窗口，共 8 张 `qa/20260925-recipe-*.png`。实际照片来自生产摆盘/摄影代码，食材未换成预制成品图。
+- 系统鼠标完整人工操作和逐音效人耳试听未验证。做法推断、宽松用量和过程图近似详见 `RECIPE_GUIDE_20260925.md`。
+- 最终源码和导出 EXE 均通过 headless 120 帧启动，无脚本/素材错误；日志分别为 `qa/20260925-recipe-smoke.txt` 和 `qa/20260925-recipe-export-smoke.txt`。Windows release 导出退出码 0，已从原试玩路径打开最新“100饭店”窗口（PID 43228），直接展示厨房手记。启动状态不替代手工全流程验收。
+
 日期：2026-09-11。环境：Windows、Godot 4.7.2 Standard、OpenGL Compatibility / NVIDIA RTX 4050。
 
 本轮完整无窗口回归全部通过；实际鼠标事件由测试送入场景树，另运行 GPU 画面和照片检查。

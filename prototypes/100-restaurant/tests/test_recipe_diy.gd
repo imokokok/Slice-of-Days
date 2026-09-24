@@ -162,7 +162,7 @@ func _test_edit_and_copy(first: Dictionary) -> void:
 	_expect(_same_json(game._recipe_canvas.export_data(), revised_paper), "reopening the copy restores all paper layers and transforms")
 	game._view_recipe(_fresh_record(copy_id))
 	await _layout()
-	var displayed = _paper_in_modal()
+	var displayed = game._recipe_stand.page._collage
 	_expect(displayed != null and not displayed.editable, "saved DIY copy has a read-only paper view")
 	if displayed != null:
 		_expect(_same_json(displayed.export_data(), revised_paper), "read-only DIY view displays the saved layout rather than a generated recipe")

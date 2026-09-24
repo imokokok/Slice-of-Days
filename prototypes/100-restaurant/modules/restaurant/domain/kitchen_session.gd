@@ -175,11 +175,12 @@ func add_ingredient(id: String, physical_state: Dictionary = {}) -> bool:
 	var known_batches: Dictionary = {}
 	for index in dish.size():
 		var item: Dictionary = dish[index]
+		if item.has("liquid_state"): continue
 		var batch := str(item.get("batch_uid", item.get("instance_uid", "entry_%d" % index)))
 		known_batches[batch] = true
 	# One ingredient may become many physical pieces.  Capacity limits distinct
 	# source ingredients, not the number of cuts made by the player.
-	if (incoming_batch.is_empty() and dish.size() >= CAPACITY) or (not incoming_batch.is_empty() and not known_batches.has(incoming_batch) and known_batches.size() >= CAPACITY):
+	if not physical_state.has("liquid_state") and ((incoming_batch.is_empty() and known_batches.size() >= CAPACITY) or (not incoming_batch.is_empty() and not known_batches.has(incoming_batch) and known_batches.size() >= CAPACITY)):
 		last_notice = "料理最多容纳 6 份食材，先出餐或清空吧。"
 		return false
 	var entry: = {"id": id, "cut": false, "heat": 0.0}

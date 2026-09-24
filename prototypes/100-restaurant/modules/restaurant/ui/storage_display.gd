@@ -25,6 +25,20 @@ var fridge_open: = true:
 var _fridge_items: Control
 var _fridge_toggle: Button
 var _content: Control
+var stock: Dictionary = {}
+
+func set_available(id: String, available: bool) -> void:
+	stock[id] = available
+	var button := find_child("Ingredient_" + id, true, false) as Button
+	if button == null: return
+	button.disabled = not available
+	button.mouse_filter = Control.MOUSE_FILTER_STOP if available else Control.MOUSE_FILTER_IGNORE
+	button.get_node("FoodArt").visible = available
+	button.get_node("IngredientName").text = str(button.get_meta("definition").name) if available else "空位"
+
+func slot_at(id: String, point: Vector2) -> bool:
+	var button := find_child("Ingredient_" + id, true, false) as Button
+	return button != null and button.get_global_rect().has_point(point)
 
 func setup(defs: Array) -> void :
 	definitions.clear()
@@ -86,10 +100,10 @@ func _build_items() -> void :
 	add_child(_content)
 	var catalog: = {}
 	for item in definitions: catalog[item.id] = item
-	var cold: = ["tomato", "egg", "mushroom", "shrimp", "tofu", "cheese", "carrot", "onion", "broccoli", "lettuce", "milk", "pumpkin", "chicken", "potato", "lemon"]
+	var cold: = ["tomato", "egg", "mushroom", "shrimp", "tofu", "cheese", "carrot", "onion", "broccoli", "lettuce", "milk", "pumpkin", "chicken", "potato", "rice"]
 	for i in cold.size():
 		if catalog.has(cold[i]): _slot(_content, catalog[cold[i]], Vector2(45 + (i % 3) * 96, 181 + (i / 3) * 77), Vector2(90, 70), 0.76, Color("344854"))
-	var counter: = ["rice", "noodles", "chili", "corn", "bread"]
+	var counter: = ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]
 	for i in counter.size():
 		if catalog.has(counter[i]): _slot(_content, catalog[counter[i]], Vector2(670 + i * 80, 549), Vector2(75, 66), 0.68, Color("493b2d"))
 	# Separate condiment rack at the exact left-hand position in the source.
@@ -120,6 +134,7 @@ func _build_items() -> void :
 	mystery.add_theme_font_size_override("font_size", 16)
 	mystery.pressed.connect( func(): mystery_requested.emit())
 	_content.add_child(mystery)
+	for id in stock: set_available(id, bool(stock[id]))
 	queue_redraw()
 
 func _compact_sign(button: Button) -> void:
@@ -153,7 +168,10 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 	# Use the actual press event, not the OS cursor's later position. A quick
 	# drag can enqueue press/motion/release before the next game frame.
 	button.gui_input.connect(func(event: InputEvent):
-		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if not button.disabled and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			# Consume before hiding/disabling the emptied slot. Otherwise this same
+			# press falls through to the kitchen and immediately puts the item back.
+			button.accept_event()
 			ingredient_chosen.emit(item.duplicate(true), button.get_global_transform_with_canvas() * event.position))
 	parent.add_child(button)
 	var label_height: = 16.0

@@ -8,8 +8,9 @@ func _draw() -> void :
 	if tex: draw_texture_rect(tex, Rect2(684, 534, 384, 112), false)
 	var water: float = controller.water_ml
 	if water > 0:
-		_ellipse(Vector2(810, 597 - water / 1500 * 21), Vector2(78 + water / 1500 * 15, 13 + water / 1500 * 3), Color("75b9bd", 0.82))
-		if water >= 1499.0 and controller.faucet_on and controller.under_tap():
+		var fill: float = controller.world.pan_fill_ratio()
+		_ellipse(Vector2(810, 597 - fill * 18), Vector2(78 + fill * 32, 13 + fill * 21), Color("75b9bd", 0.72))
+		if fill >= 0.999 and controller.faucet_on and controller.under_tap():
 			for x in [774.0, 810.0, 846.0]:
 				draw_line(Vector2(x, 604), Vector2(x + sin(controller.world._time * 4.0 + x) * 3.0, 628), Color("91d3d0", 0.8), 3.0, true)
 		if controller.water_heat >= 99:

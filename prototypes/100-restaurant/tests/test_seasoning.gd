@@ -148,58 +148,52 @@ func _test_container(id: String, mode: String, stop_kind: String) -> void:
 
 func _test_capacity() -> void:
 	await _clean_kitchen()
-	_expect(game.world.spawn_ingredient(game._definition("ketchup")), "full-pan test starts with one reusable salt shaker")
+	_expect(game.world.spawn_ingredient(game._definition("ketchup")), "capacity test starts with a reusable ketchup bottle")
 	_motion(PAN_POINT, false)
 	await process_frame
 	_mouse_button(PAN_POINT, true)
 	await process_frame
 	_expect(game.world._squeezing, "capacity regression starts through actual held mouse input")
-	if not game.world._squeezing:
-		_mouse_button(PAN_POINT, false)
-		return
 	await create_timer(5.2).timeout
-	if _portions().size() != 6 or game.session.dish.size() != 6:
-		var bodies: Array = []
-		for body in _portions():
-			bodies.append({"position": body.global_position, "enrolled": body.get_meta("enrolled", false), "pending": body.get_meta("pending", false)})
-		print("Capacity diagnostic: portions=%d dish=%d reserved=%d bodies=%s" % [_portions().size(), game.session.dish.size(), game.world._pan_capacity_used(), bodies])
-	_expect(_portions().size() == 6 and game.session.dish.size() == 6, "continuous seasoning fills exactly six physical recipe slots")
-	_expect(game.world._squeezing, "full pan continues output as overflow while held")
-	_expect(game.world._foods.get_child_count() == 8, "full pan pools excess into one spill, not unlimited bodies")
+	_expect(_portions().size() >= 2 and _portions().size() <= 8, "sustained output pools locally without unbounded bodies")
 	var spill: RigidBody2D
 	for body in game.world._foods.get_children():
 		if body.get_meta("overflow", false): spill = body
-	_expect(is_instance_valid(spill), "continuous squeezing creates a visible countertop spill")
-	if not is_instance_valid(spill): return
-	var amount: int = spill.get_meta("spilled_portions")
-	var spill_ml_before := float(spill.get_meta("liquid_state", {}).get("volume_ml", 0.0))
-	var bottle_ml_before := float(game.world._held.get_meta("remaining_ml", 0.0))
-	await create_timer(0.9).timeout
-	_expect(int(spill.get_meta("spilled_portions")) > amount, "continued output grows the existing spill")
-	var spill_ml_after := float(spill.get_meta("liquid_state", {}).get("volume_ml", 0.0))
-	var bottle_ml_after := float(game.world._held.get_meta("remaining_ml", 0.0))
-	_expect(spill_ml_after > spill_ml_before and bottle_ml_after < bottle_ml_before, "overflow volume comes from the same bottle inventory")
-	_expect(is_equal_approx(spill_ml_after - spill_ml_before, bottle_ml_before - bottle_ml_after), "overflow growth conserves measured liquid volume")
-	_expect(_portions().size() == 6 and game.session.dish.size() == 6, "spilled sauce never counts toward dish or capacity")
+	_expect(not is_instance_valid(spill), "several seconds of sauce do not fill a 1500 ml pan")
+	_expect(game.world.pan_contents_ml() < 200, "small portions reserve actual millilitres, not whole food slots")
 	_mouse_button(PAN_POINT, false)
 	await process_frame
-	amount = spill.get_meta("spilled_portions")
-	await create_timer(0.9).timeout
-	_expect(int(spill.get_meta("spilled_portions")) == amount and not game.world._squeezing, "release stops overflowing and spill growth")
+	# Fill the remaining volume with water, then resume the same held input.
+	game.world.pan.water_ml = maxf(0.0, 1498.0 - game.world.pan_contents_ml())
+	_mouse_button(PAN_POINT, true)
+	await create_timer(1.2).timeout
+	for body in game.world._foods.get_children():
+		if body.get_meta("overflow", false): spill = body
+	_expect(is_instance_valid(spill), "sauce spills after the combined contents reach the rim")
+	if not is_instance_valid(spill):
+		_mouse_button(PAN_POINT, false)
+		return
+	var spill_before := float(spill.get_meta("volume_ml", 0.0))
+	var bottle_before := float(game.world._held.get_meta("remaining_ml", 0.0))
+	await create_timer(0.8).timeout
+	_expect(float(spill.get_meta("volume_ml")) > spill_before, "continued pressure grows the existing spill")
+	_expect(absf(float(spill.get_meta("volume_ml")) - spill_before - bottle_before + float(game.world._held.get_meta("remaining_ml"))) < 0.03, "overflow growth conserves bottle volume")
+	_expect(absf(game.world.pan_contents_ml() - 1500.0) < 0.03, "pan holds its calibrated volume while the excess spills")
+	_mouse_button(PAN_POINT, false)
+	await process_frame
+	var stopped := float(spill.get_meta("volume_ml"))
+	await create_timer(0.4).timeout
+	_expect(is_equal_approx(stopped, float(spill.get_meta("volume_ml"))), "release stops overflow output")
 	for portion in _portions():
-		var art = portion.get_node("SauceBlob")
-		_expect(art.global_position.y < game.world.pan.point(Vector2(810,615)).y, "landed sauce remains visible above the front pan rim")
+		_expect(portion.get_node("SauceBlob").z_index < game.world.pan.pan_front.z_index, "liquid remains behind the opaque front wall")
 	game.world._on_pan_entered(spill)
-	_expect(not spill.get_meta("enrolled", false), "overflow is never accepted even if entering the pan area")
+	_expect(not spill.get_meta("enrolled", false), "spill is not counted as food in the pan")
 	_motion(Vector2(620, 520), false)
 	await process_frame
 	await _key(KEY_Q)
-	_mouse_button(spill.global_position, true)
-	_mouse_button(spill.global_position, false)
+	_expect(game.world._wipe_spill_at(spill.position), "measured countertop spill can be wiped")
 	await process_frame
-	await process_frame
-	_expect(not is_instance_valid(spill), "empty-handed click wipes countertop spill")
-
+	_expect(not is_instance_valid(spill), "wiping removes the spill entity")
 func _test_hand_foreground() -> void:
 	await _clean_kitchen()
 	_expect(game.world.spawn_ingredient(game._definition("mustard")), "foreground regression starts with a held condiment")

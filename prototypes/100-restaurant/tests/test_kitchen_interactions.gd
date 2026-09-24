@@ -32,6 +32,11 @@ func _run() -> void:
 		_mouse(origin, "down")
 		_mouse(origin, "up")
 		await process_frame
+		_expect(not is_instance_valid(game.world._held), "the empty egg slot cannot create a second egg")
+		var other = game.find_child("Ingredient_mushroom", true, false)
+		_mouse(other.get_global_rect().get_center(), "down")
+		_mouse(other.get_global_rect().get_center(), "up")
+		await process_frame
 		_expect(is_instance_valid(game.world._held), "a simple shelf click still supports click-to-carry")
 		game.world.discard_held()
 	# Independent loose food can be picked up more than once.
@@ -115,6 +120,10 @@ func _run() -> void:
 	_expect(game.world.pan.overflow_water_ml > 0, "continued faucet flow becomes visible overflow instead of entering a full pan")
 	game.world.pan.notification(Node.NOTIFICATION_WM_WINDOW_FOCUS_OUT)
 	_expect(not game.world.pan.faucet_on and not game.world.pan.active, "focus loss stops faucet and releases pan")
+	# Drain the intentionally full fixture before testing moved-pan dispensing.
+	_mouse(Vector2(200,761), "down")
+	_mouse(Vector2(200,761), "up")
+	await process_frame
 	game.world.spawn_ingredient(game._definition("ketchup"))
 	_mouse(Vector2(211,633), "idle")
 	await process_frame

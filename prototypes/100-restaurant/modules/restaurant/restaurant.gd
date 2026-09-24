@@ -70,6 +70,10 @@ const LETTER_PATH := "user://100_restaurant_letters.json"
 var _food_by_physics: Dictionary = {}
 var _mystery_bag: Array = []
 var _last_mystery: = ""
+var storage_display
+var _stock: Dictionary = {}
+var _stock_bodies: Dictionary = {}
+var _recipe_stand
 
 func configure(entry_context: Dictionary) -> void :
 	assert ( not is_inside_tree(), "Configure before adding the minigame to the scene tree.")
@@ -198,16 +202,20 @@ func _build_ui() -> void :
 	footer.color = Color("302e2b")
 	footer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(footer)
-	var storage_display: = StorageDisplay.new()
+	storage_display = StorageDisplay.new()
 	hud.add_child(storage_display)
 	storage_display.setup(session.active_ingredients())
 	storage_display.ingredient_chosen.connect(_take_ingredient)
 	storage_display.browse_requested.connect(_show_pantry)
 	storage_display.mystery_requested.connect(_draw_mystery)
+	world.storage_return_handler = _return_to_storage
 	clock_label = _label(hud, "准备营业", Vector2(366, 36), 20, Color("fff0b8"))
 	money_label = _label(hud, "¥ 0.00", Vector2(1230, 34), 20, Color("f7d96f"))
 	var settings: = _dock_button(hud, "暂停 / 帮助", _show_pause, 130)
 	settings.position = Vector2(1440, 28)
+	_recipe_stand = preload("res://modules/restaurant/ui/recipe_stand.gd").new()
+	hud.add_child(_recipe_stand)
+	_refresh_recipe_stand()
 	_hotspot("ReferenceRecipeBook", Rect2(1122, 468, 215, 200), "打开实际菜谱与创作工作台", _show_cookbook)
 	var trash: = _dock_button(hud, "丢弃 / 清理台面", func():
 		if is_instance_valid(world._held): world.discard_held()
@@ -524,7 +532,7 @@ func _definition(id: String) -> Dictionary:
 
 func _show_pantry() -> void :
 	_open_modal("pantry", "食材架  /  自由搭配", 1120)
-	_text("选好后拿在手中。到砧板切配，或直接放入锅里。每道料理最多 6 份。", 16)
+	_text("每种原料本班备一件，拿走后原位留空。未加工原料和调料瓶可拖回原位；用过的瓶子保留余量。", 16)
 	var search: = LineEdit.new()
 	search.placeholder_text = "搜索食材，例如：番茄、虾、袜子…"
 	search.text = _pantry_search
@@ -555,6 +563,8 @@ func _refresh_pantry() -> void :
 		if not _pantry_search.is_empty() and not str(entry.get("name", "")).contains(_pantry_search) and not str(entry.get("id", "")).contains(_pantry_search): continue
 		var button: = _button(_pantry_grid, "%s\n%.0f g  ·  %s" % [entry["name"], float(entry.get("mass", 0.15)) * 1000.0, "需做熟" if entry.get("needs_cook", false) else "自由处理"], func(): _take_ingredient(entry), 198)
 		button.custom_minimum_size.y = 92
+		button.disabled = not bool(_stock.get(str(entry.id), true))
+		button.text += "\n剩余 1 件" if not button.disabled else "\n已取走"
 		button.add_theme_font_size_override("font_size", 18)
 		var color: = Color(str(entry.get("color", "f0bf7d")))
 		button.add_theme_stylebox_override("normal", _style(Color("e8ddc4").lerp(color, 0.12), 9, color.darkened(0.3)))
@@ -563,7 +573,24 @@ func _refresh_pantry() -> void :
 			button.tooltip_text += "\n" + world.ingredient_operation_hint(entry)
 
 func _take_ingredient(entry: Dictionary, press_position := Vector2.INF) -> void :
-	if world.spawn_ingredient(entry):
+	var id := str(entry.get("id", ""))
+	if not bool(_stock.get(id, true)):
+		_notify("这件%s已取走，请使用台面上的那一件。" % entry.get("name", "食材"))
+		return
+	var success := false
+	if _stock_bodies.has(id) and is_instance_valid(_stock_bodies[id]):
+		if not is_instance_valid(world._held) and not world._knife_held and not world.has_active_utensil() and not world.pan.active and world._foods.get_child_count() < 64:
+			var stored: RigidBody2D = _stock_bodies[id]
+			stored.reparent(world._foods)
+			stored.visible = true
+			world._pickup(stored)
+			_stock_bodies.erase(id)
+			success = true
+	else:
+		success = world.spawn_ingredient(entry)
+	if success:
+		_stock[id] = false
+		storage_display.set_available(id, false)
 		_close_modal()
 		if press_position != Vector2.INF:
 			world.begin_food_drag(world.get_global_transform_with_canvas().affine_inverse() * press_position, true)
@@ -578,6 +605,26 @@ func _take_ingredient(entry: Dictionary, press_position := Vector2.INF) -> void 
 			_text("请先把手里的物品放下；台面最多保留 64 个实体。", 17, ACCENT)
 		else:
 			_notify("先把手里的物品放到台面。台面最多保留 64 个实体。")
+
+func _return_to_storage(body: RigidBody2D) -> bool:
+	var id := str(body.get_meta("id", ""))
+	if bool(_stock.get(id, true)) or not storage_display.slot_at(id, body.global_position): return false
+	if body.get_meta("cut", false) or body.get_meta("dispensed", false) or float(body.get_meta("saved_heat", 0.0)) > 0.0 or float(body.get_meta("surface_sauce", {}).get("volume_ml", 0.0)) > 0.0:
+		_notify("加工过的食材请留在菜板、锅或盘子里，不能放回原料格。")
+		return false
+	world._held = null
+	world._sync_held_foreground()
+	body.freeze = true
+	body.collision_layer = 0
+	body.collision_mask = 0
+	body.visible = false
+	body.reparent(self)
+	_stock_bodies[id] = body
+	_stock[id] = true
+	storage_display.set_available(id, true)
+	world.held_changed.emit("")
+	_notify("已放回%s，保留原来的物品和余量。" % body.get_meta("title", "物品"))
+	return true
 
 func _serve() -> void :
 	if not world.plated:
@@ -966,6 +1013,8 @@ func _save_recipe(as_copy: bool = false) -> void :
 	if repository.save_recipe(record):
 		var saved: Array = repository.load_recipes()
 		session.set_menu_recipes(saved)
+		if not saved.is_empty(): _recipe_selected = saved[-1] if target_id.is_empty() else record
+		_refresh_recipe_stand()
 		if target_id.is_empty():
 			if not saved.is_empty(): recipe_published.emit(saved[-1].duplicate(true))
 		else:
@@ -985,24 +1034,47 @@ func _dish_names(data: Dictionary) -> String:
 		names.append(str(_definition(id).get("name", id)))
 	return " + ".join(names) if not names.is_empty() else "尚未记录实际用料"
 
+func _refresh_recipe_stand() -> void:
+	var records: Array = repository.load_recipes()
+	var selected: Dictionary = records[-1] if not records.is_empty() else {}
+	for entry in records:
+		if entry.get("id", "") == _recipe_selected.get("id", "__none__"):
+			selected = entry
+	_recipe_selected = selected
+	_recipe_stand.setup(selected)
+
+func _recipe_page_preview(parent: Node, dimensions: Vector2) -> TextureRect:
+	var picture := TextureRect.new()
+	picture.name = "SharedRecipePage"
+	picture.texture = _recipe_stand.viewport.get_texture()
+	picture.custom_minimum_size = dimensions
+	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(picture)
+	return picture
+
 func _show_cookbook() -> void :
+	_refresh_recipe_stand()
 	_open_modal("cookbook", "公共菜谱", 1050)
-	_text("这本菜谱属于来过厨房的人。当前为本地共享，可通过导入 / 导出交给其他玩家。", 16)
+	_text("台面上翻开的那一页。留下实际做过的菜，也留下自己的手写笔记。", 16)
 	var row: = _row(modal_body)
 	_button(row, "新建 DIY 菜谱", _new_diy_recipe, 260)
 	_button(row, "导出菜谱文件", func(): _file_dialog(true), 220)
 	_button(row, "导入其他人的菜谱", func(): _file_dialog(false), 260)
 	var recipes: Array = repository.load_recipes()
+	var columns := _row(modal_body)
+	_recipe_page_preview(columns, Vector2(365, 495))
 	var scroll: = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(980, 420)
+	scroll.custom_minimum_size = Vector2(610, 495)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	modal_body.add_child(scroll)
+	columns.add_child(scroll)
 	var list: = VBoxContainer.new()
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	list.add_theme_constant_override("separation", 10)
 	scroll.add_child(list)
 	if recipes.is_empty():
-		var empty: = _label(list, "这本菜谱还是空的。\n\n点击上方「新建 DIY 菜谱」，从白纸开始自由创作。\n也可以做好料理后，把实际食材放进你的菜谱。", Vector2.ZERO, 23, MUTED)
+		var empty: = _label(list, "还没有写下自己的菜谱。\n\n左边是厨房食谱的手绘扉页，\n与台面菜谱架显示的是同一页。\n\n做好料理、拍照，再写下第一道菜。", Vector2.ZERO, 21, MUTED)
 		empty.custom_minimum_size.y = 210
 	for record in recipes:
 		var button: = _button(list, "%s    /    %s\n%s" % [record.get("title", "未命名"), record.get("author", "匿名主厨"), _dish_names(record.get("dish", {}))], func(): _view_recipe(record))
@@ -1012,28 +1084,12 @@ func _show_cookbook() -> void :
 
 func _view_recipe(record: Dictionary) -> void :
 	_recipe_selected = record
+	_recipe_stand.setup(record)
 	_open_modal("recipe", str(record.get("title", "菜谱")), 1100)
 	modal_panel.position.y = 22
 	modal_body.add_theme_constant_override("separation", 10)
 	_text("主厨  " + str(record.get("author", "匿名主厨")), 18, ACCENT)
-	if record.has("poster"):
-		var centered: = CenterContainer.new()
-		modal_body.add_child(centered)
-		var canvas = PosterCanvas.new()
-		centered.add_child(canvas)
-		canvas.custom_minimum_size = Vector2(850.0 * 410.0 / 460.0, 410)
-		canvas.import_data(record.poster)
-		canvas.editable = false
-		canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	elif not str(record.get("thumbnail", "")).is_empty():
-		var image: = Image.new()
-		if image.load_png_from_buffer(Marshalls.base64_to_raw(record["thumbnail"])) == OK:
-			var photo: = TextureRect.new()
-			photo.texture = ImageTexture.create_from_image(image)
-			photo.custom_minimum_size = Vector2(400, 220)
-			photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			modal_body.add_child(photo)
+	_recipe_page_preview(modal_body, Vector2(1000, 410))
 	_text(_dish_names(record.get("dish", {})), 18, CREAM)
 	var notes_scroll: = ScrollContainer.new()
 	notes_scroll.custom_minimum_size = Vector2(1000, 72)
@@ -1320,6 +1376,10 @@ func _draw_mystery() -> void :
 		_mystery_bag = preload("res://modules/restaurant/assets/sprite_library.gd").MYSTERY.duplicate()
 		_mystery_bag.shuffle()
 		if _mystery_bag[0] == _last_mystery: _mystery_bag.reverse()
+	_mystery_bag = _mystery_bag.filter(func(id): return bool(_stock.get(str(id), true)))
+	if _mystery_bag.is_empty():
+		_notify("本班奇物箱已空，已拿出的奇物仍可在台面使用。")
+		return
 	var id: String = str(_mystery_bag[0])
 	var definition: = _definition(id)
 	_take_ingredient(definition)

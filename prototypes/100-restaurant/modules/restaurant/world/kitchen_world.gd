@@ -29,6 +29,29 @@ var _font: Font
 var _time: = 0.0
 var _focus: = ""
 var _dragging: = false
+var storage_return_handler: Callable
+const PAN_CAPACITY_ML := 1500.0
+var _overflow_until := 0.0
+var _overflow_color := Color("c68b57")
+
+func pan_contents_ml() -> float:
+	var volume: float = pan.water_ml
+	for body in _foods.get_children():
+		if body.is_queued_for_deletion() or body == _held or body.get_meta("is_container", false) or body.get_meta("overflow", false) or body.get_meta("plated", false): continue
+		if not (body.get_meta("enrolled", false) or body.get_meta("pending", false) or (body.get_meta("dispensed", false) and body.get_meta("container_location", "") == "air")): continue
+		if body.has_meta("liquid_state"):
+			volume += float(body.get_meta("liquid_state").get("volume_ml", 0.0))
+		else:
+			# Displacement from mass / approximate bulk density, not piece count.
+			var density := maxf(0.2, float(body.get_meta("definition", {}).get("density_g_ml", 1.0)))
+			volume += body.mass * 1000.0 / density
+	return volume
+
+func pan_free_ml() -> float:
+	return maxf(0.0, PAN_CAPACITY_ML - pan_contents_ml())
+
+func pan_fill_ratio() -> float:
+	return clampf(pan_contents_ml() / PAN_CAPACITY_ML, 0.0, 1.0)
 var _food_drag_offset: = Vector2.ZERO
 var _food_drag_origin: = Vector2.ZERO
 var _food_drag_moved: = false
@@ -397,7 +420,7 @@ func set_controls_enabled(value: bool) -> void :
 	_sync_held_foreground()
 
 func spawn_ingredient(definition: Dictionary) -> bool:
-	if is_instance_valid(_held) or _knife_held or has_active_utensil() or _foods.get_child_count() >= 64:
+	if is_instance_valid(_held) or _knife_held or has_active_utensil() or pan.active or _foods.get_child_count() >= 64:
 		return false
 	var body: = preload("res://modules/restaurant/world/food_body.gd").new()
 	body.mass = clampf(float(definition.get("mass", 0.15)), 0.01, 3.0)
@@ -505,6 +528,10 @@ func _finish_food_drag(force: = false) -> void :
 	_food_drag_offset = Vector2.ZERO
 	_food_drag_from_storage = false
 	if not is_instance_valid(_held) or keep_carried: return
+	if not force and storage_return_handler.is_valid() and storage_return_handler.call(_held):
+		_stop_squeezing()
+		_drag_group.clear()
+		return
 	var point: = to_local(_held.global_position)
 	if not force and _held_is_sauce_bottle() and _squeeze_region().has_point(point):
 		interaction.emit("notice", "调料已拿到锅边。" + get_held_operation_hint())
@@ -594,6 +621,7 @@ func drop_held(throw_item: = false) -> void :
 	if not is_instance_valid(_held):
 		return
 	_stop_squeezing()
+	if storage_return_handler.is_valid() and storage_return_handler.call(_held): return
 	var body: = _held
 	_held = null
 	_sync_held_foreground()
@@ -660,6 +688,14 @@ func accept_food(body: RigidBody2D, accepted: bool) -> void :
 	body.set_meta("enrolled", accepted)
 	if accepted:
 		body.set_meta("container_location", "pan")
+		var displaced := minf(pan.water_ml, maxf(0.0, pan_contents_ml() - PAN_CAPACITY_ML))
+		if displaced > 0.0:
+			pan.water_ml -= displaced
+			if not pan.above_sink():
+				pan.overflow_water_ml += displaced
+				spill_pan_water(displaced, pan.point(Vector2(920, 643)))
+				_overflow_until = _time + 0.35
+				_overflow_color = Color("75b9bd")
 		# Food in a shallow 2D pan should collide with the pan, not explode away
 		# because several cut pieces touch each other at the same time.
 		body.collision_mask = 1
@@ -977,17 +1013,13 @@ func _draw_dispensing_stream(target: Node2D) -> void :
 	var nozzle_world: = _nozzle_world_position()
 	var canvas_transform: = get_global_transform_with_canvas()
 	var nozzle: = canvas_transform * to_local(nozzle_world)
-	var end: = canvas_transform * to_local(Vector2(nozzle_world.x, 601 + pan.offset.y))
+	var surface: Vector2 = pan.point(Vector2(810, lerpf(597, 574, pan_fill_ratio())))
+	var end: = canvas_transform * Vector2(to_local(nozzle_world).x, surface.y)
 	var drawing_scale: = canvas_transform.get_scale().abs().x
 	if nozzle.y >= end.y:
 		return
 	if mode != "powder":
 		target.draw_line(nozzle, end, color.darkened(0.12), (3.0 if mode == "pour" else lerpf(1.5, 6.5, squeeze_pressure)) * drawing_scale, false)
-	if _pan_capacity_used() >= 6:
-		var spill_path: = PackedVector2Array()
-		for point in [Vector2(888, 601), Vector2(911, 602), Vector2(924, 613), Vector2(939, 637), Vector2(958, 641)]:
-			spill_path.append(canvas_transform * (point + pan.offset))
-		target.draw_polyline(spill_path, color, (2.0 if mode == "powder" else 5.0) * drawing_scale)
 	var count: = 18 if mode == "powder" else 5
 	for index in range(count):
 		var phase: = fmod(_time * 2.5 + float(index) / float(count), 1.0)
@@ -1054,8 +1086,29 @@ func _dispense_seasoning(requested_ml: float = -1.0) -> RigidBody2D:
 	_held.set_meta("remaining_ml", snappedf(remaining_ml - volume_ml, 0.001))
 	var source_uid: = str(_held.get_meta("instance_uid", id + "_container"))
 	var liquid_state: = SauceState.make_batch(definition, volume_ml, source_uid, squeeze_pressure)
-	if _pan_capacity_used() >= 6:
-		return _add_overflow(definition, liquid_state)
+	var excess := maxf(0.0, volume_ml - pan_free_ml())
+	var spill: RigidBody2D
+	if excess > 0.001:
+		var overflow_state := SauceState.make_batch(definition, 0.0, source_uid, squeeze_pressure)
+		SauceState.transfer(liquid_state, overflow_state, excess)
+		spill = _add_overflow(definition, overflow_state, pan.point(Vector2(920, 643)))
+		_overflow_until = _time + 0.35
+		_overflow_color = Color(str(definition.get("color", "c68b57")))
+	volume_ml = float(liquid_state.get("volume_ml", 0.0))
+	if volume_ml <= 0.001: return spill
+	var matching: Array = []
+	for existing in _foods.get_children():
+		if not existing.is_queued_for_deletion() and existing.get_meta("dispensed", false) and not existing.get_meta("overflow", false) and not existing.get_meta("rejected", false) and not existing.get_meta("plated", false) and existing.get_meta("id", "") == id and (existing.get_meta("enrolled", false) or existing.get_meta("container_location", "") == "air"): matching.append(existing)
+	if matching.size() >= 6:
+		matching.sort_custom(func(a, b): return absf(a.position.x - _nozzle_world_position().x) < absf(b.position.x - _nozzle_world_position().x))
+		var target: RigidBody2D = matching[0]
+		var state: Dictionary = target.get_meta("liquid_state")
+		SauceState.merge_into(state, liquid_state, 0.0)
+		target.set_meta("volume_ml", state.volume_ml)
+		target.mass += volume_ml * float(definition.get("density_g_ml", 1.03)) / 1000.0
+		target.get_node("SauceBlob").liquid_state = state
+		target.get_node("SauceBlob").queue_redraw()
+		return target
 	var body: = preload("res://modules/restaurant/world/food_body.gd").new()
 	body.name = id.capitalize().replace("_", "") + "Portion"
 	body.mass = clampf(volume_ml * float(definition.get("density_g_ml", 1.03)) / 1000.0, 0.001, 0.2)
@@ -1083,6 +1136,7 @@ func _dispense_seasoning(requested_ml: float = -1.0) -> RigidBody2D:
 	body.set_meta("dispense_mode", mode)
 	body.set_meta("surface_slot", _pan_capacity_used())
 	body.set_meta("instance_uid", "liquid_%s_%s" % [Time.get_ticks_usec(), _foods.get_child_count()])
+	body.set_meta("batch_uid", source_uid)
 	body.set_meta("liquid_state", liquid_state)
 	body.set_meta("volume_ml", volume_ml)
 	body.set_meta("container_location", "air")
@@ -1110,10 +1164,11 @@ func _update_landed_seasoning() -> void :
 		if body.is_queued_for_deletion() or body.get_meta("overflow", false): continue
 		var visual: = body.get_node_or_null("SauceBlob") as Node2D
 		if not is_instance_valid(visual): continue
-		var landed: bool = body != _held and body.get_meta("enrolled", false) and not body.get_meta("plated", false) and pan.local_point(to_local(body.global_position)).y > 599 and absf(pan.angle) < 0.1
+		var landed: bool = body != _held and body.get_meta("enrolled", false) and not body.get_meta("plated", false) and pan.local_point(to_local(body.global_position)).y > 575 and absf(pan.angle) < 0.1
 		if landed:
 			var slot: = int(body.get_meta("surface_slot", 0)) % 6
-			var surface: = Vector2(clampf(to_local(body.global_position).x + (slot % 3 - 1) * 25, 752 + pan.offset.x, 865 + pan.offset.x), 591 + pan.offset.y + (slot / 3) * 12)
+			var local_body: Vector2 = pan.local_point(to_local(body.global_position))
+			var surface: Vector2 = pan.point(Vector2(clampf(local_body.x + (slot % 3 - 1) * 25, 752, 865), lerpf(592, 578, pan_fill_ratio()) + (slot / 3) * 8))
 			visual.global_position = to_global(surface)
 			visual.global_rotation = global_rotation
 			visual.scale = Vector2(1.6, 0.85)

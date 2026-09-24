@@ -36,6 +36,7 @@ func _ready() -> void :
 	pan_back.z_index = 4
 	world.add_child(pan_back)
 	pan_front = preload("res://modules/restaurant/world/kitchen_foreground.gd").new()
+	pan_front.controller = self
 	pan_front.z_index = 9
 	world.add_child(pan_front)
 	faucet_art = preload("res://modules/restaurant/world/sink_faucet.gd").new()
@@ -57,7 +58,7 @@ func _process(delta: float) -> void :
 		if active and _tipping: set_angle(move_toward(angle, deg_to_rad(110), delta * 3.8))
 		if faucet_on and under_tap():
 			var incoming: = delta * 180 * faucet_amount
-			var accepted: = minf(incoming, maxf(0.0, 1500.0 - water_ml))
+			var accepted: float = minf(incoming, world.pan_free_ml())
 			water_heat *= water_ml / maxf(water_ml + accepted, 1)
 			water_ml += accepted
 			overflow_water_ml += incoming - accepted
@@ -66,6 +67,7 @@ func _process(delta: float) -> void :
 			if water_heat >= 99: water_ml = maxf(0, water_ml - delta * 8)
 		else: water_heat = maxf(0, water_heat - delta * 2)
 	pan_back.queue_redraw()
+	pan_front.queue_redraw()
 	faucet_art.queue_redraw()
 	queue_redraw()
 

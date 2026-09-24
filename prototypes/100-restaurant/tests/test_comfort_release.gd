@@ -45,15 +45,16 @@ func run() -> void:
 		expect(game._mystery_bag.size()==remaining,"occupied hand does not consume mystery stock")
 		w.discard_held()
 		await process_frame
-	var previous: String=game._last_mystery
 	game._draw_mystery()
-	expect(w._held.get_meta("id")!=previous,"next mystery round avoids immediate repeat")
+	expect(not is_instance_valid(w._held),"empty mystery box cannot create an infinite second stock round")
 	w.discard_held()
 	await process_frame
 	# A real drag from the visible stock to the board, then a real knife gesture.
 	var tomato_button=game.hud.find_child("Ingredient_tomato",true,false)
 	expect(tomato_button!=null,"tomato stock is an actual visible interactive sprite")
 	var source: Vector2=tomato_button.get_global_rect().get_center()
+	motion(source)
+	await process_frame
 	mouse(source,true)
 	await process_frame
 	motion(Vector2(1200,735))
@@ -63,6 +64,11 @@ func run() -> void:
 	await process_frame
 	expect(w._held==null,"food drag releases")
 	expect(w._foods.get_child_count()==1,"one stock drag creates one body")
+	if w._foods.get_child_count() == 0:
+		print("Storage diagnostic: disabled=%s stock=%s held=%s source=%s modal=%s controls=%s" % [tomato_button.disabled, game._stock.get("tomato", true), w._held, source, game.modal.visible, w.controls_enabled])
+		for f in failures: push_error(f)
+		quit(1)
+		return
 	var food: RigidBody2D=w._foods.get_child(0)
 	expect(not food.get_meta("cut") and food.get_meta("on_board",false),"food is intact and stable on board")
 	expect(not game.modal.visible,"board has no enlarged modal")

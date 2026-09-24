@@ -321,7 +321,7 @@ func _test_recipe_collage() -> void:
 		await process_frame
 		await process_frame
 		_check_modal_bounds("published recipe view")
-		var displayed = _find_paper_in_modal()
+		var displayed = game._recipe_stand.page._collage
 		_expect(displayed != null, "published recipe renders its saved layout using the paper canvas")
 		if displayed != null:
 			_expect(not displayed.editable and displayed.mouse_filter == Control.MOUSE_FILTER_IGNORE, "published layout is displayed as a read-only canvas")

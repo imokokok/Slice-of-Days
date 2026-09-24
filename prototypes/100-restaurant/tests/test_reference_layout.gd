@@ -15,7 +15,7 @@ func run() -> void:
 	for id in ["oil", "pepper", "salt", "sugar", "soy_sauce"]:
 		var item: Button = game.hud.find_child("Ingredient_"+id, true, false)
 		expect(item != null and item.position.x >= 340 and item.position.x < 548 and item.position.y > 440, "condiment comes from the left condiment rack: " + id)
-	for id in ["rice", "noodles", "chili", "corn", "bread"]:
+	for id in ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]:
 		var item: Button = game.hud.find_child("Ingredient_"+id, true, false)
 		expect(item != null and Rect2(660, 540, 430, 85).encloses(item.get_rect()), "ingredient belongs in the original five-slot tray: " + id)
 	for utensil in game.world.utensils:
@@ -37,6 +37,7 @@ func run() -> void:
 	_mouse(Vector2(480, 716), "up")
 	await process_frame
 	expect(not sponge.active and is_zero_approx(game.world.pan.overflow_water_ml), "dragging sponge over water removes the tracked spill")
+	await process_frame
 	expect(game.world._foods.get_child_count() == 0, "wiped liquid has no ghost physical body")
 	game.queue_free()
 	await process_frame

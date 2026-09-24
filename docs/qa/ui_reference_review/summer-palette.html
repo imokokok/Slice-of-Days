@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Solmere · 夏日配色</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edeade;color:#354943;font:16px/1.7 "Microsoft YaHei",sans-serif}
+main{max-width:1240px;margin:auto;padding:32px 24px 48px}header{max-width:850px;margin-bottom:24px}h1{font-size:34px;line-height:1.3;font-weight:500;margin:10px 0 16px}p{margin:10px 0}small{color:#5d6a5c}a{color:#3d665b;text-underline-offset:4px}
+.controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0 14px}select,button{font:inherit;color:inherit;background:#faf7eb;border:1px solid #9b9e86;padding:7px 14px;border-radius:5px}button{cursor:pointer}button:hover{background:#dfdec6}select:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #577d86;outline-offset:3px}
+.compare{position:relative;aspect-ratio:16/9;background:#263f51;overflow:hidden;--split:50%}.compare img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain}.compare #after{clip-path:inset(0 0 0 var(--split))}.line{position:absolute;left:var(--split);top:0;bottom:0;border-left:2px solid #fffbde;pointer-events:none}.badge{position:absolute;top:10px;background:#faf7ebed;padding:2px 11px;border:1px solid #b8b69d;border-radius:3px;font-size:13px;pointer-events:none}.left{left:10px}.right{right:10px}
+.slider{display:flex;align-items:center;gap:16px;margin:14px 0 22px}.slider input{flex:1;min-width:60px;accent-color:#647a62}.slider label{white-space:nowrap;font-size:14px}output{font-variant-numeric:tabular-nums;min-width:40px}.note{max-width:900px;color:#596458}footer{border-top:1px solid #bdbca8;margin-top:30px;padding-top:20px;font-size:14px} @media(max-width:600px){main{padding:24px 12px}h1{font-size:28px}.controls{gap:7px}select,button{padding:6px 9px}.slider{gap:8px}}
+</style>
+<main><header><small>2026.09.24 · GODOT 实际运行画面</small><h1>同一座小镇，柔和一点的夏日颜色。</h1><p>保留现有房子、背景、人物和布局。暖白亮部、橙色屋顶、橄榄绿植与清楚的海蓝一起调和；黄昏偏金橙，夜晚保留冷蓝环境与暖灯。</p></header>
+<div class="controls"><label for="scene">查看场景</label><select id="scene"><option value="home-day">住处 · 白天</option><option value="home-sunset">住处 · 黄昏</option><option value="home-night">住处 · 夜晚</option><option value="home-rain">住处 · 雨天</option><option value="street-night">街道 · 夜灯</option><option value="records-day">唱片店</option><option value="room-a-day">A 的房间</option><option value="room-b-night">B 的房间 · 夜晚</option></select><button id="showBefore">只看调整前</button><button id="showAfter">只看调整后</button><button id="showBoth">左右对比</button></div>
+<div class="compare" id="compare"><img id="before" src="summer-palette/before/home-day.png" alt="住处白天：调整前"><img id="after" src="summer-palette/after/home-day.png" alt="住处白天：调整后"><span class="line"></span><span class="badge left">调整前</span><span class="badge right">调整后</span></div>
+<div class="slider"><label for="split">拖动对比</label><input id="split" type="range" min="0" max="100" value="50"><output id="percent" for="split">50%</output></div>
+<p class="note">对比图来自同一场景、同一时间与站位。界面提示的淡入淡出可能因截帧时刻略有差别。275 张原始美术文件逐一比对 SHA-256，内容没有变化；没有重新绘制或替换贴图。</p>
+<footer>时间过渡检查 15 项、住处及唱片店交互检查 31 项通过；源码与 Windows 打包资源分别完成 12 个场景截帧，均无错误。<p>配色参考：<a href="https://store.steampowered.com/app/2533960/SUMMERHOUSE/">SUMMERHOUSE 官方画面</a> · <a href="../summer_palette_20260924.md">检查记录</a> · <a href="supplied-art.html">住处与老板原画接入</a></p></footer></main>
+<script>
+const scene=document.getElementById('scene'), split=document.getElementById('split'), frame=document.getElementById('compare');
+function updateSplit(value){split.value=value;frame.style.setProperty('--split',value+'%');document.getElementById('percent').value=value+'%';frame.querySelector('.left').hidden=Number(value)===0;frame.querySelector('.right').hidden=Number(value)===100;}
+split.addEventListener('input',()=>updateSplit(split.value));
+scene.addEventListener('change',()=>{for(const state of ['before','after']){const img=document.getElementById(state);img.src='summer-palette/'+state+'/'+scene.value+'.png';img.alt=scene.selectedOptions[0].textContent+'：'+(state==='before'?'调整前':'调整后');}});
+document.getElementById('showBefore').onclick=()=>updateSplit(100);document.getElementById('showAfter').onclick=()=>updateSplit(0);document.getElementById('showBoth').onclick=()=>updateSplit(50);
+</script></html>

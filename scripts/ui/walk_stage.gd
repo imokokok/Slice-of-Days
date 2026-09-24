@@ -76,7 +76,7 @@ func _ready() -> void:
 	z_index=-2
 	var finish := ShaderMaterial.new()
 	finish.shader = COASTAL_GRADE
-	material = finish if not indoor else null
+	material = finish
 	if not indoor:
 		var sky := preload("res://scripts/ui/coast_backdrop.gd").new(); sky.stage=self; add_child(sky)
 	original_resident = preload("res://scripts/ui/original_resident.gd").new()
@@ -122,21 +122,21 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 func _update_world_finish() -> void:
-	if indoor:
-		material = null
-		if is_instance_valid(original_resident) and original_resident.material is ShaderMaterial: original_resident.material.set_shader_parameter("amount",0.0)
-		return
 	if not material is ShaderMaterial: return
-	var light := WorldAtmosphere.light
-	var weather := _weather_kind()
-	if weather != weather_last:
-		weather_last = weather
-		WorldSound.set_weather(weather)
+	# Room plates already contain their authored day/night lighting. Apply the
+	# common color finish there without multiplying that illumination a second time.
+	var light := Color.WHITE if indoor else WorldAtmosphere.light
+	if not indoor:
+		var weather := _weather_kind()
+		if weather != weather_last:
+			weather_last = weather
+			WorldSound.set_weather(weather)
 	material.set_shader_parameter("camera_offset", Vector2(camera_x,0))
 	material.set_shader_parameter("daylight", Vector3(light.r,light.g,light.b))
-	material.set_shader_parameter("amount", 0.0 if indoor else 1.0)
-	var lights := _night_lights()
-	var night_light := WorldAtmosphere.blend.z
+	material.set_shader_parameter("amount", 1.0)
+	material.set_shader_parameter("palette_strength", .85 if indoor else 1.0)
+	var lights := PackedVector4Array() if indoor else _night_lights()
+	var night_light := 0.0 if indoor else WorldAtmosphere.blend.z
 	material.set_shader_parameter("local_lights",lights)
 	material.set_shader_parameter("light_count",lights.size())
 	material.set_shader_parameter("night_strength",night_light)
@@ -144,7 +144,8 @@ func _update_world_finish() -> void:
 	if is_instance_valid(original_resident) and original_resident.material is ShaderMaterial:
 		original_resident.material.set_shader_parameter("camera_offset", Vector2(camera_x,0))
 		original_resident.material.set_shader_parameter("daylight", Vector3(light.r,light.g,light.b))
-		original_resident.material.set_shader_parameter("amount", 0.0 if indoor else 1.0)
+		original_resident.material.set_shader_parameter("amount", 1.0)
+		original_resident.material.set_shader_parameter("palette_strength", .85 if indoor else 1.0)
 		original_resident.material.set_shader_parameter("local_lights",lights)
 		original_resident.material.set_shader_parameter("light_count",lights.size())
 		original_resident.material.set_shader_parameter("night_strength",night_light)

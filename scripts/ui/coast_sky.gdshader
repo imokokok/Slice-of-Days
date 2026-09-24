@@ -1,5 +1,6 @@
 shader_type canvas_item;
 render_mode unshaded;
+#include "res://scripts/ui/summer_palette.gdshaderinc"
 uniform sampler2D dusk_sky : source_color, filter_linear;
 uniform sampler2D night_sky : source_color, filter_linear;
 uniform sampler2D rain_sky : source_color, filter_linear;
@@ -18,15 +19,17 @@ void fragment() {
 	// Cream lighthouse bands cannot be mistaken for white cloud.
 	sky*=1.0-tower*(1.0-smoothstep(.01,.09,src.b-src.r));
 	// Sample sky-only strips: no landmark coordinates are present in these.
-	vec3 dusk=texture(dusk_sky,vec2(.40+UV.x*.08,.035+UV.y*.58)).rgb;
-	vec3 night=texture(night_sky,vec2(.20,.34)).rgb*mix(.85,1.35,UV.y);
-	vec3 overcast=texture(rain_sky,vec2(.04+UV.x*.73,.025+UV.y*.23)).rgb;
+	vec3 dusk=summer_palette(texture(dusk_sky,vec2(.40+UV.x*.08,.035+UV.y*.58)).rgb);
+	vec3 night=summer_palette(texture(night_sky,vec2(.20,.34)).rgb)*mix(.85,1.35,UV.y);
+	vec3 overcast=summer_palette(texture(rain_sky,vec2(.04+UV.x*.73,.025+UV.y*.23)).rgb);
 	// Preserve the original painted cloud shapes, including their pale blue cuts.
-	dusk=mix(dusk,vec3(.85,.69,.64),cloud*.75);
+	dusk=mix(dusk,vec3(.96,.68,.37),.23);
+	dusk=mix(dusk,vec3(.95,.83,.66),cloud*.75);
 	night=mix(night,vec3(.13,.18,.28),cloud*.6);
-	vec3 sky_color=src.rgb*blend.x+dusk*blend.y+night*blend.z;
+	vec3 pigment=summer_palette(src.rgb);
+	vec3 sky_color=pigment*blend.x+dusk*blend.y+night*blend.z;
 	sky_color=mix(sky_color,overcast*mix(vec3(1.0),vec3(.26,.35,.48),blend.z),rain);
-	vec3 solid=src.rgb*light;
+	vec3 solid=summer_moonlight(pigment,pigment*light,blend.z);
 	solid*=mix(vec3(1.0),vec3(.47,.58,.70),blend.z);
 	solid=mix(solid,solid*vec3(.82,.89,.92),rain*.45);
 	// Only the existing lantern glass receives light; the tower stays crisp.

@@ -1,0 +1,115 @@
+{
+  "fry_egg": [
+    "res://modules/restaurant/assets/audio/recorded/fry_egg_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/fry_egg_02.wav"
+  ],
+  "fry_vegetable": [
+    "res://modules/restaurant/assets/audio/recorded/fry_vegetable_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/fry_vegetable_02.wav"
+  ],
+  "fry_meat": [
+    "res://modules/restaurant/assets/audio/recorded/fry_meat_01.wav"
+  ],
+  "boil": [
+    "res://modules/restaurant/assets/audio/recorded/boil_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/boil_02.wav"
+  ],
+  "simmer_sauce": [
+    "res://modules/restaurant/assets/audio/recorded/simmer_sauce_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/simmer_sauce_02.wav"
+  ],
+  "stir_sauce": [
+    "res://modules/restaurant/assets/audio/recorded/stir_sauce_01.wav"
+  ],
+  "powder": [
+    "res://modules/restaurant/assets/audio/recorded/powder_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/powder_02.wav"
+  ],
+  "powder_pepper": [
+    "res://modules/restaurant/assets/audio/recorded/powder_pepper_01.wav"
+  ],
+  "squeeze": [
+    "res://modules/restaurant/assets/audio/recorded/squeeze_01.wav"
+  ],
+  "pour_oil": [
+    "res://modules/restaurant/assets/audio/recorded/pour_oil_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/pour_oil_02.wav"
+  ],
+  "pour": [
+    "res://modules/restaurant/assets/audio/recorded/pour_01.wav"
+  ],
+  "drain": [
+    "res://modules/restaurant/assets/audio/recorded/drain_01.wav"
+  ],
+  "stir_wood": [
+    "res://modules/restaurant/assets/audio/recorded/stir_wood_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/stir_wood_02.wav",
+    "res://modules/restaurant/assets/audio/recorded/stir_wood_03.wav"
+  ],
+  "stir_metal": [
+    "res://modules/restaurant/assets/audio/recorded/stir_metal_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/stir_metal_02.wav"
+  ],
+  "stir_water": [
+    "res://modules/restaurant/assets/audio/recorded/stir_water_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/stir_water_02.wav"
+  ],
+  "stir_wet": [
+    "res://modules/restaurant/assets/audio/recorded/stir_wet_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/stir_wet_02.wav"
+  ],
+  "stir_dry": [
+    "res://modules/restaurant/assets/audio/recorded/stir_dry_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/stir_dry_02.wav"
+  ],
+  "ignite": [
+    "res://modules/restaurant/assets/audio/recorded/ignite_01.wav"
+  ],
+  "flame": [
+    "res://modules/restaurant/assets/audio/recorded/flame_01.wav"
+  ],
+  "water": [
+    "res://modules/restaurant/assets/audio/recorded/water_01.wav"
+  ],
+  "chop": [
+    "res://modules/restaurant/assets/audio/recorded/chop_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/chop_02.wav",
+    "res://modules/restaurant/assets/audio/recorded/chop_03.wav"
+  ],
+  "chop_soft": [
+    "res://modules/restaurant/assets/audio/recorded/chop_soft_01.wav"
+  ],
+  "chop_hard": [
+    "res://modules/restaurant/assets/audio/recorded/chop_hard_01.wav"
+  ],
+  "bell": [
+    "res://modules/restaurant/assets/audio/recorded/bell_01.wav"
+  ],
+  "pan": [
+    "res://modules/restaurant/assets/audio/recorded/pan_01.wav"
+  ],
+  "serve": [
+    "res://modules/restaurant/assets/audio/recorded/serve_01.wav"
+  ],
+  "tap": [
+    "res://modules/restaurant/assets/audio/recorded/tap_01.wav"
+  ],
+  "paper": [
+    "res://modules/restaurant/assets/audio/recorded/paper_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/paper_02.wav"
+  ],
+  "wipe": [
+    "res://modules/restaurant/assets/audio/recorded/wipe_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/wipe_02.wav"
+  ],
+  "drop": [
+    "res://modules/restaurant/assets/audio/recorded/drop_01.wav"
+  ],
+  "stir_pasta": [
+    "res://modules/restaurant/assets/audio/recorded/stir_pasta_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/stir_pasta_02.wav"
+  ],
+  "drop_dry": [
+    "res://modules/restaurant/assets/audio/recorded/drop_dry_01.wav"
+  ]
+}

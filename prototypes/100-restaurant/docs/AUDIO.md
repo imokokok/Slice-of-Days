@@ -1,30 +1,84 @@
-# 厨房音效与协作接口
+# 厨房实录音效库（2026-09-25）
 
-当前接入 17 类原创程序拟音，均为项目内生成的 16-bit / 22050 Hz 单声道 WAV。没有从参考游戏提取声音，也没有下载需要另行署名的录音。它们用于建立声音反馈与操作同步；不是现场实录，音色仍可继续打磨。
+本次用 35 条外部 CC0 录音替换旧程序拟音，剪辑为 49 个 WAV 片段，组织成 32 个素材分组。旧的生成脚本及 22 个生成 WAV 已移除。没有提取商业参考游戏音轨。
 
-| 声音 | 已接入的触发与停止 |
+## 许可和交接
+
+每条源录音页面已核对为 **CC0 1.0**，允许商用、修改和再分发，无强制署名要求。[Creative Commons 官方许可说明](https://creativecommons.org/publicdomain/zero/1.0/)。这里仍保留作者和链接，便于合作方追踪资产；不要求玩家在游戏画面中署名，也不暗示作者为项目背书。
+
+逐文件清单：`modules/restaurant/assets/audio/recorded/manifest.json`，含作者、页面、许可 URL、查询日期、下载 URL、原文件/页面/输出 SHA-256、剪辑区间、增益和格式。`audio_bank.json` 是运行时映射。
+
+使用 Freesound 页面公开提供的 Ogg 预听文件，未下载需要登录的无损原件。这些是已有录音的有损版本，转成 WAV 不会恢复丢失的细节。处理仅为剪辑、单声道合并、去直流偏移、克制的增益调整、短音淡入淡出与循环接缝交叉渐变；没有合成噪声或程序生成音色。
+
+## 操作与声音
+
+| 实际状态 / 操作 | 录音与触发 |
 | --- | --- |
-| squeeze / pour / powder | 按住容器出料分别挤酱、倾倒、撒粉；松手、移出锅区、放下、失焦、弹窗停止 |
-| ignite / tap | 点火瞬间 / 关闭火与开关龙头 |
-| flame | 炉灶开火后持续；关火停止，锅移走时仍有炉火声 |
-| sizzle | 有食物、锅在灶上、无大量水时煎炒；离灶或关火停止 |
-| boil | 锅水沸腾时冒泡；离灶、关火、水耗尽或暂停停止 |
-| water | 龙头开着时水流声；关水、失焦或弹窗停止，锅移走时水仍流向水槽 |
-| chop | 刀刃实际切开食材；快速切配快捷操作也使用此音 |
-| stir | 铲头实际扫到锅中实体；无接触不播放，160 ms 节流 |
-| drop / tap | 食物或容器碰撞台面/锅壁；防止密集接触堆叠成刺耳声音 |
-| pan | 松手把锅放回台面 |
-| drain | 水槽处倒掉锅水 |
-| wipe | 点击擦除溢出的调料 |
-| paper | 打开菜谱 DIY 或海报工作台 |
-| serve | 成功出餐，播放短提示音 |
+| 热锅煎蛋 / 蔬菜 / 肉 | 根据在锅内且未装盘的实体和主料质量，分别选择煎蛋、黄油炒蔬菜、香肠煎炒录音；已有烹饪热量达到起声阈值才播放 |
+| 油 | 倾倒时播放真实倒油录音；油附着食物影响干炒选择。干净油独自在锅中不凭空制造大声滋响 |
+| 浓酱 | 读取实际液体与食物表面 composition_ml，总酱量达到 5 ml 后选浓酱冒泡，与清水煮沸分开 |
+| 水煮 | 与烹饪模型共用 80 ml 水量界线；水温达 99°C 才播放锅内沸水录音，冷水不会冒泡响，也不会同时播放干煎声 |
+| 撒盐 / 撒胡椒粉 | 分别使用盐瓶摇撒和干调料瓶录音；持续按压且瓶中有余量才响 |
+| 挤酱 / 倒液体 | 番茄酱瓶、普通液体、油分别取录音，音量跟随现有挤压力；松手、倒空、暂停、失焦即停 |
+| 翻炒 / 搅拌 | 只由实际工具扫到食物触发；水中搅拌、沾酱、软面条、湿软料、干粒料分别选组；木勺/木铲和黑色铲分别叠加木/金属接触层 |
+| 切菜 | 只在几何切割成功时播放，区分柔软/普通/硬蔬菜组；普通组有三条独立刀切变体 |
+| 碰撞 / 落盘 | 实际落物碰撞区分容器、干粒料、普通食物；锅落台、盘子交付有对应录音 |
+| 其他 | 水龙头出水、炉火、点火、服务铃、翻纸与擦拭都改为录音 |
 
-`world/kitchen_audio.gd` 管理独立播放器。`play_effect(id)` 播放一次声音；`update_kitchen(world)` 依据实际操作/锅状态维护循环；`muted` 同时约束循环与短音。播放器默认走现有 Master，但不创建、更改或静音宿主音频总线；主项目可按自己的音量分组设置 player.bus。开关状态目前只在本次小游戏实例内保存。
+同组多变体避免紧邻重复，音高变化限制在 ±1.5%。一次扫过大量切块按 180 ms 的共享接触窗口聚合，单组短音未结束不反复重启。每个播放器最多一条回放；最多八条循环通道，煎/浓酱/水煮互斥。不会一块食物就额外创建一个音源。暂停和静音保留现有界面行为；摆盘淋酱仅在实际发生时例外发声。
 
-窗口失焦会停止声音；重新聚焦按当前厨房状态恢复环境循环，已停止的挤酱动作和水龙头不会自行重开。弹窗时只暂停本模块的持续声，纸张等界面音仍可播放。测试在退出前静音并等待音频混合线程释放回放，避免把退出时未混合完成的音效当成泄漏。
+## 已验证与限制
 
-替换音色只需保留 `assets/audio/` 中的文件名。循环素材应去掉首尾静音并做无缝衔接，避免爆音；短音不应包含长段环境底噪。原始生成脚本是 `tools/generate_kitchen_audio.py`，只依赖 Python 标准库，方便合作者重新生成或对比。
+- 已实现并验证：源页面 CC0 检查、35 条录音下载、49 个 WAV 解码/非静音/峰值/哈希/循环接缝审计，以及实际状态到音效的定向自动测试。测试日志与实际混音捕获见 `VALIDATION.md`。
+- 已实现但未逐项人耳验收：所有录音已接入播放器，已生成真实 Godot 混音试听文件；环境底噪、音色自然程度、混音舒适度及每个循环的听感仍需人工确认。不能把无削波或测试通过称作“和现实完全一致”。
+- 近似实现：食材分组与声音强度；`cooking_heat` 是现有熟度热量剂量，不是实测温度。薄酱与浓酱尚未按黏度完整分档。软肉接触借用湿混合物录音，硬奇物借用锅具碰撞，擦台借用布擦玻璃，锅内金属接触借用金属厨具刮擦；保留来源真实名称，不冒充对应食材逐个实录。
+- 具体缺口：牛肉/鸡肉分别在不同含水量下的翻炒近录；木勺与金属铲在不同浓度酱汁内的独立慢/快搅拌；不同硬奇物落钢锅的近录；湿海绵擦木桌；完整刀切软肉/番茄/叶菜录音；无损原始文件与最终人耳混音验收。对应操作使用上述明确列出的录音近似，没有回退到生成声音。
 
-后续设备音效计划：烤箱门/托盘、搅拌机负载、刀落在不同材质、盘碗碰撞、冰箱门密封、包装拆开、真实液体落点与容器混响。对应功能尚未实现时，不提前播放假操作音；未来可用实录多采样、距离衰减与房间混响替换当前统一近场拟音。
+## 维护与验证方式
 
-摆盘页面淋酱沿用 squeeze/pour 声音，模态期间仅该手动操作发声；松手、移出盘面、达到容量、失焦或关闭页面均停止。锅自由拖拽后落台沿用 pan 声音，细切沿用 chop。
+- 实施前读取完整规格第 19 章；只接许可明确可商用的源录音，首选 CC0，排除 NC/仅个人使用/条件相互矛盾的素材。
+- 重建：安装 numpy、soundfile，运行 `python tools/import_recorded_audio.py --cache <工程外缓存目录>`。脚本逐条检查页面 CC0，再取公开预听；缓存保留原文件及页面。`python tools/audit_recorded_audio.py` 可离线验全部打包 WAV。
+- 引擎测试：`Godot --headless --path . --script tests/test_recorded_audio.gd`，已纳入 `tools/test.ps1`。还需回归 seasoning、spatula、kitchen_interactions、recipe_diy、comfort_release、integration。
+- 实际混音：不加 headless，运行 `Godot --path . --script tests/capture_recorded_audio.gd -- <输出绝对路径.wav>`。这是引擎混音输出，不是静态拼贴演示；状态由脚本设定，不冒充完整系统鼠标试玩。
+
+## 逐条来源
+
+以下每行均在下载当天由源页面核对 CC0；剪辑后所有文件都能反查 manifest。
+
+| 源录音 | 作者 | 录音内容 |
+| --- | --- | --- |
+| [170416](https://freesound.org/people/ciccarelli/sounds/170416/) | ciccarelli | Eggs frying in oil |
+| [464301](https://freesound.org/people/neilraouf/sounds/464301/) | neilraouf | Vegetables cooking in butter |
+| [547519](https://freesound.org/people/colorsCrimsonTears/sounds/547519/) | colorsCrimsonTears | Sausage frying in an oil-filled skillet |
+| [137229](https://freesound.org/people/xenognosis/sounds/137229/) | xenognosis | Water boiling in a small pot |
+| [568112](https://freesound.org/people/andatha/sounds/568112/) | andatha | Boiling water recorded with Zoom H1n |
+| [560564](https://freesound.org/people/bittermelonheart/sounds/560564/) | bittermelonheart | Sauce simmering and stirring on stove |
+| [610255](https://freesound.org/people/leftovertunacasserole/sounds/610255/) | leftovertunacasserole | Tomato sauce bubbling |
+| [137245](https://freesound.org/people/xenognosis/sounds/137245/) | xenognosis | Salt shaken inside plastic container |
+| [95740](https://freesound.org/people/makemebad/sounds/95740/) | makemebad | Dry seasoning shaken in plastic bottle |
+| [676371](https://freesound.org/people/gmsmith1918/sounds/676371/) | gmsmith1918 | Ketchup squeezed from a bottle |
+| [636150](https://freesound.org/people/nataliegonzalez19/sounds/636150/) | nataliegonzalez19 | Oil poured onto a pan |
+| [699231](https://freesound.org/people/clement.bernardeau/sounds/699231/) | clement.bernardeau | Oil poured into a bottle |
+| [740116](https://freesound.org/people/FOSSarts/sounds/740116/) | FOSSarts | Hot water poured into a ceramic cup |
+| [391478](https://freesound.org/people/coltures/sounds/391478/) | coltures | Wooden spatula moving inside frying pan |
+| [166338](https://freesound.org/people/spawklz/sounds/166338/) | spawklz | Metal spatula and knife sliding on kitchen metal |
+| [486999](https://freesound.org/people/OlyveBone/sounds/486999/) | OlyveBone | Water stirred in a pot |
+| [336697](https://freesound.org/people/fordps3/sounds/336697/) | fordps3 | Wet mixture stirred with wooden spoon |
+| [464005](https://freesound.org/people/juanforeromusic/sounds/464005/) | juanforeromusic | Small quantity of rice poured into bowl |
+| [740092](https://freesound.org/people/FOSSarts/sounds/740092/) | FOSSarts | Gas stove igniting then burning |
+| [406066](https://freesound.org/people/Anthousai/sounds/406066/) | Anthousai | Tap water running into kitchen sink |
+| [839155](https://freesound.org/people/BenParamoreAudio/sounds/839155/) | BenParamoreAudio | Quick potato chop with Santoku knife |
+| [839149](https://freesound.org/people/BenParamoreAudio/sounds/839149/) | BenParamoreAudio | Quick potato chop with Santoku knife |
+| [839145](https://freesound.org/people/BenParamoreAudio/sounds/839145/) | BenParamoreAudio | Quick potato chop with Santoku knife |
+| [839163](https://freesound.org/people/BenParamoreAudio/sounds/839163/) | BenParamoreAudio | Soft potato slice with Santoku knife |
+| [839123](https://freesound.org/people/BenParamoreAudio/sounds/839123/) | BenParamoreAudio | Hard potato chop with Santoku knife |
+| [221515](https://freesound.org/people/AlaskaRobotics/sounds/221515/) | AlaskaRobotics | Single metal service-bell ring |
+| [209002](https://freesound.org/people/OwlStorm/sounds/209002/) | OwlStorm | Pots and pans clatter |
+| [181260](https://freesound.org/people/CapsLok/sounds/181260/) | CapsLok | Plate set down on hard kitchen surface |
+| [353105](https://freesound.org/people/milpower/sounds/353105/) | milpower | Glass bottle placed on glass plate |
+| [151220](https://freesound.org/people/OwlStorm/sounds/151220/) | OwlStorm | Book page turn |
+| [151221](https://freesound.org/people/OwlStorm/sounds/151221/) | OwlStorm | Book page turn variant |
+| [505171](https://freesound.org/people/mitchanary/sounds/505171/) | mitchanary | Cloth wiping a window |
+| [388744](https://freesound.org/people/jopimblett/sounds/388744/) | jopimblett | Grapes dropped into a bowl |
+| [627655](https://freesound.org/people/KaleidacousticsAudio/sounds/627655/) | KaleidacousticsAudio | Pasta stirred in sauce in a saucepan |
+| [627656](https://freesound.org/people/KaleidacousticsAudio/sounds/627656/) | KaleidacousticsAudio | Dry pasta dropped in ceramic bowl |

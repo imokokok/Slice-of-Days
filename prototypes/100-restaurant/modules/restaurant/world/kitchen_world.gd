@@ -719,6 +719,7 @@ func set_dish(entries: Array, _ingredient_defs: Array) -> void :
 		if physics_id > 0 and is_instance_id_valid(physics_id):
 			var body = instance_from_id(physics_id)
 			if is_instance_valid(body):
+				body.set_meta("cooking_heat", float(entry.get("heat", 0.0)))
 				var art = body.get_node_or_null("FoodArt")
 				if art:
 					art.set("heat", float(entry.get("heat", 0)))
@@ -918,9 +919,6 @@ func _static_segment(from: Vector2, to: Vector2, pan_wall: = true) -> void :
 	body.add_child(collision)
 	add_child(body)
 	if pan_wall: _pan_walls.append(body)
-
-func _play_chop_sound() -> void :
-	audio.play_effect("chop")
 
 func pan_rect() -> Rect2:
 	return pan.transform_pan() * Rect2(704, 551, 222, 103)
@@ -1410,7 +1408,7 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 	body.visible = false
 	body.queue_free()
 	_chop_flash = 0.2
-	_play_chop_sound()
+	audio.play_chop(definition)
 	interaction.emit("notice", "切开了！每块保留独立重量和碰撞；拖任意一块可把同批切块一起下锅。")
 	return result
 
@@ -1444,7 +1442,7 @@ func _connect_food_audio(body: Node) -> void :
 	body.max_contacts_reported = 4
 	body.body_entered.connect( func(_other: Node):
 		if controls_enabled and is_instance_valid(audio) and not body.freeze and body.linear_velocity.length() > 55 and _other is StaticBody2D:
-			audio.play_effect("tap" if body.get_meta("is_container", false) else "drop"))
+			audio.play_food_drop(body))
 
 func _polygon_area(polygon: PackedVector2Array) -> float:
 	var area: = 0.0

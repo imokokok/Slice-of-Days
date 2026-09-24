@@ -146,6 +146,8 @@ func _process(delta: float) -> void :
 			else: stop_gesture()
 		_stroke.width = clampf(3.0 + squeeze_pressure * 13.0 + sqrt(float(_stroke.amount_ml)) * 0.8, 3.0, 24.0)
 		game.world.audio.ui_dispense_mode = game.world.get_dispense_mode(game._definition(sauce_id)) if drawing else ""
+		game.world.audio.ui_dispense_id = sauce_id
+		game.world.audio.ui_pressure = squeeze_pressure
 		changed.emit()
 	elif drawing: game.world.audio.ui_dispense_mode = ""
 	for child in get_children():

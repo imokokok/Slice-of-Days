@@ -1,0 +1,25 @@
+Recorded CC0 kitchen audio regression
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recorded audio, 150 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: kitchen interactions, 35 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: spatula input and physics, 29 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: seasoning input and physics, 148 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: real knife mouse drag, 20 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recipe DIY lifecycle, 75 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS comfort release: 90 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: restaurant integration, 126 checks

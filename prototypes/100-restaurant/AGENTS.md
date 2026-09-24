@@ -11,3 +11,5 @@
 本轮补充：柜格取物须扣除可见库存，调料台不放米饭；菜谱外侧与展开页共用渲染源；锅溢出按体积而不是小份数量。实施与验证见 docs/STOCK_RECIPE_PAN_20260925.md。
 
 2026-09-25 最新操作修正：菜板固定在右侧备菜区，取消拖动，覆盖旧文档中可拖动菜板的要求；保留刀切及切块整批入锅。验证使用 tests/test_cut_batch_stability.gd 和 tests/test_knife_drag.gd，结果记录在 docs/VALIDATION.md。
+
+音频最新要求：禁止程序生成拟音；仅使用许可核验可商用的外部录音，优先 CC0。当前音频来源、加工、缺口和验证入口在 docs/AUDIO.md；assets/audio/recorded/manifest.json 必须逐文件记录来源与哈希。新素材不得仅因写着“免费”就纳入。使用 tests/test_recorded_audio.gd 验证事件、tools/audit_recorded_audio.py 验证素材；技术测试不能冒充人耳试听。

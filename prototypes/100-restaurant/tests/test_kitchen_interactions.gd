@@ -47,7 +47,7 @@ func _run() -> void:
 	_expect(rice.get_meta("enrolled", false), "pan fixture really enrolls through physics")
 	game.session.set_heating(true)
 	await create_timer(0.1).timeout
-	_expect(game.world.audio.loops.flame.playing and game.world.audio.loops.sizzle.playing, "burner and dry-pan food trigger different audio loops")
+	_expect(game.world.audio.loops.flame.playing and not game.world.audio.loops.sizzle.playing, "dry rice in a dry pan has a burner sound without invented wet sizzling")
 	_mouse(Vector2(1037,654), "down")
 	await process_frame
 	_expect(game.world.pan.active, "actual pan-handle press starts pan movement")

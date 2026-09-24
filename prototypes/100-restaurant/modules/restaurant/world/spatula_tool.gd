@@ -158,7 +158,7 @@ func stir_sweep(from: Vector2, to: Vector2) -> int:
 		body.angular_velocity = direction * (0.8 if kind == "spoon" else 3.0)
 		body.set_meta("stir_until", world._time + 0.8)
 		count += 1
-		world.audio.play_food_stir(body, kind)
+		world.audio.play_food_stir(body, kind, from.distance_to(to))
 		_exchange_liquid(body, from.distance_to(to))
 	return count
 

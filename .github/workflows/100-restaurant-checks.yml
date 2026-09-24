@@ -32,3 +32,5 @@ jobs:
       - name: Run complete regression suite
         shell: pwsh
         run: ./tools/test.ps1 -GodotPath /tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+      - name: Audit recorded audio provenance and PCM assets
+        run: python3 tools/audit_recorded_audio.py

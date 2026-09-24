@@ -50,6 +50,8 @@ func run() -> void:
 	scene._choose_seasoning(rough_choice)
 	scene._choose_plating("generous")
 	check(scene.stage_ready and str(scene._interaction_record().mechanic.grade.id)=="improvised","Mistakes should change the record without destroying the dish")
+	var rough_reply: String=rules.service_response(scene._interaction_record())
+	check(rough_reply.contains("锅温") and rough_reply.contains("端上桌"),"A rough dish should receive a response to its real heat and plating")
 	scene._reset_cooking()
 	check(scene.cooking_phase=="select" and scene.selected_tokens.size()==3,"Restarting should preserve the chosen ingredients for easy revision")
 	check(state.inventory==inventory_before,"Restarting before serving should consume no inventory")
@@ -59,6 +61,7 @@ func run() -> void:
 	check(scene.cooking_phase=="prep" and scene.prepared_tokens.is_empty(),"Choosing ingredients should not silently prepare them")
 	for option in [0,1,0]: scene._choose_prep_option(option)
 	check(scene.prepared_tokens==["lemon","bread","cheese"],"Preparation order should be recorded")
+	check(str(scene.prep_board.cuts.get("bread",""))=="small","The board should retain the chosen bread cut for drawing")
 	var chosen_cook_order := ["cheese","bread","lemon"]
 	for token_id in chosen_cook_order:
 		var token: Dictionary=scene._prepared_token(token_id)
@@ -67,6 +70,7 @@ func run() -> void:
 		scene._toggle_token(token_id)
 		scene._perform_primary_action()
 	check(scene.added_tokens==chosen_cook_order,"The player should be able to revise the pan order after preparation")
+	check(str(scene.illustrated_pot.prepared.get("bread",""))=="small","The pan should display the chosen bread cut")
 	for addition in scene.cooking_additions:
 		var effective: Dictionary=scene._prepared_token(str(addition.get("id","")))
 		check(addition.heat_window==effective.heat_window and is_equal_approx(float(addition.heat)-float(addition.heat_after),float(effective.heat_drop)),"The pan result should use the selected preparation's heat behavior")
@@ -82,6 +86,7 @@ func run() -> void:
 	check(not scene.stage_ready and scene.cooking_phase=="plating","Seasoning should lead to a separate plating decision")
 	scene._choose_plating("share")
 	check(scene.stage_ready and scene.cooking_phase=="serve","Plating should unlock serving without a hard failure state")
+	check(str(scene.plated_dish.prepared.get("bread",""))=="small","The plated dish should preserve the chosen bread cut")
 	var record: Dictionary=scene._interaction_record()
 	var mechanic: Dictionary=record.mechanic
 	check((mechanic.additions as Array).size()==3,"Every pan addition should survive in the result record")
@@ -94,10 +99,12 @@ func run() -> void:
 	check(scene.completed,"A plated dish should complete through the existing result contract")
 	var outcome: Dictionary=gameplay.latest_outcome("cooking")
 	check(str(outcome.get("craft_grade",{}).get("id",""))=="attentive","The outcome should expose its craft grade")
+	check(str(outcome.get("service_response","")).contains("切开挤汁") and str(outcome.get("service_response","")).contains("分成小碟"),"The cook should respond to the actual preparation and plating")
 	var recipes: Array=state.shared_state.get("world_artifacts",{}).get("recipes",[])
 	check(not recipes.is_empty(),"Cooking should still publish a real public recipe")
 	if not recipes.is_empty():
 		check(str(recipes[-1].get("notes","")).contains("剩下的奶酪 → 昨天的面包 → 一袋柠檬"),"The recipe should describe the actual pan order")
 		check(str(recipes[-1].get("notes","")).contains("分成小碟"),"The recipe should preserve plating as part of the cooking memory")
+		check(str(recipes[-1].get("notes","")).contains("石泳琪端起盘子"),"The public recipe should retain the cook's response")
 	print("COOKING_RHYTHM_TEST: ","PASS" if failures==0 else "FAIL"," failures=",failures)
 	quit(failures)

@@ -271,7 +271,9 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 		"source_event_id": str(GameState.shared_state.get("pending_module", {}).get("source_event_id", "")),
 		"interaction": stored_interaction,
 	}
-	if module_id=="cooking": outcome["craft_grade"]=stored_interaction.get("mechanic",{}).get("grade",{}).duplicate(true)
+	if module_id=="cooking":
+		outcome["craft_grade"]=stored_interaction.get("mechanic",{}).get("grade",{}).duplicate(true)
+		outcome["service_response"]=COOKING.service_response(stored_interaction)
 	complete(module_id, outcome)
 	if module_id == "cooking": EconomySystem.finish_cooking(outcome, stored_interaction.get("selected_tokens", []))
 	if work_payment > 0:
@@ -284,7 +286,7 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 	GameState.commit_active_role_state()
 	return {
 		"ok": true,
-		"message": str(selected.get("result_text", "这次经历已经被记录下来。")),
+		"message": str(selected.get("result_text", "这次经历已经被记录下来。"))+("\n"+str(outcome.get("service_response","")) if module_id=="cooking" else ""),
 		"module_id": module_id,
 		"outcome": outcome,
 	}

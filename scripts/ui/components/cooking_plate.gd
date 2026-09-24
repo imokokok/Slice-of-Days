@@ -47,11 +47,9 @@ func _plate(center: Vector2, radius: float) -> void:
 	draw_arc(center,radius-11.0,0.2,PI*1.12,36,Color("d7c9aa",0.55),2.0,true)
 
 func _food(id: String, center: Vector2, extent: Vector2, angle := 0.0) -> void:
-	var texture := ART.texture(id,true)
-	if not texture: return
 	var transform_scale := Vector2.ONE*(0.72+reveal*0.28)
 	draw_set_transform(center,angle,transform_scale)
-	draw_texture_rect(texture,Rect2(-extent*0.5,extent),false,_tint(id))
+	ART.draw_prepared(self,id,str(prepared.get(id,"")),Rect2(-extent*0.5,extent),_tint(id))
 	draw_set_transform(Vector2.ZERO)
 
 func _draw() -> void:

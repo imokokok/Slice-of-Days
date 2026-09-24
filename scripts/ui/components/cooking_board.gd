@@ -36,7 +36,10 @@ func _draw() -> void:
 		var center := Vector2(82+i*102,119)
 		var dimensions := texture.get_size()*minf(83.0/texture.get_width(),116.0/texture.get_height())
 		var has_prepared_drawing := ART.prepared_texture(items[i])!=null
-		if cuts.has(items[i]) and ART.can_cut(items[i]) and not has_prepared_drawing and items[i] not in ["tomato","herbs","bread","lemon"]:
+		var prep_option := str(cuts.get(items[i],""))
+		if cuts.has(items[i]) and ART.has_distinct_prep_drawing(items[i],prep_option):
+			ART.draw_prepared(self,items[i],prep_option,Rect2(center-dimensions*.5,dimensions))
+		elif cuts.has(items[i]) and ART.can_cut(items[i]) and not has_prepared_drawing and items[i] not in ["tomato","herbs","bread","lemon"]:
 			for part in 3:
 				var source := Rect2(part*texture.get_width()/3.0,0,texture.get_width()/3.0,texture.get_height())
 				var dest := Rect2(center-dimensions*.5+Vector2(part*(dimensions.x/3+5),0),Vector2(dimensions.x/3,dimensions.y))

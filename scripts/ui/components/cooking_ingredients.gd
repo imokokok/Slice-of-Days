@@ -50,6 +50,26 @@ static func texture(id: String, prepared := false) -> Texture2D:
 		region.region=Rect2((index%3)*512,floori(index/3.0)*512,512,512); cache[index]=region
 	return cache[index]
 
+
+static func has_distinct_prep_drawing(id: String, option: String) -> bool:
+	return (id=="lemon" and option=="squeeze") or (id=="bread" and option=="small") or (id=="cheese" and option=="chunks")
+
+
+static func draw_prepared(canvas: CanvasItem, id: String, option: String, rect: Rect2, tint := Color.WHITE) -> void:
+	var art := texture(id,true)
+	if not has_distinct_prep_drawing(id,option):
+		canvas.draw_texture_rect(art,rect,false,tint)
+		return
+	if id=="lemon":
+		canvas.draw_texture_rect(art,Rect2(rect.position+Vector2(rect.size.x*0.02,rect.size.y*0.18),rect.size*Vector2(0.58,0.65)),false,tint)
+		for i in 3:
+			var center := rect.position+rect.size*Vector2(0.62+0.12*float(i%2),0.36+0.22*float(i/2))
+			canvas.draw_circle(center,maxf(2.0,rect.size.x*0.055),Color("f0c94e")*tint)
+		return
+	for i in 3:
+		var offset := Vector2(0.03+0.34*float(i%2),0.03+0.37*float(i/2))
+		canvas.draw_texture_rect(art,Rect2(rect.position+rect.size*offset,rect.size*Vector2(0.57,0.57)),false,tint)
+
 static func picture(parent: Node, id: String, at: Vector2, extent: Vector2, stretch := false) -> TextureRect:
 	var picture := TextureRect.new()
 	picture.expand_mode=TextureRect.EXPAND_IGNORE_SIZE

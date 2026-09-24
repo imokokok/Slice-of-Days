@@ -98,6 +98,32 @@ static func grade(score: int) -> Dictionary:
 	return {"id":"improvised","label":"带着临场痕迹","note":"它不完美，却完整留下了这次动手的过程。"}
 
 
+static func service_response(interaction: Dictionary) -> String:
+	var mechanic: Dictionary=interaction.get("mechanic",{})
+	var additions: Array=mechanic.get("additions",[])
+	var detail := ""
+	for addition_value in additions:
+		var addition: Dictionary=addition_value
+		if str(addition.get("state","")) not in ["rough","recoverable"]: continue
+		var window: Array=addition.get("heat_window",[])
+		if window.size()<2: continue
+		var direction := "还没上来" if float(addition.get("heat",0.0))<float(window[0]) else "有些急"
+		detail="「%s」下锅时锅温%s，你后来还是把这锅接住了。" % [str(addition.get("label","食材")),direction]
+		break
+	if detail.is_empty():
+		var preparations: Array=mechanic.get("preparations",[])
+		if not preparations.is_empty():
+			var prep: Dictionary=preparations[0]
+			detail="「%s」用了「%s」的做法，这一口我记住了。" % [str(prep.get("label","食材")),str(prep.get("option_label","认真处理"))]
+	if detail.is_empty(): detail="这道菜有你自己的做法，我记住了。"
+	var ending: String = {
+		"space":"盘边留了空白，客人能先看清这一口。",
+		"generous":"这一盘端上桌，像是认真招待忙完一天的人。",
+		"share":"你分成小碟，每个等菜的人都有了自己的那一口。",
+	}.get(str(mechanic.get("plating","")),"出餐的样子也值得留在菜谱里。")
+	return "石泳琪端起盘子：「%s%s」" % [detail,ending]
+
+
 static func recipe_notes(interaction: Dictionary) -> String:
 	var mechanic: Dictionary = interaction.get("mechanic", {})
 	var grade_data: Dictionary = mechanic.get("grade", {})
@@ -118,7 +144,7 @@ static func recipe_notes(interaction: Dictionary) -> String:
 	for stir_value in mechanic.get("stirs",[]):
 		var stir: Dictionary=stir_value
 		stir_labels.append(str(stir.get("style_label","翻拌")))
-	return "备料：%s。\n下锅顺序：%s。\n翻拌：%s；尝味后%s。\n装盘：%s。\n%s：%s" % [
+	return "备料：%s。\n下锅顺序：%s。\n翻拌：%s；尝味后%s。\n装盘：%s。\n%s：%s\n%s" % [
 		"、".join(prep_lines) if not prep_lines.is_empty() else "按食材分别处理",
 		" → ".join(addition_labels),
 		"、".join(stir_labels) if not stir_labels.is_empty() else "%d 次" % int(mechanic.get("stir_count",0)),
@@ -126,4 +152,5 @@ static func recipe_notes(interaction: Dictionary) -> String:
 		plating,
 		str(grade_data.get("label", "完成出餐")),
 		str(grade_data.get("note", "这道菜留下了今天的火候。")),
+		service_response(interaction),
 	]

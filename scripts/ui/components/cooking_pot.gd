@@ -63,10 +63,12 @@ func _draw() -> void:
 	else:
 		draw_texture_rect(FALLBACK,Rect2(0,0,390,390),false)
 	for i in ingredients.size():
-		var food:=preload("res://scripts/ui/components/cooking_ingredients.gd").texture(ingredients[i],prepared.has(ingredients[i]))
+		var food_art=preload("res://scripts/ui/components/cooking_ingredients.gd")
 		var lift := drop_lift*58.0 if i==ingredients.size()-1 else 0.0
 		var at:=Vector2(116+i*60+sin(stirring+i)*8,(154 if back else 198)+cos(stirring+i)*6-lift)
-		draw_texture_rect(food,Rect2(at-Vector2(32,35),Vector2(64,70)),false,_food_tint(ingredients[i]))
+		var food_rect := Rect2(at-Vector2(32,35),Vector2(64,70))
+		if prepared.has(ingredients[i]): food_art.draw_prepared(self,ingredients[i],str(prepared[ingredients[i]]),food_rect,_food_tint(ingredients[i]))
+		else: draw_texture_rect(food_art.texture(ingredients[i]),food_rect,false,_food_tint(ingredients[i]))
 	# The front of the pot occludes the lower parts of the food and spoon.
 	var spoon:=Assets.texture("kitchen_spoon")
 	if spoon and back:

@@ -545,9 +545,16 @@ func _preview_plating(choice: String) -> void:
 	if completed or cooking_phase!="plating": return
 	plating_preview_choice=choice
 	if is_instance_valid(plated_dish):
-		var preparation: Dictionary={}
-		for token_id in prepared_tokens: preparation[token_id]=true
+		var preparation := _preparation_visuals()
 		plated_dish.update_dish(added_tokens,preparation,choice,float(value_slider.value),cooking_additions)
+
+
+func _preparation_visuals() -> Dictionary:
+	var preparation := {}
+	for prep_value in cooking_preps:
+		var prep: Dictionary=prep_value
+		preparation[str(prep.get("id",""))]=str(prep.get("option",""))
+	return preparation
 
 
 func _token_data(token_id: String) -> Dictionary:
@@ -576,8 +583,7 @@ func _update_state() -> void:
 	if is_instance_valid(prep_board):
 		prep_board.items.assign(selected_tokens)
 		for token_id in added_tokens: prep_board.items.erase(token_id)
-		prep_board.cuts.clear()
-		for token_id in prepared_tokens: prep_board.cuts[token_id]=true
+		prep_board.cuts=_preparation_visuals()
 		prep_board.disabled=completed or cooking_phase!="prep" or prepared_tokens.size()>=selected_tokens.size()
 		prep_board.queue_redraw()
 	if is_instance_valid(ingredient_art):
@@ -694,16 +700,14 @@ func _update_cooking_state(minimum: int) -> void:
 		plating_buttons[choice].disabled=completed or cooking_phase!="plating"
 	cooking_reset_button.disabled=completed or (cooking_phase=="select" and selected_tokens.is_empty())
 	if is_instance_valid(illustrated_pot):
-		var preparation: Dictionary={}
-		for token_id in prepared_tokens: preparation[token_id]=true
+		var preparation := _preparation_visuals()
 		illustrated_pot.update_recipe(added_tokens,preparation,float(value_slider.value),cooking_phase,cooking_additions)
 		illustrated_pot.disabled=completed or not ((cooking_phase=="cook" and not pending_ingredient.is_empty()) or (cooking_phase=="stir" and cooking_stirs.size()<4))
 		illustrated_pot.accessibility_name=LocalizationSystem.text("轻推锅底" if cooking_phase=="stir" else primary_button.text)
 		illustrated_pot.tooltip_text="" if illustrated_pot.disabled else illustrated_pot.accessibility_name
 		illustrated_pot.visible=cooking_phase not in ["plating","serve"]
 	if is_instance_valid(plated_dish):
-		var plate_preparation: Dictionary={}
-		for token_id in prepared_tokens: plate_preparation[token_id]=true
+		var plate_preparation := _preparation_visuals()
 		plated_dish.visible=cooking_phase in ["plating","serve"]
 		plated_dish.update_dish(added_tokens,plate_preparation,plating_choice if not plating_choice.is_empty() else plating_preview_choice,float(value_slider.value),cooking_additions)
 	if is_instance_valid(cooking_recipe_strip):
@@ -787,7 +791,8 @@ func _complete_choice(choice_id: String) -> void:
 	status_label.text = LocalizationSystem.text(str(result.get("message", "")))
 	if not bool(result.get("ok", false)):
 		return
-	if module_id == "cooking": status_label.text += LocalizationSystem.text("\n%s。材料已实际用掉，出餐和工资记在今天的工作记录里。" % str(COOKING.grade(cooking_score).get("label","完成成菜")))
+	if module_id == "cooking":
+		status_label.text=LocalizationSystem.text(str(result.get("message","")).get_slice("\n",0))+LocalizationSystem.text("\n材料、工资和店主回应已记在今天的工作记录里。")
 	completed = true
 	if not SaveManager.save_or_report("玩法结果保存失败"):
 		GameState.load_save_data(rollback_snapshot)
@@ -796,6 +801,9 @@ func _complete_choice(choice_id: String) -> void:
 		return
 	return_button.text = LocalizationSystem.text("带着结果返回")
 	_update_state()
+	if module_id=="cooking":
+		instruction_label.text=LocalizationSystem.text(str(result.get("outcome",{}).get("service_response","")))
+		cooking_followed_recipe_label.visible=false
 
 
 func _interaction_record() -> Dictionary:

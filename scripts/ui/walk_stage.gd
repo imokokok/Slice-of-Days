@@ -18,6 +18,9 @@ const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
 const BUS_ART = preload("res://art/user_scenes/bus_stop.png")
 const TAROT_ART = preload("res://art/user_scenes/tarot_shop.png")
 const PLAYER_HOME_ART = preload("res://art/user_scenes/player_home.png")
+const SHARED_HOME_ART = preload("res://art/user_scenes/shared_home_supplied.jpg")
+const XANNI_ART = preload("res://art/user_scenes/xanni_supplied.jpg")
+const AuthoredJPEG = preload("res://scripts/ui/authored_jpeg.gd")
 const PRODUCE_STALL_ART = preload("res://art/user_scenes/produce_stall.png")
 const RESTAURANT_ART = preload("res://art/user_scenes/restaurant.png")
 const CORRESPONDENCE_OFFICE_ART = preload("res://art/user_scenes/correspondence_office.png")
@@ -209,10 +212,39 @@ func nearest_of(kinds: Array) -> Dictionary:
 		# A pair can be addressed from beside them, without standing between them.
 		if str(item.get("kind","")) == "argument": gap = maxf(0,gap-70)
 		var reach := float(item.get("reach", REACH))
+		if indoor and str(item.get("kind", "")) in ["person", "shopkeeper"]:
+			reach = maxf(reach, _actor_height() * .56)
 		if gap < reach and gap < distance:
 			distance = gap
 			result = item
 	return result
+
+func make_conversation_space(resident_id: String) -> void:
+	# The close indoor camera needs adult-sized speaking distance. Keep the
+	# resident at their authored slot and take a small step back if too close.
+	if not indoor: return
+	var people := presented_residents()
+	var target := people.filter(func(h: Dictionary) -> bool: return str(h.get("id", "")) == resident_id)
+	if target.is_empty(): return
+	var resident_x := float(target[0].x)
+	var spacing := _actor_height() * .52
+	if absf(player_x-resident_x) >= spacing: return
+	var side := -1.0 if player_x <= resident_x else 1.0
+	var destination := player_x
+	for direction in [side, -side]:
+		var candidate: float = resident_x + direction * spacing
+		if candidate < 80 or candidate > minf(world_width-80,walk_limit): continue
+		if people.any(func(h: Dictionary) -> bool: return str(h.get("id", "")) != resident_id and absf(float(h.x)-candidate)<spacing): continue
+		destination = candidate; break
+	if is_equal_approx(destination,player_x): return
+	var origin := player_x
+	var step := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	step.tween_method(func(weight: float) -> void:
+		var next_x := lerpf(origin,destination,weight)
+		phase += absf(next_x-player_x)/42.0
+		player_x = next_x; gait_weight = sin(weight*PI)*.35
+		moved.emit(player_x)
+		queue_redraw(); player_display.queue_redraw(), 0.0, 1.0, .28)
 
 func _draw() -> void:
 	dialogue_scenery.clear()
@@ -429,7 +461,10 @@ func _draw_street_middle() -> void:
 		var x := float(place.x) - camera_x
 		if x < -700 or x > 2300: continue
 		var place_id := str(place.get("id", ""))
-		if place_id in ["residence", "dorm"]:
+		if place_id == "residence":
+			_draw_authored_building(AuthoredJPEG.cutout(SHARED_HOME_ART, false, Composition.SHARED_HOME_PAPER_OPENINGS), x, place_id)
+			continue
+		if place_id == "dorm":
 			_draw_authored_building(PLAYER_HOME_ART, x, place_id)
 			continue
 		if place_id == "produce_stall":
@@ -754,6 +789,7 @@ func _draw_authored_npc(npc_id: String, at: Vector2, direction := -1.0) -> bool:
 			height = _actor_height() * 1.14
 		"wu_wu": art = CICI_ART
 		"naonao": art = NAONAO_ART
+		"xanni": art = AuthoredJPEG.cutout(XANNI_ART, true)
 		"xia_touming":
 			art = XIA_TOUMING_ART
 			height = _actor_height() * 1.10

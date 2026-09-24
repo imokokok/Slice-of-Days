@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-24",
+  "scope": "supplied A/B shared home and Xanni portrait",
+  "assets": {
+    "shared_home_supplied.jpg": {
+      "source_filename": "1dccf632061f2a2ca3dd998ec619bf23.jpg",
+      "sha256": "d97d8c897e745a4fd2b9367c89b4a6e2875d8ea0ae966d18d599cba1186ca9af",
+      "original_unchanged": true
+    },
+    "xanni_supplied.jpg": {
+      "source_filename": "e48118888892d6797a46bf1268109005.jpg",
+      "sha256": "e6fae712a60dfeffb0a598c749e8e1e28d1f9898b083e103c9b6d245ea8ce2ea",
+      "original_unchanged": true
+    }
+  },
+  "checks": {
+    "source": 31,
+    "home_interiors": 47,
+    "windows_pck": 31,
+    "failures": 0
+  },
+  "files": {
+    "Solmere.exe": {
+      "bytes": 109268480,
+      "sha256": "d34d36f3be1a6c49c56525ae86469b92e4f417ddf0b43cf00dd80c385c4b0562"
+    },
+    "Solmere.pck": {
+      "bytes": 412522532,
+      "sha256": "bcc68af6cec612884c61cc8949f299b08d7edc996c5303555d5c521b5430466b"
+    }
+  },
+  "captures": [
+    "ui_reference_review/supplied-art/record-owner.png",
+    "ui_reference_review/supplied-art/record-conversation.png",
+    "ui_reference_review/supplied-art/home-A.png",
+    "ui_reference_review/supplied-art/home-B.png",
+    "ui_reference_review/supplied-art/room-A.png",
+    "ui_reference_review/supplied-art/room-B.png"
+  ]
+}

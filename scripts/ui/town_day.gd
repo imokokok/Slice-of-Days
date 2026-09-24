@@ -640,6 +640,8 @@ func _rebuild_hotspots() -> void:
 	street.queue_redraw()
 	var building_center := _place_center()
 	var center := building_center + Composition.entry_offset(GameState.current_location)
+	if GameState.current_location == "residence":
+		center = building_center + Composition.home_entry_offset(GameState.current_role)
 	var sign_positions := _transport_sign_positions()
 	for sign_x in sign_positions:
 		var sign_location := street_order[clampi(_index_at(sign_x),0,street_order.size()-1)]
@@ -666,7 +668,8 @@ func _rebuild_hotspots() -> void:
 	if GameState.current_location in ["residence", "dorm"]:
 		var own_home := CoreLoopSystem.home()
 		if GameState.current_location == own_home:
-			street.hotspots.append({"x":center, "kind":"home", "reach":street.DOOR_REACH, "label":"回家"})
+			var home_label := "从楼梯回家 · 楼上" if GameState.current_role == "A" else "回家 · 楼下"
+			street.hotspots.append({"x":center, "kind":"home", "reach":street.DOOR_REACH, "label":home_label})
 	elif GameState.current_location == "cafe":
 		var hours := WorldGraph.location_status("cafe")
 		street.hotspots.append({"x":center,"kind":"counter","id":"grocery","reach":street.DOOR_REACH,"label":"和老板说话 · 购买杂货" if bool(hours.open) else "杂货店 · 休息中（08:00—22:00）"})

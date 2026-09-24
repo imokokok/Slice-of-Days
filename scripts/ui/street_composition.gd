@@ -5,6 +5,15 @@ const CURB := 718.0
 const FEET := 820.0
 const SIDEWALK_EDGE := 846.0
 const ROAD := 863.0
+const SHARED_HOME_CANVAS := Vector2(1811, 1280)
+const SHARED_HOME_DOOR := Vector2(1060, 1205)
+const SHARED_HOME_STAIRS := Vector2(190, 1205)
+const SHARED_HOME_PAPER_OPENINGS: Array[Vector2i] = [
+	Vector2i(160,1100), Vector2i(205,1060), Vector2i(275,1000),
+	Vector2i(315,960), Vector2i(360,935), Vector2i(385,660),
+	Vector2i(450,660), Vector2i(525,660), Vector2i(588,660),
+	Vector2i(582,553), Vector2i(1280,552),
+]
 
 static func rain_amount(day: int, minute: float) -> float:
 	# One coastal weather system follows the saved day/time, never a block hash.
@@ -13,7 +22,7 @@ static func rain_amount(day: int, minute: float) -> float:
 	var span: Vector2=windows[day]
 	return smoothstep(span.x,span.x+30,minute)*(1.0-smoothstep(span.y-30,span.y,minute))
 const CUTOUTS := {
-	"residence": {"size":Vector2(600,500), "ground":1166.0},
+	"residence": {"size":Vector2(1200,850), "ground":1205.0},
 	"dorm": {"size":Vector2(600,500), "ground":1166.0},
 	"produce_stall": {"size":Vector2(560,375), "ground":941.0},
 	"night_market": {"size":Vector2(620,540), "ground":1193.0},
@@ -38,7 +47,8 @@ static func cutout_rect(location: String, source: Vector2, center: float) -> Rec
 static func entry_offset(location: String) -> float:
 	# Actual doorway / counter centers in the current supplied cutouts.
 	match location:
-		"residence", "dorm": return 92.0
+		"residence": return home_entry_offset("B")
+		"dorm": return 92.0
 		"night_market": return -48.0
 		"tarot_stall": return 58.0
 		"bus_stop": return 45.0
@@ -46,6 +56,12 @@ static func entry_offset(location: String) -> float:
 		"print_shop": return 0.0
 		"produce_stall": return -65.0
 	return 0.0
+
+static func home_entry_offset(role: String) -> float:
+	# Upstairs is reached from the left exterior stair; downstairs has its own door.
+	var rect := cutout_rect("residence", SHARED_HOME_CANVAS, 0.0)
+	var anchor := SHARED_HOME_STAIRS if role == "A" else SHARED_HOME_DOOR
+	return rect.position.x + anchor.x * rect.size.x / SHARED_HOME_CANVAS.x
 
 static func argument_offset() -> float:
 	return 450.0

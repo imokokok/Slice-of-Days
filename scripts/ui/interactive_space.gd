@@ -505,6 +505,7 @@ func _start_conversation(resident_id: String, topic := "greeting") -> void:
 	for item in stage.hotspots:
 		if str(item.get("id","")) == resident_id and absf(float(item.x)-stage.player_x) > 1.0: stage.facing = signf(float(item.x)-stage.player_x)
 	stage.velocity = 0.0
+	stage.make_conversation_space(resident_id)
 	add_child(conversation)
 	SaveManager.save_or_report("谈话计时后保存失败")
 func _refresh_people() -> void:

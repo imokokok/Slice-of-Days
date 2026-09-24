@@ -21,6 +21,16 @@ func run() -> void:
 	state.begin_new_game("B"); state.current_location="night_market"; state.current_minute=600
 	check(gameplay.begin_session("cooking","cooking_rhythm_test"),"Cooking session should begin")
 	var scene=load("res://scenes/native_module_game.tscn").instantiate(); root.add_child(scene); await process_frame
+	var tomato: Dictionary=scene._token_data("tomato")
+	var juicy: Dictionary=rules.prepared_token(tomato,"keep_juice")
+	var drained: Dictionary=rules.prepared_token(tomato,"drain")
+	check(float(drained.heat_drop)<float(juicy.heat_drop) and float(drained.heat_window[0])>float(juicy.heat_window[0]),"Draining a tomato should preserve more pan heat and change its comfortable range")
+	scene._open_recipe_book()
+	var book: Node=get_nodes_in_group("recipe_book").back()
+	var house_recipe: Dictionary=load("res://scripts/core/recipe_book.gd").originals()[0]
+	book.emit_signal("follow_recipe",house_recipe)
+	check(scene.active_recipe.get("title","")==house_recipe.title and scene.cooking_followed_recipe_label.visible,"Following a recipe should keep its clue beside the cooking steps")
+	book.queue_free(); scene._reset_cooking(); scene.selected_tokens.clear(); scene._update_state(); await process_frame
 	for token_id in ["lemon","bread","cheese"]: scene._toggle_token(token_id)
 	var inventory_before: Dictionary=state.inventory.duplicate(true)
 	# A rough first attempt must still reach the table. The game records the
@@ -51,12 +61,16 @@ func run() -> void:
 	check(scene.prepared_tokens==["lemon","bread","cheese"],"Preparation order should be recorded")
 	var chosen_cook_order := ["cheese","bread","lemon"]
 	for token_id in chosen_cook_order:
-		var token: Dictionary=scene._token_data(token_id)
+		var token: Dictionary=scene._prepared_token(token_id)
 		var window: Array=token.get("heat_window",[.42,.70])
 		scene.value_slider.value=(float(window[0])+float(window[1]))*.5
 		scene._toggle_token(token_id)
 		scene._perform_primary_action()
 	check(scene.added_tokens==chosen_cook_order,"The player should be able to revise the pan order after preparation")
+	for addition in scene.cooking_additions:
+		var effective: Dictionary=scene._prepared_token(str(addition.get("id","")))
+		check(addition.heat_window==effective.heat_window and is_equal_approx(float(addition.heat)-float(addition.heat_after),float(effective.heat_drop)),"The pan result should use the selected preparation's heat behavior")
+	check(scene.token_buttons["cheese"].order_badge==1 and scene.token_buttons["bread"].order_badge==2 and scene.token_buttons["lemon"].order_badge==3,"Ingredient badges should switch to the real pan order")
 	for style in ["gentle","fold"]:
 		scene.value_slider.value=.58
 		scene._stir(style)

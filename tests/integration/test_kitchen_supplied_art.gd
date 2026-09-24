@@ -21,6 +21,7 @@ func run() -> void:
 	root.content_scale_mode=Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.size=Vector2i(1600,900)
 	var entries := CATALOG.tokens()
+	var cooking_rules=load("res://scripts/core/cooking_mechanics.gd")
 	check(entries.size()==31,"Every supplied ingredient should have cooking data")
 	check(CATALOG.asset_paths().size()==32,"Both prepared and unprepared artist assets should be registered")
 	for path in CATALOG.asset_paths():
@@ -44,6 +45,14 @@ func run() -> void:
 	var scene=load("res://scenes/native_module_game.tscn").instantiate()
 	root.add_child(scene); await process_frame
 	check(scene.interaction.tokens.size()==40,"The original pantry and every supplied ingredient should share one cooking list")
+	for value in scene.interaction.tokens:
+		var token: Dictionary=value
+		var options: Array=token.get("prep_options",[])
+		check(options.size()==2,"Every cooking ingredient should offer two preparations: "+str(token.get("id","")))
+		if options.size()!=2: continue
+		var first: Dictionary=cooking_rules.prepared_token(token,str(options[0].get("id","")))
+		var second: Dictionary=cooking_rules.prepared_token(token,str(options[1].get("id","")))
+		check(first.heat_window!=second.heat_window or not is_equal_approx(float(first.heat_drop),float(second.heat_drop)),"Preparation should change how the ingredient responds in the pan: "+str(token.get("id","")))
 	check(scene.ingredient_pages.size()==7,"The expanded pantry should be split into readable shelves")
 	for page_index in scene.ingredient_pages.size():
 		scene.ingredient_page=page_index; scene._refresh_ingredient_shelf()
@@ -63,14 +72,18 @@ func run() -> void:
 		check(root.get_node("EconomySystem").ingredient_available(id),"Supplied kitchen art should be selectable in the pantry: "+id)
 		scene._toggle_token(id)
 	check(scene.selected_tokens==["cooking_oil","carrot","alarm_clock"],"Selections from different shelves should stay together")
+	check(scene.token_buttons["cooking_oil"].order_badge==1 and scene.token_buttons["carrot"].order_badge==2 and scene.token_buttons["alarm_clock"].order_badge==3,"The shelf should show the chosen order on the actual ingredient art")
 	scene._perform_primary_action()
 	check(scene.cooking_phase=="prep" and scene._visible_ingredient_ids()==scene.selected_tokens,"Preparation should replace browsing pages with the three chosen art buttons")
+	check(scene.cooking_prep_detail_label.visible and not scene.cooking_prep_detail_label.text.is_empty(),"Preparation should show an option's effect without requiring hover")
 	if OS.get_cmdline_user_args().has("--screenshots"): await _capture("phase-prep")
 	for step in 3: scene._choose_prep_option(step%2)
 	check(scene.cooking_phase=="cook","The supplied art selection should complete ingredient-specific preparation")
+	scene._toggle_token("carrot")
+	check(scene.cooking_heat_guide.visible and is_equal_approx(scene.cooking_heat_guide.comfortable_low,float(scene._prepared_token("carrot").heat_window[0])),"The heat guide should follow the prepared ingredient at the pan")
 	if OS.get_cmdline_user_args().has("--screenshots"): await _capture("phase-prepared")
 	for id in scene.selected_tokens:
-		var token: Dictionary=scene._token_data(id)
+		var token: Dictionary=scene._prepared_token(id)
 		var window: Array=token.get("heat_window",[0.4,0.7])
 		scene.value_slider.value=(float(window[0])+float(window[1]))*.5
 		scene._toggle_token(id); scene._perform_primary_action()

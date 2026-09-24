@@ -11,7 +11,7 @@ const Motion = preload("res://scripts/ui/solmere_motion.gd")
 
 func _ready() -> void:
 	handwriting.font_names=PackedStringArray(["KaiTi","Microsoft YaHei","Noto Sans CJK SC"])
-	body_font.font_names=PackedStringArray(["Microsoft YaHei","Noto Sans CJK SC","Arial"])
+	body_font.font_names=PackedStringArray(["PingFang SC","Heiti SC","Microsoft YaHei","Noto Sans CJK SC","Arial"])
 	Production.apply_theme(preload("res://art/ui/solmere_ui.tres"))
 	get_tree().node_added.connect(_added)
 

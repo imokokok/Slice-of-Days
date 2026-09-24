@@ -16,6 +16,24 @@ static func heat_reading(value: float) -> Dictionary:
 	return {"id":"smoke","label":"锅边起烟","detail":"先把火收回来；这锅还有补救的余地。"}
 
 
+static func prepared_token(token: Dictionary, option_id: String) -> Dictionary:
+	var result := token.duplicate(true)
+	for value in token.get("prep_options",[]):
+		var option: Dictionary=value
+		if str(option.get("id",""))!=option_id: continue
+		var window: Array=token.get("heat_window",[0.40,0.70])
+		if window.size()>=2:
+			var low := float(window[0])
+			var high := float(window[1])
+			var shift := clampf(float(option.get("heat_shift",0.0)),-low,1.0-high)
+			result["heat_window"]=[low+shift,high+shift]
+		result["heat_drop"]=clampf(float(token.get("heat_drop",0.05))+float(option.get("heat_drop_delta",0.0)),0.0,0.25)
+		result["pan_cue"]=str(option.get("pan_cue",token.get("pan_cue","")))
+		result["prep_option"]=option_id
+		break
+	return result
+
+
 static func evaluate_addition(token: Dictionary, heat: float) -> Dictionary:
 	var window: Array = token.get("heat_window", [0.40, 0.70])
 	var low := float(window[0]) if window.size() >= 2 else 0.40

@@ -8,6 +8,9 @@ var label: Label
 var selected := false:
 	set(value):
 		selected=value; queue_redraw()
+var order_badge := 0:
+	set(value):
+		order_badge=value; queue_redraw()
 var art: TextureRect
 var motion: Tween
 func _ready() -> void:
@@ -48,3 +51,8 @@ func _draw() -> void:
 	if is_instance_valid(label): label.add_theme_color_override("font_color",Color("56655e") if disabled else Color("38423e"))
 	if selected or has_focus() or is_hovered():
 		draw_line(Vector2(12,size.y-2),Vector2(size.x-12,size.y-2),Color("315e79") if has_focus() else Color("eed577"),4 if selected else 2,true)
+	if order_badge>0:
+		var center := Vector2(size.x-22,21)
+		draw_circle(center,18,Color("315e79"))
+		draw_circle(center,16,Color("faf7ee"))
+		draw_string(PaperLanguage.body_font,center+Vector2(-14,7),str(order_badge),HORIZONTAL_ALIGNMENT_CENTER,28,19,Color("315e79"))

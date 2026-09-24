@@ -302,6 +302,11 @@ func _validate_module_interaction(module_id: String, interaction: Dictionary) ->
 				prep_ids.append(option_id)
 				for field in ["label","detail","pan_cue"]:
 					if str(option.get(field,"")).is_empty(): failures.append("cooking token %s prep option %s needs %s" % [token_id,option_id,field])
+				for field in ["heat_shift","heat_drop_delta"]:
+					if option.has(field):
+						var modifier: Variant=option[field]
+						if not (modifier is float or modifier is int) or not is_finite(float(modifier)) or absf(float(modifier))>0.25:
+							failures.append("cooking token %s prep option %s has invalid %s" % [token_id,option_id,field])
 			if (token.get("flavors",[]) as Array).is_empty():
 				failures.append("cooking token %s needs at least one flavor tag" % token_id)
 	var progress_steps: Array = interaction.get("progress_steps", [])

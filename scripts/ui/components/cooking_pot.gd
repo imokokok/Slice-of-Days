@@ -47,11 +47,10 @@ func update_recipe(ids: Array[String], preparation: Dictionary, temperature: flo
 	queue_redraw()
 
 func _food_tint(id: String) -> Color:
-	if cooking_phase=="cook": return Color.WHITE
 	var state := str(addition_states.get(id,"just_right"))
-	var tint := Color("fff0c9")
-	if state=="recoverable": tint=Color("e9c18f")
-	elif state=="rough": tint=Color("b98668")
+	var tint := Color.WHITE
+	if state=="recoverable": tint=Color("ffe0b5")
+	elif state=="rough": tint=Color("cf9b7e")
 	if heat>0.82: tint=tint.lerp(Color("9f644e"),clampf((heat-0.82)*2.2,0.0,0.3))
 	return tint
 

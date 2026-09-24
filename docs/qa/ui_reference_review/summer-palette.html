@@ -14,7 +14,7 @@ main{max-width:1240px;margin:auto;padding:32px 24px 48px}header{max-width:850px;
 <div class="compare" id="compare"><img id="before" src="summer-palette/before/home-day.png" alt="住处白天：调整前"><img id="after" src="summer-palette/after/home-day.png" alt="住处白天：调整后"><span class="line"></span><span class="badge left">调整前</span><span class="badge right">调整后</span></div>
 <div class="slider"><label for="split">拖动对比</label><input id="split" type="range" min="0" max="100" value="50"><output id="percent" for="split">50%</output></div>
 <p class="note">对比图来自同一场景、同一时间与站位。界面提示的淡入淡出可能因截帧时刻略有差别。275 张原始美术文件逐一比对 SHA-256，内容没有变化；没有重新绘制或替换贴图。</p>
-<footer>时间过渡检查 15 项、住处及唱片店交互检查 31 项通过；源码与 Windows 打包资源分别完成 12 个场景截帧，均无错误。<p>配色参考：<a href="https://store.steampowered.com/app/2533960/SUMMERHOUSE/">SUMMERHOUSE 官方画面</a> · <a href="../summer_palette_20260924.md">检查记录</a> · <a href="supplied-art.html">住处与老板原画接入</a></p></footer></main>
+<footer>时间过渡检查 15 项、住处及唱片店交互检查 31 项通过；源码与 Windows 打包资源分别完成 12 个场景截帧，均无错误。<p>配色参考：<a href="https://store.steampowered.com/app/2533960/SUMMERHOUSE/">SUMMERHOUSE 官方画面</a> · <a href="https://github.com/imokokok/Solmere/blob/main/docs/qa/summer_palette_20260924.md">检查记录</a> · <a href="supplied-art.html">住处与老板原画接入</a></p></footer></main>
 <script>
 const scene=document.getElementById('scene'), split=document.getElementById('split'), frame=document.getElementById('compare');
 function updateSplit(value){split.value=value;frame.style.setProperty('--split',value+'%');document.getElementById('percent').value=value+'%';frame.querySelector('.left').hidden=Number(value)===0;frame.querySelector('.right').hidden=Number(value)===100;}

@@ -66,7 +66,9 @@ func _exercise(module_id: String, tokens: Array[String], choice_id: String, slid
 	if module_id=="cooking":
 		scene._perform_primary_action()
 		check(scene.cooking_phase=="prep","Cooking should begin with hands-on preparation")
-		for _step in tokens.size(): scene._choose_prep_option(_step%2)
+		for _step in tokens.size():
+			scene._choose_prep_option(_step%2)
+			while not scene.prep_board.target_id.is_empty(): scene.prep_board.pressed.emit()
 		check(scene.cooking_phase=="cook","Prepared ingredients should move to the pan")
 		for token_id in tokens:
 			var token: Dictionary=scene._token_data(token_id)

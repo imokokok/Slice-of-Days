@@ -36,7 +36,9 @@ func run() -> void:
 	# A rough first attempt must still reach the table. The game records the
 	# improvisation and lets the player restart before any real stock is spent.
 	scene._perform_primary_action()
-	for _prep in 3: scene._choose_prep_option(1)
+	for _prep in 3:
+		scene._choose_prep_option(1)
+		while not scene.prep_board.target_id.is_empty(): scene.prep_board.pressed.emit()
 	for token_id in scene.selected_tokens:
 		scene.value_slider.value=0.0
 		scene._toggle_token(token_id)
@@ -59,7 +61,9 @@ func run() -> void:
 	# A second, attentive attempt follows each ingredient's sensory cue.
 	scene._perform_primary_action()
 	check(scene.cooking_phase=="prep" and scene.prepared_tokens.is_empty(),"Choosing ingredients should not silently prepare them")
-	for option in [0,1,0]: scene._choose_prep_option(option)
+	for option in [0,1,0]:
+		scene._choose_prep_option(option)
+		while not scene.prep_board.target_id.is_empty(): scene.prep_board.pressed.emit()
 	check(scene.prepared_tokens==["lemon","bread","cheese"],"Preparation order should be recorded")
 	check(str(scene.prep_board.cuts.get("bread",""))=="small","The board should retain the chosen bread cut for drawing")
 	var chosen_cook_order := ["cheese","bread","lemon"]
@@ -78,6 +82,11 @@ func run() -> void:
 	for style in ["gentle","fold"]:
 		scene.value_slider.value=.58
 		scene._stir(style)
+	check(float(scene.cooking_additions[0].get("cook_progress",0.0))>0.04,"Stirring should advance the food's visible cooking state")
+	var gently_cooked: Dictionary=rules.advance_exposure({"cook_progress":0.4,"browning":0.0},0.42,3.0)
+	var seared: Dictionary=rules.advance_exposure({"cook_progress":0.4,"browning":0.0},0.94,3.0)
+	check(float(seared.browning)>float(gently_cooked.browning),"High heat should brown food faster than gentle heat")
+	check(rules.food_tint("carrot","just_right",float(seared.cook_progress),float(seared.browning),0.94)!=rules.food_tint("carrot","just_right",0.0,0.0,0.20),"Cooked food should have a distinct color from the raw ingredient")
 	check(scene.cooking_phase=="stir","Two stirs should make tasting available without forcing it")
 	scene._perform_primary_action()
 	check(scene.cooking_phase=="taste","The player should decide when to taste")

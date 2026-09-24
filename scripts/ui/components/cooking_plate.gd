@@ -6,10 +6,12 @@ extends Control
 const KIT = preload("res://art/ui/pocket_doodles/kitchen_objects.png")
 const ART = preload("res://scripts/ui/components/cooking_ingredients.gd")
 const ASSETS = preload("res://scripts/ui/production_assets.gd")
+const COOKING = preload("res://scripts/core/cooking_mechanics.gd")
 
 var ingredients: Array[String]=[]
 var prepared: Dictionary={}
 var addition_states: Dictionary={}
+var exposure: Dictionary={}
 var plating_mode := "space"
 var heat := 0.58
 var reveal := 1.0:
@@ -24,9 +26,12 @@ func _ready() -> void:
 func update_dish(ids: Array[String], preparation: Dictionary, mode: String, temperature: float, additions: Array) -> void:
 	ingredients=ids.duplicate(); prepared=preparation.duplicate(); plating_mode=mode; heat=temperature
 	addition_states.clear()
+	exposure.clear()
 	for value in additions:
 		var addition: Dictionary=value
-		addition_states[str(addition.get("id",""))]=str(addition.get("state","just_right"))
+		var id := str(addition.get("id",""))
+		addition_states[id]=str(addition.get("state","just_right"))
+		exposure[id]=addition
 	queue_redraw()
 
 func appear() -> void:
@@ -36,10 +41,8 @@ func appear() -> void:
 	reveal_tween.tween_property(self,"reveal",1.0,0.08 if SettingsSystem.reduced_motion() else 0.42).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _tint(id: String) -> Color:
-	var state := str(addition_states.get(id,"just_right"))
-	if state=="rough": return Color("b77d62")
-	if state=="recoverable": return Color("e7bc87")
-	return Color("fff1c9")
+	var value: Dictionary=exposure.get(id,{})
+	return COOKING.food_tint(id,str(addition_states.get(id,"just_right")),float(value.get("cook_progress",0.0)),float(value.get("browning",0.0)),heat)
 
 func _plate(center: Vector2, radius: float) -> void:
 	draw_circle(center,radius,Color("f7f0dd"))

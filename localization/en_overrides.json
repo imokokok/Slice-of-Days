@@ -721,5 +721,15 @@
   "等一下，你也住海风路17号？我一直住楼上。原来楼下的灯、放回信箱的通知，都是你留下的。": "Wait, you live at 17 Seabreeze Road too? I live upstairs. The light below, the notices put back in the mailbox—that was you.",
   "我住楼下。我的饭店班次总与你错开。我还偷偷做过一些音乐，想带自己的东西去唱片店试试。": "I live downstairs. My shifts kept us apart. I've made music on my own; I'd like to bring some to the record shop.",
   "我可以介绍你去。那家饭店原来是你工作的地方！我一直喜欢那里的味道，也想试试做菜，再和你下一局棋。": "I can introduce you. So that's where you work! I love the food there. I'd like to try cooking, and play a game with you.",
-  "借一下彼此熟悉的入口吧。作品要自己做，人也要自己认识。做完以后，我们再交换一点心得。": "Let's open those doors for each other. We'll make our own work, meet people for ourselves, and compare notes afterwards."
+  "借一下彼此熟悉的入口吧。作品要自己做，人也要自己认识。做完以后，我们再交换一点心得。": "Let's open those doors for each other. We'll make our own work, meet people for ourselves, and compare notes afterwards.",
+  "%s · 第 %d / %d 下。切完才会变成备好的样子。": "%s · Cut %d of %d. The prepared pieces appear when you finish.",
+  "%s · %s：在案板上按三下完成处理。": "%s · %s: use the board three times to finish the prep.",
+  "%s · 在案板上按三下": "%s · Use the board three times",
+  "轮到「%s」。按案板三下完成处理，食材会从完整变成备好的样子。": "Now prep %s. Use the board three times; the whole ingredient becomes prepared pieces when you finish.",
+  "轮到「%s」。先选处理方式，再在案板上动手。": "Now prep %s. Choose a method, then use the board.",
+  "备料　%d / 3\n下锅　%d / 3\n翻拌　%d 次%s%s": "PREP  %d / 3\nPAN  %d / 3\nSTIR  %d times%s%s",
+  "锅里　%s": "IN PAN  %s",
+  "边缘焦香": "Golden edges",
+  "正在上色": "Color developing",
+  "刚刚受热": "Just warming"
 }

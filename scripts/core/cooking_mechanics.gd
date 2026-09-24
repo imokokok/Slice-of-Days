@@ -58,6 +58,34 @@ static func evaluate_addition(token: Dictionary, heat: float) -> Dictionary:
 	}
 
 
+static func advance_exposure(addition: Dictionary, heat: float, seconds: float) -> Dictionary:
+	var result := addition.duplicate()
+	var h := clampf(heat,0.0,1.0)
+	var progress := float(result.get("cook_progress",0.0))
+	var browning := float(result.get("browning",0.0))
+	progress=clampf(progress+maxf(0.0,seconds)*maxf(0.0,h-0.16)*0.18,0.0,1.0)
+	if progress>0.30 and h>0.62:
+		browning=clampf(browning+maxf(0.0,seconds)*(h-0.62)*0.22,0.0,1.0)
+	result["cook_progress"]=progress
+	result["browning"]=browning
+	return result
+
+
+static func food_tint(id: String, state: String, progress: float, browning: float, heat: float) -> Color:
+	var base := Color.WHITE
+	var cooked := Color("f5ce8c")
+	if id in ["tomato","beet","bell_pepper_red","bell_pepper_orange"]: cooked=Color("e8866a")
+	elif id in ["herbs","zucchini","bell_pepper_green","sea_beans"]: cooked=Color("bddb8a")
+	elif id in ["sardine","sea_bream","mushrooms","bread"]: cooked=Color("d9b18a")
+	elif id in ["cheese","lemon","bell_pepper_yellow"]: cooked=Color("ffe3a0")
+	var warmed := clampf(progress*0.62+maxf(0.0,heat-0.38)*0.28,0.0,0.78)
+	base=base.lerp(cooked,warmed)
+	base=base.lerp(Color("986044"),clampf(browning*0.60,0.0,0.68))
+	if state=="recoverable": base=base.lerp(Color("cfaa82"),0.10)
+	elif state=="rough": base=base.lerp(Color("aa775d"),0.22)
+	return base
+
+
 static func seasoning_target(tokens: Array) -> String:
 	var salty := 0
 	var rich := 0

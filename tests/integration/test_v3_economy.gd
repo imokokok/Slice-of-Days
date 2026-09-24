@@ -115,7 +115,9 @@ func run() -> void:
 	kitchen.set_process(false)
 	for id in ["tomato","herbs","sea_beans"]: kitchen._toggle_token(id)
 	kitchen._perform_primary_action()
-	for _prep in 3: kitchen._choose_prep_option(_prep%2)
+	for _prep in 3:
+		kitchen._choose_prep_option(_prep%2)
+		while not kitchen.prep_board.target_id.is_empty(): kitchen.prep_board.pressed.emit()
 	for id in ["tomato","herbs","sea_beans"]:
 		var token: Dictionary=kitchen._token_data(id)
 		var heat_window: Array=token.get("heat_window",[.42,.70])

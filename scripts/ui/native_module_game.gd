@@ -65,6 +65,8 @@ var ingredient_page_label: Label
 var ingredient_previous_button: Button
 var ingredient_next_button: Button
 var plating_preview_choice := "space"
+var pending_prep_option := -1
+var cooking_tick := 0.0
 
 
 func _ready() -> void:
@@ -148,9 +150,9 @@ func _build_cooking_ui() -> void:
 	cooking_phase_label=p.words(self,"",Vector2(72,137),840,17,p.MUTED)
 	prep_board=preload("res://scripts/ui/components/cooking_board.gd").new()
 	prep_board.position=Vector2(66,247); prep_board.size=Vector2(388,266); add_child(prep_board)
-	prep_board.prepared.connect(func(id: String):
-		if cooking_phase=="prep" and prepared_tokens.size()<selected_tokens.size() and id==selected_tokens[prepared_tokens.size()]:
-			_choose_prep_option(0))
+	prep_board.prepared.connect(_finish_board_prep)
+	prep_board.stroke.connect(func(id: String, done: int, needed: int):
+		status_label.text=LocalizationSystem.text("%s · 第 %d / %d 下。切完才会变成备好的样子。" % [_token_label(id),done,needed]))
 	illustrated_pot=preload("res://scripts/ui/components/cooking_pot.gd").new()
 	illustrated_pot.position=Vector2(480,170); illustrated_pot.size=Vector2(422,390); add_child(illustrated_pot)
 	illustrated_pot.pressed.connect(_use_cooking_pot)
@@ -330,12 +332,30 @@ func _reset_cooking(refresh := true) -> void:
 	if module_id!="cooking" or completed: return
 	cooking_phase="select"
 	prepared_tokens.clear(); cooking_preps.clear(); added_tokens.clear(); cooking_additions.clear(); cooking_stirs.clear()
+	pending_prep_option=-1; cooking_tick=0.0
+	if is_instance_valid(prep_board): prep_board.clear_target()
 	cooking_score=0; pending_ingredient=""; seasoning_choice=""; seasoning_label=""; plating_choice=""; plating_label=""; stage_ready=false
 	active_recipe.clear()
 	plating_preview_choice="space"
 	if is_instance_valid(value_slider): value_slider.value=.58
 	status_label.text=LocalizationSystem.text("还没有消耗任何食材。可以重新挑三样，顺序会决定下锅顺序。")
 	if refresh: _update_state()
+
+
+func _process(delta: float) -> void:
+	if module_id!="cooking" or completed or cooking_phase not in ["cook","stir"] or added_tokens.is_empty(): return
+	cooking_tick+=delta
+	if cooking_tick<0.16: return
+	_advance_food_heat(cooking_tick)
+	cooking_tick=0.0
+	if is_instance_valid(illustrated_pot):
+		illustrated_pot.update_recipe(added_tokens,_preparation_visuals(),float(value_slider.value),cooking_phase,cooking_additions)
+	_refresh_cooking_history()
+
+
+func _advance_food_heat(seconds: float) -> void:
+	for i in cooking_additions.size():
+		cooking_additions[i]=COOKING.advance_exposure(cooking_additions[i],float(value_slider.value),seconds)
 
 func _build_module_control(parent: Control) -> void:
 	value_label = _label(parent, "", Vector2(22, 414), Vector2(285, 28), 18, MUTED)
@@ -453,7 +473,7 @@ func _advance_cooking() -> void:
 			cooking_score+=int(assessment.get("score",0))
 			var heat_after := maxf(0.0,heat_before-float(token.get("heat_drop",0.05)))
 			value_slider.value=heat_after
-			cooking_additions.append({"id":token_id,"label":_token_label(token_id),"heat":heat_before,"heat_after":heat_after,"heat_window":token.get("heat_window",[]),"prep_option":token.get("prep_option",""),"state":str(assessment.get("state","")),"score":int(assessment.get("score",0))})
+			cooking_additions.append({"id":token_id,"label":_token_label(token_id),"heat":heat_before,"heat_after":heat_after,"heat_window":token.get("heat_window",[]),"prep_option":token.get("prep_option",""),"state":str(assessment.get("state","")),"score":int(assessment.get("score",0)),"cook_progress":0.04,"browning":0.0})
 			pending_ingredient=""
 			status_label.text=LocalizationSystem.text(str(assessment.get("message","材料已经下锅。")))+LocalizationSystem.text(" 材料带走了一点锅温，现在是 %d%%。" % roundi(heat_after*100.0))
 			if is_instance_valid(cooking_feedback): cooking_feedback.pulse()
@@ -476,14 +496,35 @@ func _choose_prep_option(option_index: int) -> void:
 	var token := _token_data(token_id)
 	var options: Array=token.get("prep_options",[])
 	if option_index<0 or option_index>=options.size(): return
+	if preload("res://scripts/ui/components/cooking_ingredients.gd").can_cut(token_id):
+		pending_prep_option=option_index
+		prep_board.begin(token_id,str(options[option_index].get("id","")),3)
+		status_label.text=LocalizationSystem.text("%s · %s：在案板上按三下完成处理。" % [_token_label(token_id),str(options[option_index].get("label",""))])
+		_update_state()
+		return
+	_finish_prep_option(option_index)
+
+
+func _finish_board_prep(id: String) -> void:
+	if cooking_phase!="prep" or pending_prep_option<0 or prepared_tokens.size()>=selected_tokens.size(): return
+	if id!=selected_tokens[prepared_tokens.size()]: return
+	var option_index := pending_prep_option
+	pending_prep_option=-1
+	_finish_prep_option(option_index)
+
+
+func _finish_prep_option(option_index: int) -> void:
+	var token_id := selected_tokens[prepared_tokens.size()]
+	var token := _token_data(token_id)
+	var options: Array=token.get("prep_options",[])
 	var option: Dictionary=options[option_index]
 	prepared_tokens.append(token_id); cooking_score+=1
-	cooking_preps.append({"id":token_id,"label":_token_label(token_id),"option":str(option.get("id","")),"option_label":str(option.get("label","")),"detail":str(option.get("detail","")),"pan_cue":str(option.get("pan_cue",token.get("pan_cue","")))})
+	cooking_preps.append({"id":token_id,"label":_token_label(token_id),"option":str(option.get("id","")),"option_label":str(option.get("label","")),"detail":str(option.get("detail","")),"pan_cue":str(option.get("pan_cue",token.get("pan_cue",""))),"strokes":3 if preload("res://scripts/ui/components/cooking_ingredients.gd").can_cut(token_id) else 0})
 	status_label.text=LocalizationSystem.text("%s · %s：%s" % [_token_label(token_id),str(option.get("label","处理完成")),str(option.get("detail","已经放在锅边。"))])
 	if prepared_tokens.size()==selected_tokens.size():
 		cooking_phase="cook"
 		status_label.text+=LocalizationSystem.text(" 备料齐了。现在下锅顺序不再受选材顺序限制，从下方点一种材料移到锅边。")
-	WorldSound.play_ui("cut")
+	if not preload("res://scripts/ui/components/cooking_ingredients.gd").can_cut(token_id): WorldSound.play_ui("check")
 	_update_state()
 
 
@@ -504,6 +545,7 @@ func _stir(style: String) -> void:
 	var labels := {"gentle":"轻推锅底","fold":"翻起拌匀"}
 	cooking_score+=stir_score
 	cooking_stirs.append({"heat":value_slider.value,"state":str(heat_state.get("id","")),"style":style,"style_label":str(labels.get(style,style)),"score":stir_score})
+	_advance_food_heat(1.5)
 	if is_instance_valid(cooking_feedback): cooking_feedback.pulse()
 	var response := "手法顺着火候，香气被稳稳托起来" if suits_heat else ("味道还在合拢，下一下可以换种手法" if stable else "火候偏了，下一下仍能收回来")
 	status_label.text=LocalizationSystem.text("第 %d 下 · %s：%s，%s。" % [cooking_stirs.size(),str(labels.get(style,style)),str(heat_state.get("label","看住火")),response])
@@ -584,7 +626,7 @@ func _update_state() -> void:
 		prep_board.items.assign(selected_tokens)
 		for token_id in added_tokens: prep_board.items.erase(token_id)
 		prep_board.cuts=_preparation_visuals()
-		prep_board.disabled=completed or cooking_phase!="prep" or prepared_tokens.size()>=selected_tokens.size()
+		prep_board.disabled=completed or cooking_phase!="prep" or pending_prep_option<0
 		prep_board.queue_redraw()
 	if is_instance_valid(ingredient_art):
 		for old in ingredient_art.get_children(): ingredient_art.remove_child(old); old.queue_free()
@@ -639,7 +681,7 @@ func _update_cooking_state(minimum: int) -> void:
 	for phase_id in phase_order:
 		progress.append("【%s】" % phase_names[phase_id] if phase_id==cooking_phase else str(phase_names[phase_id]))
 	cooking_phase_label.text=LocalizationSystem.text("  →  ".join(progress))
-	cooking_history_label.text=LocalizationSystem.text("备料　%d / 3\n下锅　%d / 3\n翻拌　%d 次%s" % [prepared_tokens.size(),added_tokens.size(),cooking_stirs.size(),"\n"+str(COOKING.grade(cooking_score).get("label","")) if stage_ready else ""])
+	_refresh_cooking_history()
 	instruction_label.text=LocalizationSystem.text(_cooking_instruction())
 	cooking_followed_recipe_label.visible=not active_recipe.is_empty()
 	if cooking_followed_recipe_label.visible:
@@ -651,7 +693,9 @@ func _update_cooking_state(minimum: int) -> void:
 	cooking_prep_detail_label.visible=cooking_phase=="prep"
 	if cooking_phase=="prep" and prepared_tokens.size()<selected_tokens.size():
 		var options: Array=_token_data(selected_tokens[prepared_tokens.size()]).get("prep_options",[])
-		cooking_prep_detail_label.text=LocalizationSystem.text(str(options[0].get("detail",""))) if not options.is_empty() else ""
+		if pending_prep_option>=0 and pending_prep_option<options.size():
+			cooking_prep_detail_label.text=LocalizationSystem.text("%s · 在案板上按三下" % str(options[pending_prep_option].get("detail","")))
+		else: cooking_prep_detail_label.text=LocalizationSystem.text(str(options[0].get("detail",""))) if not options.is_empty() else ""
 	value_slider.editable=cooking_phase in ["cook","stir"]
 	cooking_heat_guide.visible=cooking_phase in ["cook","stir"]
 	if cooking_heat_guide.visible:
@@ -727,12 +771,26 @@ func _update_cooking_state(minimum: int) -> void:
 		cooking_feedback.active=cooking_phase in ["cook","stir","taste"]
 
 
+func _refresh_cooking_history() -> void:
+	if not is_instance_valid(cooking_history_label): return
+	var food_status := ""
+	if not cooking_additions.is_empty():
+		var most_brown := 0.0
+		var least_cooked := 1.0
+		for addition in cooking_additions:
+			most_brown=maxf(most_brown,float(addition.get("browning",0.0)))
+			least_cooked=minf(least_cooked,float(addition.get("cook_progress",0.0)))
+		food_status="锅里　%s" % ("边缘焦香" if most_brown>0.32 else "正在上色" if least_cooked>0.38 else "刚刚受热")
+	cooking_history_label.text=LocalizationSystem.text("备料　%d / 3\n下锅　%d / 3\n翻拌　%d 次%s%s" % [prepared_tokens.size(),added_tokens.size(),cooking_stirs.size(),"\n"+food_status if not food_status.is_empty() else "","\n"+str(COOKING.grade(cooking_score).get("label","")) if stage_ready else ""])
+
+
 func _cooking_instruction() -> String:
 	match cooking_phase:
 		"select": return "从下面取三样食材。再次点击可放回；备好以后，下锅顺序仍可以临场改变。"
 		"prep":
 			var token := _token_data(selected_tokens[prepared_tokens.size()])
-			return "轮到「%s」。两种处理都能成菜，但会留下不同的口感和入锅提示。" % str(token.get("label","食材"))
+			if pending_prep_option>=0: return "轮到「%s」。按案板三下完成处理，食材会从完整变成备好的样子。" % str(token.get("label","食材"))
+			return "轮到「%s」。先选处理方式，再在案板上动手。" % str(token.get("label","食材"))
 		"cook":
 			if pending_ingredient.is_empty(): return "从下方点一种尚未下锅的材料。先后顺序由你决定，冷材料还会暂时带走锅温。"
 			var token_id := pending_ingredient

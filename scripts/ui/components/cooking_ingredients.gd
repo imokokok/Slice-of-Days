@@ -57,6 +57,15 @@ static func has_distinct_prep_drawing(id: String, option: String) -> bool:
 
 static func draw_prepared(canvas: CanvasItem, id: String, option: String, rect: Rect2, tint := Color.WHITE) -> void:
 	var art := texture(id,true)
+	if art==texture(id,false) and can_cut(id):
+		var pieces := 4 if option in ["small","dice","crumbs","chop","ribbons","strips"] else 3
+		var gap := minf(5.0,rect.size.x*0.06)
+		var piece_width := (rect.size.x-gap*float(pieces-1))/float(pieces)
+		for i in pieces:
+			var source := Rect2(float(i)*art.get_width()/float(pieces),0.0,art.get_width()/float(pieces),art.get_height())
+			var dest := Rect2(rect.position+Vector2(float(i)*(piece_width+gap),float(i%2)*4.0),Vector2(piece_width,rect.size.y-4.0))
+			canvas.draw_texture_rect_region(art,dest,source,tint)
+		return
 	if not has_distinct_prep_drawing(id,option):
 		canvas.draw_texture_rect(art,rect,false,tint)
 		return

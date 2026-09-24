@@ -108,7 +108,7 @@ func run() -> void:
 	var books=get_nodes_in_group("recipe_book")
 	check(books.size()==1 and books[0].chosen.id==recipe.id,"Appreciation opens the corresponding shared recipe")
 	if not books.is_empty(): books[0].queue_free(); await settle()
-	# Exercise both optional cutting and the existing uncut cooking path.
+	# Exercise both prepared vegetables and the uncut tin.
 	gs.switch_to_role("B",2,true); gs.current_minute=660; gs.current_location="night_market"
 	var router=root.get_node("SceneRouter"); router.active_space_id="restaurant"
 	var economy=root.get_node("EconomySystem")
@@ -130,7 +130,9 @@ func run() -> void:
 	check(kitchen.added_tokens.size()==3 and kitchen.prep_board.items.is_empty(),"Adjusting heat does not teleport food out of the pan")
 	# Reset the ingredient selection to exercise the alternative preparation path.
 	kitchen.cooking_reset_button.pressed.emit(); kitchen.primary_button.pressed.emit()
-	for i in 3: kitchen.prep_board.pressed.emit()
+	for i in 3:
+		kitchen.prep_option_buttons[0].pressed.emit()
+		while not kitchen.prep_board.target_id.is_empty(): kitchen.prep_board.pressed.emit()
 	check(kitchen._interaction_record().mechanic.cut_ingredients.size()==2,"Actual cuts record tomato and herbs; the tin is never cut")
 	preload("res://tests/integration/cooking_walkthrough.gd").finish_prepared(kitchen)
 	check(kitchen.stage_ready,"Prepared dish uses the same real heat mechanic")

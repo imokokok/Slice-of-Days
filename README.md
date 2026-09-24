@@ -22,12 +22,12 @@ A / D 走动；W 交谈；E 与物件互动；Space 继续对话；C 相机；R 
 
 Day 1 A 制作音乐；Day 2 B 完成餐厅工作；Day 3 A 制作拼贴信；Day 4 B 下棋并约定见面；Day 5 两人见面后可切换视角。前两天完成主活动即可自主回家休息；第三、四天还需实际查看生活物件及相关交谈。前四天界面不提前揭示 A/B 身份。纸页、居民留字及自由拼贴均为可选记录，不需要提交作品集或集齐认可才能推进。
 
-Day 2 的厨房完整流程见 [厨房演示视频](demo/Solmere_Kitchen_Walkthrough_CN.mp4)：选材、备料、下锅、翻拌、尝味、装盘、出餐及公共菜谱。柠檬、面包和奶酪的不同备料选择会延续到锅里和盘中；店主回应也会根据实际火候、备料及装盘记录变化。
+Day 2 的厨房流程是选材、备料、下锅、翻拌、尝味、装盘、出餐及公共菜谱。备料时先选择处理方式；可切的完整食材需要在案板上按三下，完成后才显示切好的状态。锅内食材会随火候和受热时间上色，翻拌也会推进熟度；这些状态延续到装盘和出餐记录。柠檬、面包和奶酪的不同备料选择会延续到锅里和盘中；店主回应也会根据实际火候、备料及装盘记录变化。[完整厨房演示视频](demo/Solmere_Kitchen_Full_Walkthrough_CN.mp4)使用番茄、面包和奶酪，展示当前版本从选材到公共菜谱的实际操作。
 
 ## 保存与检查
 
 A/B 的钱、物品、关系、笔记和草稿分别保存；公共作品与小镇状态共享。五日存档为 user://solmere_five_day.json 及另外两个槽，schema 7 是格式版本号。旧 solmere_save.json 保留并只读检测，不兼容时需新开五日旅程。实际照片和录音另存文件。测试使用 --isolated-save。请勿同时运行多个窗口写入同一正式存档。
 
-[测试清单](TEST_CHECKLIST.md) · [机器结果](docs/FINAL_TEST_RESULTS.json) · [内容填写说明](CONTENT_WRITING_GUIDE.md) · [档案结构](RESIDENCY_CONTENT_SCHEMA.md)
+[测试清单](TEST_CHECKLIST.md) · [全游戏细节复查](docs/qa/gameplay_detail_audit_20260924.md) · [机器结果](docs/FINAL_TEST_RESULTS.json) · [内容填写说明](CONTENT_WRITING_GUIDE.md) · [档案结构](RESIDENCY_CONTENT_SCHEMA.md)
 
 旧版说明存于 docs/PRE_FINAL_README.md，仅供历史查询。

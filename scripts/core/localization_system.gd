@@ -103,7 +103,9 @@ func _build_template(source: String, translated: String) -> Dictionary:
 	for match_result in matches:
 		var start := match_result.get_start()
 		pattern += _regex_escape(source.substr(cursor, start - cursor))
-		pattern += "(.+?)"
+		# Runtime values can contain line breaks (for example the cooking progress
+		# line). PCRE's dot does not match them unless DOTALL is enabled.
+		pattern += "([\\s\\S]+?)"
 		placeholders.append(match_result.get_string())
 		cursor = match_result.get_end()
 	pattern += _regex_escape(source.substr(cursor)) + "$"

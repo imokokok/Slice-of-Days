@@ -77,7 +77,22 @@ func run() -> void:
 	check(scene.cooking_phase=="prep" and scene._visible_ingredient_ids()==scene.selected_tokens,"Preparation should replace browsing pages with the three chosen art buttons")
 	check(scene.cooking_prep_detail_label.visible and not scene.cooking_prep_detail_label.text.is_empty(),"Preparation should show an option's effect without requiring hover")
 	if OS.get_cmdline_user_args().has("--screenshots"): await _capture("phase-prep")
-	for step in 3: scene._choose_prep_option(step%2)
+	# Put a vegetable first to verify the full-to-cut transition itself.
+	scene._reset_cooking(); scene.selected_tokens.clear(); scene._update_state()
+	for id in ["carrot","cooking_oil","alarm_clock"]: scene._toggle_token(id)
+	scene._perform_primary_action(); scene._choose_prep_option(0)
+	check(scene.prepared_tokens.is_empty() and scene.prep_board.target_id=="carrot","Choosing a cut should leave the carrot whole on the board")
+	for stroke_index in 2:
+		scene.prep_board.pressed.emit()
+		check(scene.prepared_tokens.is_empty() and not scene.prep_board.cuts.has("carrot"),"Incomplete strokes should keep the vegetable whole")
+	scene.prep_board.pressed.emit()
+	check(scene.prepared_tokens.has("carrot") and scene.prep_board.cuts.has("carrot"),"The last stroke should reveal the prepared carrot")
+	scene._reset_cooking(); scene.selected_tokens.clear(); scene._update_state()
+	for id in ["cooking_oil","carrot","alarm_clock"]: scene._toggle_token(id)
+	scene._perform_primary_action()
+	for step in 3:
+		scene._choose_prep_option(step%2)
+		while not scene.prep_board.target_id.is_empty(): scene.prep_board.pressed.emit()
 	check(scene.cooking_phase=="cook","The supplied art selection should complete ingredient-specific preparation")
 	scene._toggle_token("carrot")
 	check(scene.cooking_heat_guide.visible and is_equal_approx(scene.cooking_heat_guide.comfortable_low,float(scene._prepared_token("carrot").heat_window[0])),"The heat guide should follow the prepared ingredient at the pan")

@@ -93,7 +93,9 @@ func run() -> void:
 	# Keep this walkthrough self-contained so it can test the exported PCK,
 	# which deliberately excludes test fixtures.
 	kitchen.primary_button.pressed.emit()
-	for i in 3: kitchen.prep_option_buttons[0].pressed.emit()
+	for i in 3:
+		kitchen.prep_option_buttons[0].pressed.emit()
+		while not kitchen.prep_board.target_id.is_empty(): kitchen.prep_board.pressed.emit()
 	for id in ["lemon","bread","cheese"]:
 		kitchen.value_slider.value=.58
 		kitchen.token_buttons[id].pressed.emit()

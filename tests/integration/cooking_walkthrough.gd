@@ -2,7 +2,9 @@ extends RefCounted
 ## Exercise the public controls; never manufacture a completed cooking record.
 static func prepare_and_cook(kitchen, option := 0) -> void:
 	kitchen.primary_button.pressed.emit()
-	for i in kitchen.selected_tokens.size(): kitchen.prep_option_buttons[option].pressed.emit()
+	for i in kitchen.selected_tokens.size():
+		kitchen.prep_option_buttons[option].pressed.emit()
+		while not kitchen.prep_board.target_id.is_empty(): kitchen.prep_board.pressed.emit()
 	finish_prepared(kitchen)
 
 static func finish_prepared(kitchen) -> void:

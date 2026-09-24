@@ -3,6 +3,7 @@ extends Button
 const Assets = preload("res://scripts/ui/production_assets.gd")
 const FRONT = preload("res://art/ui/third_party_adapted/solmere_pot_front.png")
 const FALLBACK = preload("res://art/ui/kitchen_open_redraw/enamel_pan.png")
+const COOKING = preload("res://scripts/core/cooking_mechanics.gd")
 var ingredients: Array[String] = []
 var prepared: Dictionary = {}
 var heat := .58
@@ -15,6 +16,7 @@ var drop_lift := 0.0:
 var drop_tween: Tween
 var cooking_phase := "cook"
 var addition_states: Dictionary = {}
+var exposure: Dictionary = {}
 
 func _ready() -> void:
 	name="CookingPot"; accessibility_name="料理锅，拌匀并确认火候"
@@ -35,9 +37,12 @@ func update_recipe(ids: Array[String], preparation: Dictionary, temperature: flo
 	var just_added := ids.size()>ingredients.size()
 	ingredients=ids.duplicate(); prepared=preparation.duplicate(); heat=temperature; cooking_phase=phase
 	addition_states.clear()
+	exposure.clear()
 	for value in additions:
 		var addition: Dictionary=value
-		addition_states[str(addition.get("id",""))]=str(addition.get("state","just_right"))
+		var id := str(addition.get("id",""))
+		addition_states[id]=str(addition.get("state","just_right"))
+		exposure[id]=addition
 	if just_added:
 		if drop_tween and drop_tween.is_valid(): drop_tween.kill()
 		drop_lift=0.35 if SettingsSystem.reduced_motion() else 1.0
@@ -47,12 +52,8 @@ func update_recipe(ids: Array[String], preparation: Dictionary, temperature: flo
 	queue_redraw()
 
 func _food_tint(id: String) -> Color:
-	var state := str(addition_states.get(id,"just_right"))
-	var tint := Color.WHITE
-	if state=="recoverable": tint=Color("ffe0b5")
-	elif state=="rough": tint=Color("cf9b7e")
-	if heat>0.82: tint=tint.lerp(Color("9f644e"),clampf((heat-0.82)*2.2,0.0,0.3))
-	return tint
+	var value: Dictionary=exposure.get(id,{})
+	return COOKING.food_tint(id,str(addition_states.get(id,"just_right")),float(value.get("cook_progress",0.0)),float(value.get("browning",0.0)),heat)
 
 func _draw() -> void:
 	var back:=Assets.texture("pot_back"); var front: Texture2D=FRONT
@@ -69,6 +70,12 @@ func _draw() -> void:
 		var food_rect := Rect2(at-Vector2(32,35),Vector2(64,70))
 		if prepared.has(ingredients[i]): food_art.draw_prepared(self,ingredients[i],str(prepared[ingredients[i]]),food_rect,_food_tint(ingredients[i]))
 		else: draw_texture_rect(food_art.texture(ingredients[i]),food_rect,false,_food_tint(ingredients[i]))
+		var value: Dictionary=exposure.get(ingredients[i],{})
+		var brown := float(value.get("browning",0.0))
+		if brown>0.04:
+			for mark in 3:
+				var x := at.x-18.0+float(mark)*16.0
+				draw_arc(Vector2(x,at.y+14.0+float(mark%2)*5.0),5.0,0.0,TAU,12,Color("75452e",brown*0.4),2.0,true)
 	# The front of the pot occludes the lower parts of the food and spoon.
 	var spoon:=Assets.texture("kitchen_spoon")
 	if spoon and back:

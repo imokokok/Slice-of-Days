@@ -1,0 +1,15 @@
+{
+  "proposed_id": "tomato",
+  "proposed_name": "番茄",
+  "source_name": "df995921916e28abe9a9c7634fd6bc34.jpg",
+  "path": "docs/supplied_assets/20260925-tomato/tomato-original.jpg",
+  "sha256": "682335f386a407c78cd7141c0049c4e9c37c2f83cd019be4cb2eeba17cd0bea9",
+  "original_size": [
+    1079,
+    1527
+  ],
+  "mode": "RGB",
+  "matte": "white",
+  "category": "basic",
+  "status": "Original preserved. Not yet active. Built-in imagegen extraction candidate changed brushwork and was rejected. Awaiting transparent original or explicit permission for deterministic pixel-preserving matte removal."
+}

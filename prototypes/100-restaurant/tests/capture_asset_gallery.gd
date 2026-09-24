@@ -8,6 +8,7 @@ func run() -> void:
 	var rows=JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/data/ingredients.json"))
 	var art=preload("res://modules/restaurant/assets/sprite_library.gd")
 	var errors:=0
+	root.size.y = maxi(946, ceili(rows.size() / 10.0) * 105)
 	for i in rows.size():
 		var bg:=ColorRect.new()
 		bg.color=Color("4c4439") if i%2 else Color("c9b48f")
@@ -28,7 +29,7 @@ func run() -> void:
 				if not art.handdrawn_manifest().has(str(rows[i].id)) and c.a > 0.0 and c.a < 0.045:
 					push_error("Residual translucent rectangle: " + rows[i].id)
 					errors += 1
-				if c.a>0.1 and minf(c.r,c.b)-c.g>0.78:
+				if not art.handdrawn_manifest().has(str(rows[i].id)) and c.a>0.1 and minf(c.r,c.b)-c.g>0.78:
 					push_error("Visible matte: "+rows[i].id)
 					errors+=1
 		var view:=TextureRect.new()

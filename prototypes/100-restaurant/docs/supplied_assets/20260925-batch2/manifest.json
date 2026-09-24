@@ -1,0 +1,184 @@
+[
+  {
+    "proposed_id": "potato",
+    "proposed_name": "土豆",
+    "source_name": "91d364d0f608ed8395b4b3442d0eda2c.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/potato.jpg",
+    "sha256": "575b47ea0bb843a6daec99c251a2b5b826dbca8eda11690f1fc805fdd85452dc",
+    "original_size": [
+      1018,
+      1440
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "carrot",
+    "proposed_name": "胡萝卜",
+    "source_name": "517d22c449b965e2ab8b95e405109da5.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/carrot.jpg",
+    "sha256": "4647450f0b9a85fd9c9e85f04a6e24fc3bf85bcc7e466adf929a8b8824bd0ab6",
+    "original_size": [
+      1357,
+      1920
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "onion",
+    "proposed_name": "洋葱（待确认）",
+    "source_name": "1583d72fcf85545c5d9d8d2193fc7870.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/onion.jpg",
+    "sha256": "d0a78e0ac920489d403f0dcfc6c024e24454f5394245ce822506b0dd29c57bca",
+    "original_size": [
+      1018,
+      1440
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "eggplant",
+    "proposed_name": "茄子",
+    "source_name": "0e8a79c62882d101e4329126059da9df.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/eggplant.jpg",
+    "sha256": "c6166b345133ed361dd5556f82517108a1faec874ca7973013ef2dd1cdaa1aa3",
+    "original_size": [
+      1018,
+      1440
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "bell_pepper_yellow",
+    "proposed_name": "黄甜椒",
+    "source_name": "0df6ca590ec9fbf111df8d854920650d.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/bell_pepper_yellow.jpg",
+    "sha256": "956f1e819bb203cf073518170585684b9edab68580f68a5cd0cee670a6cf5dab",
+    "original_size": [
+      1357,
+      1920
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "zucchini",
+    "proposed_name": "西葫芦（待确认）",
+    "source_name": "a019773f86b7956d47e95fdd59d605e4.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/zucchini.jpg",
+    "sha256": "1a8ea75b74c55efd2363d1372e35e3199204f81f7e0f661fd19f6726b41f20ca",
+    "original_size": [
+      1018,
+      1440
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "bell_pepper_lavender",
+    "proposed_name": "浅紫甜椒",
+    "source_name": "133e04a6662b78e18b3b308c1504fdff.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/bell_pepper_lavender.jpg",
+    "sha256": "d44fe67de03b78e691560267516a29f594d1f48e65b16a07824285bdf2a169ca",
+    "original_size": [
+      1357,
+      1920
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "bell_pepper_gold",
+    "proposed_name": "金黄甜椒",
+    "source_name": "5087f23898c4ce716462c4499c8c3a8a.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/bell_pepper_gold.jpg",
+    "sha256": "8252e4e90dbb7285f170c0d88b422a0f82fe8edaf9f3dae5418167ecf1cbe05f",
+    "original_size": [
+      1357,
+      1920
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "bell_pepper_purple",
+    "proposed_name": "深紫甜椒",
+    "source_name": "589880d239ef4f4f3089cc09201db3d2.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/bell_pepper_purple.jpg",
+    "sha256": "44781921b434b4a33ba3340f41ea430cac3d070431f842d1a943f6aa5db03c6e",
+    "original_size": [
+      1357,
+      1920
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "bell_pepper_brown",
+    "proposed_name": "棕甜椒",
+    "source_name": "abdda8fb325d4b8770c28842f83dcdd6.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/bell_pepper_brown.jpg",
+    "sha256": "80ace13e648158fe5c367daaf12dc5fbdb194a6d81eee30ca0fa207c18b458bd",
+    "original_size": [
+      1357,
+      1920
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "bell_pepper_white",
+    "proposed_name": "白甜椒",
+    "source_name": "bc7177b9ccc76ac607930f0cc310f488.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/bell_pepper_white.jpg",
+    "sha256": "23922e1af380d341f8076740dc888dff3720465d5b1e8de0c468c6faea9e3df1",
+    "original_size": [
+      1357,
+      1920
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "bell_pepper_orange",
+    "proposed_name": "橙红甜椒",
+    "source_name": "23604bd8aa04f76135ec924f7a809e64.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/bell_pepper_orange.jpg",
+    "sha256": "f296b9eda2725e889189b83a44798b29244ec7826bc340215386d7ea4f15b809",
+    "original_size": [
+      1018,
+      1440
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  },
+  {
+    "proposed_id": "bell_pepper_green",
+    "proposed_name": "绿甜椒",
+    "source_name": "00868698d7c860bab60e844ec9150786.jpg",
+    "path": "docs/supplied_assets/20260925-batch2/bell_pepper_green.jpg",
+    "sha256": "73e10163ab3569adcb912b40c7b3ffb27dcc21c8ba641bb0ce3c5b757ff06dbd",
+    "original_size": [
+      1018,
+      1440
+    ],
+    "mode": "RGB",
+    "status": "source preserved; not active: opaque JPEG black matte; awaiting original transparent PNG or permission for programmatic matte removal",
+    "category": "basic"
+  }
+]

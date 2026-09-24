@@ -1059,6 +1059,8 @@ func _container_art_transform() -> Transform2D:
 	# Top-opening bottles turn toward the pan; the authored mustard tube is
 	# already cap-down. The stream uses this exact same visual transform.
 	var angle := PI if entry.has("nozzle_uv") and float(entry.nozzle_uv[1]) < 0.5 else 0.0
+	# Side-opening authored tubes need their own calibrated mouth direction.
+	if entry.has("dispense_rotation_degrees"): angle = deg_to_rad(float(entry.dispense_rotation_degrees))
 	var deformation := Vector2.ONE
 	if get_dispense_mode(definition) == "squeeze":
 		deformation = Vector2(1.0 + squeeze_pressure * 0.12, 1.0 - squeeze_pressure * 0.16)

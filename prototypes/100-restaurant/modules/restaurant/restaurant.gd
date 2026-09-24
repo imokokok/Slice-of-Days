@@ -604,12 +604,28 @@ func _refresh_pantry() -> void :
 		if _pantry_category != "all" and entry.get("category", "basic") != _pantry_category: continue
 		if not _pantry_search.is_empty() and not str(entry.get("name", "")).contains(_pantry_search) and not str(entry.get("id", "")).contains(_pantry_search): continue
 		var button: = _button(_pantry_grid, "%s\n%.0f g  ·  %s" % [entry["name"], float(entry.get("mass", 0.15)) * 1000.0, "需做熟" if entry.get("needs_cook", false) else "自由处理"], func(): _take_ingredient(entry), 198)
-		button.custom_minimum_size.y = 92
+		button.custom_minimum_size.y = 162
+		button.name = "Pantry_" + str(entry.id)
+		button.alignment = HORIZONTAL_ALIGNMENT_CENTER
 		button.disabled = not bool(_stock.get(str(entry.id), true))
 		button.text += "\n剩余 1 件" if not button.disabled else "\n已取走"
-		button.add_theme_font_size_override("font_size", 18)
+		button.add_theme_font_size_override("font_size", 15)
+		var thumbnail := preload("res://modules/restaurant/assets/food_art.gd").new()
+		thumbnail.name = "FoodArt"
+		thumbnail.definition = entry.duplicate(true)
+		thumbnail.position = Vector2(99, 42)
+		thumbnail.scale = Vector2.ONE * 0.82
+		thumbnail.visible = not button.disabled
+		button.add_child(thumbnail)
 		var color: = Color(str(entry.get("color", "f0bf7d")))
 		button.add_theme_stylebox_override("normal", _style(Color("e8ddc4").lerp(color, 0.12), 9, color.darkened(0.3)))
+		# Reserve a separate image area so wide quantities and ingredient names
+		# never draw over the artwork, including in hover/disabled states.
+		for state in ["normal", "hover", "pressed", "disabled"]:
+			var card := button.get_theme_stylebox(state).duplicate() as StyleBox
+			card.content_margin_top = 82
+			card.content_margin_bottom = 8
+			button.add_theme_stylebox_override(state, card)
 		button.tooltip_text = "质量 %.2f kg · 摩擦 %.2f · 弹性 %.2f\n怪异度 %d%%" % [entry.get("mass", 0.15), entry.get("friction", 0.6), entry.get("bounce", 0.1), int(float(entry.get("weirdness", 0)) * 100)]
 		if not world.get_dispense_mode(entry).is_empty():
 			button.tooltip_text += "\n" + world.ingredient_operation_hint(entry)
@@ -632,6 +648,7 @@ func _take_ingredient(entry: Dictionary, press_position := Vector2.INF) -> void 
 		success = world.spawn_ingredient(entry)
 	if success:
 		_stock[id] = false
+		storage_display.reveal_ingredient(id)
 		storage_display.set_available(id, false)
 		_close_modal()
 		if press_position != Vector2.INF:

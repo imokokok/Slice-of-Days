@@ -19,7 +19,8 @@ func run() -> void:
 	game._close_modal()
 	game.world.audio.muted = true
 	var manifest := Art.handdrawn_manifest()
-	expect(manifest.size() == 13, "all six supplied PNGs and all seven archive entries registered")
+	for id in ["mustard", "ketchup", "oil", "salt", "pepper", "mushroom", "resignation_letter", "alarm_clock", "yarn_ball", "tennis_ball", "dentures", "eraser", "sponge", "sock", "confetti", "toilet_paper", "soap", "soap_smooth", "toothpaste"]:
+		expect(manifest.has(id), id + " supplied original registered")
 	await capture("kitchen")
 	var world = game.world
 	for id in manifest:
@@ -32,8 +33,9 @@ func run() -> void:
 		var pixels := source.get_image()
 		if pixels.is_compressed(): pixels.decompress()
 		expect(texture.get_image().get_data() == pixels.get_region(Rect2i(b[0], b[1], b[2], b[3])).get_data(), id + " runtime keeps authored colour and alpha edges")
+		game.storage_display.reveal_ingredient(id)
 		var slot := game.storage_display.find_child("Ingredient_" + id, true, false) as Button
-		expect(slot != null and slot.is_visible_in_tree(), id + " available directly in the kitchen")
+		expect(slot != null and slot.is_visible_in_tree(), id + " available on its kitchen shelf page")
 		if slot == null: continue
 		var press := InputEventMouseButton.new()
 		press.button_index = MOUSE_BUTTON_LEFT
@@ -141,12 +143,19 @@ func run() -> void:
 	quit(0 if failures.is_empty() else 1)
 
 func gallery(manifest: Dictionary) -> void:
+	var page := 0
+	var ids := manifest.keys()
+	while page * 14 < ids.size():
+		await gallery_page(manifest, ids.slice(page * 14, mini(ids.size(), (page + 1) * 14)), page)
+		page += 1
+
+func gallery_page(manifest: Dictionary, ids: Array, page: int) -> void:
 	var background := ColorRect.new()
 	background.color = Color("fff0d6")
 	background.size = Vector2(1600, 946)
 	root.add_child(background)
 	var index := 0
-	for id in manifest:
+	for id in ids:
 		var view := TextureRect.new()
 		view.texture = Art.food(id)
 		view.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -155,13 +164,13 @@ func gallery(manifest: Dictionary) -> void:
 		view.size = Vector2(170, 300)
 		background.add_child(view)
 		var label := Label.new()
-		label.text = str(manifest[id].source_name).trim_suffix(".png")
+		label.text = str(manifest[id].get("display_name", manifest[id].source_name)).trim_suffix(".png")
 		label.add_theme_font_override("font", preload("res://modules/restaurant/assets/fonts/noto_serif_sc.ttf"))
 		label.add_theme_color_override("font_color", Color("493b2d"))
 		label.position = view.position + Vector2(0, 310)
 		background.add_child(label)
 		index += 1
-	await capture("gallery")
+	await capture("gallery" if page == 0 else "gallery-%d" % (page + 1))
 	background.queue_free()
 	await process_frame
 

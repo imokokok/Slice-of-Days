@@ -1,0 +1,28 @@
+Hand-drawn batch 2 regressions
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: seasoning input and physics, 148 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: stock, pan volume and shared recipe, 25 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: reference layout and sponge, 18 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: cut-batch stability, 42 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: slice cooking continuity, 37 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recipe guide, 40 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recipe DIY lifecycle, 75 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: restaurant integration, 126 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+Asset alpha audit: 97 sprites, 0 errors

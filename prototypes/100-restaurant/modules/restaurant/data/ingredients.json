@@ -1129,7 +1129,8 @@
     "color": "77a4ad",
     "tags": [
       "odd",
-      "textile"
+      "textile",
+      "non_food"
     ],
     "weirdness": 1.0,
     "needs_cook": false,
@@ -1263,7 +1264,8 @@
     "color": "9bbec0",
     "tags": [
       "odd",
-      "bubbly"
+      "bubbly",
+      "non_food"
     ],
     "weirdness": 0.95,
     "needs_cook": false,
@@ -1328,7 +1330,8 @@
     "tags": [
       "odd",
       "paper",
-      "colorful"
+      "colorful",
+      "non_food"
     ],
     "weirdness": 0.8,
     "needs_cook": false,
@@ -1503,39 +1506,164 @@
     "model": "rock"
   },
   {
-    "id": "resignation_letter", "name": "辞职信", "category": "odd",
-    "color": "c98dbe", "tags": ["odd", "paper", "non_food"],
-    "weirdness": 0.95, "needs_cook": false, "mass": 0.02,
-    "friction": 0.85, "bounce": 0.0, "model": "resignation_letter"
+    "id": "resignation_letter",
+    "name": "辞职信",
+    "category": "odd",
+    "color": "c98dbe",
+    "tags": [
+      "odd",
+      "paper",
+      "non_food"
+    ],
+    "weirdness": 0.95,
+    "needs_cook": false,
+    "mass": 0.02,
+    "friction": 0.85,
+    "bounce": 0.0,
+    "model": "resignation_letter"
   },
   {
-    "id": "alarm_clock", "name": "闹钟", "category": "odd",
-    "color": "d96c47", "tags": ["odd", "metal", "non_food"],
-    "weirdness": 0.95, "needs_cook": false, "mass": 0.35,
-    "friction": 0.7, "bounce": 0.02, "model": "alarm_clock", "cuttable": false
+    "id": "alarm_clock",
+    "name": "闹钟",
+    "category": "odd",
+    "color": "d96c47",
+    "tags": [
+      "odd",
+      "metal",
+      "non_food"
+    ],
+    "weirdness": 0.95,
+    "needs_cook": false,
+    "mass": 0.35,
+    "friction": 0.7,
+    "bounce": 0.02,
+    "model": "alarm_clock",
+    "cuttable": false
   },
   {
-    "id": "yarn_ball", "name": "毛线团", "category": "odd",
-    "color": "de7566", "tags": ["odd", "textile", "non_food"],
-    "weirdness": 0.9, "needs_cook": false, "mass": 0.05,
-    "friction": 0.9, "bounce": 0.03, "model": "yarn_ball"
+    "id": "yarn_ball",
+    "name": "毛线团",
+    "category": "odd",
+    "color": "de7566",
+    "tags": [
+      "odd",
+      "textile",
+      "non_food"
+    ],
+    "weirdness": 0.9,
+    "needs_cook": false,
+    "mass": 0.05,
+    "friction": 0.9,
+    "bounce": 0.03,
+    "model": "yarn_ball"
   },
   {
-    "id": "tennis_ball", "name": "网球", "category": "odd",
-    "color": "b8d834", "tags": ["odd", "rubber", "non_food"],
-    "weirdness": 0.95, "needs_cook": false, "mass": 0.057,
-    "friction": 0.75, "bounce": 0.12, "model": "tennis_ball"
+    "id": "tennis_ball",
+    "name": "网球",
+    "category": "odd",
+    "color": "b8d834",
+    "tags": [
+      "odd",
+      "rubber",
+      "non_food"
+    ],
+    "weirdness": 0.95,
+    "needs_cook": false,
+    "mass": 0.057,
+    "friction": 0.75,
+    "bounce": 0.12,
+    "model": "tennis_ball"
   },
   {
-    "id": "dentures", "name": "假牙", "category": "odd",
-    "color": "e38084", "tags": ["odd", "resin", "non_food"],
-    "weirdness": 1.0, "needs_cook": false, "mass": 0.06,
-    "friction": 0.6, "bounce": 0.04, "model": "dentures", "cuttable": false
+    "id": "dentures",
+    "name": "假牙",
+    "category": "odd",
+    "color": "e38084",
+    "tags": [
+      "odd",
+      "resin",
+      "non_food"
+    ],
+    "weirdness": 1.0,
+    "needs_cook": false,
+    "mass": 0.06,
+    "friction": 0.6,
+    "bounce": 0.04,
+    "model": "dentures",
+    "cuttable": false
   },
   {
-    "id": "sponge", "name": "海绵", "category": "odd",
-    "color": "eab645", "tags": ["odd", "porous", "non_food"],
-    "weirdness": 0.9, "needs_cook": false, "mass": 0.025,
-    "friction": 0.95, "bounce": 0.01, "model": "sponge"
+    "id": "sponge",
+    "name": "海绵",
+    "category": "odd",
+    "color": "eab645",
+    "tags": [
+      "odd",
+      "porous",
+      "non_food"
+    ],
+    "weirdness": 0.9,
+    "needs_cook": false,
+    "mass": 0.025,
+    "friction": 0.95,
+    "bounce": 0.01,
+    "model": "sponge"
+  },
+  {
+    "id": "toilet_paper",
+    "name": "卷纸",
+    "category": "odd",
+    "color": "e9eff7",
+    "tags": [
+      "odd",
+      "paper",
+      "non_food"
+    ],
+    "weirdness": 0.95,
+    "needs_cook": false,
+    "mass": 0.09,
+    "friction": 0.85,
+    "bounce": 0.01,
+    "model": "toilet_paper"
+  },
+  {
+    "id": "soap_smooth",
+    "name": "肥皂（光滑款）",
+    "category": "odd",
+    "color": "bad4e9",
+    "tags": [
+      "odd",
+      "soap",
+      "non_food"
+    ],
+    "weirdness": 0.95,
+    "needs_cook": false,
+    "mass": 0.1,
+    "friction": 0.35,
+    "bounce": 0.01,
+    "model": "soap_smooth"
+  },
+  {
+    "id": "toothpaste",
+    "name": "牙膏",
+    "category": "odd",
+    "color": "e0f2fc",
+    "tags": [
+      "odd",
+      "paste",
+      "non_food"
+    ],
+    "weirdness": 1.0,
+    "needs_cook": false,
+    "mass": 0.12,
+    "friction": 0.8,
+    "bounce": 0.01,
+    "model": "toothpaste",
+    "cuttable": false,
+    "dispense_mode": "squeeze",
+    "container_ml": 100.0,
+    "dispense_mass": 0.006,
+    "density_g_ml": 1.2,
+    "viscosity": 0.92
   }
 ]

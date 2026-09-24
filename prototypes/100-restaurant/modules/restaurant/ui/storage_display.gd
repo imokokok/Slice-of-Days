@@ -26,6 +26,10 @@ var _fridge_items: Control
 var _fridge_toggle: Button
 var _content: Control
 var stock: Dictionary = {}
+var fridge_page := 0
+var odd_page := 0
+var _cold_catalog: Array = []
+var _odd_catalog: Array = []
 
 func set_available(id: String, available: bool) -> void:
 	stock[id] = available
@@ -38,7 +42,45 @@ func set_available(id: String, available: bool) -> void:
 
 func slot_at(id: String, point: Vector2) -> bool:
 	var button := find_child("Ingredient_" + id, true, false) as Button
-	return button != null and button.get_global_rect().has_point(point)
+	return button != null and button.is_visible_in_tree() and button.get_global_rect().has_point(point)
+
+func reveal_ingredient(id: String) -> void:
+	# Opening the full cupboard also reveals the item's physical return slot.
+	for section in ["fridge", "odd"]:
+		var items: Array = _cold_catalog if section == "fridge" else _odd_catalog
+		var page_size := 15 if section == "fridge" else 12
+		for index in items.size():
+			if str(items[index].id) != id: continue
+			var page := index / page_size
+			if section == "fridge":
+				if fridge_page == page: return
+				fridge_page = page
+			else:
+				if odd_page == page: return
+				odd_page = page
+			_build_items()
+			return
+
+func _turn_page(section: String, step: int) -> void:
+	if section == "fridge":
+		fridge_page = posmod(fridge_page + step, maxi(1, ceili(_cold_catalog.size() / 15.0)))
+	else:
+		odd_page = posmod(odd_page + step, maxi(1, ceili(_odd_catalog.size() / 12.0)))
+	_build_items()
+
+func _page_controls(section: String, location: Vector2, width: float, page: int, count: int) -> void:
+	if count <= 1: return
+	_heading("%d / %d" % [page + 1, count], location + Vector2(42, 3), Vector2(width - 84, 24), Color("fff0d5"), 16)
+	for direction in [-1, 1]:
+		var button := Button.new()
+		button.name = section.capitalize() + ("PreviousPage" if direction < 0 else "NextPage")
+		button.text = "‹" if direction < 0 else "›"
+		button.tooltip_text = "上一层" if direction < 0 else "下一层"
+		button.position = location + Vector2(0 if direction < 0 else width - 34, 0)
+		button.size = Vector2(34, 28)
+		_compact_sign(button)
+		button.pressed.connect(_turn_page.bind(section, direction))
+		_content.add_child(button)
 
 func setup(defs: Array) -> void :
 	definitions.clear()
@@ -101,8 +143,14 @@ func _build_items() -> void :
 	var catalog: = {}
 	for item in definitions: catalog[item.id] = item
 	var cold: = ["tomato", "egg", "mushroom", "shrimp", "tofu", "cheese", "carrot", "onion", "broccoli", "lettuce", "milk", "pumpkin", "chicken", "potato", "rice"]
-	for i in cold.size():
-		if catalog.has(cold[i]): _slot(_content, catalog[cold[i]], Vector2(45 + (i % 3) * 96, 181 + (i / 3) * 77), Vector2(90, 70), 0.76, Color("344854"))
+	_cold_catalog.clear()
+	for id in cold:
+		if catalog.has(id): _cold_catalog.append(catalog[id])
+	for item in definitions:
+		if item.get("category", "") in ["basic", "sweet"] and not cold.has(str(item.id)): _cold_catalog.append(item)
+	for i in mini(15, _cold_catalog.size() - fridge_page * 15):
+		_slot(_content, _cold_catalog[fridge_page * 15 + i], Vector2(45 + (i % 3) * 96, 181 + (i / 3) * 77), Vector2(90, 70), 0.76, Color("344854"))
+	_page_controls("fridge", Vector2(66, 563), 244, fridge_page, ceili(_cold_catalog.size() / 15.0))
 	var counter: = ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]
 	for i in counter.size():
 		if catalog.has(counter[i]): _slot(_content, catalog[counter[i]], Vector2(670 + i * 80, 549), Vector2(75, 66), 0.68, Color("493b2d"))
@@ -110,12 +158,14 @@ func _build_items() -> void :
 	for spec in [["oil", Vector2(367, 458), Vector2(64, 167), 1.85], ["pepper", Vector2(436, 491), Vector2(56, 125), 1.25], ["salt", Vector2(441, 572), Vector2(34, 51), 0.54], ["sugar", Vector2(480, 559), Vector2(38, 64), 0.65], ["soy_sauce", Vector2(513, 541), Vector2(30, 76), 0.68]]:
 		if catalog.has(spec[0]): _slot(_content, catalog[spec[0]], spec[1], spec[2], spec[3], Color("493b2d"))
 	var odd: = []
-	for id in ["resignation_letter", "alarm_clock", "yarn_ball", "tennis_ball", "dentures", "eraser", "sponge", "baseball_bat", "computer_mouse", "slipper", "rubber_duck", "rock"]:
+	for id in ["sock", "confetti", "toilet_paper", "soap", "soap_smooth", "toothpaste", "resignation_letter", "alarm_clock", "yarn_ball", "tennis_ball", "dentures", "eraser", "sponge", "baseball_bat", "computer_mouse", "slipper", "rubber_duck", "rock"]:
 		if catalog.has(id): odd.append(catalog[id])
 	for item in definitions:
 		if item.get("category", "") == "odd" and not odd.has(item): odd.append(item)
-	for i in mini(odd.size(), 12):
-		_slot(_content, odd[i], Vector2(1325 + (i % 4) * 67, 224 + (i / 4) * 105), Vector2(65, 78), 0.70, Color("fff0d5"))
+	_odd_catalog = odd
+	for i in mini(odd.size() - odd_page * 12, 12):
+		_slot(_content, odd[odd_page * 12 + i], Vector2(1325 + (i % 4) * 67, 224 + (i / 4) * 105), Vector2(65, 78), 0.70, Color("fff0d5"))
+	_page_controls("odd", Vector2(1340, 518), 242, odd_page, ceili(odd.size() / 12.0))
 	var browse: = Button.new()
 	browse.name = "BrowseIngredientCupboard"
 	browse.text = ""
@@ -150,6 +200,7 @@ func _heading(words: String, location: Vector2, dimensions: Vector2, color: Colo
 	label.text = words
 	label.position = location
 	label.size = dimensions
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -188,6 +239,8 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 	label.text = item.name
 	label.position = Vector2(0, dimensions.y - label_height)
 	label.size = Vector2(dimensions.x, label_height)
+	label.clip_text = true
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 12)
 	label.add_theme_color_override("font_color", name_color)

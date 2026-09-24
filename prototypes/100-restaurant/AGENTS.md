@@ -1,5 +1,7 @@
 # 100饭店工程约束
 
+**2026-09-25 当前三大主参考：Little Chef、Venba、Cooking Simulator（烹饪模拟器）。** 分工：Little Chef 负责整体游玩、物件交互与 UI；Venba 负责烹饪过程、菜谱与逐步引导；Cooking Simulator 负责仿真操作、物理反馈、食物状态与声音逻辑。具体实施前先读 `docs/CORE_EXPERIENCE_REFERENCE.md` 顶部的当前生效指导；旧文档里 Good Pizza 为最高参考的排序已失效。沿用当前第一人称 2D 工程和用户确认的厨房图，不因参考确认更换引擎或转成 3D。
+
 菜谱与引导改动前读 `docs/RECIPE_GUIDE_20260925.md`。书架和展开页保持同源；步骤从真实切配、熟度和装盘推进，不能由计时或确认按钮伪造。历史顺序缺失时明示状态推断。验证使用 `tests/test_recipe_guide.gd`、`tests/test_recipe_diy.gd` 和 GPU `tests/capture_recipe_guide.gd`。
 
 2026-09-25 最新确认：以 `docs/kitchen_layout_20260925.jpg` 为最终布局参考（此前图为 `docs/kitchen_reference_20260925.jpg`）替换场景，见 `docs/REFERENCE_KITCHEN_20260925.md`。Letter 工作台文件是误发，不适用于本工程。新图的可移动道具必须与静态环境分层，切片、加热和摆盘状态不能因美术更换而重置。验证新增 `tests/test_slice_cooking_continuity.gd`，GPU 使用 `tests/capture_cooking_states.gd`。

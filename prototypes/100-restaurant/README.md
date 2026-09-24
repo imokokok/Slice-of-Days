@@ -1,5 +1,7 @@
 ## 2026-09-25 原图厨房
 
+当前三大主参考：**Little Chef（整体游玩与 UI）＋ Venba（做菜过程、菜谱与引导）＋ Cooking Simulator／烹饪模拟器（仿真操作、物理与食物变化）**。沿用用户确认的厨房图和当前第一人称 2D 工程；旧的 Good Pizza 最高参考排序已失效。开发前先读 [当前参考分工](docs/CORE_EXPERIENCE_REFERENCE.md)。
+
 按用户最新厨房图保留调料台、厨具筒、五格备料台和右侧菜谱架的原位布局。切片、持续烹饪变化、擦拭与验证说明见 [本次改造](docs/REFERENCE_KITCHEN_20260925.md)。Letter 文件是误发，不属于此工程。
 
 # 100饭店

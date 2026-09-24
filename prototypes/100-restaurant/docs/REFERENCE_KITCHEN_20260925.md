@@ -1,5 +1,7 @@
 # 2026-09-25 原图厨房接入
 
+当前体验主参考明确为 Little Chef、Venba、Cooking Simulator；职责与优先级见 CORE_EXPERIENCE_REFERENCE.md 顶部。用户提供的厨房图继续决定本工程的布局与美术方向，本文件后面的历史说明不改变三大主参考。
+
 用户最终确认布局以 `kitchen_layout_20260925.jpg` 为准，之前版本为 `kitchen_reference_20260925.jpg`。本次替换厨房画面，而非另设计一间同色系厨房。之前误发的 Solmere Letter 拼贴工作台文件和参考图均不作为本次依据。现有第一人称 2D 物理厨房保留，项目名仍为 100饭店。
 
 ## 图片及实现

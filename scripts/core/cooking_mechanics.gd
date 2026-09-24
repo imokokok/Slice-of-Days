@@ -135,14 +135,14 @@ static func advance_exposure(addition: Dictionary, heat: float, seconds: float) 
 
 static func food_tint(id: String, state: String, progress: float, browning: float, heat: float) -> Color:
 	var base := Color.WHITE
-	var cooked := Color("f5ce8c")
-	if id in ["tomato","beet","bell_pepper_red","bell_pepper_orange"]: cooked=Color("e8866a")
-	elif id in ["herbs","zucchini","bell_pepper_green","sea_beans"]: cooked=Color("bddb8a")
-	elif id in ["sardine","sea_bream","mushrooms","bread"]: cooked=Color("d9b18a")
-	elif id in ["cheese","lemon","bell_pepper_yellow"]: cooked=Color("ffe3a0")
-	var warmed := clampf(progress*0.62+maxf(0.0,heat-0.38)*0.28,0.0,0.78)
+	var cooked := Color("c58e58")
+	if id in ["tomato","beet","bell_pepper_red","bell_pepper_orange"]: cooked=Color("aa6348")
+	elif id in ["herbs","zucchini","bell_pepper_green","sea_beans"]: cooked=Color("91a762")
+	elif id in ["sardine","sea_bream","mushrooms","bread"]: cooked=Color("a8764e")
+	elif id in ["cheese","lemon","bell_pepper_yellow"]: cooked=Color("dda95c")
+	var warmed := clampf(progress*1.35+maxf(0.0,heat-0.55)*0.06,0.0,0.78)
 	base=base.lerp(cooked,warmed)
-	base=base.lerp(Color("986044"),clampf(browning*0.60,0.0,0.68))
+	base=base.lerp(Color("70442d"),clampf(browning*0.70,0.0,0.58))
 	if state=="recoverable": base=base.lerp(Color("cfaa82"),0.10)
 	elif state=="rough": base=base.lerp(Color("aa775d"),0.22)
 	return base

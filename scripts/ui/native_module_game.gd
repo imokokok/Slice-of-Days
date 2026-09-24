@@ -558,7 +558,7 @@ func _stir(style: String) -> void:
 	status_label.text=LocalizationSystem.text("第 %d 下 · %s：%s，%s。" % [cooking_stirs.size(),str(labels.get(style,style)),str(heat_state.get("label","看住火")),response])
 	if cooking_stirs.size()>=4:
 		status_label.text+=LocalizationSystem.text(" 已经拌得很充分了，趁现在尝一口。")
-	if is_instance_valid(illustrated_pot): illustrated_pot.stir()
+	if is_instance_valid(illustrated_pot): illustrated_pot.stir(style)
 	else: WorldSound.play_ui("water")
 	_update_state()
 

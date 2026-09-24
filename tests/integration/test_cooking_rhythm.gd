@@ -99,11 +99,27 @@ func run() -> void:
 	for style in ["gentle","fold"]:
 		scene.value_slider.value=.58
 		scene._stir(style)
+	var pot: Button=scene.illustrated_pot
+	var left: Vector2=pot._food_slot(0,3)
+	var right: Vector2=pot._food_slot(1,3)
+	var near: Vector2=pot._food_slot(2,3)
+	check(left.distance_to(right)>65.0 and left.distance_to(near)>45.0 and near.y-left.y>35.0,"Three ingredients should form a compact staggered arrangement inside the pan")
+	check(pot.stir_count==2 and pot.stir_style=="fold","The pan should preserve the chosen stirring movement")
+	var bread_after_stir: Dictionary=scene.cooking_additions[1]
+	var bread_target_tint: Color=rules.food_tint("bread",str(bread_after_stir.state),float(bread_after_stir.cook_progress),float(bread_after_stir.browning),float(scene.value_slider.value))
+	var bread_start_tint: Color=pot.stir_from_tints["bread"]
+	check(bread_start_tint.g-bread_target_tint.g>0.05,"The stirring motion should visibly transition food from its previous color to its cooked color")
 	check(float(scene.cooking_additions[0].get("cook_progress",0.0))>0.04,"Stirring should advance the food's visible cooking state")
 	var gently_cooked: Dictionary=rules.advance_exposure({"cook_progress":0.4,"browning":0.0},0.42,3.0)
 	var seared: Dictionary=rules.advance_exposure({"cook_progress":0.4,"browning":0.0},0.94,3.0)
 	check(float(seared.browning)>float(gently_cooked.browning),"High heat should brown food faster than gentle heat")
 	check(rules.food_tint("carrot","just_right",float(seared.cook_progress),float(seared.browning),0.94)!=rules.food_tint("carrot","just_right",0.0,0.0,0.20),"Cooked food should have a distinct color from the raw ingredient")
+	var raw_bread: Color=rules.food_tint("bread","just_right",0.0,0.0,0.58)
+	var cooked_bread: Color=rules.food_tint("bread","just_right",0.55,0.0,0.58)
+	check(raw_bread.r-cooked_bread.r>0.12 and raw_bread.g-cooked_bread.g>0.17,"Stirred food should visibly deepen in color as it cooks")
+	await create_timer(0.85).timeout
+	check(pot.stir_progress>=0.99 and pot._food_position(0).distance_to(pot._food_slot(2,3))<1.0,"Food should settle in its new pan position after stirring")
+	await capture("02-pan-stirred")
 	check(scene.cooking_phase=="stir","Two stirs should make tasting available without forcing it")
 	scene._perform_primary_action()
 	check(scene.cooking_phase=="taste","The player should decide when to taste")

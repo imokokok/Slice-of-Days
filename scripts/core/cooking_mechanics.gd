@@ -34,6 +34,68 @@ static func prepared_token(token: Dictionary, option_id: String) -> Dictionary:
 	return result
 
 
+static func preparation_action(option_id: String, token_id := "") -> Dictionary:
+	if token_id=="bread" and option_id=="small":
+		return {"verb":"撕开", "sound":"paper", "strokes":2}
+	if option_id in ["squeeze","coat","edge","line","spoon","dot","ribbon"]:
+		return {"verb":"挤压" if option_id=="squeeze" else "倒入", "sound":"water", "strokes":2}
+	if option_id in ["large","tear","wring","sheets","strips","pieces","separate","bells","small_ball","long_thread"]:
+		return {"verb":"撕开" if option_id in ["large","tear","sheets","strips","pieces"] else "拆开", "sound":"paper", "strokes":2}
+	if option_id in ["drain","keep_brine","keep_juice","frosted","soften","gentle","ticking","sort","bundle","finish","pinch","flakes"]:
+		return {"verb":"整理", "sound":"water" if option_id in ["drain","keep_brine","keep_juice","soften"] else "paper", "strokes":2}
+	return {"verb":"切配", "sound":"cut", "strokes":3}
+
+
+static func doneness(addition: Dictionary) -> Dictionary:
+	var id := str(addition.get("id",""))
+	var option := str(addition.get("prep_option",""))
+	var progress := float(addition.get("cook_progress",0.0))
+	var brown := float(addition.get("browning",0.0))
+	var ready := 0.34
+	if id in ["potato","carrot","beet"]: ready=0.48
+	elif id in ["cheese","lemon","herbs","star_salt","cooking_oil","salt_shaker","wasabi","ketchup"]: ready=0.20
+	elif id in ["sardine","sea_bream"]: ready=0.42
+	if option in ["small","dice","chop","slices","crumbs","strips"]: ready-=0.05
+	if option in ["thick","large","chunks","whole"]: ready+=0.06
+	if brown>0.62 or progress>0.89: return {"id":"overdone","label":"过火","score":-3}
+	if progress<ready: return {"id":"underdone","label":"尚生","score":-2}
+	if brown>0.35: return {"id":"browned","label":"焦香","score":1}
+	return {"id":"ready","label":"刚熟","score":2}
+
+
+static func dish_doneness(additions: Array) -> Dictionary:
+	var counts := {"underdone":0,"ready":0,"browned":0,"overdone":0}
+	var score := 0
+	var parts: Array[String]=[]
+	for value in additions:
+		var state: Dictionary=doneness(value)
+		counts[state.id]+=1
+		score+=int(state.score)
+		parts.append("%s%s" % [str((value as Dictionary).get("label","食材")),str(state.label)])
+	var summary := "、".join(parts)
+	return {"counts":counts,"score":score,"summary":summary}
+
+
+static func pan_moisture(additions: Array) -> float:
+	var moisture := 0.0
+	for value in additions:
+		var addition: Dictionary=value
+		var id := str(addition.get("id",""))
+		if id in ["tomato","zucchini","eggplant","mushrooms","lemon","sea_beans","ice_block"]: moisture+=0.30
+		elif id in ["bread","potato","star_salt","salt_shaker"]: moisture-=0.12
+	return clampf(0.35+moisture,0.08,1.0)
+
+
+static func cooking_grade(score: int, additions: Array) -> Dictionary:
+	var doneness_data: Dictionary=dish_doneness(additions)
+	var result := grade(score+mini(0,int(doneness_data.score)))
+	var counts: Dictionary=doneness_data.counts
+	if int(counts.underdone)>0 or int(counts.overdone)>0:
+		if result.id=="attentive": result=grade(7)
+		result["note"]="%s；这道菜仍然可以出餐，火候会写进菜谱。" % str(doneness_data.summary)
+	return result
+
+
 static func evaluate_addition(token: Dictionary, heat: float) -> Dictionary:
 	var window: Array = token.get("heat_window", [0.40, 0.70])
 	var low := float(window[0]) if window.size() >= 2 else 0.40
@@ -63,7 +125,7 @@ static func advance_exposure(addition: Dictionary, heat: float, seconds: float) 
 	var h := clampf(heat,0.0,1.0)
 	var progress := float(result.get("cook_progress",0.0))
 	var browning := float(result.get("browning",0.0))
-	progress=clampf(progress+maxf(0.0,seconds)*maxf(0.0,h-0.16)*0.18,0.0,1.0)
+	progress=clampf(progress+maxf(0.0,seconds)*maxf(0.0,h-0.16)*0.28,0.0,1.0)
 	if progress>0.30 and h>0.62:
 		browning=clampf(browning+maxf(0.0,seconds)*(h-0.62)*0.22,0.0,1.0)
 	result["cook_progress"]=progress
@@ -118,6 +180,18 @@ static func evaluate_seasoning(tokens: Array, choice: String) -> Dictionary:
 	return {"score":0,"state":"personal","message":"这不是最稳妥的调味，但它会作为你今天的做法被记下来。"}
 
 
+static func evaluate_seasoning_layers(tokens: Array, layers: Array) -> Dictionary:
+	if layers.is_empty(): return evaluate_seasoning(tokens,"rest")
+	var target := seasoning_target(tokens)
+	var salty := layers.count("salt")
+	var bright := layers.count("wasabi")+layers.count("ketchup")+layers.count("herbs")
+	var pepper := layers.count("pepper")
+	var balanced := (target=="salt" and salty==1) or (target=="brighten" and bright>=1 and salty==0) or (target=="rest" and salty==0)
+	if salty>1 or bright>2: return {"score":-1,"state":"strong","message":"调料叠得太重，盖住了一部分食材；这一次的分量会留在菜谱里。"}
+	if balanced: return {"score":2 if layers.size()<=2 else 1,"state":"balanced","message":"尝过后分次调味，%s把这一锅的尾味接住了。" % ("辛香" if pepper>0 else "层次")}
+	return {"score":0,"state":"personal","message":"这组调味留下了很个人的方向，客人会尝到你的选择。"}
+
+
 static func grade(score: int) -> Dictionary:
 	if score >= 10:
 		return {"id":"attentive","label":"从容出锅","note":"每一步都回应了锅里的变化。"}
@@ -130,7 +204,12 @@ static func service_response(interaction: Dictionary) -> String:
 	var mechanic: Dictionary=interaction.get("mechanic",{})
 	var additions: Array=mechanic.get("additions",[])
 	var detail := ""
+	var doneness_data: Dictionary=dish_doneness(additions)
+	var counts: Dictionary=doneness_data.counts
+	if int(counts.underdone)>0: detail="%s。还有材料略生，下次可以让它多受一会儿热。" % str(doneness_data.summary)
+	elif int(counts.overdone)>0: detail="%s。边缘已经过火，下次可以早一点收火。" % str(doneness_data.summary)
 	for addition_value in additions:
+		if not detail.is_empty(): break
 		var addition: Dictionary=addition_value
 		if str(addition.get("state","")) not in ["rough","recoverable"]: continue
 		var window: Array=addition.get("heat_window",[])
@@ -149,7 +228,9 @@ static func service_response(interaction: Dictionary) -> String:
 		"generous":"这一盘端上桌，像是认真招待忙完一天的人。",
 		"share":"你分成小碟，每个等菜的人都有了自己的那一口。",
 	}.get(str(mechanic.get("plating","")),"出餐的样子也值得留在菜谱里。")
-	return "石泳琪端起盘子：「%s%s」" % [detail,ending]
+	var seasoning_layers: Array=mechanic.get("seasoning_layers",[])
+	var seasoning_echo := "调料分次撒入，味道有了几层。" if seasoning_layers.size()>1 else ""
+	return "石泳琪端起盘子：「%s%s%s」" % [detail,seasoning_echo,ending]
 
 
 static func recipe_notes(interaction: Dictionary) -> String:
@@ -172,9 +253,10 @@ static func recipe_notes(interaction: Dictionary) -> String:
 	for stir_value in mechanic.get("stirs",[]):
 		var stir: Dictionary=stir_value
 		stir_labels.append(str(stir.get("style_label","翻拌")))
-	return "备料：%s。\n下锅顺序：%s。\n翻拌：%s；尝味后%s。\n装盘：%s。\n%s：%s\n%s" % [
+	return "备料：%s。\n下锅顺序：%s。\n熟度：%s。\n翻拌：%s；尝味后%s。\n装盘：%s。\n%s：%s\n%s" % [
 		"、".join(prep_lines) if not prep_lines.is_empty() else "按食材分别处理",
 		" → ".join(addition_labels),
+		str(dish_doneness(additions).summary),
 		"、".join(stir_labels) if not stir_labels.is_empty() else "%d 次" % int(mechanic.get("stir_count",0)),
 		seasoning,
 		plating,

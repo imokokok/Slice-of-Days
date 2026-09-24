@@ -7,6 +7,7 @@ const ART = preload("res://scripts/ui/components/cooking_ingredients.gd")
 var ingredients: Array[String]=[]
 var prepared: Dictionary={}
 var addition_states: Dictionary={}
+var exposure: Dictionary={}
 var cooked_count := -1
 
 func _ready() -> void:
@@ -15,17 +16,17 @@ func _ready() -> void:
 func update_recipe(ids: Array[String], preparation: Dictionary, additions: Array, actual_count := -1) -> void:
 	ingredients=ids.duplicate(); prepared=preparation.duplicate(); cooked_count=actual_count
 	addition_states.clear()
+	exposure.clear()
 	for value in additions:
 		var addition: Dictionary=value
 		addition_states[str(addition.get("id",""))]=str(addition.get("state","just_right"))
+		exposure[str(addition.get("id",""))]=addition
 	queue_redraw()
 
 func _tint(id: String, index: int) -> Color:
 	if cooked_count>=0 and index>=cooked_count: return Color(1,1,1,0.38)
-	match str(addition_states.get(id,"just_right")):
-		"recoverable": return Color("edc99a")
-		"rough": return Color("bd866d")
-		_: return Color.WHITE
+	var value: Dictionary=exposure.get(id,{})
+	return preload("res://scripts/core/cooking_mechanics.gd").food_tint(id,str(addition_states.get(id,"just_right")),float(value.get("cook_progress",0.0)),float(value.get("browning",0.0)),0.55)
 
 func _draw() -> void:
 	for i in mini(3,ingredients.size()):
@@ -34,7 +35,9 @@ func _draw() -> void:
 		if not texture: continue
 		var center := Vector2(32+i*76,35)
 		var dimensions := texture.get_size()*minf(58.0/texture.get_width(),58.0/texture.get_height())
-		draw_texture_rect(texture,Rect2(center-dimensions*0.5,dimensions),false,_tint(id,i))
+		var rect := Rect2(center-dimensions*0.5,dimensions)
+		if prepared.has(id): ART.draw_prepared(self,id,str(prepared[id]),rect,_tint(id,i))
+		else: ART.draw_raw(self,id,rect,_tint(id,i))
 		if i<mini(3,ingredients.size())-1:
 			draw_line(Vector2(61+i*76,35),Vector2(75+i*76,35),Color("71847c",0.7),2,true)
 			draw_line(Vector2(71+i*76,31),Vector2(75+i*76,35),Color("71847c",0.7),2,true)

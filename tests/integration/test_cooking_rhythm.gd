@@ -13,6 +13,15 @@ func _initialize() -> void:
 	call_deferred("run")
 
 
+func capture(name: String) -> void:
+	if not OS.get_cmdline_user_args().has("--screenshots"): return
+	await process_frame
+	await RenderingServer.frame_post_draw
+	var folder := ProjectSettings.globalize_path("res://.runtime/cooking-feedback-pages")
+	DirAccess.make_dir_recursive_absolute(folder)
+	root.get_texture().get_image().save_png(folder+"/"+name+".png")
+
+
 func run() -> void:
 	if not OS.get_cmdline_user_args().has("--isolated-save"): quit(2); return
 	var state=root.get_node("GameState")
@@ -25,11 +34,16 @@ func run() -> void:
 	var juicy: Dictionary=rules.prepared_token(tomato,"keep_juice")
 	var drained: Dictionary=rules.prepared_token(tomato,"drain")
 	check(float(drained.heat_drop)<float(juicy.heat_drop) and float(drained.heat_window[0])>float(juicy.heat_window[0]),"Draining a tomato should preserve more pan heat and change its comfortable range")
+	check(str(rules.preparation_action("small","bread").verb)=="撕开" and int(rules.preparation_action("small","bread").strokes)==2,"Tearing bread should use a distinct two-step action")
+	check(str(rules.preparation_action("squeeze","lemon").verb)=="挤压" and str(rules.preparation_action("bells","alarm_clock").verb)=="拆开","Squeezing citrus and removing clock bells should have distinct actions")
+	check(get_nodes_in_group("recipe_book").is_empty(),"The recipe book should stay closed until requested")
 	scene._open_recipe_book()
 	var book: Node=get_nodes_in_group("recipe_book").back()
+	check(book.visible,"The recipe button should open a visible recipe overlay")
 	var house_recipe: Dictionary=load("res://scripts/core/recipe_book.gd").originals()[0]
 	book.emit_signal("follow_recipe",house_recipe)
-	check(scene.active_recipe.get("title","")==house_recipe.title and scene.cooking_followed_recipe_label.visible,"Following a recipe should keep its clue beside the cooking steps")
+	check(scene.active_recipe.get("title","")==house_recipe.title and scene.instruction_label.text.contains(str(house_recipe.title)),"Following a recipe should put its short hint above the workbench")
+	check(scene.get_node_or_null("KitchenTopHint")!=null and scene.get_node_or_null("KitchenToolTray")!=null,"The cooking hint and tool area should replace the permanently open side recipe")
 	book.queue_free(); scene._reset_cooking(); scene.selected_tokens.clear(); scene._update_state(); await process_frame
 	for token_id in ["lemon","bread","cheese"]: scene._toggle_token(token_id)
 	var inventory_before: Dictionary=state.inventory.duplicate(true)
@@ -50,10 +64,11 @@ func run() -> void:
 	var rough_expected: String=rules.seasoning_target(scene._selected_token_data())
 	var rough_choice := "brighten" if rough_expected!="brighten" else "salt"
 	scene._choose_seasoning(rough_choice)
+	scene._finish_seasoning()
 	scene._choose_plating("generous")
 	check(scene.stage_ready and str(scene._interaction_record().mechanic.grade.id)=="improvised","Mistakes should change the record without destroying the dish")
 	var rough_reply: String=rules.service_response(scene._interaction_record())
-	check(rough_reply.contains("锅温") and rough_reply.contains("端上桌"),"A rough dish should receive a response to its real heat and plating")
+	check((rough_reply.contains("锅温") or rough_reply.contains("过火") or rough_reply.contains("略生")) and rough_reply.contains("端上桌"),"A rough dish should receive a response to its real heat and plating")
 	scene._reset_cooking()
 	check(scene.cooking_phase=="select" and scene.selected_tokens.size()==3,"Restarting should preserve the chosen ingredients for easy revision")
 	check(state.inventory==inventory_before,"Restarting before serving should consume no inventory")
@@ -64,6 +79,7 @@ func run() -> void:
 	for option in [0,1,0]:
 		scene._choose_prep_option(option)
 		while not scene.prep_board.target_id.is_empty(): scene.prep_board.pressed.emit()
+	await capture("01-prepared")
 	check(scene.prepared_tokens==["lemon","bread","cheese"],"Preparation order should be recorded")
 	check(str(scene.prep_board.cuts.get("bread",""))=="small","The board should retain the chosen bread cut for drawing")
 	var chosen_cook_order := ["cheese","bread","lemon"]
@@ -74,6 +90,7 @@ func run() -> void:
 		scene._toggle_token(token_id)
 		scene._perform_primary_action()
 	check(scene.added_tokens==chosen_cook_order,"The player should be able to revise the pan order after preparation")
+	await capture("02-pan")
 	check(str(scene.illustrated_pot.prepared.get("bread",""))=="small","The pan should display the chosen bread cut")
 	for addition in scene.cooking_additions:
 		var effective: Dictionary=scene._prepared_token(str(addition.get("id","")))
@@ -90,10 +107,20 @@ func run() -> void:
 	check(scene.cooking_phase=="stir","Two stirs should make tasting available without forcing it")
 	scene._perform_primary_action()
 	check(scene.cooking_phase=="taste","The player should decide when to taste")
+	await capture("03-taste")
+	var before_simmer := float(scene.cooking_additions[0].cook_progress)
+	scene._simmer_cooking()
+	check(float(scene.cooking_additions[0].cook_progress)>before_simmer,"Choosing to cook longer should advance real doneness")
+	check(str(rules.cooking_grade(14,[{"id":"carrot","label":"胡萝卜","cook_progress":0.05,"browning":0.0}]).id)!="attentive","An undercooked ingredient should prevent an attentive grade")
 	var expected: String=rules.seasoning_target(scene._selected_token_data())
-	scene._choose_seasoning(expected)
+	if expected!="rest": scene._choose_seasoning("wasabi" if expected=="brighten" else expected)
+	scene._choose_seasoning("pepper")
+	check(scene.seasoning_layers.size()==(1 if expected=="rest" else 2) and scene.cooking_phase=="taste","Seasonings should layer without skipping the tasting stage")
+	await capture("04-seasoned")
+	scene._finish_seasoning()
 	check(not scene.stage_ready and scene.cooking_phase=="plating","Seasoning should lead to a separate plating decision")
 	scene._choose_plating("share")
+	await capture("05-shared")
 	check(scene.stage_ready and scene.cooking_phase=="serve","Plating should unlock serving without a hard failure state")
 	check(str(scene.plated_dish.prepared.get("bread",""))=="small","The plated dish should preserve the chosen bread cut")
 	var record: Dictionary=scene._interaction_record()
@@ -101,7 +128,7 @@ func run() -> void:
 	check((mechanic.additions as Array).size()==3,"Every pan addition should survive in the result record")
 	check((mechanic.preparations as Array).size()==3,"Every ingredient-specific preparation should survive in the result record")
 	check((mechanic.stirs as Array).size()==2,"A player-chosen stir count should survive in the result record")
-	check(str(mechanic.seasoning)==expected,"The player's seasoning decision should survive")
+	check(str(mechanic.seasoning)==("pepper" if expected=="rest" else "wasabi" if expected=="brighten" else expected) and (mechanic.seasoning_layers as Array).has("pepper"),"The player's seasoning layers should survive")
 	check(str(mechanic.plating)=="share","The player's plating decision should survive")
 	check(int(mechanic.craft_score)>=10,"Following sensory cues should earn the attentive grade")
 	scene._complete_choice("improvise")

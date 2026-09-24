@@ -50,6 +50,9 @@ func run() -> void:
 	await pause(1.4)
 	for option in [0,1,1]:
 		kitchen.prep_option_buttons[option].pressed.emit()
+		while not kitchen.prep_board.target_id.is_empty():
+			kitchen.prep_board.pressed.emit()
+			await pause(0.5)
 		await pause(1.4)
 	await pause(1.3)
 	for id in ["bread","cheese","lemon"]:
@@ -69,7 +72,8 @@ func run() -> void:
 	kitchen.primary_button.pressed.emit()
 	await pause(2.0)
 	var seasoning: String=preload("res://scripts/core/cooking_mechanics.gd").seasoning_target(kitchen._selected_token_data())
-	kitchen.seasoning_buttons[seasoning].pressed.emit()
+	if seasoning!="rest": kitchen.seasoning_buttons["wasabi" if seasoning=="brighten" else seasoning].pressed.emit()
+	kitchen.primary_button.pressed.emit()
 	await pause(1.6)
 	kitchen.plating_buttons.share.pressed.emit()
 	await pause(3.0)

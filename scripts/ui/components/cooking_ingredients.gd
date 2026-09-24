@@ -55,8 +55,42 @@ static func has_distinct_prep_drawing(id: String, option: String) -> bool:
 	return (id=="lemon" and option=="squeeze") or (id=="bread" and option=="small") or (id=="cheese" and option=="chunks")
 
 
+static func draw_raw(canvas: CanvasItem, id: String, rect: Rect2, tint := Color.WHITE) -> void:
+	if id=="lemon":
+		var center := rect.get_center()
+		var points := PackedVector2Array()
+		for i in 24:
+			var angle := TAU*float(i)/24.0
+			points.append(center+Vector2(cos(angle)*rect.size.x*0.39,sin(angle)*rect.size.y*0.30))
+		canvas.draw_colored_polygon(points,Color("f2cb4c")*tint)
+		canvas.draw_arc(center,rect.size.x*0.33,PI*0.18,PI*0.85,20,Color("fff0a8",0.65)*tint,2.0,true)
+		return
+	canvas.draw_texture_rect(texture(id),rect,false,tint)
+
+
 static func draw_prepared(canvas: CanvasItem, id: String, option: String, rect: Rect2, tint := Color.WHITE) -> void:
 	var art := texture(id,true)
+	if id in ["cooking_oil","ketchup","wasabi","toothpaste"]:
+		var liquid := Color("d8a950") if id=="cooking_oil" else Color("ba5143") if id=="ketchup" else Color("88a569") if id=="wasabi" else Color("d9e9df")
+		var flowing := option in ["line","ribbon","edge"]
+		for i in (5 if flowing else 3):
+			var point := rect.position+rect.size*Vector2(0.22+0.14*float(i),0.54+sin(float(i)*1.8)*0.12)
+			canvas.draw_circle(point,maxf(4.0,rect.size.x*(0.12 if flowing else 0.22)),liquid*tint)
+		return
+	if id in ["salt_shaker","star_salt","pepper_grinder"]:
+		for i in 7:
+			var point := rect.position+rect.size*Vector2(0.20+float((i*3)%7)*0.10,0.30+float((i*5)%7)*0.07)
+			canvas.draw_circle(point,maxf(2.0,rect.size.x*0.025),(Color("f7e2c2") if id!="pepper_grinder" else Color("6d534b"))*tint)
+		return
+	if id=="alarm_clock" and option=="bells":
+		canvas.draw_circle(rect.position+rect.size*Vector2(0.29,0.50),rect.size.x*0.23,Color("c99b65")*tint)
+		canvas.draw_circle(rect.position+rect.size*Vector2(0.71,0.50),rect.size.x*0.23,Color("c99b65")*tint)
+		return
+	if option in ["small","dice","chop","crumbs","strips"] and not has_distinct_prep_drawing(id,option):
+		for i in 2:
+			var center := rect.position+rect.size*Vector2(0.32+float(i)*0.36,0.46+float(i)*0.12)
+			canvas.draw_texture_rect(art,Rect2(center-rect.size*0.35,rect.size*0.70),false,tint)
+		return
 	if art==texture(id,false) and can_cut(id):
 		var pieces := 4 if option in ["small","dice","crumbs","chop","ribbons","strips"] else 3
 		var gap := minf(5.0,rect.size.x*0.06)

@@ -18,5 +18,6 @@ static func finish_prepared(kitchen) -> void:
 	for i in 2: kitchen.stir_buttons.fold.pressed.emit()
 	kitchen.primary_button.pressed.emit()
 	var seasoning: String=preload("res://scripts/core/cooking_mechanics.gd").seasoning_target(kitchen._selected_token_data())
-	kitchen.seasoning_buttons[seasoning].pressed.emit()
+	if seasoning!="rest": kitchen.seasoning_buttons["wasabi" if seasoning=="brighten" else seasoning].pressed.emit()
+	kitchen.primary_button.pressed.emit()
 	kitchen.plating_buttons.share.pressed.emit()

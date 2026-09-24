@@ -82,7 +82,8 @@ func _exercise(module_id: String, tokens: Array[String], choice_id: String, slid
 		scene._perform_primary_action()
 		check(scene.cooking_phase=="taste","The cook should decide when to taste after enough stirring")
 		var seasoning: String=load("res://scripts/core/cooking_mechanics.gd").seasoning_target(scene._selected_token_data())
-		scene._choose_seasoning(seasoning)
+		if seasoning!="rest": scene._choose_seasoning("wasabi" if seasoning=="brighten" else seasoning)
+		scene._finish_seasoning()
 		scene._choose_plating("space")
 	else:
 		if slider_value >= 0.0:

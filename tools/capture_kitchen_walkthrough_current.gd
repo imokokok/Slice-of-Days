@@ -12,7 +12,7 @@ func _initialize() -> void:
 func pause(seconds: float) -> void:
 	for frame in maxi(1,roundi(seconds*float(capture_fps))):
 		await process_frame
-		await RenderingServer.frame_post_draw
+		RenderingServer.force_draw()
 		var path := "%s/frame_%05d.jpg" % [capture_dir,frame_number]
 		var error := root.get_texture().get_image().save_jpg(path,0.86)
 		if error != OK:
@@ -26,7 +26,7 @@ func set_caption(message: String) -> void:
 
 func add_caption(kitchen: Control) -> void:
 	var panel := Panel.new()
-	panel.position=Vector2(501,48)
+	panel.position=Vector2(501,28)
 	panel.size=Vector2(568,50)
 	panel.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
@@ -53,7 +53,9 @@ func run() -> void:
 	for argument in OS.get_cmdline_user_args():
 		if argument.begins_with("--capture-fps="):
 			capture_fps=clampi(int(argument.trim_prefix("--capture-fps=")),12,30)
-	capture_dir=ProjectSettings.globalize_path("res://.runtime/kitchen-video-frames")
+		elif argument.begins_with("--capture-dir="):
+			capture_dir=argument.trim_prefix("--capture-dir=")
+	if capture_dir.is_empty(): capture_dir=ProjectSettings.globalize_path("res://.runtime/kitchen-video-frames")
 	DirAccess.make_dir_recursive_absolute(capture_dir)
 	root.size=Vector2i(1600,900)
 	root.content_scale_size=Vector2i(1600,900)
@@ -76,6 +78,17 @@ func run() -> void:
 	add_caption(kitchen)
 	set_caption("厨房全流程 · 从选材到出餐")
 	await pause(2.2)
+	set_caption("菜谱默认收起 · 工作台上方只给当前步骤提示")
+	await pause(1.5)
+	kitchen._open_recipe_book()
+	await pause(2.0)
+	var intro_books: Array=get_nodes_in_group("recipe_book")
+	if intro_books.is_empty():
+		push_error("Kitchen video could not open the optional recipe book")
+		quit(7)
+		return
+	intro_books.back()._close()
+	await pause(0.8)
 	set_caption("① 选材 · 三样材料决定今天的料理")
 	for id in ["tomato","bread","cheese"]:
 		kitchen.token_buttons[id].pressed.emit()
@@ -89,9 +102,9 @@ func run() -> void:
 		var id: String=prep[0]
 		var option: int=prep[1]
 		kitchen.prep_option_buttons[option].pressed.emit()
-		set_caption("② 备料 · %s：看三次处理的变化" % kitchen._token_label(id))
+		set_caption("② 备料 · %s：按所选方式逐步处理" % kitchen._token_label(id))
 		await pause(0.9)
-		for cut in 3:
+		while not kitchen.prep_board.target_id.is_empty():
 			kitchen.prep_board.pressed.emit()
 			await pause(0.9)
 		await pause(1.0)
@@ -119,7 +132,9 @@ func run() -> void:
 	set_caption("⑥ 尝味 · 根据这锅食材决定收尾")
 	await pause(2.2)
 	var seasoning: String=preload("res://scripts/core/cooking_mechanics.gd").seasoning_target(kitchen._selected_token_data())
-	kitchen.seasoning_buttons[seasoning].pressed.emit()
+	if seasoning!="rest": kitchen.seasoning_buttons["wasabi" if seasoning=="brighten" else seasoning].pressed.emit()
+	kitchen.seasoning_buttons.pepper.pressed.emit()
+	kitchen.primary_button.pressed.emit()
 	await pause(1.8)
 	set_caption("⑦ 装盘 · 预览留白、丰盛与分食")
 	for mode in ["space","generous","share"]:

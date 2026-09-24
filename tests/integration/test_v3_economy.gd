@@ -129,7 +129,8 @@ func run() -> void:
 		kitchen._stir(style)
 	kitchen._perform_primary_action()
 	var seasoning: String=load("res://scripts/core/cooking_mechanics.gd").seasoning_target(kitchen._selected_token_data())
-	kitchen._choose_seasoning(seasoning)
+	if seasoning!="rest": kitchen._choose_seasoning("wasabi" if seasoning=="brighten" else seasoning)
+	kitchen._finish_seasoning()
 	kitchen._choose_plating("generous")
 	check(kitchen.stage_ready, "Real kitchen preparation, pan rhythm and tasting allow serving")
 	var before_work: int = state.current_minute

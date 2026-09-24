@@ -33,3 +33,7 @@ A/B 的钱、物品、关系、笔记和草稿分别保存；公共作品与小�
 [测试清单](TEST_CHECKLIST.md) · [全游戏细节复查](docs/qa/gameplay_detail_audit_20260924.md) · [机器结果](docs/FINAL_TEST_RESULTS.json) · [内容填写说明](CONTENT_WRITING_GUIDE.md) · [档案结构](RESIDENCY_CONTENT_SCHEMA.md)
 
 旧版说明存于 docs/PRE_FINAL_README.md，仅供历史查询。
+
+## 独立饭店原型（100饭店）
+
+本次厨房原图改造和可运行源码位于 [`prototypes/100-restaurant`](prototypes/100-restaurant/README.md)，用 Godot 4.7.2 打开其中 `project.godot`。它包含连续切片、整批入锅、烹饪状态、装盘/拍照、菜谱和纸面顾客反馈；[本次说明](prototypes/100-restaurant/docs/REFERENCE_KITCHEN_20260925.md)列明验证与近似。独立原型不替换上文 Solmere 五日主流程的现有厨房。

@@ -1,0 +1,75 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: restaurant domain, 506 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+STORAGE_AND_POSTER_TESTS_PASSED
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: restaurant integration, 126 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: high-fidelity state slice, 15 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: knife physics, 35 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: real knife mouse drag, 20 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: cut-batch stability, 42 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: slice cooking continuity, 37 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: reference layout and sponge, 18 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+POSTER_PERSISTENCE_AND_WALL_TESTS_PASSED
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ADVANCED_COLLAGE_TESTS_PASSED checks=39
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: real collage GUI input, 68 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PAPER_RECIPE_TESTS_PASSED checks=30
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recipe DIY lifecycle, 75 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: tape editing, 75 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: shared tape tools, 30 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: seasoning input and physics, 148 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: spatula input and physics, 29 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: heat controls, 23 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: kitchen interactions, 33 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: customer reviews, 33 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS free pan 9 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS workstations 17 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS comfort release: 90 checks
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+Asset alpha audit: 88 sprites, 0 errors

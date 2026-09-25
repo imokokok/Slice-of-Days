@@ -251,7 +251,7 @@ func _record_cabinets_and_water() -> bool:
 		await _capture_frame()
 		flood_frames += 1
 	if not _require(game.world.flood_ratio() >= 0.99, "leaving the faucet running floods the full kitchen"): return false
-	await _frames(36)
+	await _frames(144)
 	_mouse(Vector2(175, 632), "down")
 	_mouse(Vector2(175, 570), "move")
 	_mouse(Vector2(175, 570), "up")

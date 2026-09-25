@@ -15,6 +15,7 @@ func run() -> void:
 	await process_frame
 	game._close_modal()
 	game.world.audio.muted = true
+	check(game.world.flood_art.get_parent() == game.hud, "flood overlay covers the kitchen and HUD in the same screen layer")
 	check(is_equal_approx(game.session.duration, 720.0), "a full shift lasts twelve real minutes")
 	game.session.phase = "service"
 	game.session.elapsed = 360.0
@@ -35,11 +36,29 @@ func run() -> void:
 	check(is_equal_approx(game.world.flood_water_ml, 6600.0) and is_equal_approx(game.world.drained_flood_ml, 3000.0), "closing the tap drains standing room water without resetting it instantly")
 	check(is_equal_approx(game.world.sink_water_ml + game.world.flood_water_ml + game.world.drained_flood_ml, 10800.0), "tap water remains conserved across sink, floor and drain")
 	if DisplayServer.get_name() != "headless" and not OS.get_cmdline_user_args().is_empty():
+		var prefix: String = OS.get_cmdline_user_args()[0]
+		game.world.flood_water_ml = 0.0
+		game.world.flood_art.queue_redraw()
+		await process_frame
+		await RenderingServer.frame_post_draw
+		var dry := root.get_texture().get_image()
 		game.world.flood_water_ml = game.world.KITCHEN_FLOOD_ML * 0.72
 		game.world.flood_art.queue_redraw()
 		await process_frame
 		await RenderingServer.frame_post_draw
-		check(root.get_texture().get_image().save_png(OS.get_cmdline_user_args()[0]) == OK, "GPU shows a room-wide rising waterline")
+		check(root.get_texture().get_image().save_png(prefix + "-rising.png") == OK, "GPU shows a room-wide rising waterline")
+		game.world.flood_water_ml = game.world.KITCHEN_FLOOD_ML
+		game.world.flood_art.queue_redraw()
+		await process_frame
+		await RenderingServer.frame_post_draw
+		var full := root.get_texture().get_image()
+		check(full.save_png(prefix + "-full.png") == OK, "GPU saves the fully flooded kitchen")
+		var changed := true
+		for pixel in [Vector2i(80, 80), Vector2i(720, 100), Vector2i(1250, 150), Vector2i(800, 750)]:
+			var a: Color = dry.get_pixelv(pixel)
+			var b: Color = full.get_pixelv(pixel)
+			changed = changed and Vector3(a.r, a.g, a.b).distance_to(Vector3(b.r, b.g, b.b)) > 0.08
+		check(changed, "full flood tints every sampled screen region including HUD and upper kitchen")
 	for failure in failures: push_error(failure)
 	print("%s: kitchen flood, %d checks" % ["PASS" if failures.is_empty() else "FAIL", checks])
 	game.queue_free()

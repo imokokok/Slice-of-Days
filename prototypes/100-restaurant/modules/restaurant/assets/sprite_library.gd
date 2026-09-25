@@ -18,7 +18,7 @@ const MYSTERY := ["baseball_bat","computer_mouse","slipper","sock","perfume","do
 static var _physical_scales: Dictionary = {}
 static var _physical_definitions: Dictionary = {}
 const CONTAINER_SCALES := {"oil":1.55, "pepper":1.13, "salt":0.48, "sugar":0.45, "soy_sauce":0.58,
-	"ketchup":0.66, "mayonnaise":0.78, "mustard":0.59, "chili_sauce":0.60, "vinegar":0.76}
+	"ketchup":0.88, "mayonnaise":0.97, "mustard":0.90, "chili_sauce":0.90, "vinegar":0.92}
 const LONGEST_SIDE_PX := {
 	"carrot":84.0, "cucumber":99.0, "zucchini":99.0, "corn":92.0,
 	"eggplant":88.0, "banana":88.0, "noodles":78.0,

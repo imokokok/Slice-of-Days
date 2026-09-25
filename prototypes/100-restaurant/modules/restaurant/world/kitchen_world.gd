@@ -80,6 +80,8 @@ func receive_faucet_runoff(amount_ml: float) -> void:
 	drained_flood_ml += to_floor - floor_add
 	if before <= 0.0 and flood_water_ml > 0.0:
 		interaction.emit("notice", "水槽已经满了！快关水龙头，厨房地面的水正在上涨。")
+	if before < KITCHEN_FLOOD_ML and flood_water_ml >= KITCHEN_FLOOD_ML:
+		interaction.emit("notice", "厨房已经被水淹没！快关水龙头。")
 	if is_instance_valid(flood_art): flood_art.queue_redraw()
 var _food_drag_offset: = Vector2.ZERO
 var _food_drag_origin: = Vector2.ZERO

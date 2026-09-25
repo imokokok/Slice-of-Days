@@ -21,8 +21,19 @@ func run() -> void:
 			expect(item != null and other != null and not item.get_rect().intersects(other.get_rect()), "left condiment footprints stay separate: " + id + " / " + other_id)
 	for id in ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]:
 		var item: Button = game.hud.find_child("Ingredient_"+id, true, false)
-		expect(item != null and Rect2(640, 500, 435, 120).encloses(item.get_rect()), "ingredient belongs in the original five-slot tray: " + id)
+		expect(item != null and Rect2(640, 490, 435, 130).encloses(item.get_rect()), "ingredient belongs in the original five-slot tray: " + id)
 		expect(item != null and item.get_rect().end.y < 590, "tray click area stays inside its groove: " + id)
+		if item != null:
+			var art: Node2D = item.get_node("FoodArt")
+			var image: Texture2D = preload("res://modules/restaurant/assets/sprite_library.gd").food(id)
+			var fitted: Rect2 = preload("res://modules/restaurant/assets/sprite_library.gd").fit(image, Vector2.ZERO, Vector2(78, 78))
+			var height := fitted.size.y * art.scale.y
+			expect(height >= 68.0 and height <= 77.0, id + " fills most of its rack cubby without losing relative bottle shape")
+			expect(absf(item.position.y + art.position.y + fitted.end.y * art.scale.y - 586.0) < 0.5, id + " rests on the same rack floor")
+			expect(item.position.y + (item.get_node("IngredientName") as Label).position.y >= 590.0, id + " name sits on the rack front below the bottle")
+	for child in game.storage_display._content.get_children():
+		if child is TextureRect:
+			expect(not child.get_rect().intersects(Rect2(635, 590, 425, 39)), "rear rack front is not redrawn over the pan")
 	var art_library = preload("res://modules/restaurant/assets/sprite_library.gd")
 	var atlas_bounds: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/assets/food_bounds.json"))
 	for specimen in [["mayonnaise", "3:6"], ["chili_sauce", "3:0"], ["vinegar", "3:2"]]:
@@ -78,9 +89,11 @@ func run() -> void:
 	await process_frame
 	expect(game.world._foods.get_child_count() == 0, "wiped liquid has no ghost physical body")
 	var ketchup := game.storage_display.find_child("Ingredient_ketchup", true, false) as Button
+	ketchup.tooltip_text = ""
 	_mouse(ketchup.get_global_rect().get_center(), "down")
 	_mouse(ketchup.get_global_rect().get_center(), "up")
 	await process_frame
+	expect(is_instance_valid(game.world._held) and game.world._held.get_meta("id", "") == "ketchup", "expanded rack bottle can be picked up in the native window")
 	var pan_point: Vector2 = game.world.pan.point(Vector2(800, 535))
 	_mouse(pan_point, "move")
 	_mouse(pan_point, "down")
@@ -95,6 +108,7 @@ func run() -> void:
 	quit(0 if failures.is_empty() else 1)
 func _mouse(point: Vector2, kind: String) -> void:
 	point = root.get_final_transform() * point
+	if DisplayServer.get_name() != "headless": Input.warp_mouse(point)
 	if kind == "move":
 		var motion := InputEventMouseMotion.new()
 		motion.position = point

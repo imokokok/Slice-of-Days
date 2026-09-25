@@ -3,7 +3,7 @@ extends Control
 signal ingredient_chosen(definition: Dictionary, press_position: Vector2)
 
 const FoodArt = preload("res://modules/restaurant/assets/food_art.gd")
-const ROOM = preload("res://modules/restaurant/assets/kitchen_reference_playable.png")
+const ROOM = preload("res://modules/restaurant/assets/kitchen_reference_no_recipe_stand.png")
 const FRIDGE: = Rect2(30, 175, 330, 360)
 const SHELVES: = Rect2(390, 421, 840, 114)
 const BASKETS: = Rect2(1260, 155, 326, 635)
@@ -203,10 +203,9 @@ func _build_items() -> void :
 	_page_controls("fridge", Vector2(66, 563), 244, fridge_page, _fridge_page_count())
 	var counter: = ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]
 	for i in counter.size():
-		if catalog.has(counter[i]): _slot(_content, catalog[counter[i]], Vector2(688 + i * 77, 520), Vector2(75, 64), preload("res://modules/restaurant/assets/sprite_library.gd").physical_art_scale(counter[i]), Color("fff0d5"), "rack")
-	# The rack's front board is part of the approved room image. Draw that same
-	# board above the bottles so their bases sit inside the compartments.
-	_surface_front(_content, Rect2(635, 590, 425, 39))
+		if catalog.has(counter[i]): _slot(_content, catalog[counter[i]], Vector2(688 + i * 77, 495), Vector2(75, 92), preload("res://modules/restaurant/assets/sprite_library.gd").physical_art_scale(counter[i]), Color("fff0d5"), "rack")
+	# The authored room already has the rack's front board. Repainting it in
+	# the HUD placed that rear board in front of the skillet's upper rim.
 	# Separate condiment rack at the exact left-hand position in the source.
 	for spec in [["oil", 364.0], ["pepper", 415.0], ["salt", 460.0], ["sugar", 497.0], ["soy_sauce", 534.0]]:
 		if catalog.has(spec[0]):
@@ -303,12 +302,11 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 	parent.add_child(button)
 	var label_height: = 19.0
 	var icon_center := Vector2(dimensions.x * 0.5, (dimensions.y - label_height) * 0.47)
-	if surface in ["fridge", "odd"]:
+	if surface in ["fridge", "odd", "rack"]:
 		var library = preload("res://modules/restaurant/assets/sprite_library.gd")
 		var texture: Texture2D = library.food(str(item.id))
 		var art_rect: Rect2 = library.fit(texture, Vector2.ZERO, Vector2(78, 78)) if texture != null else Rect2(-39, -39, 78, 78)
-		icon_center.y = dimensions.y - 4.0 - art_rect.end.y * icon_scale
-	if surface == "rack": icon_center.y += 12.0
+		icon_center.y = (586.0 - location.y if surface == "rack" else dimensions.y - 4.0) - art_rect.end.y * icon_scale
 	if surface == "counter": icon_center = Vector2(dimensions.x * 0.5, dimensions.y - 4.0 - (dimensions.y - 9.0) * 0.5)
 	var art: = FoodArt.new()
 	art.name = "FoodArt"
@@ -320,7 +318,7 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 	var label: = Label.new()
 	label.name = "IngredientName"
 	label.text = item.name
-	label.position = Vector2(0, dimensions.y - 4.0 if surface in ["fridge", "odd"] else (79.0 if surface == "rack" else dimensions.y - label_height))
+	label.position = Vector2(0, dimensions.y - 4.0 if surface in ["fridge", "odd"] else (dimensions.y + 4.0 if surface == "rack" else dimensions.y - label_height))
 	label.size = Vector2(dimensions.x, label_height)
 	label.clip_text = true
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS

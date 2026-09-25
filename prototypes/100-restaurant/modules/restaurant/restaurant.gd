@@ -301,6 +301,10 @@ func _build_ui() -> void :
 	toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	toast_label.clip_text = true
 	_build_recipe_guide()
+	# Flood water crosses the whole screen, including shelves and HUD. Modals
+	# added afterwards remain legible above it, and input still reaches controls.
+	world.flood_art.reparent(hud)
+	world.flood_art.z_index = 0
 	modal = Control.new()
 	modal.theme = theme
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

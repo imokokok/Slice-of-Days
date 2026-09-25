@@ -11,7 +11,7 @@ func _draw() -> void:
 	if ratio <= 0.0001: return
 	# Leave enough room for the wave peaks at the bottom edge. A polygon whose
 	# surface crosses y=900 self-intersects and cannot be triangulated by Godot.
-	var water_y := lerpf(885.0, 95.0, ratio)
+	var water_y := lerpf(885.0, -22.0, ratio)
 	var time: float = world._time
 	var surface := PackedVector2Array()
 	for i in 65:
@@ -21,7 +21,7 @@ func _draw() -> void:
 	var body := PackedVector2Array(surface)
 	body.append(Vector2(1600, 900))
 	body.append(Vector2(0, 900))
-	draw_colored_polygon(body, Color(0.22, 0.55, 0.66, 0.38))
+	draw_colored_polygon(body, Color(0.18, 0.51, 0.65, lerpf(0.35, 0.56, ratio)))
 	for band in 4:
 		var top := water_y + 20.0 + float(band) * 65.0
 		if top >= 900.0: break

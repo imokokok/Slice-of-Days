@@ -18,6 +18,10 @@ var softness: = 0.0:
 		softness = clampf(value, 0.0, 1.0)
 		queue_redraw()
 var shadows: = true
+var compression := 0.0:
+	set(value):
+		compression = value
+		queue_redraw()
 
 const CREAM: = Color("c7bca6")
 const GREEN: = Color("6e7455")
@@ -48,7 +52,10 @@ func _draw() -> void :
 		for key in appearance:
 			_cooking_material.set_shader_parameter(key, appearance[key])
 		material = _cooking_material
-		draw_texture_rect(painted, preload("res://modules/restaurant/assets/sprite_library.gd").fit(painted, Vector2.ZERO, Vector2(78, 78)), false)
+		var rect := preload("res://modules/restaurant/assets/sprite_library.gd").fit(painted, Vector2.ZERO, Vector2(78, 78))
+		if definition.get("dispense_mode", "") == "squeeze" and compression > 0.0001:
+			_draw_grip_mesh(painted, rect)
+		else: draw_texture_rect(painted, rect, false)
 		return
 	_current_id = id
 	if heat > 28.0:
@@ -94,6 +101,25 @@ func _draw() -> void :
 
 		for i in 3:
 			_ellipse(Vector2(27 + i * 4, 24 - i * 3), Vector2(2.4, 1.6), base.lightened(0.15))
+
+func grip_vertex(uv: Vector2, rect: Rect2) -> Vector2:
+	# The cap and base retain their original position. Only the middle grip
+	# narrows; every vertex, including the label, follows the same local mesh.
+	var sideways: bool = str(definition.get("id", "")) == "toothpaste"
+	var along := uv.x if sideways else uv.y
+	var across := uv.y if sideways else uv.x
+	var grip := pow(sin(clampf((along - 0.16) / 0.7, 0.0, 1.0) * PI), 2.0)
+	across = 0.5 + (across - 0.5) * (1.0 - compression * grip)
+	var mapped := Vector2(along, across) if sideways else Vector2(across, along)
+	return rect.position + mapped * rect.size
+
+func _draw_grip_mesh(texture: Texture2D, rect: Rect2) -> void:
+	for y in 12:
+		for x in 4:
+			var uv := PackedVector2Array([Vector2(x / 4.0, y / 12.0), Vector2((x + 1) / 4.0, y / 12.0), Vector2((x + 1) / 4.0, (y + 1) / 12.0), Vector2(x / 4.0, (y + 1) / 12.0)])
+			var vertices := PackedVector2Array()
+			for point in uv: vertices.append(grip_vertex(point, rect))
+			draw_polygon(vertices, PackedColorArray([Color.WHITE]), uv, texture)
 
 func _noodles(base: Color) -> void :
 	var state := CookingAppearance.state(definition, heat)

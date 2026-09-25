@@ -184,12 +184,14 @@ func play_chop(definition: Dictionary) -> void:
 
 func play_food_drop(body: RigidBody2D) -> void:
 	if not is_instance_valid(body): return
-	if body.get_meta("is_container", false):
-		play_effect("tap", 0.6)
-		return
-	var profile := stir_profile(body.get_meta("definition", {}))
-	var id := "drop_dry" if profile == "dry" and float(body.get_meta("softness", 0.0)) < 0.25 else "drop"
-	play_effect(id, clampf(body.linear_velocity.length() / 220.0, 0.3, 0.8))
+	var p := preload("res://modules/restaurant/domain/material_response.gd").profile(body.get_meta("definition", {}))
+	var speed := maxf(body.linear_velocity.length(), float(body.get("impact_speed")))
+	# px/s converted to a relative energy proxy; recordings remain CC0 samples.
+	var energy := 0.5 * body.mass * pow(speed / 100.0, 2.0)
+	var bank := str(p.impact_bank)
+	if body.get_meta("dispensed", false):
+		bank = "drop_dry" if body.get_meta("dispense_mode", "") == "powder" else "drop"
+	play_effect(bank, clampf(sqrt(energy) * 0.8, 0.2, 1.0))
 
 func stop_all() -> void:
 	for player in loops.values() + effects.values(): player.stop()

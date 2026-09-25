@@ -75,6 +75,7 @@ func _test_container(id: String, mode: String, stop_kind: String) -> void:
 	_expect(_portions().is_empty(), "%s quick initial press does not create a portion before the hold threshold" % id)
 	await create_timer(1.42).timeout
 	var portions: Array = _portions()
+	_expect(game.world._nozzle_world_position().y > bottle.global_position.y, "%s actual held input keeps the nozzle facing into the pan" % id)
 	_expect(portions.size() >= 2 and portions.size() <= 6, "%s sustained mouse hold releases repeated pressure-driven portions" % id)
 	_expect(game.world._held == bottle and is_instance_valid(bottle), "%s dispensing preserves the original held bottle" % id)
 	var valid_portions := not portions.is_empty()

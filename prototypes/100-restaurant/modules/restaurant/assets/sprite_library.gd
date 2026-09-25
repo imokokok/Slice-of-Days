@@ -34,10 +34,12 @@ static func handdrawn_food(id: String) -> Texture2D:
 
 static func body_outline(id: String) -> PackedVector2Array:
 	if _outlines.has(id): return _outlines[id]
-	var texture := handdrawn_food(id)
+	var texture := food(id)
 	if texture == null: return PackedVector2Array()
 	var mask := BitMap.new()
-	mask.create_from_image_alpha(texture.get_image(), 0.1)
+	var pixels := texture.get_image()
+	if pixels.is_compressed(): pixels.decompress()
+	mask.create_from_image_alpha(pixels, 0.1)
 	var points := PackedVector2Array()
 	var rect := fit(texture, Vector2.ZERO, Vector2(78, 78))
 	for polygon in mask.opaque_to_polygons(Rect2i(Vector2i.ZERO, mask.get_size()), 1.0):

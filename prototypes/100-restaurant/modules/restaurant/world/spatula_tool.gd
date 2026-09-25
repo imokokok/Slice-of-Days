@@ -154,7 +154,7 @@ func stir_sweep(from: Vector2, to: Vector2) -> int:
 
 		var target: = Vector2(direction * speed * (0.48 if kind == "spoon" else 1.0), - lift * (0.35 if kind == "spoon" else 1.0))
 		body.sleeping = false
-		body.apply_central_impulse((target - body.linear_velocity) * body.mass)
+		body.apply_central_impulse(preload("res://modules/restaurant/domain/material_response.gd").utensil_impulse(body, target, kind == "spoon"))
 		body.angular_velocity = direction * (0.8 if kind == "spoon" else 3.0)
 		body.set_meta("stir_until", world._time + 0.8)
 		count += 1

@@ -1,4 +1,5 @@
 extends Node2D
+const MaterialResponse = preload("res://modules/restaurant/domain/material_response.gd")
 
 
 signal interaction(action: String, payload: String)
@@ -212,6 +213,30 @@ func _build_physics() -> void :
 func _draw() -> void :
 	pass
 
+func _update_held_motion(delta: float, mouse: Vector2) -> void:
+	if is_instance_valid(_held) and controls_enabled:
+		_held.global_position = Vector2(clampf(mouse.x, 727.0 + pan.offset.x, 895.0 + pan.offset.x), minf(mouse.y, 526.0 + pan.offset.y)) if _squeezing else mouse + (_food_drag_offset if _dragging else Vector2.ZERO)
+		if _squeezing:
+			var mode: = get_dispense_mode(_held.get_meta("definition", {}))
+			# The art adapter owns mouth orientation; rotating here as well
+			# previously turned top-opening authored bottles upright again.
+			_held.rotation = sin(_time * 25.0) * 0.1 if mode == "powder" else 0.0
+			if not _squeeze_region().has_point(mouse):
+				_stop_squeezing()
+			else:
+				_squeeze_elapsed += delta
+				var nozzle_now: = _nozzle_world_position()
+				_squeeze_distance += nozzle_now.distance_to(_squeeze_last_nozzle)
+				_squeeze_last_nozzle = nozzle_now
+				var interval: = lerpf(0.28, 0.075, squeeze_pressure)
+				if _squeeze_elapsed >= interval:
+					var elapsed_for_flow: = _squeeze_elapsed
+					_squeeze_elapsed = 0.0
+					var flow_rate := MaterialResponse.flow_rate(_held.get_meta("definition", {}), squeeze_pressure, float(_held.get_meta("remaining_ml", 0.0)))
+					var volume_ml := flow_rate * elapsed_for_flow
+					if is_instance_valid(_dispense_seasoning(volume_ml)):
+						_squeeze_dispensed = true
+
 func _process(delta: float) -> void :
 	_backdrop.set("cooking", cooking)
 	_backdrop.set("customer", _customer)
@@ -227,26 +252,7 @@ func _process(delta: float) -> void :
 		squeeze_pressure = move_toward(squeeze_pressure, 1.0, delta * 3.2)
 	else:
 		squeeze_pressure = move_toward(squeeze_pressure, 0.0, delta * 5.0)
-	if is_instance_valid(_held) and controls_enabled:
-		_held.global_position = Vector2(clampf(mouse.x, 727.0 + pan.offset.x, 895.0 + pan.offset.x), minf(mouse.y, 526.0 + pan.offset.y)) if _squeezing else mouse + (_food_drag_offset if _dragging else Vector2.ZERO)
-		if _squeezing:
-			var mode: = get_dispense_mode(_held.get_meta("definition", {}))
-			_held.rotation = PI + (sin(_time * 25.0) * 0.1 if mode == "powder" else 0.0)
-			if not _squeeze_region().has_point(mouse):
-				_stop_squeezing()
-			else:
-				_squeeze_elapsed += delta
-				var nozzle_now: = _nozzle_world_position()
-				_squeeze_distance += nozzle_now.distance_to(_squeeze_last_nozzle)
-				_squeeze_last_nozzle = nozzle_now
-				var interval: = lerpf(0.28, 0.075, squeeze_pressure)
-				if _squeeze_elapsed >= interval:
-					var elapsed_for_flow: = _squeeze_elapsed
-					_squeeze_elapsed = 0.0
-					var flow_rate: = float(_held.get_meta("definition", {}).get("flow_ml_s", 18.0 if mode == "squeeze" else 26.0))
-					var volume_ml: = maxf(0.18, flow_rate * elapsed_for_flow * maxf(0.12, squeeze_pressure))
-					if is_instance_valid(_dispense_seasoning(volume_ml)):
-						_squeeze_dispensed = true
+	_update_held_motion(delta, mouse)
 	if controls_enabled:
 		var next: = ""
 		for action in _stations:
@@ -432,12 +438,6 @@ func spawn_ingredient(definition: Dictionary) -> bool:
 	body.collision_layer = 16
 	body.collision_mask = 17
 	body.continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE
-	body.linear_damp = 2.5
-	body.angular_damp = 4.0
-	var physics: = PhysicsMaterial.new()
-	physics.friction = float(definition.get("friction", 0.55))
-	physics.bounce = minf(float(definition.get("bounce", 0.08)), 0.12)
-	body.physics_material_override = physics
 	body.set_meta("id", str(definition.get("id", "tomato")))
 	body.set_meta("title", str(definition.get("name", "食材")))
 	body.set_meta("definition", definition.duplicate(true))
@@ -604,6 +604,7 @@ func _pickup(body: RigidBody2D) -> void :
 	if is_instance_valid(_held) or _knife_held or has_active_utensil() or pan.active:
 		return
 	body.stop_board_settle()
+	body.reset_motion_sample()
 	if bool(body.get_meta("enrolled", false)):
 		food_removed_from_pan.emit(body)
 		body.set_meta("enrolled", false)
@@ -651,6 +652,7 @@ func drop_held(throw_item: = false) -> void :
 		body.freeze = true
 		body.set_meta("on_board", true)
 		body.linear_velocity = Vector2.ZERO
+		body.begin_board_settle(Rect2(_board_food_min(), _board_food_max() - _board_food_min()), Vector2.ZERO, 0.0, 4.0)
 	if is_instance_valid(plate) and plate.hit_rect().has_point(body.position) and not body.get_meta("is_container", false):
 		_land_on_plate(body)
 	if throw_item:
@@ -1015,7 +1017,7 @@ func _sync_held_foreground() -> void :
 		source.visible = false
 		_held_proxy.transform = source.get_global_transform_with_canvas() * _container_art_transform()
 
-		for property_name in ["cut", "heat", "softness"]:
+		for property_name in ["cut", "heat", "softness", "compression"]:
 			if property_name in source:
 				_held_proxy.set(property_name, source.get(property_name))
 	_held_foreground.visible = controls_enabled and is_instance_valid(source)
@@ -1062,23 +1064,25 @@ func _nozzle_world_position() -> Vector2:
 		var rect: Rect2 = art.fit(texture, Vector2.ZERO, Vector2(78, 78))
 		var uv: Array = entry.nozzle_uv
 		return source.global_transform * _container_art_transform() * (rect.position + rect.size * Vector2(uv[0], uv[1]))
-	var mode: = get_dispense_mode(def)
-	var compression: = squeeze_pressure * 4.0 if mode == "squeeze" else 0.0
-	return _held.global_position + Vector2(0, 24.0 - compression).rotated(_held.rotation)
+	if source != null:
+		var texture: Texture2D = art.food(str(def.get("id", "")))
+		if texture != null:
+			var rect: Rect2 = art.fit(texture, Vector2.ZERO, Vector2(78,78))
+			return source.global_transform * _container_art_transform() * Vector2(rect.get_center().x, rect.position.y)
+	return _held.global_position
 
 func _container_art_transform() -> Transform2D:
-	if not is_instance_valid(_held) or not _squeezing: return Transform2D.IDENTITY
+	if not is_instance_valid(_held): return Transform2D.IDENTITY
+	if not _squeezing: return Transform2D(_held.feedback_angle, Vector2.ZERO)
 	var definition: Dictionary = _held.get_meta("definition", {})
 	var entry: Dictionary = preload("res://modules/restaurant/assets/sprite_library.gd").handdrawn_manifest().get(str(definition.get("id", "")), {})
 	# Top-opening bottles turn toward the pan; the authored mustard tube is
 	# already cap-down. The stream uses this exact same visual transform.
-	var angle := PI if entry.has("nozzle_uv") and float(entry.nozzle_uv[1]) < 0.5 else 0.0
+	var angle := PI if not entry.has("nozzle_uv") or float(entry.nozzle_uv[1]) < 0.5 else 0.0
 	# Side-opening authored tubes need their own calibrated mouth direction.
 	if entry.has("dispense_rotation_degrees"): angle = deg_to_rad(float(entry.dispense_rotation_degrees))
-	var deformation := Vector2.ONE
-	if get_dispense_mode(definition) == "squeeze":
-		deformation = Vector2(1.0 + squeeze_pressure * 0.12, 1.0 - squeeze_pressure * 0.16)
-	return Transform2D(angle, Vector2.ZERO).scaled(deformation)
+	# Local grip mesh deformation happens inside FoodArt; nozzle/cap stay fixed.
+	return Transform2D(angle + _held.feedback_angle, Vector2.ZERO)
 
 func _stop_squeezing() -> void :
 	_squeezing = false
@@ -1107,6 +1111,7 @@ func _pan_capacity_used() -> int:
 func _dispense_seasoning(requested_ml: float = -1.0) -> RigidBody2D:
 	if not _held_is_sauce_bottle() or not controls_enabled:
 		return null
+	if is_zero_approx(requested_ml): return null
 	if _foods.get_child_count() >= 64:
 		_stop_squeezing()
 		interaction.emit("notice", "台面太满了，先清理一些食材。")
@@ -1115,7 +1120,7 @@ func _dispense_seasoning(requested_ml: float = -1.0) -> RigidBody2D:
 	var id: = str(definition.get("id", "ketchup"))
 	var mode: = get_dispense_mode(definition)
 	var default_ml: = maxf(0.2, float(definition.get("dispense_mass", 0.035)) * 1000.0)
-	var volume_ml: = default_ml if requested_ml < 0.0 else maxf(0.05, requested_ml)
+	var volume_ml: = default_ml if requested_ml < 0.0 else requested_ml
 	var remaining_ml: = float(_held.get_meta("remaining_ml", definition.get("container_ml", 240.0)))
 	volume_ml = minf(volume_ml, remaining_ml)
 	if volume_ml <= 0.001:
@@ -1123,6 +1128,7 @@ func _dispense_seasoning(requested_ml: float = -1.0) -> RigidBody2D:
 		interaction.emit("notice", "%s已经挤空了。" % definition.get("name", "容器"))
 		return null
 	_held.set_meta("remaining_ml", snappedf(remaining_ml - volume_ml, 0.001))
+	_held.refresh_response()
 	var source_uid: = str(_held.get_meta("instance_uid", id + "_container"))
 	var liquid_state: = SauceState.make_batch(definition, volume_ml, source_uid, squeeze_pressure)
 	var excess := maxf(0.0, volume_ml - pan_free_ml())
@@ -1150,7 +1156,7 @@ func _dispense_seasoning(requested_ml: float = -1.0) -> RigidBody2D:
 		return target
 	var body: = preload("res://modules/restaurant/world/food_body.gd").new()
 	body.name = id.capitalize().replace("_", "") + "Portion"
-	body.mass = clampf(volume_ml * float(definition.get("density_g_ml", 1.03)) / 1000.0, 0.001, 0.2)
+	body.mass = maxf(0.000001, volume_ml * float(definition.get("density_g_ml", 1.03)) / 1000.0)
 
 
 	body.collision_layer = 32
@@ -1220,7 +1226,7 @@ func _update_landed_seasoning() -> void :
 
 func spill_pan_water(volume_ml: float, spill_position: Vector2) -> void:
 	if volume_ml <= 0.0: return
-	var definition := {"id": "water", "name": "水", "color": "75b9bd", "dispense_mode": "pour", "density": 1.0, "viscosity": 0.08}
+	var definition := {"id": "water", "name": "水", "color": "75b9bd", "dispense_mode": "pour", "density_g_ml": 1.0, "viscosity": 0.08}
 	var state := SauceState.make_batch(definition, volume_ml, "pan", 0.0)
 	_add_overflow(definition, state, spill_position)
 
@@ -1237,10 +1243,11 @@ func _add_overflow(definition: Dictionary, incoming_state: Dictionary = {}, spil
 			return null
 		spill = RigidBody2D.new()
 		spill.name = "CounterSpill"
-		spill.mass = 0.04
+		spill.mass = maxf(0.000001, float(incoming_state.get("volume_ml", 0.0)) * float(definition.get("density_g_ml", 1.03)) / 1000.0)
 		spill.collision_layer = 32
 		spill.collision_mask = 1
 		spill.set_meta("id", id)
+		spill.set_meta("definition", definition.duplicate(true))
 		spill.set_meta("overflow", true)
 		spill.set_meta("enrolled", false)
 		spill.set_meta("dispensed", true)
@@ -1267,6 +1274,7 @@ func _add_overflow(definition: Dictionary, incoming_state: Dictionary = {}, spil
 		SauceState.merge_into(spill_state, incoming_state, 0.0)
 		spill.set_meta("liquid_state", spill_state)
 		spill.set_meta("volume_ml", float(spill_state.get("volume_ml", 0.0)))
+		spill.mass = maxf(0.000001, float(spill_state.get("volume_ml", 0.0)) * float(definition.get("density_g_ml", 1.03)) / 1000.0)
 		spill.get_node("SauceBlob").liquid_state = spill_state
 	spill.get_node("SauceBlob").scale = Vector2(minf(1.4 + sqrt(amount) * 0.55, 4.2), minf(0.65 + sqrt(amount) * 0.16, 1.5))
 	return spill
@@ -1405,9 +1413,6 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 		fragment.collision_layer = 16
 		fragment.collision_mask = 17
 		fragment.continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE
-		fragment.linear_damp = 2.5
-		fragment.angular_damp = 4.0
-		fragment.physics_material_override = body.physics_material_override
 		for key in ["id", "title", "definition", "saved_heat", "softness", "hydration", "cooking_heat"]:
 			if body.has_meta(key):
 				fragment.set_meta(key, body.get_meta(key))
@@ -1462,7 +1467,8 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 		fragment.linear_velocity = body.linear_velocity + normal.normalized() * (12.0 if index == 0 else -12.0)
 		if body.get_meta("on_board", false):
 			var side := 1.0 if index == 0 else -1.0
-			fragment.begin_board_settle(Rect2(_board_food_min(), _board_food_max() - _board_food_min()), normal.normalized() * 24.0 * side, side * (1.7 if cut_style == "slice" else 0.8))
+			var kick := clampf(0.04 / sqrt(fragment.mass), 0.45, 1.6)
+			fragment.begin_board_settle(Rect2(_board_food_min(), _board_food_max() - _board_food_min()), normal.normalized() * 24.0 * side * kick, side * (1.7 if cut_style == "slice" else 0.8))
 		result.append(fragment)
 	body.collision_layer = 0
 	body.collision_mask = 0
@@ -1501,9 +1507,7 @@ func _connect_food_audio(body: Node) -> void :
 	if not body is RigidBody2D: return
 	body.contact_monitor = true
 	body.max_contacts_reported = 4
-	body.body_entered.connect( func(_other: Node):
-		if controls_enabled and is_instance_valid(audio) and not body.freeze and body.linear_velocity.length() > 55 and _other is StaticBody2D:
-			audio.play_food_drop(body))
+	# food_body uses relative normal contact speed, not post-collision world speed.
 
 func _polygon_area(polygon: PackedVector2Array) -> float:
 	var area: = 0.0

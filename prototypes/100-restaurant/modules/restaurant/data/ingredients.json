@@ -549,7 +549,11 @@
     "bounce": 0.04,
     "model": "vinegar",
     "dispense_mode": "pour",
-    "dispense_mass": 0.025
+    "dispense_mass": 0.025,
+    "density_g_ml": 1.01,
+    "viscosity": 0.08,
+    "container_ml": 200,
+    "flow_ml_s": 32
   },
   {
     "id": "salt",
@@ -567,7 +571,11 @@
     "bounce": 0.04,
     "model": "salt",
     "dispense_mode": "powder",
-    "dispense_mass": 0.006
+    "dispense_mass": 0.006,
+    "density_g_ml": 1.2,
+    "viscosity": 0.05,
+    "container_ml": 70,
+    "flow_ml_s": 6
   },
   {
     "id": "sugar",
@@ -585,7 +593,11 @@
     "bounce": 0.04,
     "model": "sugar",
     "dispense_mode": "powder",
-    "dispense_mass": 0.008
+    "dispense_mass": 0.008,
+    "density_g_ml": 0.85,
+    "viscosity": 0.06,
+    "container_ml": 80,
+    "flow_ml_s": 9
   },
   {
     "id": "soy_sauce",
@@ -604,7 +616,11 @@
     "bounce": 0.04,
     "model": "soy_sauce",
     "dispense_mode": "pour",
-    "dispense_mass": 0.02
+    "dispense_mass": 0.02,
+    "density_g_ml": 1.16,
+    "viscosity": 0.16,
+    "container_ml": 200,
+    "flow_ml_s": 27
   },
   {
     "id": "oil",
@@ -622,7 +638,11 @@
     "bounce": 0.04,
     "model": "oil",
     "dispense_mode": "pour",
-    "dispense_mass": 0.02
+    "dispense_mass": 0.02,
+    "density_g_ml": 0.91,
+    "viscosity": 0.28,
+    "container_ml": 240,
+    "flow_ml_s": 24
   },
   {
     "id": "pepper",
@@ -641,7 +661,11 @@
     "bounce": 0.04,
     "model": "pepper",
     "dispense_mode": "powder",
-    "dispense_mass": 0.003
+    "dispense_mass": 0.003,
+    "density_g_ml": 0.48,
+    "viscosity": 0.08,
+    "container_ml": 60,
+    "flow_ml_s": 3.8
   },
   {
     "id": "cumin",
@@ -660,7 +684,11 @@
     "bounce": 0.04,
     "model": "cumin",
     "dispense_mode": "powder",
-    "dispense_mass": 0.004
+    "dispense_mass": 0.004,
+    "density_g_ml": 0.45,
+    "viscosity": 0.1,
+    "container_ml": 60,
+    "flow_ml_s": 4.5
   },
   {
     "id": "mustard",
@@ -679,7 +707,11 @@
     "bounce": 0.04,
     "model": "mustard",
     "dispense_mode": "squeeze",
-    "dispense_mass": 0.018
+    "dispense_mass": 0.018,
+    "density_g_ml": 1.1,
+    "viscosity": 0.88,
+    "container_ml": 90,
+    "flow_ml_s": 11
   },
   {
     "id": "chili_sauce",
@@ -698,7 +730,11 @@
     "bounce": 0.04,
     "model": "chili_sauce",
     "dispense_mode": "squeeze",
-    "dispense_mass": 0.025
+    "dispense_mass": 0.025,
+    "density_g_ml": 1.1,
+    "viscosity": 0.8,
+    "container_ml": 220,
+    "flow_ml_s": 17
   },
   {
     "id": "ketchup",
@@ -717,7 +753,11 @@
     "bounce": 0.04,
     "model": "ketchup",
     "dispense_mode": "squeeze",
-    "dispense_mass": 0.035
+    "dispense_mass": 0.035,
+    "density_g_ml": 1.08,
+    "viscosity": 0.75,
+    "container_ml": 240,
+    "flow_ml_s": 20
   },
   {
     "id": "sesame_oil",
@@ -736,7 +776,11 @@
     "bounce": 0.04,
     "model": "sesame_oil",
     "dispense_mode": "pour",
-    "dispense_mass": 0.012
+    "dispense_mass": 0.012,
+    "density_g_ml": 0.92,
+    "viscosity": 0.32,
+    "container_ml": 120,
+    "flow_ml_s": 17
   },
   {
     "id": "curry",
@@ -755,7 +799,11 @@
     "bounce": 0.04,
     "model": "curry",
     "dispense_mode": "powder",
-    "dispense_mass": 0.006
+    "dispense_mass": 0.006,
+    "density_g_ml": 0.56,
+    "viscosity": 0.12,
+    "container_ml": 70,
+    "flow_ml_s": 5
   },
   {
     "id": "ginger",
@@ -808,7 +856,11 @@
     "bounce": 0.04,
     "model": "mayonnaise",
     "dispense_mode": "squeeze",
-    "dispense_mass": 0.03
+    "dispense_mass": 0.03,
+    "density_g_ml": 0.96,
+    "viscosity": 0.86,
+    "container_ml": 200,
+    "flow_ml_s": 15
   },
   {
     "id": "miso",
@@ -843,7 +895,11 @@
     "bounce": 0.04,
     "model": "milk",
     "dispense_mode": "pour",
-    "dispense_mass": 0.06
+    "dispense_mass": 0.06,
+    "density_g_ml": 1.03,
+    "viscosity": 0.12,
+    "container_ml": 240,
+    "flow_ml_s": 34
   },
   {
     "id": "grapes",
@@ -1014,7 +1070,11 @@
     "bounce": 0.04,
     "model": "honey",
     "dispense_mode": "pour",
-    "dispense_mass": 0.025
+    "dispense_mass": 0.025,
+    "density_g_ml": 1.42,
+    "viscosity": 0.95,
+    "container_ml": 160,
+    "flow_ml_s": 8
   },
   {
     "id": "chocolate",
@@ -1050,7 +1110,11 @@
     "bounce": 0.04,
     "model": "yogurt",
     "dispense_mode": "pour",
-    "dispense_mass": 0.05
+    "dispense_mass": 0.05,
+    "density_g_ml": 1.04,
+    "viscosity": 0.78,
+    "container_ml": 200,
+    "flow_ml_s": 12
   },
   {
     "id": "butter",
@@ -1103,7 +1167,11 @@
     "bounce": 0.04,
     "model": "tea",
     "dispense_mode": "pour",
-    "dispense_mass": 0.06
+    "dispense_mass": 0.06,
+    "density_g_ml": 1.0,
+    "viscosity": 0.08,
+    "container_ml": 220,
+    "flow_ml_s": 30
   },
   {
     "id": "houttuynia",
@@ -1439,7 +1507,11 @@
     "friction": 0.7,
     "bounce": 0.04,
     "model": "perfume",
-    "dispense_mode": "pour"
+    "dispense_mode": "pour",
+    "density_g_ml": 0.86,
+    "viscosity": 0.07,
+    "container_ml": 90,
+    "flow_ml_s": 12
   },
   {
     "id": "doll",
@@ -1661,9 +1733,10 @@
     "model": "toothpaste",
     "cuttable": false,
     "dispense_mode": "squeeze",
-    "container_ml": 100.0,
+    "container_ml": 100,
     "dispense_mass": 0.006,
     "density_g_ml": 1.2,
-    "viscosity": 0.92
+    "viscosity": 0.92,
+    "flow_ml_s": 7
   }
 ]

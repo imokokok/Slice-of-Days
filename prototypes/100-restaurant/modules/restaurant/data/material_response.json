@@ -1,0 +1,593 @@
+{
+  "units": {
+    "mass": "kg",
+    "contents_density": "g/ml",
+    "spring_frequency": "rad/s",
+    "viscosity": "game index, not Pa.s"
+  },
+  "calibration": "Material-family game approximations; not laboratory measurements. See docs/MATERIAL_PHYSICS_20260925.md.",
+  "families": {
+    "soft_produce": {
+      "friction": 0.52,
+      "bounce": 0.09,
+      "linear_damp": 1.9,
+      "angular_damp": 3.0,
+      "compliance": 0.035,
+      "spring_frequency": 25,
+      "spring_damping": 0.85,
+      "heat_softening": 0.8,
+      "impact_bank": "drop"
+    },
+    "hard_root": {
+      "friction": 0.48,
+      "bounce": 0.16,
+      "linear_damp": 1.3,
+      "angular_damp": 2.3,
+      "compliance": 0.008,
+      "spring_frequency": 34,
+      "spring_damping": 0.9,
+      "heat_softening": 0.65,
+      "impact_bank": "drop_dry"
+    },
+    "leaf": {
+      "friction": 0.78,
+      "bounce": 0.015,
+      "linear_damp": 4.4,
+      "angular_damp": 6.5,
+      "compliance": 0.11,
+      "spring_frequency": 17,
+      "spring_damping": 1.0,
+      "heat_softening": 0.5,
+      "impact_bank": "drop_dry"
+    },
+    "protein": {
+      "friction": 0.65,
+      "bounce": 0.045,
+      "linear_damp": 2.8,
+      "angular_damp": 4.4,
+      "compliance": 0.055,
+      "spring_frequency": 23,
+      "spring_damping": 0.9,
+      "heat_softening": -0.25,
+      "impact_bank": "drop"
+    },
+    "gel": {
+      "friction": 0.72,
+      "bounce": 0.025,
+      "linear_damp": 3.0,
+      "angular_damp": 5.2,
+      "compliance": 0.16,
+      "spring_frequency": 16,
+      "spring_damping": 0.68,
+      "heat_softening": 0.2,
+      "impact_bank": "drop"
+    },
+    "porous": {
+      "friction": 0.82,
+      "bounce": 0.025,
+      "linear_damp": 3.6,
+      "angular_damp": 5.8,
+      "compliance": 0.12,
+      "spring_frequency": 19,
+      "spring_damping": 1.05,
+      "heat_softening": 0.25,
+      "impact_bank": "drop_dry"
+    },
+    "grain": {
+      "friction": 0.7,
+      "bounce": 0.02,
+      "linear_damp": 3.4,
+      "angular_damp": 5.0,
+      "compliance": 0.025,
+      "spring_frequency": 25,
+      "spring_damping": 1.0,
+      "heat_softening": 0.35,
+      "impact_bank": "drop_dry"
+    },
+    "fat": {
+      "friction": 0.35,
+      "bounce": 0.02,
+      "linear_damp": 2.0,
+      "angular_damp": 3.6,
+      "compliance": 0.05,
+      "spring_frequency": 21,
+      "spring_damping": 0.9,
+      "heat_softening": 0.9,
+      "impact_bank": "drop"
+    },
+    "shell": {
+      "friction": 0.32,
+      "bounce": 0.08,
+      "linear_damp": 1.4,
+      "angular_damp": 2.0,
+      "compliance": 0.002,
+      "spring_frequency": 40,
+      "spring_damping": 1.0,
+      "heat_softening": 0,
+      "impact_bank": "tap"
+    },
+    "glass": {
+      "friction": 0.28,
+      "bounce": 0.12,
+      "linear_damp": 0.9,
+      "angular_damp": 1.7,
+      "compliance": 0,
+      "spring_frequency": 35,
+      "spring_damping": 0.85,
+      "heat_softening": 0,
+      "impact_bank": "tap"
+    },
+    "plastic_bottle": {
+      "friction": 0.46,
+      "bounce": 0.1,
+      "linear_damp": 1.5,
+      "angular_damp": 2.8,
+      "compliance": 0.13,
+      "spring_frequency": 23,
+      "spring_damping": 0.76,
+      "heat_softening": 0,
+      "impact_bank": "drop_dry"
+    },
+    "tube": {
+      "friction": 0.6,
+      "bounce": 0.035,
+      "linear_damp": 2.0,
+      "angular_damp": 3.8,
+      "compliance": 0.21,
+      "spring_frequency": 15,
+      "spring_damping": 0.95,
+      "heat_softening": 0,
+      "impact_bank": "drop_dry"
+    },
+    "carton": {
+      "friction": 0.61,
+      "bounce": 0.04,
+      "linear_damp": 2.2,
+      "angular_damp": 4.0,
+      "compliance": 0.02,
+      "spring_frequency": 26,
+      "spring_damping": 1.0,
+      "heat_softening": 0,
+      "impact_bank": "drop_dry"
+    },
+    "ceramic": {
+      "friction": 0.37,
+      "bounce": 0.07,
+      "linear_damp": 1.5,
+      "angular_damp": 2.8,
+      "compliance": 0,
+      "spring_frequency": 40,
+      "spring_damping": 1.0,
+      "heat_softening": 0,
+      "impact_bank": "tap"
+    },
+    "metal": {
+      "friction": 0.29,
+      "bounce": 0.24,
+      "linear_damp": 0.8,
+      "angular_damp": 1.5,
+      "compliance": 0,
+      "spring_frequency": 44,
+      "spring_damping": 0.9,
+      "heat_softening": 0,
+      "impact_bank": "pan"
+    },
+    "stone": {
+      "friction": 0.63,
+      "bounce": 0.13,
+      "linear_damp": 1.1,
+      "angular_damp": 3.8,
+      "compliance": 0,
+      "spring_frequency": 44,
+      "spring_damping": 1.0,
+      "heat_softening": 0,
+      "impact_bank": "tap"
+    },
+    "rubber": {
+      "friction": 0.86,
+      "bounce": 0.55,
+      "linear_damp": 1.0,
+      "angular_damp": 1.8,
+      "compliance": 0.15,
+      "spring_frequency": 19,
+      "spring_damping": 0.4,
+      "heat_softening": 0,
+      "impact_bank": "drop_dry"
+    },
+    "wood": {
+      "friction": 0.55,
+      "bounce": 0.18,
+      "linear_damp": 1.3,
+      "angular_damp": 2.5,
+      "compliance": 0.002,
+      "spring_frequency": 38,
+      "spring_damping": 1.0,
+      "heat_softening": 0,
+      "impact_bank": "drop_dry"
+    },
+    "cloth": {
+      "friction": 0.88,
+      "bounce": 0.005,
+      "linear_damp": 5.0,
+      "angular_damp": 7.2,
+      "compliance": 0.18,
+      "spring_frequency": 12,
+      "spring_damping": 1.1,
+      "heat_softening": 0,
+      "impact_bank": "drop_dry"
+    },
+    "paper": {
+      "friction": 0.7,
+      "bounce": 0.005,
+      "linear_damp": 5.8,
+      "angular_damp": 7.5,
+      "compliance": 0.09,
+      "spring_frequency": 18,
+      "spring_damping": 1.1,
+      "heat_softening": 0,
+      "impact_bank": "paper"
+    },
+    "plastic": {
+      "friction": 0.38,
+      "bounce": 0.23,
+      "linear_damp": 1.4,
+      "angular_damp": 2.7,
+      "compliance": 0.004,
+      "spring_frequency": 35,
+      "spring_damping": 0.9,
+      "heat_softening": 0,
+      "impact_bank": "tap"
+    }
+  },
+  "items": {
+    "tomato": {
+      "family": "soft_produce",
+      "bounce": 0.055
+    },
+    "chili": {
+      "family": "soft_produce"
+    },
+    "onion": {
+      "family": "soft_produce",
+      "bounce": 0.11,
+      "angular_damp": 1.5
+    },
+    "cucumber": {
+      "family": "soft_produce"
+    },
+    "eggplant": {
+      "family": "soft_produce"
+    },
+    "grapes": {
+      "family": "soft_produce"
+    },
+    "strawberry": {
+      "family": "soft_produce"
+    },
+    "banana": {
+      "family": "soft_produce",
+      "angular_damp": 4.5
+    },
+    "mango": {
+      "family": "soft_produce"
+    },
+    "peach": {
+      "family": "soft_produce"
+    },
+    "watermelon": {
+      "family": "soft_produce",
+      "angular_damp": 1.6,
+      "compliance": 0.004
+    },
+    "lemon": {
+      "family": "soft_produce"
+    },
+    "bitter_melon": {
+      "family": "soft_produce"
+    },
+    "potato": {
+      "family": "hard_root",
+      "friction": 0.56,
+      "angular_damp": 3.0
+    },
+    "carrot": {
+      "family": "hard_root",
+      "friction": 0.4,
+      "angular_damp": 1.8
+    },
+    "corn": {
+      "family": "hard_root"
+    },
+    "pumpkin": {
+      "family": "hard_root"
+    },
+    "lotus_root": {
+      "family": "hard_root"
+    },
+    "ginger": {
+      "family": "hard_root"
+    },
+    "garlic": {
+      "family": "hard_root"
+    },
+    "apple": {
+      "family": "hard_root"
+    },
+    "durian": {
+      "family": "hard_root"
+    },
+    "cabbage": {
+      "family": "leaf",
+      "friction": 0.59,
+      "angular_damp": 3.3
+    },
+    "lettuce": {
+      "family": "leaf"
+    },
+    "broccoli": {
+      "family": "leaf"
+    },
+    "spinach": {
+      "family": "leaf",
+      "linear_damp": 5.2
+    },
+    "bean_sprout": {
+      "family": "leaf"
+    },
+    "seaweed": {
+      "family": "leaf"
+    },
+    "houttuynia": {
+      "family": "leaf"
+    },
+    "shrimp": {
+      "family": "protein"
+    },
+    "chicken": {
+      "family": "protein"
+    },
+    "pork": {
+      "family": "protein"
+    },
+    "beef": {
+      "family": "protein"
+    },
+    "fish": {
+      "family": "protein"
+    },
+    "sausage": {
+      "family": "protein"
+    },
+    "salmon": {
+      "family": "protein"
+    },
+    "squid": {
+      "family": "protein"
+    },
+    "tofu": {
+      "family": "gel",
+      "compliance": 0.18,
+      "bounce": 0.015
+    },
+    "century_egg": {
+      "family": "gel"
+    },
+    "stinky_tofu": {
+      "family": "gel"
+    },
+    "natto": {
+      "family": "gel",
+      "friction": 0.94
+    },
+    "mushroom": {
+      "family": "porous",
+      "compliance": 0.085,
+      "friction": 0.7
+    },
+    "bread": {
+      "family": "porous"
+    },
+    "sponge": {
+      "family": "porous",
+      "compliance": 0.23,
+      "bounce": 0.005
+    },
+    "rice": {
+      "family": "grain"
+    },
+    "noodles": {
+      "family": "grain",
+      "compliance": 0.01,
+      "heat_softening": 1.0
+    },
+    "tapioca": {
+      "family": "grain"
+    },
+    "miso": {
+      "family": "grain",
+      "compliance": 0.12,
+      "friction": 0.9
+    },
+    "cheese": {
+      "family": "fat"
+    },
+    "ice_cream": {
+      "family": "fat"
+    },
+    "chocolate": {
+      "family": "fat"
+    },
+    "butter": {
+      "family": "fat"
+    },
+    "blue_cheese": {
+      "family": "fat"
+    },
+    "candle": {
+      "family": "fat"
+    },
+    "lipstick": {
+      "family": "fat"
+    },
+    "soap": {
+      "family": "fat",
+      "friction": 0.24
+    },
+    "soap_smooth": {
+      "family": "fat",
+      "friction": 0.16
+    },
+    "egg": {
+      "family": "shell",
+      "angular_damp": 1.2
+    },
+    "mussel": {
+      "family": "shell"
+    },
+    "vinegar": {
+      "family": "glass",
+      "tare_kg": 0.16
+    },
+    "soy_sauce": {
+      "family": "glass",
+      "tare_kg": 0.16
+    },
+    "oil": {
+      "family": "glass",
+      "tare_kg": 0.18
+    },
+    "sesame_oil": {
+      "family": "glass",
+      "tare_kg": 0.11
+    },
+    "honey": {
+      "family": "glass",
+      "tare_kg": 0.13
+    },
+    "salt": {
+      "family": "glass",
+      "tare_kg": 0.08
+    },
+    "sugar": {
+      "family": "glass",
+      "tare_kg": 0.08
+    },
+    "pepper": {
+      "family": "glass",
+      "tare_kg": 0.1
+    },
+    "cumin": {
+      "family": "glass",
+      "tare_kg": 0.06
+    },
+    "curry": {
+      "family": "glass",
+      "tare_kg": 0.07
+    },
+    "perfume": {
+      "family": "glass",
+      "tare_kg": 0.12
+    },
+    "ketchup": {
+      "family": "plastic_bottle",
+      "tare_kg": 0.025
+    },
+    "chili_sauce": {
+      "family": "plastic_bottle",
+      "tare_kg": 0.028
+    },
+    "mayonnaise": {
+      "family": "plastic_bottle",
+      "tare_kg": 0.028
+    },
+    "mustard": {
+      "family": "tube",
+      "tare_kg": 0.015
+    },
+    "toothpaste": {
+      "family": "tube",
+      "tare_kg": 0.018
+    },
+    "milk": {
+      "family": "carton",
+      "tare_kg": 0.018
+    },
+    "yogurt": {
+      "family": "ceramic",
+      "tare_kg": 0.11
+    },
+    "tea": {
+      "family": "ceramic",
+      "tare_kg": 0.16
+    },
+    "spring": {
+      "family": "metal",
+      "bounce": 0.65,
+      "compliance": 0.12,
+      "spring_damping": 0.35
+    },
+    "alarm_clock": {
+      "family": "metal"
+    },
+    "rock": {
+      "family": "stone"
+    },
+    "eraser": {
+      "family": "rubber",
+      "bounce": 0.3,
+      "angular_damp": 4.0
+    },
+    "slipper": {
+      "family": "rubber",
+      "bounce": 0.12,
+      "angular_damp": 5.0
+    },
+    "rubber_duck": {
+      "family": "rubber",
+      "bounce": 0.35
+    },
+    "tennis_ball": {
+      "family": "rubber",
+      "bounce": 0.72,
+      "angular_damp": 0.45,
+      "friction": 0.66
+    },
+    "baseball_bat": {
+      "family": "wood"
+    },
+    "sock": {
+      "family": "cloth"
+    },
+    "doll": {
+      "family": "cloth"
+    },
+    "yarn_ball": {
+      "family": "cloth"
+    },
+    "paper": {
+      "family": "paper"
+    },
+    "confetti": {
+      "family": "paper",
+      "linear_damp": 7.0
+    },
+    "resignation_letter": {
+      "family": "paper"
+    },
+    "toilet_paper": {
+      "family": "paper"
+    },
+    "button": {
+      "family": "plastic"
+    },
+    "toy_brick": {
+      "family": "plastic"
+    },
+    "computer_mouse": {
+      "family": "plastic"
+    },
+    "dentures": {
+      "family": "plastic"
+    }
+  }
+}

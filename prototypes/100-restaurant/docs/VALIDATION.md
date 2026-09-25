@@ -1,5 +1,16 @@
 # 验证记录
 
+## 2026-09-25 手写订单与纸面创作
+
+报告 `PAPER_CRAFT_20260925.md`，证据目录 `qa/20260925-paper-craft/`。
+
+- 新专项 headless 38 项、GPU 44 项通过（`test.txt` / `gpu.txt`，`gpu-errors.txt` 为空）。原生文本编辑、中文换行与首行稳定、结束前后同变换、双击/取消/清空、撤销重做、草稿隔离、实际用料、真实摆盘照片和同源菜谱展示均有断言。
+- 12 个受影响回归入口通过：菜谱 DIY 76、共享工具 30、GUI 输入 68、胶带 75、拼贴 39、纸面存档 30、集成 124、跟做 40、切配/清洁/分享 86、窗口/操作舒适性 90，加海报持久化及存储 smoke。原始结果在 `regression-editor.txt` / `regression-flow.txt`。
+- 实际查看五张生产场景 GPU 图：`final-order.png`、`final-order-open.png`、`final-writing.png`、`final-desk.png`、`final-reader.png`。早期画面纹理过重、原生灰色滚动条和海报底栏问题修正后复验。所有提交图均来自隔离测试库。
+- GPU 原生拖放的自动注入受系统鼠标位置影响：完整落点断言在 headless 执行；GPU 使用生产 drop 入口的显式坐标做视觉检查，没有移动系统鼠标，也没有将它标成人工拖放。Windows 中文 IME 候选窗和长时间人工创作仍未手工验收。
+- 最后的 IME 提交次序调整后复验专项 38 项、GUI 输入 68 项、GPU 44 项及源码 120 帧 smoke 均通过；原生合成提交先保持文字首行锚点，再结束编辑。Windows release 导出成功，最终 EXE 120 帧 smoke 退出 0 且错误输出为空。EXE SHA-256：`54c7ca2d797155ede23b13a516b703688b137abe4cb18704d95d29fd69f5a66c`。OFL 字体许可随导出资源及 Windows 包附带。
+- 已重新打开最终 EXE（PID 27296，窗口标题“100饭店”，Responding=True）并查看生产 viewport 截图 `work/paper-final-live-export.png`；厨房和欢迎页正常。该图含本机既有玩家作品，仅留本地，不上传仓库。
+
 ## 2026-09-25 材质物理与容器反馈
 
 证据目录 `qa/20260925-material-physics/`，实现及开源取舍见 `MATERIAL_PHYSICS_20260925.md`。

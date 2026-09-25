@@ -1,6 +1,13 @@
 extends Control
 
 signal changed
+const Ink = preload("res://modules/restaurant/ui/paper_ink.gd")
+var _text_edit_index := -1
+var _text_editor: TextEdit
+var _text_original := ""
+var _text_original_position: Array = []
+var _text_new := false
+
 const FoodArt = preload("res://modules/restaurant/assets/food_art.gd")
 static var _ingredient_catalog: Dictionary = {}
 const DECORATION_KINDS := ["star", "heart", "leaf", "polka", "flower", "lemon", "checker", "wave", "sun", "tape"]
@@ -10,12 +17,14 @@ var strokes: Array = []
 var stickers: Array = []
 var ink: = Color("284a42")
 var brush_width: = 4.0
+var brush_kind := "ink"
+var _redo_history: Array = []
 var editable: = true
 var draw_paper: = true
 var selected_index: = -1
 var mode: = "select":
 	set(value):
-		mode = value if value in ["select", "draw", "cut"] else "select"
+		mode = value if value in ["select", "draw", "cut", "write"] else "select"
 		_drawing = false
 		_dragging_layer = false
 		_stop_tape_drag()
@@ -78,11 +87,13 @@ func clear_canvas() -> void :
 	queue_redraw()
 
 func undo() -> void :
+	finish_text()
 	_drawing = false
 	_dragging_layer = false
 	_stop_tape_drag()
 	if _history.is_empty():
 		return
+	_redo_history.append(_snapshot())
 	var previous: Dictionary = _history.pop_back()
 	strokes = previous.strokes
 	stickers = previous.stickers
@@ -124,6 +135,7 @@ func add_ingredient(definition: Dictionary) -> void :
 	queue_redraw()
 
 func delete_selected() -> void :
+	finish_text()
 	if not editable or selected_index < 0 or selected_index >= stickers.size():
 		return
 	_remember()
@@ -167,6 +179,7 @@ func add_photo(texture: Texture2D) -> void :
 	changed.emit()
 
 func rotate_selected(radians: float) -> void :
+	finish_text()
 	if not _selection_valid() or not is_finite(radians):
 		return
 	_remember()
@@ -175,6 +188,7 @@ func rotate_selected(radians: float) -> void :
 	changed.emit()
 
 func resize_selected(factor: float) -> void :
+	finish_text()
 	if not _selection_valid() or not is_finite(factor) or factor <= 0:
 		return
 	_remember()
@@ -183,6 +197,7 @@ func resize_selected(factor: float) -> void :
 	changed.emit()
 
 func duplicate_selected() -> void :
+	finish_text()
 	if not _selection_valid() or stickers.size() >= MAX_STICKERS:
 		return
 	_remember()
@@ -194,6 +209,7 @@ func duplicate_selected() -> void :
 	changed.emit()
 
 func send_selected_back() -> void :
+	finish_text()
 	if not _selection_valid() or selected_index == 0:
 		return
 	_remember()
@@ -345,13 +361,16 @@ func finish_cut() -> bool:
 	return true
 
 func export_data() -> Dictionary:
+	finish_text()
 	return {"version": 1, "strokes": strokes.duplicate(true), "stickers": stickers.duplicate(true), "caption": caption}
 
 func import_data(data: Dictionary) -> void :
+	finish_text()
 	_stop_tape_drag()
 	strokes.clear()
 	stickers.clear()
 	_history.clear()
+	_redo_history.clear()
 	_drawing = false
 	_dragging_layer = false
 	selected_index = -1
@@ -370,7 +389,9 @@ func import_data(data: Dictionary) -> void :
 			if not _finite_number(width_value):
 				width_value = 0.008
 			if not points.is_empty() and Color.html_is_valid(color_text):
-				strokes.append({"points": points, "color": color_text, "width": clampf(float(width_value), 0.001, 0.08)})
+				var stroke := {"points": points, "color": color_text, "width": clampf(float(width_value), 0.001, 0.08)}
+				if value.get("brush","") in ["ink","pencil","marker"]: stroke["brush"]=value.brush
+				strokes.append(stroke)
 	var incoming_stickers = data.get("stickers", [])
 	if incoming_stickers is Array:
 		for value in incoming_stickers.slice(0, MAX_STICKERS):
@@ -389,17 +410,25 @@ func has_content() -> bool:
 	return not strokes.is_empty() or not stickers.is_empty() or not caption.strip_edges().is_empty() or dish_texture != null
 
 func _remember() -> void :
+	finish_text()
 	_stop_tape_drag()
 	_store_history()
 
 func _store_history() -> void :
-	_history.append({"strokes": strokes.duplicate(true), "stickers": stickers.duplicate(true), "caption": caption, "dish_texture": dish_texture})
+	_redo_history.clear()
+	_history.append(_snapshot())
 	if _history.size() > 32:
 		_history.pop_front()
 
 func _gui_input(event: InputEvent) -> void :
 	if not editable:
 		return
+	if event is InputEventKey and event.pressed and not event.echo and event.ctrl_pressed:
+		if event.keycode == KEY_Z:
+			if event.shift_pressed: redo()
+			else: undo()
+			accept_event(); return
+		if event.keycode == KEY_Y: redo(); accept_event(); return
 	if event is InputEventKey and event.pressed and not event.echo and mode == "cut":
 		if event.keycode == KEY_ESCAPE:
 			_cut_points.clear()
@@ -424,7 +453,13 @@ func _gui_input(event: InputEvent) -> void :
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
+			finish_text()
 			grab_focus()
+			var text_hit := _hit_layer(event.position)
+			if mode == "write" or (event.double_click and text_hit >= 0 and stickers[text_hit].kind == "text"):
+				begin_text(event.position, text_hit if text_hit >= 0 and stickers[text_hit].kind == "text" else -1)
+				accept_event()
+				return
 			var transform_handle: = _transform_handle_at(event.position)
 			if not transform_handle.is_empty():
 				_remember()
@@ -469,7 +504,7 @@ func _gui_input(event: InputEvent) -> void :
 				if mode == "draw" and strokes.size() < MAX_STROKES:
 					_remember()
 					_drawing = true
-					strokes.append({"points": [_normalized(event.position)], "color": ink.to_html(), "width": clampf(brush_width / maxf(size.x, 1), 0.001, 0.08)})
+					strokes.append({"points": [_normalized(event.position)], "color": ink.to_html(), "width": clampf(brush_width / maxf(size.x, 1), 0.001, 0.08),"brush":brush_kind})
 			changed.emit()
 		elif _drawing or _dragging_layer or _tape_drag_side != 0:
 			_drawing = false
@@ -508,7 +543,7 @@ func _pixel(point: Array) -> Vector2:
 
 func _draw() -> void :
 	if draw_paper:
-		draw_style_box(_paper_style(), Rect2(Vector2.ZERO, size))
+		preload("res://modules/restaurant/ui/paper_surface.gd").paint(self,Rect2(Vector2.ZERO,size))
 
 func _draw_brush() -> void :
 	for stroke in strokes:
@@ -518,7 +553,14 @@ func _draw_brush() -> void :
 		if points.size() == 1:
 			_brush_overlay.draw_circle(_pixel(points[0]), width / 2, color)
 		for index in range(1, points.size()):
-			_brush_overlay.draw_line(_pixel(points[index - 1]), _pixel(points[index]), color, width, true)
+			var start := _pixel(points[index-1])
+			var end := _pixel(points[index])
+			if stroke.get("brush","ink")=="pencil":
+				for strand in 3:
+					var shift := Vector2.from_angle(float(index+strand)*2.1)*width*0.22
+					_brush_overlay.draw_line(start+shift,end+shift,Color(color,0.27+strand*0.1),maxf(0.7,width*0.28),true)
+			else:
+				_brush_overlay.draw_line(start,end,Color(color,0.42) if stroke.get("brush","")=="marker" else color,width,true)
 
 func _base_extent(index: int) -> Vector2:
 	if index >= 0 and index < stickers.size() and stickers[index].kind in DECORATION_KINDS:
@@ -535,7 +577,7 @@ func _from_layer_local(index: int, point: Vector2) -> Vector2:
 	return point.rotated(float(stickers[index].get("rotation", 0.0))) * factor + _pixel(stickers[index].position)
 
 func _draw_overlay() -> void :
-	if not _selection_valid():
+	if not editable or _text_edit_index >= 0 or not _selection_valid():
 		return
 	var extent: = _base_extent(selected_index) / 2 + Vector2(5, 5)
 	var border: = PackedVector2Array()
@@ -612,7 +654,7 @@ func _rebuild_layers() -> void :
 			visual.set("shadows", false)
 		elif layer.kind == "text":
 			visual = TextLayer.new()
-			visual.call("configure", layer.text, get_theme_default_font(), Color.from_string(layer.color, Color("554735")))
+			visual.call("configure", layer.text, Ink.font(), Color.from_string(layer.color, Color("554735")))
 			extent = visual.get("extent")
 		elif layer.kind == "photo":
 			var photograph: = Image.new()
@@ -773,22 +815,26 @@ static func validate_photo(value: String) -> bool:
 	return picture.load_png_from_buffer(bytes) == OK
 
 class TextLayer extends Node2D:
-	var paragraph: TextParagraph
-	var extent: = Vector2(280, 32)
-	var color: = Color("554735")
-	func configure(text: String, font: Font, text_color: Color) -> void :
-		color = text_color
-		paragraph = TextParagraph.new()
+	var extent := Vector2(288,80)
+	var editor: TextEdit
+	func configure(value: String, _font: Font, color: Color) -> void:
+		editor = TextEdit.new()
+		Ink.style(editor,24,color)
+		editor.text = value
+		editor.editable = false
+		editor.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		editor.focus_mode = Control.FOCUS_NONE
+		editor.scroll_fit_content_height = true
+		editor.size = extent
+		add_child(editor)
+		update_extent()
+	func update_extent() -> void:
+		var paragraph := TextParagraph.new()
 		paragraph.width = 280
-		paragraph.alignment = HORIZONTAL_ALIGNMENT_CENTER
-		paragraph.add_string(text, font, 24)
-		extent = paragraph.get_size()
-		extent.x = maxf(extent.x, 40)
-		extent.y = maxf(extent.y, 28)
-		queue_redraw()
-	func _draw() -> void :
-		if paragraph:
-			paragraph.draw(get_canvas_item(), - extent / 2.0, color)
+		paragraph.add_string(editor.text if not editor.text.is_empty() else " ",Ink.font(),24)
+		extent = Vector2(288,maxf(78,paragraph.get_size().y + paragraph.get_line_count()*3 + 38))
+		editor.size = extent
+		editor.position = -extent/2
 
 class DecorativeLayer extends Node2D:
 	var kind: = "star"
@@ -920,3 +966,111 @@ func _notification(what: int) -> void :
 			_dragging_layer = false
 			_drawing = false
 			_stop_tape_drag()
+
+func begin_text(point: Vector2, index := -1) -> void:
+	if not editable: return
+	finish_text()
+	if index < 0:
+		if stickers.size() >= MAX_STICKERS: return
+		_remember()
+		stickers.append({"kind":"text","text":"","color":ink.to_html(),"position":_normalized(point),"scale":0.08})
+		index = stickers.size()-1
+		_text_new = true
+	else:
+		_remember()
+		_text_new = false
+	selected_index = index
+	_rebuild_layers()
+	_text_edit_index = index
+	_text_original = str(stickers[index].text)
+	_text_original_position = stickers[index].position.duplicate()
+	var visual = _layer_nodes[index].get_child(0)
+	_text_editor = visual.editor
+	_text_editor.editable = true
+	_text_editor.focus_mode = Control.FOCUS_ALL
+	_text_editor.mouse_filter = Control.MOUSE_FILTER_STOP
+	_text_editor.text_changed.connect(_text_changed)
+	# A deferred focus event from the previous text must not finish its successor.
+	_text_editor.focus_exited.connect(_finish_unfocused_text.bind(_text_editor).call_deferred)
+	_text_editor.gui_input.connect(func(event):
+		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and not _text_editor.has_ime_text():
+			finish_text(true)
+			get_viewport().set_input_as_handled())
+	_text_editor.grab_focus()
+	_text_editor.set_caret_line(_text_editor.get_line_count()-1)
+	_text_editor.set_caret_column(_text_editor.get_line(_text_editor.get_line_count()-1).length())
+	_edit_overlay.queue_redraw()
+
+func _finish_unfocused_text(editor: TextEdit) -> void:
+	if is_instance_valid(editor) and editor == _text_editor and not editor.has_focus():
+		finish_text()
+
+func _text_changed() -> void:
+	if _text_edit_index < 0 or not is_instance_valid(_text_editor): return
+	# Native TextEdit owns composition/caret/selection; never recreate it mid-IME.
+	if _text_editor.text.length() > 120:
+		_text_editor.text = _text_editor.text.left(120)
+		_text_editor.set_caret_line(_text_editor.get_line_count()-1)
+		_text_editor.set_caret_column(_text_editor.get_line(_text_editor.get_line_count()-1).length())
+	stickers[_text_edit_index].text = _text_editor.text
+	var visual = _layer_nodes[_text_edit_index].get_child(0)
+	var previous_extent: Vector2 = visual.extent
+	visual.update_extent()
+	_layer_nodes[_text_edit_index].set_meta("extent",visual.extent)
+	# Grow down from the same first line instead of recentering all earlier ink.
+	var wrapper: Node2D = _layer_nodes[_text_edit_index]
+	var shift: Vector2 = ((visual.extent-previous_extent)*wrapper.scale*0.5).rotated(wrapper.rotation)
+	stickers[_text_edit_index].position = _normalized(wrapper.position+shift)
+	_layout_layers()
+	changed.emit()
+
+func finish_text(cancel := false) -> void:
+	if _text_edit_index < 0: return
+	var index := _text_edit_index
+	# Commit composition while the editor can still update its anchored extent.
+	if is_instance_valid(_text_editor) and _text_editor.has_ime_text(): _text_editor.apply_ime()
+	_text_edit_index = -1
+	if is_instance_valid(_text_editor):
+		stickers[index].text = _text_editor.text.left(120)
+		_text_editor.release_focus()
+	if cancel:
+		stickers[index].text = "" if _text_new else _text_original
+		stickers[index].position = _text_original_position.duplicate()
+	if str(stickers[index].text).strip_edges().is_empty():
+		stickers.remove_at(index)
+		selected_index = -1
+	_text_editor = null
+	_rebuild_layers()
+	changed.emit()
+
+func place_material(data: Dictionary, point: Vector2) -> void:
+	if not editable: return
+	finish_text()
+	var before := stickers.size()
+	match str(data.get("type","")):
+		"sticker": add_sticker(str(data.get("kind","")))
+		"ingredient": add_ingredient(data.get("definition",{}))
+		"photo": add_photo(data.get("texture"))
+	if stickers.size() > before:
+		stickers.back().position = _normalized(point)
+		_layout_layers()
+		changed.emit()
+
+func _can_drop_data(_point: Vector2, data: Variant) -> bool:
+	return editable and data is Dictionary and data.get("source","") == "kitchen-collage" and data.get("type","") in ["sticker","ingredient","photo"]
+
+func _drop_data(point: Vector2, data: Variant) -> void:
+	if _can_drop_data(point,data): place_material(data,point)
+
+func _snapshot() -> Dictionary:
+	return {"strokes":strokes.duplicate(true),"stickers":stickers.duplicate(true),"caption":caption,"dish_texture":dish_texture}
+
+func redo() -> void:
+	finish_text()
+	if _redo_history.is_empty(): return
+	_history.append(_snapshot())
+	var next: Dictionary = _redo_history.pop_back()
+	strokes=next.strokes; stickers=next.stickers; caption=next.caption; dish_texture=next.dish_texture
+	selected_index=-1
+	_rebuild_layers()
+	changed.emit()

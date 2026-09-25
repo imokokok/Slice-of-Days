@@ -294,7 +294,7 @@ func _test_recipe_collage() -> void:
 	_expect(_used_ingredient_ids() == ["tomato"], "new recipe material strip prioritizes the current tomato over the last served egg")
 	game._title_input.text = "集成测试番茄"
 	game._notes_input.text = "记录当前锅中的番茄，再自由排版。"
-	_expect(not game._recipe_canvas.has_content(), "metadata text fields do not automatically write onto the paper")
+	_expect(not game._recipe_canvas.has_content(), "title and notes remain distinct from freely positioned collage layers")
 	var ingredient_button = game.modal_body.find_child("UsedIngredient_tomato", true, false)
 	_expect(ingredient_button != null, "current-meal ingredient is offered as a recipe collage material")
 	if ingredient_button != null:
@@ -302,11 +302,14 @@ func _test_recipe_collage() -> void:
 		ingredient_button.emit_signal("pressed")
 	_expect(_collage_layer_count(game._recipe_canvas, "ingredient") == 2, "recipe material can be reused as two independent collage layers")
 	_expect(game.session.dish == live_dish and game._last_dish == last_dish, "recipe collage editing changes neither the live meal nor the saved cooking snapshot")
-	_press_button("把菜名放到纸上")
-	_expect(_collage_layer_count(game._recipe_canvas, "text") == 1, "recipe title enters the paper only after the add-title action")
+	_press_button("纸上写字")
+	game._recipe_canvas.begin_text(Vector2(390,220))
+	game._recipe_canvas._text_editor.insert_text_at_caret(game._title_input.text)
+	game._recipe_canvas.finish_text()
+	_expect(_collage_layer_count(game._recipe_canvas, "text") == 1, "native paper writing creates one freely positioned text layer")
 	var before_transform: Dictionary = _first_collage_layer(game._recipe_canvas, "text")
-	_press_button("右转 ↷")
-	_press_button("放大 +")
+	game._recipe_canvas.rotate_selected(PI/12)
+	game._recipe_canvas.resize_selected(1.12)
 	var after_transform: Dictionary = _first_collage_layer(game._recipe_canvas, "text")
 	_expect(float(after_transform.get("rotation", 0.0)) > float(before_transform.get("rotation", 0.0)), "recipe rotation tool updates the selected collage layer")
 	_expect(float(after_transform.get("scale", 0.0)) > float(before_transform.get("scale", 0.0)), "recipe resize tool updates the selected collage layer")

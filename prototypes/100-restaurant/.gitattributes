@@ -6,3 +6,6 @@
 *.glb binary
 *.ttf binary
 *.png binary
+
+# Preserve the upstream OFL text verbatim, including its one trailing space.
+modules/restaurant/assets/fonts/LXGW_OFL.txt whitespace=-blank-at-eol

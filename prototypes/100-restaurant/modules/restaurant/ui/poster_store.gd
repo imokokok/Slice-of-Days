@@ -125,8 +125,9 @@ func _valid_data(data: Dictionary) -> bool:
 			return false
 		if not _number(stroke.get("width")) or stroke.width <= 0 or stroke.width > 0.08:
 			return false
+		if stroke.has("brush") and stroke.brush not in ["ink","pencil","marker"]: return false
 		for key in stroke:
-			if key not in ["points", "color", "width"]:
+			if key not in ["points", "color", "width", "brush"]:
 				return false
 		for point in stroke.points:
 			if not _point(point):

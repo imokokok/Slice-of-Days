@@ -22,8 +22,8 @@ func _draw() -> void :
 	var mouth: = PackedVector2Array()
 	for i in range(13):
 		var x: = -9.0 + i * 1.5
-		var y: = 7.0 - bend * (1.0 - (x / 9.0) * (x / 9.0))
+		var y: = 7.0 + bend * (1.0 - (x / 9.0) * (x / 9.0))
 		mouth.append(center + Vector2(x, y))
 	draw_polyline(mouth, Color("60483a"), 2.2, true)
-	draw_line(center + Vector2(-15, -13), center + Vector2(-4, -11 - bend * 0.12), Color("745845"), 1.6, true)
-	draw_line(center + Vector2(15, -13), center + Vector2(4, -11 - bend * 0.12), Color("745845"), 1.6, true)
+	draw_line(center + Vector2(-15, -13), center + Vector2(-4, -13 - bend * 0.6), Color("745845"), 1.6, true)
+	draw_line(center + Vector2(15, -13), center + Vector2(4, -13 - bend * 0.6), Color("745845"), 1.6, true)

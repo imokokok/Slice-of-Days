@@ -238,7 +238,8 @@ func _validate_record(record: Dictionary) -> Dictionary:
 	var poster = record.get("poster", {})
 	if not poster is Dictionary or not _valid_poster(poster):
 		return _failure("纸面笔画或素材图层数据无效。")
-	var dish_result: = _validate_dish(record.get("dish", {}), _poster_has_content(poster))
+	# Written instructions now live directly on paper and are valid DIY content.
+	var dish_result: = _validate_dish(record.get("dish", {}), _poster_has_content(poster) or not str(record.get("notes", "")).strip_edges().is_empty())
 	if not dish_result.ok:
 		return dish_result
 	var dish: Dictionary = dish_result.dish
@@ -368,8 +369,9 @@ func _valid_poster(poster: Dictionary) -> bool:
 	for stroke in poster.get("strokes", []):
 		if not stroke is Dictionary or not stroke.get("points") is Array or stroke.points.size() > 512:
 			return false
+		if stroke.has("brush") and stroke.brush not in ["ink","pencil","marker"]: return false
 		for key in stroke:
-			if key not in ["points", "color", "width"]:
+			if key not in ["points", "color", "width", "brush"]:
 				return false
 		if not stroke.get("color") is String or not Color.html_is_valid(stroke.color):
 			return false

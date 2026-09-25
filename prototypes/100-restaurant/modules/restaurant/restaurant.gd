@@ -36,6 +36,7 @@ var clock_label: Label
 var money_label: Label
 var hint_label: Label
 var _fire_buttons: Dictionary = {}
+var _order_paper: Control
 var customer_label: Label
 var customer_mood_icon: Control
 var dish_label: Label
@@ -63,6 +64,8 @@ var _plating_photo_revision: = -1
 var _photo_is_plating: = false
 var _recipe_photo: String = ""
 var _editing_recipe_id: String = ""
+var _recipe_drafts: Dictionary = {}
+var _active_recipe_draft_key := ""
 var _editor_status: Label
 var _title_input: LineEdit
 var _author_input: LineEdit
@@ -232,16 +235,13 @@ func _build_ui() -> void :
 		if is_instance_valid(world._held): world.discard_held()
 		else: _interact("trash"), 130)
 	trash.position = Vector2(1440, 832)
-	var cpanel: = Control.new()
-	cpanel.position = Vector2(1078, 185)
-	cpanel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hud.add_child(cpanel)
-	customer_label = _label(cpanel, "", Vector2.ZERO, 17)
-	customer_label.size = Vector2(150, 266)
-	customer_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	customer_mood_icon = MoodIcon.new()
-	customer_mood_icon.position = Vector2(154, 8)
-	cpanel.add_child(customer_mood_icon)
+	_order_paper = preload("res://modules/restaurant/ui/customer_order_paper.gd").new()
+	_order_paper.position = Vector2(1070,164)
+	_order_paper.size = Vector2(233,299)
+	hud.add_child(_order_paper)
+	customer_label = _order_paper.body
+	customer_mood_icon = _order_paper.mood
+	_order_paper.opened.connect(_show_order_paper)
 	var fire_row: = HBoxContainer.new()
 	fire_row.name = "StoveHeatControls"
 	fire_row.position = Vector2(718, 750)
@@ -368,6 +368,7 @@ func _row(parent: Node) -> HBoxContainer:
 	return row
 
 func _open_modal(kind: String, title: String, width: float = 800) -> void :
+	_stash_recipe_draft()
 	if is_instance_valid(_plating_canvas): _plating_canvas.stop_gesture()
 	modal_panel.theme = null
 	modal_panel.add_theme_stylebox_override("panel", _style(Color("fff5dc"), 0, Color("79a59a")))
@@ -391,10 +392,11 @@ func _open_modal(kind: String, title: String, width: float = 800) -> void :
 	heading.text = title
 	title_row.add_child(heading)
 	if kind != "intro" and kind != "result":
-		if kind in ["recipe", "cookbook"]: _paper_action(title_row, "合上手记", _close_modal, "arrow", 175)
+		if kind in ["recipe", "cookbook", "recipe_editor", "poster", "order_paper"]: _paper_action(title_row, "合上手记", _close_modal, "arrow", 175)
 		else: _button(title_row, "关闭  ×", _close_modal)
 
 func _close_modal() -> void :
+	_stash_recipe_draft()
 	if is_instance_valid(_plating_canvas): _plating_canvas.stop_gesture()
 	if session.phase == "closed" and _modal_kind != "intro":
 		_settle()
@@ -518,18 +520,7 @@ func _update_hud() -> void :
 	clock_label.text = "准备营业  /  不限时" if session.phase == "prep" else "日班  %02d:%02d" % [remaining / 60, remaining % 60]
 	money_label.text = "¥ %.2f" % session.revenue
 	var npc: Dictionary = session.current_customer
-	if npc.is_empty():
-		customer_mood_icon.visible = false
-		customer_label.text = "今日 · 主厨做主\n\n准备一道你的拿手菜。\n客人会按自己的偏好评价。"
-	else:
-		customer_mood_icon.visible = true
-		customer_mood_icon.mood = float(npc.get("mood_before", 50))
-		var kind: String = str(npc.get("role", "街坊食客"))
-		var menu_line: String = "\n点单：《%s》" % npc.get("ordered_recipe", {}).get("title", "") if npc.has("ordered_recipe") else ""
-		customer_label.text = "客人要求\n%s  /  %s\n餐前心情 %d / 100\n%s%s\n等待：%d 秒" % [npc.get("name", "客人"), kind, npc.get("mood_before", 50), npc.get("quote", "今天吃点什么？"), menu_line, ceili(session.customer_wait)]
-		if npc.get("preferences_known", false):
-			var chat: String = str(npc.get("last_chat", _preference_text(npc) + "\n" + str(npc.get("habit", ""))))
-			customer_label.text = "客人要求\n%s  /  %s\n餐前心情 %d / 100\n%s%s\n等待：%d 秒" % [npc.get("name", "客人"), kind, npc.get("mood_before", 50), chat, menu_line, ceili(session.customer_wait)]
+	_order_paper.update_order(npc,session.customer_wait,_preference_text(npc) + "\n" + str(npc.get("habit","")))
 	var names: PackedStringArray = []
 	var max_heat: float = 0.0
 	for item in session.dish:
@@ -751,7 +742,10 @@ func _new_diy_recipe() -> void :
 
 func _show_recipe_editor(record: Dictionary = {}) -> void :
 	world.audio.play_effect("paper")
+	_open_authoring("recipe_editor", "厨房手作 · 留住这一餐")
 	_editing_recipe_id = str(record.get("id", ""))
+	_active_recipe_draft_key = _editing_recipe_id if not _editing_recipe_id.is_empty() else "new"
+	var paper_record: Dictionary = _recipe_drafts.get(_active_recipe_draft_key,record).duplicate(true)
 	if record.is_empty():
 		_recipe_dish = (session.plate() if not session.dish.is_empty() else _last_dish).duplicate(true)
 		if _recipe_dish.is_empty(): _recipe_dish = {"ingredients": []}
@@ -759,67 +753,54 @@ func _show_recipe_editor(record: Dictionary = {}) -> void :
 	else:
 		_recipe_dish = record.get("dish", {"ingredients": []}).duplicate(true)
 		_recipe_photo = str(record.get("thumbnail", ""))
-	_open_authoring("recipe_editor", "编辑 DIY 菜谱" if not record.is_empty() else "新建 DIY 菜谱  /  从一张白纸开始")
-	var columns: = _row(modal_body)
-	_recipe_canvas = _new_paper(columns)
-	if record.has("poster"): _recipe_canvas.import_data(record.poster)
-	var tools: = _authoring_tools_column(columns)
-	var metadata: = _row(tools)
-	_title_input = LineEdit.new()
-	_title_input.placeholder_text = "菜名（保存时使用）"
-	_title_input.max_length = 60
-	_title_input.text = str(record.get("title", ""))
-	_title_input.custom_minimum_size = Vector2(265, 38)
-	metadata.add_child(_title_input)
-	_author_input = LineEdit.new()
-	_author_input.placeholder_text = "署名"
-	_author_input.text = str(record.get("author", context.get("display_name", "主厨")))
-	_author_input.max_length = 40
-	_author_input.custom_minimum_size = Vector2(210, 38)
-	metadata.add_child(_author_input)
-	_notes_input = TextEdit.new()
-	_notes_input.placeholder_text = "做法、灵感，或者留给下一位主厨的话（也可加入纸面）"
-	_notes_input.custom_minimum_size = Vector2(490, 62)
-	_notes_input.text = str(record.get("notes", ""))
-	tools.add_child(_notes_input)
-	_build_collage_tools(tools, _recipe_canvas)
-	_used_ingredients(modal_body, _recipe_canvas, _recipe_dish)
-	var actions: = _row(modal_body)
-	_tool_button(actions, "把菜名放到纸上", func(): _recipe_canvas.add_text(_title_input.text, _recipe_canvas.ink), 220)
-	_tool_button(actions, "把做法放到纸上", func(): _recipe_canvas.add_text(_notes_input.text, _recipe_canvas.ink), 220)
-	_button(actions, "保存修改" if not _editing_recipe_id.is_empty() else "收进我的菜谱", _save_recipe, 220)
-	if not _editing_recipe_id.is_empty():
-		_tool_button(actions, "另存为新菜谱", func(): _save_recipe(true), 220)
-	_tool_button(actions, "先收起纸页", _close_modal, 160)
-	if _recipe_dish.get("ingredients", []).is_empty():
-		_editor_status.text = "还没做菜也能 DIY：在纸上写字、画画或放照片，取名后保存。"
+	if _recipe_drafts.has(_active_recipe_draft_key):
+		_recipe_dish = paper_record.dish.duplicate(true)
+		_recipe_photo = str(paper_record.get("thumbnail",""))
+	_recipe_canvas = PosterCanvas.new()
+	modal_body.add_child(_recipe_canvas)
+	if paper_record.has("poster"): _recipe_canvas.import_data(paper_record.poster)
+	var desk = preload("res://modules/restaurant/ui/craft_workbench.gd").new()
+	modal_body.add_child(desk)
+	desk.build(self,_recipe_canvas,paper_record,_recipe_dish)
+	_title_input=desk.title_input
+	_author_input=desk.author_input
+	_notes_input=desk.notes_input
+	_editor_status=desk.status
+	if _recipe_drafts.has(_active_recipe_draft_key): _editor_status.text="接着写刚才那一页。收进菜谱后会永久保存。"
+	var actions := _row(modal_body)
+	_paper_action(actions,"保存修改" if not _editing_recipe_id.is_empty() else "收进我的菜谱",_save_recipe,"book",220)
+	if not _editing_recipe_id.is_empty(): _paper_action(actions,"另存为新菜谱",func(): _save_recipe(true),"book",220)
+	_paper_action(actions,"先收起纸页",_close_modal,"arrow",190)
+
+func _stash_recipe_draft() -> void:
+	if _modal_kind != "recipe_editor" or _active_recipe_draft_key.is_empty() or not is_instance_valid(_recipe_canvas) or not is_instance_valid(_title_input): return
+	var poster: Dictionary = _recipe_canvas.export_data()
+	if _recipe_canvas.has_content() or not _title_input.text.strip_edges().is_empty() or not _notes_input.text.strip_edges().is_empty():
+		_recipe_drafts[_active_recipe_draft_key] = {"title":_title_input.text,"author":_author_input.text,"notes":_notes_input.text,"dish":_recipe_dish.duplicate(true),"thumbnail":_recipe_photo,"poster":poster}
+
+func _show_order_paper() -> void:
+	_open_modal("order_paper","客人留的小纸条",650)
+	var paper=preload("res://modules/restaurant/ui/paper_surface.gd").new()
+	paper.custom_minimum_size=Vector2(590,520)
+	modal_body.add_child(paper)
+	var words=Label.new()
+	words.text=_order_paper.full_text
+	words.add_theme_font_override("font",preload("res://modules/restaurant/ui/paper_ink.gd").font())
+	words.add_theme_font_size_override("font_size",27)
+	words.add_theme_color_override("font_color",Color("5b4935"))
+	words.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	words.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	var scroll=ScrollContainer.new()
+	scroll.position=Vector2(32,28)
+	scroll.size=Vector2(526,462)
+	paper.add_child(scroll)
+	scroll.add_child(words)
 
 func _open_authoring(kind: String, title: String) -> void :
 	_open_modal(kind, title, 1400)
-	var compact: Theme = hud.theme.duplicate()
-	compact.default_font_size = 16
-	for widget in ["LineEdit", "TextEdit", "Button"]:
-		var field: StyleBoxFlat = compact.get_stylebox("normal", widget).duplicate()
-		field.set_content_margin_all(8)
-		compact.set_stylebox("normal", widget, field)
-	modal_panel.theme = compact
-	modal_panel.position.y = 22
-	modal_body.add_theme_constant_override("separation", 10)
-	_text("素材在纸外，点击才会加入。拖动排版 · 滚轮缩放 · Delete 删除 · 编辑时客人等待与火候都暂停。", 16)
-
-func _new_paper(parent: Node):
-	var paper = PosterCanvas.new()
-	parent.add_child(paper)
-	paper.custom_minimum_size = Vector2(850, 460)
-	paper.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	return paper
-
-func _authoring_tools_column(parent: Node) -> VBoxContainer:
-	var column: = VBoxContainer.new()
-	column.custom_minimum_size.x = 490
-	column.add_theme_constant_override("separation", 6)
-	parent.add_child(column)
-	return column
+	modal_panel.add_theme_stylebox_override("panel", _style(Color("c9b793"), 0, Color("aa9576")))
+	modal_panel.position.y = 12
+	modal_body.add_theme_constant_override("separation",6)
 
 func _tool_button(parent: Node, text: String, callback: Callable, width: float = 0) -> Button:
 	var button: = _button(parent, text, callback, width)
@@ -839,172 +820,6 @@ func _tool_button(parent: Node, text: String, callback: Callable, width: float =
 	button.add_theme_stylebox_override("pressed", pressed)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return button
-
-func _build_collage_tools(parent: Node, canvas) -> void :
-	var text_row: = _row(parent)
-	var words: = LineEdit.new()
-	words.placeholder_text = "写一段文字，再加入纸面"
-	words.max_length = 120
-	words.custom_minimum_size = Vector2(340, 36)
-	text_row.add_child(words)
-	_tool_button(text_row, "加入文字", func(): canvas.add_text(words.text, canvas.ink))
-	var modes: = _row(parent)
-	var group: = ButtonGroup.new()
-	var mode_buttons: Dictionary = {}
-	for pair in [["select", "移动素材"], ["draw", "画笔涂鸦"], ["cut", "剪出形状"]]:
-		var b: = _tool_button(modes, pair[1], func():
-			canvas.mode = pair[0]
-			canvas.changed.emit())
-		b.toggle_mode = true
-		b.button_group = group
-		b.button_pressed = pair[0] == "select"
-		mode_buttons[pair[0]] = b
-	canvas.changed.connect( func():
-		for key in mode_buttons:
-			mode_buttons[key].set_pressed_no_signal(canvas.mode == key))
-	var brushes: = _row(parent)
-	var color_label: = _label(brushes, "画笔颜色", Vector2.ZERO, 15, MUTED)
-	var picker: = ColorPickerButton.new()
-	picker.name = "CollageColor"
-	picker.text = "画笔颜色"
-	picker.color = canvas.ink
-	picker.custom_minimum_size = Vector2(85, 32)
-	var syncing: = {"active": false}
-	picker.pressed.connect( func(): canvas.begin_property_edit())
-	picker.popup_closed.connect( func(): canvas.end_property_edit())
-	picker.color_changed.connect( func(color):
-		if syncing.active: return
-		if canvas.mode == "select" and not canvas.selected_decoration_settings().is_empty():
-			canvas.set_tape_color(color)
-		else:
-			canvas.ink = color)
-	brushes.add_child(picker)
-	var brush_label: = _label(brushes, "笔粗", Vector2.ZERO, 15, MUTED)
-	var brush: = HSlider.new()
-	brush.min_value = 1
-	brush.max_value = 24
-	brush.value = 4
-	brush.custom_minimum_size = Vector2(215, 30)
-	brush.value_changed.connect( func(value): canvas.brush_width = value)
-	brushes.add_child(brush)
-	var tape_hint: = _label(brushes, "贴纸可独立调横向、纵向和颜色；胶带也可拖两端", Vector2.ZERO, 15, MUTED)
-	var tape_dimensions: = _row(parent)
-	tape_dimensions.name = "TapeDimensions"
-	tape_dimensions.add_theme_constant_override("separation", 8)
-	_label(tape_dimensions, "长度", Vector2.ZERO, 15, MUTED)
-	var tape_length: = HSlider.new()
-	tape_length.name = "TapeLength"
-	tape_length.min_value = 0.5
-	tape_length.max_value = 6.0
-	tape_length.step = 0.05
-	tape_length.custom_minimum_size = Vector2(125, 30)
-	tape_dimensions.add_child(tape_length)
-	var length_value: = _label(tape_dimensions, "1.00×", Vector2.ZERO, 14, MUTED)
-	length_value.custom_minimum_size.x = 47
-	_label(tape_dimensions, "宽度", Vector2.ZERO, 15, MUTED)
-	var tape_width: = HSlider.new()
-	tape_width.name = "TapeWidth"
-	tape_width.min_value = 0.4
-	tape_width.max_value = 3.0
-	tape_width.step = 0.05
-	tape_width.custom_minimum_size = Vector2(125, 30)
-	tape_dimensions.add_child(tape_width)
-	var width_value: = _label(tape_dimensions, "1.00×", Vector2.ZERO, 14, MUTED)
-	width_value.custom_minimum_size.x = 47
-	for slider in [tape_length, tape_width]:
-		slider.drag_started.connect( func(): canvas.begin_property_edit())
-		slider.drag_ended.connect( func(_value_changed): canvas.end_property_edit())
-	tape_length.value_changed.connect( func(value):
-		if not syncing.active: canvas.set_tape_length(value))
-	tape_width.value_changed.connect( func(value):
-		if not syncing.active: canvas.set_tape_width(value))
-	var sync_properties: = func():
-		syncing.active = true
-		var settings: Dictionary = canvas.selected_decoration_settings() if canvas.mode == "select" else {}
-		var decoration_selected: = not settings.is_empty()
-		tape_dimensions.visible = decoration_selected
-		tape_hint.visible = decoration_selected
-		brush_label.visible = not decoration_selected
-		brush.visible = not decoration_selected
-		picker.text = "素材颜色" if decoration_selected else "画笔颜色"
-		color_label.text = picker.text
-		picker.color = Color(str(settings.get("color", "d8b85d"))) if decoration_selected else canvas.ink
-		if decoration_selected:
-			tape_length.set_value_no_signal(float(settings.get("length", 1.0)))
-			tape_width.set_value_no_signal(float(settings.get("width", 1.0)))
-			length_value.text = "%.2f×" % tape_length.value
-			width_value.text = "%.2f×" % tape_width.value
-		syncing.active = false
-	canvas.changed.connect(sync_properties)
-	sync_properties.call()
-	var decoration_sets := [
-		[["star", "星星"], ["heart", "爱心"], ["leaf", "叶子"], ["polka", "波点"], ["flower", "小花"]],
-		[["lemon", "柠檬"], ["checker", "棋盘格"], ["wave", "波浪"], ["sun", "太阳"], ["tape", "胶带"]]
-	]
-	for decoration_set in decoration_sets:
-		var decorations: = _row(parent)
-		for pair in decoration_set:
-			_tool_button(decorations, pair[1], func(): canvas.add_sticker(pair[0]))
-	var transform: = _row(parent)
-	_tool_button(transform, "缩小 −", func(): canvas.resize_selected(0.85))
-	_tool_button(transform, "放大 +", func(): canvas.resize_selected(1.15))
-	_tool_button(transform, "左转 ↶", func(): canvas.rotate_selected( - PI / 12.0))
-	_tool_button(transform, "右转 ↷", func(): canvas.rotate_selected(PI / 12.0))
-	var layers: = _row(parent)
-	_tool_button(layers, "复制", func(): canvas.duplicate_selected())
-	_tool_button(layers, "移到底层", func(): canvas.send_selected_back())
-	_tool_button(layers, "删除", func(): canvas.delete_selected())
-	_tool_button(layers, "撤销", func(): canvas.undo())
-	var photos: = _row(parent)
-	_tool_button(photos, "导入照片", func(): _import_collage_photo(canvas))
-	_tool_button(photos, "加入已拍的摆盘照片" if _photo_is_plating and _plating_photo_revision == _plating_revision and not _photo.is_empty() else "拍摄料理并加入", func(): _add_dish_photo(canvas))
-	_tool_button(photos, "恢复原图", func(): canvas.restore_selected_cut())
-	_tool_button(photos, "清空纸面", func(): canvas.clear_canvas())
-	_editor_status = _label(parent, "剪纸：选中素材 → 剪出形状 → 逐点画边界 → Enter 完成。", Vector2.ZERO, 14, MUTED)
-	_editor_status.custom_minimum_size = Vector2(490, 40)
-	_editor_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-
-func _used_ingredients(parent: Node, canvas, dish: Dictionary) -> void :
-	var box: = VBoxContainer.new()
-	box.add_theme_constant_override("separation", 4)
-	parent.add_child(box)
-	_label(box, "这道菜用到的食材  /  点击加入纸面，可反复使用", Vector2.ZERO, 16, MUTED)
-	var entries: Array = dish.get("ingredients", [])
-	var strip: = ScrollContainer.new()
-	strip.custom_minimum_size.y = 84
-	strip.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	box.add_child(strip)
-	var row: = _row(strip)
-	row.custom_minimum_size.y = 70
-	var recorded_water: = clampf(float(dish.get("water_ml", 0)), 0, 1500)
-	if recorded_water > 0:
-		var water_text: = "水 %d ml" % roundi(recorded_water)
-		_tool_button(row, water_text + "\n加入纸面文字", func(): canvas.add_text(water_text, Color("52766e")), 160)
-	if entries.is_empty():
-		_label(row, "尚未记录实际用料。可以先写字、画画或导入图片；纸面自由组合不会改变锅中的料理。", Vector2.ZERO, 17, MUTED)
-	for value in entries:
-		var item: Dictionary = {"id": value} if value is String else value
-		var definition: = _definition(str(item.get("id", item.get("ingredient_id", "")))).duplicate(true)
-		if definition.is_empty(): continue
-		definition["cut"] = bool(item.get("cut", false))
-		definition["heat"] = float(item.get("heat", 0.0))
-		var button: = _tool_button(row, "", func(): canvas.add_ingredient(definition), 160)
-		button.name = "UsedIngredient_" + str(definition.id)
-		button.set_meta("ingredient_id", definition.id)
-		button.custom_minimum_size.y = 70
-		button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-		var art = preload("res://modules/restaurant/assets/food_art.gd").new()
-		art.definition = definition
-		art.cut = definition.cut
-		art.heat = definition.heat
-		art.shadows = false
-		art.position = Vector2(34, 35)
-		art.scale = Vector2.ONE * 0.65
-		button.add_child(art)
-		var state: = "已切" if definition.cut else "整份"
-		if definition.heat >= 14: state += " · 焦"
-		elif definition.heat >= 6: state += " · 熟"
-		_label(button, str(definition.name) + "\n" + state, Vector2(67, 13), 15, CREAM)
 
 func _import_collage_photo(canvas) -> void :
 	var dialog: = FileDialog.new()
@@ -1065,7 +880,7 @@ func _snapshot_photo() -> void :
 
 func _save_recipe(as_copy: bool = false) -> void :
 	if _title_input.text.strip_edges().is_empty():
-		_editor_status.text = "先在右侧填写菜名，再收进我的菜谱。"
+		_editor_status.text = "先在纸页上方写下菜名，再收进菜谱。"
 		return
 	var clean_dish: Dictionary = _recipe_dish.duplicate(true)
 	for entry in clean_dish.get("ingredients", []):
@@ -1076,6 +891,8 @@ func _save_recipe(as_copy: bool = false) -> void :
 	var target_id: String = "" if as_copy else _editing_recipe_id
 	if not target_id.is_empty(): record["id"] = target_id
 	if repository.save_recipe(record):
+		_recipe_drafts.erase(_active_recipe_draft_key)
+		_active_recipe_draft_key=""
 		var saved: Array = repository.load_recipes()
 		session.set_menu_recipes(saved)
 		if not saved.is_empty(): _recipe_selected = saved[-1] if target_id.is_empty() else record
@@ -1334,21 +1151,19 @@ func _file_dialog(exporting: bool) -> void :
 func _show_poster() -> void :
 	world.audio.play_effect("paper")
 	_open_authoring("poster", "海报工作台  /  从一张白纸开始")
-	var columns: = _row(modal_body)
-	_poster_canvas = _new_paper(columns)
-	var tools: = _authoring_tools_column(columns)
-	_label(tools, "自己的海报，自己排版", Vector2.ZERO, 22, ACCENT)
-	_build_collage_tools(tools, _poster_canvas)
-	var load_previous: = _tool_button(tools, "继续编辑已贴出的海报", func():
-		_poster_canvas.import_data(_poster_data)
-		_editor_status.text = "已载入上次的作品。修改后重新贴出即可。")
-	load_previous.disabled = _poster_data.is_empty()
+	_poster_canvas = PosterCanvas.new()
+	modal_body.add_child(_poster_canvas)
+	var desk = preload("res://modules/restaurant/ui/craft_workbench.gd").new()
+	modal_body.add_child(desk)
 	var current: Dictionary = session.plate() if not session.dish.is_empty() else _last_dish
-	_used_ingredients(modal_body, _poster_canvas, current)
-	var tag_row: = _row(modal_body)
-	_button(tag_row, "贴出去 · 家常料理", func(): _publish_poster(["comfort", "fresh", "vegetable"]), 390)
-	_button(tag_row, "贴出去 · 怪味特供", func(): _publish_poster(["odd", "bold"]), 390)
-	_button(tag_row, "贴出去 · 甜点小食", func(): _publish_poster(["sweet", "dairy"]), 390)
+	desk.build(self,_poster_canvas,{},current,false)
+	_editor_status=desk.status
+	var tag_row := _row(modal_body)
+	var load_previous = _paper_action(tag_row,"继续编辑已贴出的海报",func(): _poster_canvas.import_data(_poster_data),"book",260)
+	load_previous.disabled=_poster_data.is_empty()
+	_button(tag_row, "贴出去 · 家常料理", func(): _publish_poster(["comfort", "fresh", "vegetable"]), 300)
+	_button(tag_row, "贴出去 · 怪味特供", func(): _publish_poster(["odd", "bold"]), 300)
+	_button(tag_row, "贴出去 · 甜点小食", func(): _publish_poster(["sweet", "dairy"]), 300)
 
 func _publish_poster(tags: Array) -> void :
 	_poster_data = _poster_canvas.export_data()

@@ -51,6 +51,7 @@ func run() -> void:
 	check(book.save_recipe(drawn), "a real drawing also qualifies")
 	check(book.load_recipes()[-1].dish == {"ingredients": []}, "empty dish drops accidental cooking metrics")
 	var invalid := record.duplicate(true)
+	invalid.notes = ""
 	invalid.poster = blank
 	check(not book.save_recipe(invalid), "blank paper with no ingredients rejected")
 	invalid.poster.caption = "旧标题不是纸面内容"
@@ -78,6 +79,7 @@ func run() -> void:
 	legacy.dish.ingredients.append("chili")
 	check(not book.save_recipe(legacy), "49 entries exceed the physical kitchen limit")
 	var blank_update := edited.duplicate(true)
+	blank_update.notes = ""
 	blank_update.poster = {"version": 1, "caption": "", "strokes": [], "stickers": []}
 	check(not book.save_recipe(blank_update), "existing paper recipe cannot be overwritten with blank paper")
 	check(book.load_recipes()[0].poster == edited.poster, "invalid edit preserves previous work")

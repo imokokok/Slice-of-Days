@@ -60,11 +60,11 @@ func _test_new_paper_recipe() -> Dictionary:
 	_check_bounds("new DIY editor")
 	game._title_input.text = "第一张自己的菜谱"
 	game._author_input.text = "纸上主厨"
-	game._notes_input.text = "这是一张自主创作的菜谱，还没有实际下锅。"
 	await _click_text("收进我的菜谱")
 	_expect(publications.is_empty() and game.repository.load_recipes().is_empty(), "metadata alone cannot publish completely blank paper without a dish")
 	_expect(game.modal.visible and game._modal_kind == "recipe_editor" and not game._editor_status.text.is_empty(), "blank-save rejection keeps the editor open with a visible reason")
-	await _click_text("把菜名放到纸上")
+	game._notes_input.text = "这是一张自主创作的菜谱，还没有实际下锅。"
+	await _write_on_paper(game._title_input.text)
 	await _click_text("星星")
 	_expect(game._recipe_canvas.has_content(), "explicit text and decoration make a DIY paper creation")
 	var expected_paper: Dictionary = game._recipe_canvas.export_data()
@@ -119,8 +119,9 @@ func _test_edit_and_copy(first: Dictionary) -> void:
 	game._title_input.text = "第一条已经重新排版"
 	game._author_input.text = "更新后的主厨"
 	game._notes_input.text = "保留原菜谱身份，更新纸面内容。"
-	await _click_text("把做法放到纸上")
-	await _click_text("右转 ↷")
+	await _write_on_paper(game._notes_input.text)
+	game._recipe_canvas.rotate_selected(PI/12.0)
+	await _layout()
 	var revised_paper: Dictionary = game._recipe_canvas.export_data()
 	await _click_text("保存修改")
 	await _layout()
@@ -292,3 +293,21 @@ func _expect(condition: bool, description: String) -> void:
 	checks += 1
 	if not condition:
 		failures.append(description)
+
+func _write_on_paper(words: String) -> void:
+	await _click_text("纸上写字")
+	var paper=game._recipe_canvas
+	var point: Vector2=paper.global_position+paper.size*Vector2(0.55,0.35)
+	var press:=InputEventMouseButton.new()
+	press.position=root.get_final_transform()*point
+	press.global_position=press.position
+	press.button_index=MOUSE_BUTTON_LEFT
+	press.pressed=true
+	Input.parse_input_event(press)
+	await process_frame
+	press=press.duplicate(); press.pressed=false; Input.parse_input_event(press)
+	await _layout()
+	_expect(paper._text_edit_index>=0,"paper writing gesture opens an in-place editable text layer")
+	if paper._text_edit_index>=0:
+		paper._text_editor.insert_text_at_caret(words)
+		paper.finish_text()

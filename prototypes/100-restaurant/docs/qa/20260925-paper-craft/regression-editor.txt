@@ -1,0 +1,26 @@
+TEST tests/test_recipe_diy.gd
+PASS: recipe DIY lifecycle, 76 checks
+TEST tests/test_tape_tools.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: shared tape tools, 30 checks
+TEST tests/test_collage_input.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: real collage GUI input, 68 checks
+TEST tests/test_tape_editing.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: tape editing, 75 checks
+TEST modules/restaurant/ui/collage_test.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ADVANCED_COLLAGE_TESTS_PASSED checks=39
+TEST modules/restaurant/ui/poster_store_test.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+POSTER_PERSISTENCE_AND_WALL_TESTS_PASSED
+TEST modules/restaurant/storage/paper_recipe_test.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PAPER_RECIPE_TESTS_PASSED checks=30

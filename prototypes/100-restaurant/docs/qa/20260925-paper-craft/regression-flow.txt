@@ -1,0 +1,20 @@
+TEST tests/test_integration.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: restaurant integration, 124 checks
+TEST tests/test_recipe_guide.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recipe guide, 40 checks
+TEST tests/test_cut_clean_share.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: cut / cleaning / single recipe sharing, 86 checks
+TEST tests/test_comfort_release.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS comfort release: 90 checks
+TEST modules/restaurant/storage/smoke_test.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+STORAGE_AND_POSTER_TESTS_PASSED

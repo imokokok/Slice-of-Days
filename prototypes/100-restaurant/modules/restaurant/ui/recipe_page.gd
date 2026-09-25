@@ -1,6 +1,6 @@
 extends Control
 ## Shared renderer for the physical stand and the opened recipe.
-const FONT = preload("res://modules/restaurant/assets/fonts/noto_serif_sc.ttf")
+const FONT = preload("res://modules/restaurant/assets/fonts/lxgw_wenkai_lite.ttf")
 var record: Dictionary = {}
 var _image: Texture2D
 var _collage: Control
@@ -49,10 +49,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _draw() -> void:
-	draw_colored_polygon(PackedVector2Array([Vector2(5, 4), Vector2(551, 0), Vector2(560, 745), Vector2(542, 757), Vector2(12, 760), Vector2.ZERO]), Color("f1dfb7"))
-	for i in range(95):
-		var p := Vector2(17 + fmod(i * 157.7, 526), 18 + fmod(i * 89.1, 720))
-		draw_line(p, p + Vector2(4 + i % 9, 0.5), Color("cbb991", 0.20), 1)
+	preload("res://modules/restaurant/ui/paper_surface.gd").paint(self,Rect2(0,0,560,760))
 	draw_line(Vector2(30, 25), Vector2(30, 730), Color("c68d6c", 0.4), 1.5)
 	var title := str(record.get("title", "厨房食谱"))
 	if title.length() <= 14:

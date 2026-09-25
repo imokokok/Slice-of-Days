@@ -10,7 +10,7 @@ var selection_tools: Control
 var archive_tab := "overview"
 var pause_owned := false
 var task_checks: Array = []
-var notebook_section := "today"
+var notebook_section := "schedule"
 
 func _ready() -> void:
 	process_mode=PROCESS_MODE_ALWAYS
@@ -41,6 +41,7 @@ func panel(parent: Node, at: Vector2, dimensions: Vector2, color := Color("faf7e
 	return result
 
 func build() -> void:
+	if not CharacterSystem.owns_pocket_item("notebook") and mode in ["notebook","today","home"]: mode="day_schedule"
 	theme=PALETTE.theme_for_tools()
 	if mode=="organize": mode="dossier"; archive_tab="days"; day=GameState.current_day
 	for child in get_children(): remove_child(child); child.queue_free()
@@ -82,8 +83,8 @@ func build() -> void:
 		var menu := preload("res://scripts/ui/components/runtime_menu.gd").new()
 		menu.owner_ui=self; menu.settings=mode=="settings"; body.add_child(menu)
 		return
-	var names := ["随身本","档案","照片","声音收藏"]
-	var targets := ["notebook","dossier","gallery","sound_library"]
+	var names := ["随身本" if CharacterSystem.owns_pocket_item("notebook") else "沿途线索","档案","照片","声音收藏"]
+	var targets := ["notebook" if CharacterSystem.owns_pocket_item("notebook") else "leads","dossier","gallery","sound_library"]
 	for i in (0 if mode=="map" else 4):
 		var chosen: bool=mode==targets[i] or (i==0 and mode in ["home","map","today","knowledge","fieldbook","bag","day_schedule"])
 		var b := button(body,names[i],Vector2(406+i*166,-38),Vector2(154,39),_switch_object.bind(targets[i]))
@@ -110,10 +111,13 @@ func build() -> void:
 		"map": _map()
 		"today": _notebook_page()
 		"knowledge": _knowledge()
+		"leads": _leads_page()
 		"fieldbook": _materials()
 		_:
-			mode="notebook"
-			_notebook_page()
+			if CharacterSystem.owns_pocket_item("notebook"):
+				mode="notebook"; _notebook_page()
+			else:
+				mode="dossier"; _archive()
 
 func edit(parent: Node, value: String, at: Vector2, dimensions: Vector2, action: Callable, placeholder := "") -> TextEdit:
 	var field := super.edit(parent,value,at,dimensions,action,placeholder)
@@ -131,6 +135,7 @@ func button(parent: Node, text: String, at: Vector2, dimensions: Vector2, action
 	return b
 
 func _switch_object(target: String) -> void:
+	if not CharacterSystem.owns_pocket_item(target): return
 	ResidencySystem.persist()
 	WorldSound.play_ui("paper")
 	mode=target; build()
@@ -291,7 +296,7 @@ func _today() -> void:
 	if not commitment.is_empty():
 		var minute := int(commitment.get("return_by",commitment.get("start",0)))
 		label(body,"记得，%02d:%02d 去 %s。" % [minute/60,minute%60,TravelSystem.location_name(str(commitment.get("location","dorm")))],Vector2(110,510),Vector2(1090,65),23,BLUE)
-	button(body,"← 回到随身本",Vector2(110,627),Vector2(350,45),_switch_object.bind("notebook"))
+	button(body,"← 回到档案",Vector2(110,627),Vector2(350,45),_switch_object.bind("dossier"))
 
 func _inventory() -> void:
 	preload("res://scripts/ui/components/handmade_assets.gd").picture(body,"tote",Vector2(5,0),DOSSIER_SIZE,true)
@@ -316,7 +321,7 @@ func _inventory() -> void:
 			label(detail,str(item.get("description","")),Vector2(30,98),Vector2(530,110),23,BLUE)
 			button(detail,"放回包里",Vector2(190,236),Vector2(220,40),func() -> void: detail.queue_free()))
 	if grid.get_child_count()==0: label(body,"包里还空着。",Vector2(110,245),Vector2(1040,60),25,BLUE)
-	button(body,"← 回到随身本",Vector2(110,671),Vector2(300,40),_switch_object.bind("notebook"))
+	button(body,"← 回到随身本" if CharacterSystem.owns_pocket_item("notebook") else "← 回到档案",Vector2(110,671),Vector2(300,40),_switch_object.bind("notebook" if CharacterSystem.owns_pocket_item("notebook") else "dossier"))
 	button(body,"整理素材 · 制作拼贴 →",Vector2(862,670),Vector2(370,44),_open_collage).name="OpenCollage"
 
 func _show_detail(id: String) -> void:
@@ -366,11 +371,14 @@ func _browser(kind: String) -> void:
 	browser.kind=kind; browser.owner_ui=self; browser.position=Vector2(65,50); body.add_child(browser)
 
 func _notebook_page() -> void:
-	var categories := [["me","今天的我","MY DAY"],["today","今天","TODAY"],["heard","听说了","LEADS"],["connections","回音","CONNECTIONS"],["people","人物","PEOPLE"],["places","地点","PLACES"],["personal","私人","PERSONAL"],["materials","收藏","MATERIALS"]]
+	var categories := [["schedule","今日日程","SCHEDULE"],["me","安排一天","MY DAY"],["today","待办与线索","TODAY"],["heard","听说了","LEADS"],["connections","回音","CONNECTIONS"],["people","人物","PEOPLE"],["places","地点","PLACES"],["personal","私人","PERSONAL"],["materials","收藏","MATERIALS"]]
 	for i in categories.size():
 		var key: String=categories[i][0]
-		var b := button(body,str(categories[i][2]) if SettingsSystem.language()=="en" else str(categories[i][1]),Vector2(40,95+i*65),Vector2(162,58),func() -> void: notebook_section=key; build())
+		var b := button(body,str(categories[i][2]) if SettingsSystem.language()=="en" else str(categories[i][1]),Vector2(40,75+i*62),Vector2(162,55),func() -> void: notebook_section=key; build())
+		b.name="NotebookTab_"+key
 		b.variant="tab"; b.selected=notebook_section==key; b.refresh(); b.add_theme_font_size_override("font_size",22); b.alignment=HORIZONTAL_ALIGNMENT_LEFT
+	if notebook_section=="schedule":
+		var agenda := preload("res://scripts/ui/components/notebook_agenda.gd").new(); agenda.owner_ui=self; agenda.position=Vector2(236,75); body.add_child(agenda); return
 	if notebook_section=="me":
 		var planner := preload("res://scripts/ui/components/day_five_planner.gd").new(); planner.position=Vector2(236,85); planner.scale=Vector2.ONE*.88; body.add_child(planner); return
 	_hand("Day %02d" % GameState.current_day,Vector2(242,90),Vector2(370,54),34)
@@ -481,8 +489,9 @@ func _connections_page() -> void:
 
 func _guidance_action(action: Dictionary) -> void:
 	var kind := str(action.get("action","today"))
-	if kind=="heard": mode="notebook"; notebook_section="heard"; build(); return
-	if kind=="personal": mode="notebook"; notebook_section="personal"; build(); return
+	if kind=="heard": mode="notebook" if CharacterSystem.owns_pocket_item("notebook") else "leads"; notebook_section="heard"; build(); return
+	if kind=="personal":
+		mode="notebook" if CharacterSystem.owns_pocket_item("notebook") else "dossier"; notebook_section="personal"; archive_tab="personal"; build(); return
 	if kind in ["portfolio","final"]:
 		mode="dossier"; archive_tab="days" if kind=="portfolio" else "final"; day=GameState.current_day; build(); return
 	if kind=="evening":
@@ -492,6 +501,19 @@ func _guidance_action(action: Dictionary) -> void:
 	if kind in ["exploration","requirements","recognition","receipts","personal"]:
 		mode="dossier"; archive_tab={"exploration":"life","requirements":"requirements","recognition":"recognition","receipts":"life","personal":"personal"}[kind]; build(); return
 	super._guidance_action(action)
+
+func _leads_page() -> void:
+	_hand("沿途听到的消息",Vector2(85,65),Vector2(1080,55),32)
+	var rows := scroll_area(body,Vector2(90,150),Vector2(1170,485))
+	var leads := GuidanceSystem.leads()
+	if leads.is_empty(): label(body,"还没听到新的线索。沿街和遇见的人说说话吧。",Vector2(90,190),Vector2(1100,90),24,BLUE)
+	for lead in leads:
+		var text := Label.new(); text.text=str(lead.text)+"\n— "+GuidanceSystem.source_name(str(lead.source)); text.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; text.add_theme_font_size_override("font_size",23); rows.add_child(text)
+		var actions := HBoxContainer.new(); rows.add_child(actions)
+		var follow := button(actions,"取消追踪" if str(GuidanceSystem.state().tracked_lead)==str(lead.id) else "追踪",Vector2.ZERO,Vector2(220,46),func(): GuidanceSystem.track("" if str(GuidanceSystem.state().tracked_lead)==str(lead.id) else str(lead.id)); build())
+		follow.custom_minimum_size=Vector2(220,46); follow.disabled=not bool(lead.available)
+		var map := button(actions,"看地图",Vector2.ZERO,Vector2(220,46),func(): _guidance_action({"action":"map","location":str(lead.location)})); map.custom_minimum_size=Vector2(220,46)
+	button(body,"人和地方 →",Vector2(90,654),Vector2(330,44),_switch_object.bind("knowledge"))
 
 func _reference_picker(question: String) -> void:
 	if is_instance_valid(detail): detail.queue_free()

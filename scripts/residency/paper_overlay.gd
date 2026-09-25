@@ -890,10 +890,12 @@ func _home() -> void:
 		label(body,"调整会立即生效，并在下次启动时保留。",Vector2(95,565),Vector2(900,40),20,Color("6f7770"))
 		return
 	if mode == "controls":
-		label(body,"A / D    沿街行走\nW    与人交谈     E    门、路口与物件     1    问点事\nSpace    继续对话     C    相机 / 拍照\nR    录音与停止     Space    留标记\nG    相册     Tab    地图     B    素材本\nF    居住档案     H    随身物品     J    私人手记\nEsc    返回上一层，再暂停",Vector2(100,135),Vector2(1140,420),28)
+		var personal_control := "R    录音与停止     Space    留标记" if CharacterSystem.owns_pocket_item("recorder") else "J    随身本 / 今日日程"
+		label(body,"A / D    沿街行走\nW    与人交谈     E    门、路口与物件     1    问点事\nSpace    继续对话     C    相机 / 拍照\n"+personal_control+"\nG    相册     Tab    地图     B    素材夹\nF    居住档案     H    随身物品\nEsc    返回上一层，再暂停",Vector2(100,135),Vector2(1140,420),28)
 		label(body,"地图、档案和整理时，游戏时间暂停。拍照与录音时，小镇继续生活。",Vector2(100,580),Vector2(1150,70),22)
 		return
 	var items: Array = [["相机  C","camera"],["录音机  R","recorder"],["相册  G","gallery"],["随身地图  Tab","map"],["素材本  B","fieldbook"],["居住档案  F","dossier"],["私人手记  J","notebook"],["操作","controls"],["设置","settings"]]
+	items=items.filter(func(item: Array) -> bool: return CharacterSystem.owns_pocket_item(str(item[1])))
 	if mode == "pause": items = [["继续走走","close"],["设置","settings"],["操作","controls"],["保存并回到封面","exit"]]
 	label(body,"%s 的随身物品     ·     余额 %d 元" % [GameState.current_role,GameState.money],Vector2(85,85),Vector2(1100,42),23)
 	button(body,"今日  T",Vector2(800,580),Vector2(345,45),func() -> void: mode="today"; build())
@@ -927,6 +929,7 @@ func _filing_name(destination: String) -> String:
 	return str({"proof":"证明","recognition":"居民认可","personal":"个人","loose":"留在自己手里"}.get(destination,"未归档"))
 
 func _home_action(action: String) -> void:
+	if not CharacterSystem.owns_pocket_item(action): return
 	match action:
 		"close": close()
 		"exit":

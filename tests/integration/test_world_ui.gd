@@ -97,7 +97,6 @@ func run() -> void:
 	await capture("room")
 	room.room_dialogue.hide()
 	root.get_node("SceneRouter").journal(); await settle()
-	check(room.get_node("GameplayShell").overlay.mode=="notebook","Legacy journal uses carried notebook")
-	room.get_node("GameplayShell").overlay.close(); await settle()
+	check(not is_instance_valid(room.get_node("GameplayShell").overlay),"A does not own a notebook through the legacy journal route")
 	print("WORLD UI failures=",failures)
 	quit(failures)

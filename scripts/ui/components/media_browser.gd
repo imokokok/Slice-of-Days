@@ -148,10 +148,14 @@ func _card_style() -> StyleBoxFlat:
 	var face := StyleBoxFlat.new(); face.bg_color=Color("fffcf4"); face.set_corner_radius_all(3); face.set_border_width_all(1); face.border_color=Color("beb7a6",.3); return face
 func _recorder_face() -> void:
 	_label("声音收藏",Vector2(12,-8),Vector2(660,60)).add_theme_font_size_override("font_size",31)
-	_button("＋ 新录音",Vector2(915,5),Vector2(260,46),owner_ui._home_action.bind("recorder"))
+	if CharacterSystem.owns_pocket_item("recorder"):
+		_button("＋ 新录音",Vector2(915,5),Vector2(260,46),owner_ui._home_action.bind("recorder"))
 
 func _empty_recorder() -> void:
 	_recorder_face()
+	if not CharacterSystem.owns_pocket_item("recorder"):
+		_label("还没有收藏的声音。",Vector2(280,230),Vector2(700,70))
+		return
 	var badge := TextureRect.new(); var atlas := AtlasTexture.new()
 	atlas.atlas=preload("res://art/ui/pocket_doodles/objects.png"); atlas.region=Rect2(0,512,512,512)
 	badge.texture=atlas; badge.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; badge.position=Vector2(141,196); badge.size=Vector2(200,190); badge.mouse_filter=MOUSE_FILTER_IGNORE; add_child(badge)

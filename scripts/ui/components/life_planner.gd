@@ -11,12 +11,12 @@ var minute: SpinBox
 
 func _ready() -> void:
 	name="DayFivePlanner"
-	if CharacterSystem.switch_unlocked(): tab="plan"
+	if CharacterSystem.switch_unlocked() or GameState.current_role=="B": tab="plan"
 	rebuild()
 
 func rebuild() -> void:
 	for child in get_children(): remove_child(child); child.queue_free()
-	PALETTE.words(self,"随身本 · 今天的我",Vector2.ZERO,1115,30,PALETTE.INK)
+	PALETTE.words(self,"B 的随身本 · 安排一天" if GameState.current_role=="B" else "今天的安排",Vector2.ZERO,1115,30,PALETTE.INK)
 	PALETTE.words(self,"第 %d 天  /  %s     可支配 %d 元 · 今日收入 %d 元"%[GameState.current_day,GameState.clock_text(),GameState.money,LifeSystem.today_income()],Vector2(0,46),1120,20,PALETTE.MUTED)
 	var tabs := [["me","今天的我"],["plan","安排一天"],["work","工作与收入"],["people","人物页"]]
 	for i in tabs.size():
@@ -59,9 +59,9 @@ func _plans() -> void:
 				sheet.queue_free()
 				notice="等待结束。" if CharacterSystem.wait_for_window() else "先收起手头的工具，再等待。"
 				rebuild())).name="WaitForWindow"
-	for shift in GameState.commitments_for_day(): _words(left,"固定 · %s—%s %s"%[GuidanceSystem.time_text(int(shift.start)),GuidanceSystem.time_text(int(shift.end)),shift.label],21)
+	for shift in GameState.commitments_for_day(): _words(left,"固定 · %s—%s %s\n地点：%s"%[GuidanceSystem.time_text(int(shift.start)),GuidanceSystem.time_text(int(shift.end)),shift.label,str(shift.get("location_label",TravelSystem.location_name(str(shift.get("location","residence")))))],21)
 	for appointment in GameState.appointments:
-		if int(appointment.get("day",0))==GameState.current_day: _words(left,"约定 · %s—%s %s · %s"%[GuidanceSystem.time_text(int(appointment.get("start",0))),GuidanceSystem.time_text(int(appointment.get("end",0))),str(appointment.get("label","")),str(appointment.get("status",""))],20)
+		if int(appointment.get("day",0))==GameState.current_day: _words(left,"约定 · %s—%s %s\n地点：%s · %s"%[GuidanceSystem.time_text(int(appointment.get("start",0))),GuidanceSystem.time_text(int(appointment.get("end",0))),str(appointment.get("label","")),TravelSystem.location_name(str(appointment.get("location",""))),str({"scheduled":"待赴约","active":"可以赴约","completed":"已完成","missed":"已错过"}.get(str(appointment.get("status","scheduled")),"已取消"))],20)
 	_words(left,"今天留出的空档",23)
 	for span in GameState.active_time_blocks(): _words(left,"%s — %s%s"%[GuidanceSystem.time_text(int(span[0])),GuidanceSystem.time_text(int(span[1]))," · 已过" if int(span[1])<=GameState.current_minute else ""],20)
 	if CharacterSystem.switch_unlocked():
@@ -84,13 +84,13 @@ func _plans() -> void:
 	time_row.add_child(transport)
 	_row_button(right,"写进今天的日程",func():
 		if selection.selected>=0: _result(LifeSystem.add_plan(str(cards[selection.selected].id),int(hour.value)*60+int(minute.value),["walk","bus","taxi"][transport.selected]))).name="AddPlan"
-	_words(right,"交通是出门时的打算；写进本子不会自动抵达。出发前在地图确认路程和车费。",18)
+	_words(right,"交通是出门时的打算；安排后不会自动抵达。出发前在地图确认路程和车费。",18)
 	var found := false
 	for row: Dictionary in LifeSystem.state().plans:
 		if int(row.day)!=GameState.current_day: continue
 		found=true
 		var prefix: String={"planned":"待做","done":"已做","cancelled":"划掉","missed":"错过"}.get(str(row.status),"")
-		var title := "%s %s—%s  %s"%[prefix,GuidanceSystem.time_text(int(row.start)),GuidanceSystem.time_text(int(row.end)),row.title]
+		var title := "%s %s—%s  %s\n地点：%s"%[prefix,GuidanceSystem.time_text(int(row.start)),GuidanceSystem.time_text(int(row.end)),row.title,TravelSystem.location_name(str(row.location))]
 		if str(row.status)=="cancelled":
 			var crossed := RichTextLabel.new(); crossed.bbcode_enabled=true; crossed.fit_content=true; crossed.text="[s]"+title+"[/s]"; crossed.custom_minimum_size=Vector2(490,40); right.add_child(crossed)
 		else: _words(right,title,21)

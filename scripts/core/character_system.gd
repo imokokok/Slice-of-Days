@@ -42,6 +42,12 @@ func job_title(role := "") -> String:
 func portrait_path(role := "") -> String:
 	return str(profile(role).get("portrait_path", ""))
 
+func owns_pocket_item(item: String, role := "") -> bool:
+	var owner := GameState.current_role if role.is_empty() else role
+	if item == "recorder": return owner == "A"
+	if item == "notebook": return owner == "B"
+	return true
+
 func switch_unlocked() -> bool:
 	return GameState.current_day==5 and bool(ChapterSystem.story().reveal_completed) and bool(GameState.shared_state.get("character_switch_enabled",false))
 func can_switch() -> bool:
@@ -80,6 +86,10 @@ func switch_character() -> bool:
 		GameState.load_save_data(snapshot)
 		return false
 	scene._refresh()
+	var shell := scene.get_node_or_null("GameplayShell")
+	if shell!=null and is_instance_valid(shell.overlay):
+		if target=="A" and str(shell.overlay.mode)=="notebook": shell.overlay.mode="day_schedule"
+		shell.overlay.call_deferred("build")
 	GameState.state_changed.emit()
 	return true
 

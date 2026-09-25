@@ -231,6 +231,7 @@ func _show_pocket_panel(panel: Control) -> void:
 
 
 func _open_pocket_recorder() -> void:
+	if not CharacterSystem.owns_pocket_item("recorder"): return
 	if is_instance_valid(pocket_panel) or pocket_opening: return
 	var panel = load("res://scenes/town_sound/Recorder.tscn").instantiate()
 	panel.shop_mode = false

@@ -158,6 +158,7 @@ func ending() -> void:
 
 
 func journal() -> void:
+	if not CharacterSystem.owns_pocket_item("notebook"): return
 	var scene := get_tree().current_scene
 	if scene != null and scene.has_node("GameplayShell"):
 		scene.get_node("GameplayShell").open_paper("notebook")

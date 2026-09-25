@@ -184,7 +184,7 @@ func _open_selected() -> void:
 		add_child(notes_overlay)
 		return
 	if str(item.get("kind", "")) == "journal":
-		get_node("GameplayShell").open_paper("notebook")
+		get_node("GameplayShell").open_paper("notebook" if CharacterSystem.owns_pocket_item("notebook") else "day_schedule")
 		return
 	if str(item.get("kind", "")) == "observe":
 		room_dialogue.show()

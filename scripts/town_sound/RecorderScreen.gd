@@ -55,6 +55,9 @@ func _draw() -> void:
 	pass # The scene remains visible around the physical recorder and notes.
 
 func _ready() -> void:
+	if not shop_mode and not CharacterSystem.owns_pocket_item("recorder"):
+		previous_auto_accept_quit=get_tree().auto_accept_quit
+		set_process_input(false); set_process_unhandled_input(false); queue_free(); return
 	add_to_group("town_sound_workspace")
 	add_to_group("meta_modal")
 	preload("res://scripts/town_sound/data/LegacyTownSound.gd").migrate()

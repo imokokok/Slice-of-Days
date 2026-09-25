@@ -34,12 +34,13 @@ func present(value: Dictionary) -> void:
 	var detail := LocalizationSystem.text(str(value.get("context","")))
 	context.text=detail; context.visible=not detail.is_empty()
 	var location := str(value.get("location",""))
-	var place := LocalizationSystem.text(TravelSystem.location_name(location) if not location.is_empty() else "随身本")
+	var place := LocalizationSystem.text(TravelSystem.location_name(location) if not location.is_empty() else "随身本" if CharacterSystem.owns_pocket_item("notebook") else "档案")
 	var action := str(value.get("action",""))
 	var destination := LocalizationSystem.text("日程与视角" if action=="day_schedule" else "整理今天" if action=="evening" and location==GameState.current_location else "查看记录" if action in ["portfolio","final","personal"] else "查看路线")
 	route.text=(LocalizationSystem.text("就在这里")+" · " if location==GameState.current_location else place+" · ")+destination+"  ›"
 	size=Vector2(320,144)
-	tooltip_text=text+"\n"+detail+"\n"+SettingsSystem.binding_text("open_map")+" "+LocalizationSystem.text("地图")+" · "+SettingsSystem.binding_text("open_notebook")+" "+LocalizationSystem.text("随身本")
+	tooltip_text=text+"\n"+detail+"\n"+SettingsSystem.binding_text("open_map")+" "+LocalizationSystem.text("地图")
+	if CharacterSystem.owns_pocket_item("notebook"): tooltip_text+=" · "+SettingsSystem.binding_text("open_notebook")+" "+LocalizationSystem.text("随身本")
 	var key := str(value.get("id",text))+detail
 	if key!=signature:
 		signature=key

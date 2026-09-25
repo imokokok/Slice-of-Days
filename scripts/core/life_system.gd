@@ -35,7 +35,7 @@ func walk_multiplier(role := "") -> float:
 
 func thought() -> String:
 	if value("engagement")<35: return "今天有点提不起劲。也许先听听熟悉的声音，再决定要不要试新的。"
-	if value("clarity")<35: return "刚才想做什么来着？先翻一眼随身本。"
+	if value("clarity")<35: return "刚才想做什么来着？先翻一眼随身本。" if CharacterSystem.owns_pocket_item("notebook") else "刚才想做什么来着？先看一眼今天的安排。"
 	return ""
 
 func spending_concern(cost: int) -> String:

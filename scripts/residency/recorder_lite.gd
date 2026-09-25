@@ -27,6 +27,8 @@ var source_stop: Timer
 var record_context: Dictionary = {}
 
 func _ready() -> void:
+	if not CharacterSystem.owns_pocket_item("recorder"):
+		set_process_input(false); queue_free(); return
 	theme=preload("res://scripts/ui/components/interface_palette.gd").theme_for_tools()
 	theme.set_constant("paragraph_spacing","Label",0)
 	theme.set_constant("line_spacing","Label",2)

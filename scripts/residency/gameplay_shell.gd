@@ -103,7 +103,7 @@ func _ready() -> void:
 	last_material_count = ResidencySystem.state().materials.size()
 	switch_button=preload("res://scripts/ui/components/solmere_button.gd").new()
 	switch_button.variant="outlined"; switch_button.position=Vector2(285,23); switch_button.size=Vector2(190,47)
-	switch_button.pressed.connect(func(): open_paper("day_schedule"))
+	switch_button.pressed.connect(func(): open_paper("notebook" if GameState.current_role=="B" else "day_schedule"))
 	add_child(switch_button)
 
 func _build_pocket_objects() -> void:
@@ -160,10 +160,13 @@ func _process(delta: float) -> void:
 		clock_label.text=_clock_ticket()
 	time_notice_age+=delta
 	var clear_view := not is_instance_valid(overlay) and not is_instance_valid(tool) and not _blocked()
+	var visible_index := 0
 	for i in pocket_objects.size():
 		var item := pocket_objects[i]
-		item.visible=clear_view
-		item.position=Vector2(30+i*94,size.y-112)
+		var owned := CharacterSystem.owns_pocket_item(str(item.name).trim_prefix("Pocket_"))
+		item.visible=clear_view and owned
+		item.position=Vector2(30+visible_index*94,size.y-112)
+		if owned: visible_index+=1
 		item.disabled=(i==2 and not FilmSystem.camera_available(false)) or not bool(UIStateSystem.policy().notebook)
 		item.tooltip_text=item.title+" · "+SettingsSystem.binding_text(item.action)
 		if i==2 and item.disabled: item.tooltip_text="先在杂货店取得相机"
@@ -313,6 +316,8 @@ func _handle_shortcut(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 func open_paper(mode: String) -> void:
+	if mode=="notebook" and not CharacterSystem.owns_pocket_item("notebook"): return
+	if mode=="today" and not CharacterSystem.owns_pocket_item("notebook"): mode="day_schedule"
 	if is_instance_valid(overlay) or _blocked() or is_instance_valid(tool): return
 	WorldSound.play_ui("paper")
 	var paper := PAPER.new()
@@ -326,6 +331,7 @@ func open_paper(mode: String) -> void:
 	add_child(paper)
 
 func open_tool(mode: String) -> void:
+	if not CharacterSystem.owns_pocket_item(mode): return
 	if is_instance_valid(tool) or is_instance_valid(overlay) or _blocked(): return
 	if mode == "recorder":
 		tool = load("res://scripts/residency/recorder_lite.gd").new()
@@ -370,5 +376,5 @@ func _open_active_direction() -> void:
 	if next.is_empty(): return
 	if str(next.get("action",""))=="day_schedule": open_paper("day_schedule"); return
 	if str(next.get("action",""))=="evening" and GameState.current_location==CoreLoopSystem.home(): CoreLoopSystem.open_evening(); return
-	open_paper("notebook")
+	open_paper("notebook" if CharacterSystem.owns_pocket_item("notebook") else "dossier")
 	if is_instance_valid(overlay): overlay._guidance_action(next)

@@ -13,6 +13,8 @@ var location_names: Dictionary = {}
 
 
 func _ready() -> void:
+	if not CharacterSystem.owns_pocket_item("notebook"):
+		SceneRouter.return_from_gameplay(); return
 	_load_location_names()
 	_build_ui()
 	var revisions := _button(self, "改过的记忆", Vector2(1120,28), Vector2(230,44), TEAL)

@@ -848,6 +848,11 @@ func _on_pan_entered(body: Node2D) -> void :
 
 func _on_pan_exited(body: Node2D) -> void :
 	if pan.is_carrying(body): return
+	# The pan and rigid bodies update in different physics phases. Area exit
+	# signals can arrive while a carried body still has its previous pose.
+	# Recheck once transport settles; a genuinely spilled body is removed then.
+	if pan.transporting() and not bool(body.get_meta("poured", false)): return
+	if pan.contains(body.position): return
 	if body is RigidBody2D and utensil_holds(body):
 		body.set_meta("container_location", "spoon")
 		return

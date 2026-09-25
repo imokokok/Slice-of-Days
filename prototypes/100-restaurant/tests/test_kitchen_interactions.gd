@@ -90,6 +90,7 @@ func _run() -> void:
 	_mouse(handle_home, "up")
 	await create_timer(0.2).timeout
 	_expect(game.world.pan.on_stove() and game.world.pan.water_heat > 0, "returning a cold water-filled pan heats the water first")
+	_expect(game.session.heating and rice.get_meta("enrolled", false), "moving the pan back does not drop its food or switch off the burner")
 	game.world.pan.water_heat = 100
 	game.world.pan.water_ml=600.0
 	game.world.reactions.pan_c=130.0

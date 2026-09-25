@@ -6,7 +6,14 @@ func _initialize()->void:call_deferred("run")
 func run()->void:
 	var game=load("res://Main.tscn").instantiate();root.add_child(game)
 	while not game.ready_done:await process_frame
-	game.smoke=true;game.take_letter(626,Vector2(650,350))
+	game.smoke=true
+	for index in 8:
+		var tab=game.ui.get_node("Category_"+str(index))
+		tab.pressed.emit()
+		await process_frame
+		check(game.material_ids().has(game.primary),"Category tab loads its material group")
+		check(game.ui.get_node("Category_"+str(index)).tooltip_text.contains(str(game.material_ids().size())),"Tab exposes the current group count")
+	game.take_letter(626,Vector2(650,350))
 	for locale in ["zh","en"]:
 		if game.L.language!=locale:game.switch_language()
 		for dimensions in [Vector2i(960,600),Vector2i(1280,800),Vector2i(1440,900)]:

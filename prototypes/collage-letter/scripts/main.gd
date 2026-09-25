@@ -7,8 +7,10 @@ const Piece = preload("res://scripts/collage_piece.gd")
 const BottleClient = preload("res://scripts/bottle_client.gd")
 const BottleDock = preload("res://scripts/bottle_dock.gd")
 const Audio = preload("res://scripts/audio_manager.gd")
-const INK = Color("354a43")
-const RUST = Color("a85740")
+const Journal = preload("res://scripts/journal_style.gd")
+const ToolButton = preload("res://scripts/journal_tool.gd")
+const INK = Color("465951")
+const RUST = Color("ab6759")
 const LETTER = Rect2(455,174,530,560)
 const MATERIAL_TYPES = {"图案":"decoration","纸张":"paper","文字":"print","票据":"ticket","乐谱":"score","画作":"art","广告":"advert","照片":"photo","字母":"letter"}
 var save_path := "user://letter_v1.json"
@@ -165,7 +167,7 @@ func label_at(text: String, rect: Rect2, size: int = 18, color: Color = INK) -> 
 	return node
 
 func button(text: String, rect: Rect2, action: Callable, active: bool = false) -> Button:
-	var node := Button.new()
+	var node := ToolButton.new()
 	node.text = L.t(text)
 	node.position = rect.position
 	node.size = rect.size
@@ -178,18 +180,20 @@ func button(text: String, rect: Rect2, action: Callable, active: bool = false) -
 	node.add_theme_color_override("font_color",Color("faf3df") if active else INK)
 	for state in ["normal","hover","pressed","focus"]:
 		var style := StyleBoxFlat.new()
-		style.bg_color = (RUST if active else Color("ece5d2")) if state == "normal" else Color("cbb89a")
-		style.corner_radius_top_left = 5
-		style.corner_radius_top_right = 5
-		style.corner_radius_bottom_left = 5
-		style.corner_radius_bottom_right = 5
-		style.border_color = Color("b7aa90")
-		style.set_border_width_all(1)
+		style.bg_color = (RUST if active else Color("fff3da")) if state == "normal" else Color("c5ded3")
+		style.corner_radius_top_left = 13
+		style.corner_radius_top_right = 10
+		style.corner_radius_bottom_left = 10
+		style.corner_radius_bottom_right = 13
+		style.border_color = Color("90b5a4")
+		style.set_border_width_all(2)
 		style.content_margin_left=8
 		style.content_margin_right=8
 		style.content_margin_top=4
 		style.content_margin_bottom=4
 		node.add_theme_stylebox_override(state,style)
+	node.mouse_entered.connect(func(): node.pivot_offset=node.size*0.5;node.create_tween().tween_property(node,"scale",Vector2(1.025,1.025),0.10))
+	node.mouse_exited.connect(func(): node.create_tween().tween_property(node,"scale",Vector2.ONE,0.12))
 	node.pressed.connect(action)
 	ui.add_child(node)
 	node.size=rect.size
@@ -199,46 +203,48 @@ func build_ui() -> void:
 	for child in ui.get_children():
 		ui.remove_child(child)
 		child.queue_free()
-	button("English" if L.language=="zh" else "Chinese",Rect2(1030,78,140,30),switch_language)
-	label_at("海盐书信事务所",Rect2(54,27,600,42),30)
-	label_at("COLLAGE LETTER   /   把捡到的语言，寄给某个人",Rect2(56,73,700,30),14)
+	button("English" if L.language=="zh" else "Chinese",Rect2(1030,35,140,32),switch_language)
+	label_at("海盐书信事务所",Rect2(65,28,360,39),26)
+	label_at("COLLAGE LETTER   /   把捡到的语言，寄给某个人",Rect2(67,70,330,25),11)
 	button("声音" if not audio.muted else "静音",Rect2(1220,39,70,34),func(): audio.toggle(); build_ui())
 	button("操作说明",Rect2(1300,39,94,34),func(): help_open = not help_open; build_ui())
-	phase_label = label_at(phase_title(),Rect2(760,39,440,34),18,RUST)
-	status_label = label_at(hint,Rect2(58,851,1320,30),16)
+	phase_label = label_at(phase_title(),Rect2(474,38,520,34),18,RUST)
+	status_label = label_at(hint,Rect2(58,866,1320,26),14)
 	if stage in ["DIALOGUE","WORKBENCH","END"]:
-		button("海边 · 漂流瓶邮局",Rect2(1190,78,204,30),open_bottles)
+		button("海边 · 漂流瓶邮局",Rect2(1175,85,219,32),open_bottles)
 	if stage == "WORKBENCH":
 		if letter_mode=="npc":
 			var request: Dictionary=commissions[commission_index%commissions.size()]
 			label_at(str(request["name_"+L.language])+" · "+str(commission_index+1),Rect2(464,104,510,23),15,RUST)
 			var brief:=label_at(str(request["request_"+L.language]),Rect2(464,129,510,44),16)
 			brief.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-		var names := ["移动","刻刀 · 方框","刻刀 · 自由","胶带","涂鸦笔"]
+		var names := ["移动","方框裁剪","自由裁剪","胶带","涂鸦笔"]
 		var ids := ["move","rect","free","tape","pen"]
 		for i in names.size():
 			var id: String = ids[i]
-			button(names[i],Rect2(290+i*170,800,158,38),func(): set_tool(id),tool==id)
-		button("完成这封信  →",Rect2(1158,800,220,38),complete_letter,true)
-		var category_picker:=OptionButton.new()
-		category_picker.position=Vector2(62,118)
-		category_picker.size=Vector2(300,31)
-		category_picker.add_theme_font_override("font",font)
+			var item:=button(names[i],Rect2(421+i*111,788,101,70),func(): set_tool(id),tool==id)
+			item.tool_id=id
+			item.add_theme_font_size_override("font_size",mini(13,item.get_theme_font_size("font_size")))
+			for state in ["normal","hover","pressed","focus"]: item.get_theme_stylebox(state).content_margin_top=36
+			item.size=Vector2(101,70)
+		button("完成这封信  →",Rect2(1160,797,214,52),complete_letter,true)
 		var categories: Array=["全部","图案","纸张","文字","票据","乐谱","广告","字母"]
-		for item in categories:
-			category_picker.add_item(L.t(item)+" · "+str(material_ids(item).size())+L.t(" 份"))
-		category_picker.name="MaterialCategory"
-		category_picker.select(maxi(0,categories.find(category)))
-		category_picker.item_selected.connect(func(index): category=categories[index]; material_page=0; update_material_slots(); build_ui())
-		ui.add_child(category_picker)
-		button("‹",Rect2(63,702,45,40),func(): material_page-=1; update_material_slots(); build_ui())
-		button("›",Rect2(315,702,45,40),func(): material_page+=1; update_material_slots(); build_ui())
-		button("查看全部素材 · "+str(materials.size())+" 份",Rect2(62,746,300,32),open_material_catalog)
-		button("›",Rect2(1314,415,45,36),cycle_photo)
-		button("›",Rect2(1314,705,45,36),cycle_snapshot)
-		label_at("%s · %02d/%02d 组 · %s" % [category,material_page+1,maxi(1,ceili(material_ids().size()/2.0)),materials[primary].title],Rect2(62,151,350,28),14)
-		label_at("画作 · 6 份 / "+str(materials[album_source].title),Rect2(1070,151,340,28),15)
-		label_at(L.t("照片")+" / "+str(materials[photo_source].title),Rect2(1072,454,300,28),15)
+		var short_zh: Array=["全","图","纸","文","票","谱","广","字"]
+		var short_en: Array=["All","Art","Pap","Txt","Tix","Mus","Ads","Aa"]
+		for index in categories.size():
+			var group: String=categories[index]
+			var tab:=button(short_zh[index] if L.language=="zh" else short_en[index],Rect2(12,188+index*64,42,51),func(): category=group;material_page=0;update_material_slots();build_ui(),category==group)
+			tab.name="Category_"+str(index)
+			tab.tooltip_text=L.t(group)+" · "+str(material_ids(group).size())
+		label_at("素材夹",Rect2(81,115,235,33),21)
+		button("‹",Rect2(72,703,41,35),func(): material_page-=1; update_material_slots(); build_ui())
+		button("›",Rect2(320,703,41,35),func(): material_page+=1; update_material_slots(); build_ui())
+		button("查看全部素材 · "+str(materials.size())+" 份",Rect2(73,750,285,34),open_material_catalog)
+		button("›",Rect2(1321,407,38,33),cycle_photo)
+		button("›",Rect2(1321,708,38,33),cycle_snapshot)
+		label_at("%s · %02d/%02d 组 · %s" % [category,material_page+1,maxi(1,ceili(material_ids().size()/2.0)),materials[primary].title],Rect2(75,153,292,25),14)
+		label_at("画作 · 6 份 / "+str(materials[album_source].title),Rect2(1080,157,283,27),15)
+		label_at(L.t("照片")+" / "+str(materials[photo_source].title),Rect2(1080,457,283,25),15)
 		label_at("TO / "+("很久没见的朋友" if letter_mode=="npc" else ("海上的某个人" if letter_mode=="bottle" else "回复 #"+str(reply_parent.get("id",0)))),Rect2(483,184,480,30),14,Color("9a9787"))
 		if tool=="pen":
 			for index in 4:
@@ -249,7 +255,9 @@ func build_ui() -> void:
 		if tool=="tape":
 			for index in 8:
 				var pattern:=index
-				button(["≋","▦","•","♧","╱","○","⌁","✿"][index],Rect2(500+index*50,746,43,32),func(): tape_style=pattern;build_ui(),tape_style==index)
+				var sample:=button("",Rect2(500+index*58,746,52,32),func(): tape_style=pattern;build_ui(),tape_style==index)
+				sample.sample_style=index
+				sample.tooltip_text=L.t("胶带")+" "+str(index+1)
 		if tool=="move" and selected and is_instance_valid(selected):
 			button("翻转",Rect2(460,746,78,32),func(): selected.scale.x *= -1; changed())
 			button("置顶",Rect2(547,746,78,32),func(): pieces_root.move_child(selected,pieces_root.get_child_count()-1); changed())
@@ -308,26 +316,26 @@ func say(text: String) -> void:
 func _draw() -> void:
 	if not font:
 		return
-	draw_rect(Rect2(0,0,1440,900),Color("b99572"))
+	draw_rect(Rect2(0,0,1440,900),Color("dcb38b"))
 	if desk_grain:
 		draw_set_transform(Vector2(1440,0),PI/2)
-		draw_texture_rect(desk_grain,Rect2(0,0,900,1440),false,Color(0.88,0.85,0.79,0.42))
+		draw_texture_rect(desk_grain,Rect2(0,0,900,1440),false,Color(1.0,0.91,0.79,0.25))
 		draw_texture_rect(desk_texture,Rect2(0,0,900,1440),false,Color(1,0.9,0.8,0.055))
 		draw_set_transform(Vector2.ZERO)
 	for seam in [286,576,873]:
 		var contour:=PackedVector2Array()
 		for x in range(0,1441,20):contour.append(Vector2(x,seam+sin(x*0.004+seam)*2))
 		draw_polyline(contour,Color(0.31,0.23,0.17,0.16),2,true)
-	paper(Rect2(38,21,655,76),Color("e9e0c9"))
-	paper(Rect2(744,22,650,76),Color("e9e0c9"))
-	paper(Rect2(40,842,1360,43),Color("e6ddc6"))
+	Journal.heading(self)
 	if stage == "WORKBENCH":
-		paper(LETTER,Color("faf6e9"))
-		paper(Rect2(450,100,535,70),Color("eee4cc"))
+		Journal.desk(self)
+		paper(LETTER,Color("fff8e6"))
+		paper(Rect2(450,100,535,70),Color("fff0d1"))
+		Journal.clip(self,Vector2(697,100))
 		for i in [primary,secondary,photo_source,album_source]:
 			for depth in range(3,0,-1):
 				draw_set_transform(sources[i].get_center(),(depth-2)*0.025)
-				paper(Rect2(-sources[i].size*0.5+Vector2(depth*5,depth*4),sources[i].size),Color("d4c6a8"))
+				paper(Rect2(-sources[i].size*0.5+Vector2(depth*5,depth*4),sources[i].size),[Color("dfc4a5"),Color("f3dcc0"),Color("ece2c5")][depth-1])
 				draw_set_transform(Vector2.ZERO)
 			if textures.size()>i:
 				draw_texture_rect(textures[i],sources[i],false)
@@ -940,8 +948,9 @@ func open_material_catalog() -> void:
 	catalog_layer=CanvasLayer.new();catalog_layer.layer=20;add_child(catalog_layer)
 	var shade:=ColorRect.new()
 	shade.size=Vector2(1440,900);shade.color=Color(0.16,0.20,0.17,0.72);catalog_layer.add_child(shade)
-	var panel:=ColorRect.new()
-	panel.position=Vector2(230,100);panel.size=Vector2(980,690);panel.color=Color("f6efdb");catalog_layer.add_child(panel)
+	var panel:=Panel.new()
+	panel.position=Vector2(230,100);panel.size=Vector2(980,690)
+	var cover:=StyleBoxFlat.new();cover.bg_color=Color("fff0d5");cover.border_color=Color("81b6a9");cover.set_border_width_all(9);cover.set_corner_radius_all(24);panel.add_theme_stylebox_override("panel",cover);catalog_layer.add_child(panel)
 	var heading:=Label.new()
 	heading.text=L.t("素材一览")+" · "+str(materials.size())+L.t(" 份")
 	heading.position=Vector2(256,119);heading.add_theme_font_override("font",font)
@@ -975,8 +984,9 @@ func open_material_catalog() -> void:
 		item.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 		for state in ["normal","hover","pressed"]:
 			var style:=StyleBoxFlat.new()
-			style.bg_color=Color("ece5d2") if state=="normal" else Color("d7c5a9")
-			style.border_color=Color("b7aa90");style.set_border_width_all(1);style.set_content_margin_all(8)
+			style.bg_color=Color("f8e3c5") if state=="normal" else Color("c5ded3")
+			style.set_corner_radius_all(12)
+			style.border_color=Color("90b5a4");style.set_border_width_all(1);style.set_content_margin_all(8)
 			item.add_theme_stylebox_override(state,style)
 		item.custom_minimum_size=Vector2(292,84);item.alignment=HORIZONTAL_ALIGNMENT_LEFT
 		item.pressed.connect(select_catalog_material.bind(id));grid.add_child(item)

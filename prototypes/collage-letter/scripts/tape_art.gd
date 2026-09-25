@@ -1,6 +1,6 @@
 extends RefCounted
 const COLORS=[Color(0.78,0.67,0.43,0.76),Color(0.37,0.53,0.58,0.8),Color(0.66,0.42,0.37,0.8),Color(0.59,0.66,0.47,0.78),Color(0.91,0.82,0.65,0.82),Color(0.53,0.45,0.59,0.76),Color(0.71,0.76,0.71,0.84),Color(0.87,0.76,0.55,0.8)]
-static func paint(node: Node2D, poly: PackedVector2Array, style: int) -> void:
+static func paint(node: CanvasItem, poly: PackedVector2Array, style: int) -> void:
 	if poly.size()<3:return
 	node.draw_colored_polygon(poly,COLORS[posmod(style,COLORS.size())])
 	var bounds:=Rect2(poly[0],Vector2.ZERO)

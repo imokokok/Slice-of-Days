@@ -88,6 +88,6 @@ func run() -> void:
  quit(failures)
 
 func image_hash(bytes: PackedByteArray) -> String:
-	var context:=HashingContext.new()
-	context.start(HashingContext.HASH_SHA256);context.update(bytes)
-	return context.finish().hex_encode()
+ var context:=HashingContext.new()
+ context.start(HashingContext.HASH_SHA256);context.update(bytes)
+ return context.finish().hex_encode()

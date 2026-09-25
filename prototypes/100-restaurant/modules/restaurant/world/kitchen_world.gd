@@ -576,7 +576,7 @@ func _update_food_depth() -> void:
 		if body.get_meta("overflow", false): body.z_index = 6
 		elif body.get_meta("plated", false): body.z_index = 0 if body.has_meta("liquid_state") else 1
 		elif pan.contains(body.position): body.z_index = 0 if body.has_meta("liquid_state") else 1
-		else: body.z_index = 5 if body.position.y > pan.point(Vector2(810, 617)).y else 1
+		else: body.z_index = 6 if body.position.y > pan.point(Vector2(810, 617)).y else 1
 
 func begin_food_drag(pointer: Vector2, from_storage: = false) -> void :
 	if not controls_enabled or not is_instance_valid(_held): return

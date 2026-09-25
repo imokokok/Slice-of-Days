@@ -25,6 +25,7 @@ func run() -> void:
 		expect(item != null and item.get_rect().end.y < 590, "tray click area stays inside its groove: " + id)
 	expect(game.world.pan.point(Vector2(809, 541)).y > 639.0, "pan opening starts below the rear rack front")
 	expect(game.world.cutting_board.rect().encloses(Rect2(game.world._knife_rest_position + Vector2(-93, -24), Vector2(188, 52))), "knife art rests entirely on the cutting board")
+	expect(game.world.cutting_board.z_index > game.world.pan.pan_back.z_index and game.world.cutting_board.z_index < game.world._knife_visual.z_index, "board hides the crossing pan handle while the knife remains above the board")
 	for id in ["sock", "confetti", "toilet_paper", "soap"]:
 		var item := game.hud.find_child("Ingredient_" + id, true, false) as Button
 		if item == null: continue

@@ -16,7 +16,7 @@ const NAVIGATION_TITLES := {
 	"NewGame": "新游戏",
 	"Chapters": "章节",
 	"Settings": "设置",
-	"Credits": "制作人员",
+	"Credits": "致谢",
 	"Quit": "退出",
 }
 
@@ -85,7 +85,7 @@ func _build_navigation() -> void:
 		navigation.add_child(button); button.pressed.connect(actions[i])
 	for i in 2:
 		var extra := preload("res://scripts/ui/components/solmere_button.gd").new()
-		extra.name=["Credits","Quit"][i]; extra.variant="paper"; extra.text=LocalizationSystem.text(["制作人员","退出"][i])
+		extra.name=["Credits","Quit"][i]; extra.variant="paper"; extra.text=LocalizationSystem.text(["致谢","退出"][i])
 		extra.position=Vector2(1230+i*170,826); extra.size=Vector2(154,44); extra.add_theme_font_size_override("font_size",18)
 		add_child(extra); extra.pressed.connect([_show_credits,_show_quit_confirmation][i])
 	navigation.modulate.a=1
@@ -239,22 +239,7 @@ func _add_settings_volume_slider(title: String, y: float, value: int, setter: Ca
 func _show_credits() -> void:
 	_prepare_modal()
 	modal_panel.position=Vector2(360,83); modal_panel.size=Vector2(880,734)
-	_make_label(modal_panel,"制作与素材鸣谢",Vector2(42,32),Vector2(792,44),29,INK)
-	var scroll:=ScrollContainer.new(); scroll.position=Vector2(42,102); scroll.size=Vector2(792,516); modal_panel.add_child(scroll)
-	var column:=VBoxContainer.new(); column.size_flags_horizontal=Control.SIZE_EXPAND_FILL; column.add_theme_constant_override("separation",19); scroll.add_child(column)
-	for entry in [
-		["Solmere 创作团队","策划、叙事、角色与场景，以及游戏中的原有手绘美术。"],
-		["hello erika · Little Chef","料理锅、厨房器具、面包与奶酪插画。hello-erika.itch.io"],
-		["Cila","纸质控件底形及操作符号。nacila.itch.io"],
-		["R4orce","柔和的按钮、菜单、录音及通知音效。r4orce.itch.io"],
-		["HuntSounds","环境、雨声、脚步与物件音效。huntsounds.itch.io"],
-		["Rock Gementiza","Godot UI Animation Library · MIT；动效已为本作适配。"],
-		["Godot Engine contributors","引擎与官方频谱示例 · MIT。"],
-		["Kenney Vleugels","纸牌动作采样 · Casino Audio · CC0。"],
-		["NASA / ESA / Hubble / Chandra","望远镜中的天文素材；逐项来源与署名保留在观测介绍中。"]
-	]:
-		var heading:=Label.new(); heading.text=LocalizationSystem.text(entry[0]); heading.add_theme_font_size_override("font_size",22); heading.add_theme_color_override("font_color",INK); column.add_child(heading)
-		var description:=Label.new(); description.text=LocalizationSystem.text(entry[1]); description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; description.add_theme_font_size_override("font_size",18); description.add_theme_color_override("font_color",MUTED); column.add_child(description)
+	_make_label(modal_panel,"致谢",Vector2(42,32),Vector2(792,44),29,INK)
 	var close := _make_button(modal_panel,"返回",Vector2(345,650),Vector2(190,46),"primary")
 	close.pressed.connect(_hide_modal)
 

@@ -16,7 +16,9 @@ func run() -> void:
 	game.world.drop_into_pan()
 	await create_timer(0.6).timeout
 	var initial: Vector2 = food.position
-	mouse(Vector2(1037,654), MOUSE_BUTTON_LEFT, true)
+	var start_handle: Vector2 = game.world.pan.point(Vector2(1000, 566))
+	expect(game.world.pan.can_grab(start_handle), "the current pan handle can be grabbed")
+	mouse(start_handle, MOUSE_BUTTON_LEFT, true)
 	motion(Vector2(850,250))
 	await process_frame
 	await physics_frame

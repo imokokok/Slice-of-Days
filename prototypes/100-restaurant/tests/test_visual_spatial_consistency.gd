@@ -30,10 +30,12 @@ func run() -> void:
 	w.spawn_ingredient(game._definition("tomato"))
 	var tomato: RigidBody2D = w._held
 	w.drop_into_pan()
+	var tomato_release_x := tomato.position.x
 	await create_timer(0.7).timeout
 	w.spawn_ingredient(game._definition("egg"))
 	var egg: RigidBody2D = w._held
 	w.drop_into_pan()
+	expect(egg.position.x - tomato_release_x > 70.0, "shortcut drops whole ingredients into separate pan spaces")
 	var total_mass := tomato.mass + egg.mass
 	await create_timer(1.5).timeout
 	expect(tomato.get_meta("enrolled", false) and egg.get_meta("enrolled", false), "both real drops enroll in the pan")

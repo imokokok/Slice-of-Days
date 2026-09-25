@@ -743,7 +743,19 @@ func drop_held(throw_item: = false) -> void :
 func drop_into_pan() -> void :
 	if not is_instance_valid(_held):
 		return
-	_held.global_position = pan.point(Vector2(809 + randf_range(-35, 35), 521))
+	# Pick a clear part of the pan for the keyboard shortcut. Random releases
+	# near its center can make two whole ingredients collide before landing.
+	var drop_x := 770.0
+	var clearance := -1.0
+	for candidate in [770.0, 850.0, 810.0]:
+		var nearest := INF
+		for body in _foods.get_children():
+			if body == _held or body.is_queued_for_deletion() or body.get_meta("plated", false) or body.get_meta("is_container", false) or not pan.contains(body.position): continue
+			nearest = minf(nearest, absf(pan.local_point(body.position).x - candidate))
+		if nearest > clearance:
+			clearance = nearest
+			drop_x = candidate
+	_held.global_position = pan.point(Vector2(drop_x, 521))
 	drop_held(false)
 
 func _is_whole_egg(body: RigidBody2D) -> bool:

@@ -146,7 +146,9 @@ func coat(source: RigidBody2D,food: RigidBody2D,requested: float) -> float:
 	coating.origin=[clampf((source.position.x-food.position.x)/48.0+0.5,0.12,0.88),0.27]
 	coating.spread=float(coating.get("spread",0.0))
 	food.mass+=kg
-	source.mass=maxf(0.000001,source.mass-kg)
+	# An arbitrarily large minimum mass creates material during tiny transfers.
+	# Godot requires positive mass; only an effectively empty body uses epsilon.
+	source.mass=maxf(0.000000000001,source.mass-kg)
 	food.set_meta("surface_sauce",coating)
 	source.set_meta("volume_ml",liquid.volume_ml)
 	if float(liquid.volume_ml)<=0.00001:
@@ -178,7 +180,7 @@ func coat_phase(source: RigidBody2D,food: RigidBody2D,requested: float) -> float
 	s.water_kg=maxf(0.0,float(s.water_kg)-moved*float(s.water_kg)/maxf(source.mass,0.000001))
 	s.liquid_kg-=moved
 	s.phase_exported_kg+=moved
-	source.mass=maxf(0.000001,source.mass-moved)
+	source.mass=maxf(0.000000000001,source.mass-moved)
 	food.set_meta("surface_sauce",film)
 	_apply(source,s)
 	_apply(food,ensure_state(food))

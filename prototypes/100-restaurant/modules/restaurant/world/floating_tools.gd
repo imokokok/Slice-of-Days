@@ -12,6 +12,7 @@ func _process(_delta: float) -> void :
 		if world.pan.active or world.pan.falling:
 			wanted.append(world.pan.pan_back)
 			wanted.append(world.pan.pan_front)
+			wanted.append(world.pan.pan_surface)
 			for body in world._foods.get_children():
 				if body == world._held or body.is_queued_for_deletion(): continue
 				if world.pan.is_carrying(body) or (body.get_meta("poured", false) and not body.get_meta("plated", false)):
@@ -42,17 +43,25 @@ func _process(_delta: float) -> void :
 			else:
 				proxy.set_script(source.get_script())
 				for property in source.get_property_list():
-					if str(property.name) in ["controller", "definition", "cut", "heat", "softness", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
+					if str(property.name) in ["controller", "definition", "cut", "heat", "softness", "thermal", "coating", "compression", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
 						proxy.set(property.name, source.get(property.name))
 			add_child(proxy)
 			copies[id] = {"source": source, "proxy": proxy}
 		var visual: Node2D = copies[id].proxy
 		visual.transform = source.get_global_transform_with_canvas()
+		# Proxies remain views of the live food, including while it keeps cooking.
+		for property_name in ["cut", "heat", "softness", "thermal", "coating", "compression", "liquid_state"]:
+			if property_name in source and property_name in visual: visual.set(property_name, source.get(property_name))
 		var spoon_rim: = source.name == "SpoonFrontRim"
 		var spoon_food: = source.get_parent() is RigidBody2D and _spoon_holds(source.get_parent())
-		visual.z_index = 0 if source == world.pan.pan_back else (6 if spoon_rim else (5 if spoon_food else (4 if world.utensils.has(source) else (3 if source == world.pan.pan_front else 2))))
-		visual.queue_redraw()
-		source.visible = false
+		visual.z_index = 0 if source == world.pan.pan_back else (7 if spoon_rim else (6 if spoon_food else (5 if world.utensils.has(source) else (4 if source == world.pan.pan_front else (3 if source == world.pan.pan_surface else (1 if source.name == "SauceBlob" else 2))))))
+	# Keep overlapping carried pieces in the same depth order as the kitchen.
+	var ordered := copies.values()
+	ordered.sort_custom(func(a, b): return a.source.get_global_transform_with_canvas().origin.y < b.source.get_global_transform_with_canvas().origin.y)
+	for index in ordered.size(): move_child(ordered[index].proxy, index)
+	for entry in copies.values():
+		entry.proxy.queue_redraw()
+		entry.source.visible = false
 
 func _exit_tree() -> void :
 	for entry in copies.values():

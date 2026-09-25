@@ -1,5 +1,7 @@
 # 100饭店工程约束
 
+2026-09-25 空间复查：锅口/前沿/抓取共用 pan_geometry；固体入锅不得关闭彼此接触。绘制深度与透明轮廓选取同步，搬运代理必须逐帧同步热/挂酱状态。台面十件调料尺寸使用 SpriteLibrary.physical_art_scale；盘面装饰酱位于食材下，照片与编辑器同源。内部余量和物体快照禁止逐步舍入或用一毫克保底创造质量。改动前读 docs/VISUAL_SPATIAL_AUDIT_20260925.md，运行 tests/test_visual_spatial_consistency.gd 与受影响回归，GPU 检查真实遮挡，实际鼠标验证取物/落锅/切配/摆盘。
+
 2026-09-25 锅内反应由 `cooking_reactions.gd` 在固定物理步唯一更新，实际有 thermal 的食材不能再用 session 秒数加热。修改前读 `docs/THERMAL_REACTIONS_20260925.md`。酱汁/木勺/锅残留/切割必须转移质量及组成，不增加无限覆盖层；两面温度、核心、含水量和相变历史需传到摆盘、菜谱与 DIY。跑 thermal/reaction kitchen、存档、录音及完整回归；旧测试推进真实锅温，不直接补 heat 数。JSON 数字导入会变 float，StringName 键序列化为 string，验证按实际 JSON 值而非内部 Variant 类型。自动化不能冒称人耳听感、CFD 或完整三维仿真。
 
 2026-09-25 订单与 DIY 使用真实纸纹及 OFL WenKai 手写字体；编辑/静态文字共用原生 TextEdit 排版，不能退回独立表单或按钮堆。改动前读 `docs/PAPER_CRAFT_20260925.md`，运行 `tests/test_craft_workbench.gd` 及相关存档/GUI 回归。草稿按作品 ID 隔离、仅当次进程保留；永久保存保留可编辑图层；仅写做法也能存 DIY，不伪造烹饪记录。IME 候选窗属于系统，合成输入测试不能冒充真实 IME 验收。字体许可随源码和 Windows 包保留，生成纸纹的完整提示词与哈希不得遗失。

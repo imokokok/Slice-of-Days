@@ -1,0 +1,26 @@
+2026-09-25 native Windows verification
+
+App: outputs/Windows试玩版/AfterHoursKitchen.exe
+Final SHA256: ed2656591960b23bd812fc618a96d459598304ca0f5213ba448076d18b27eb07
+Final size: 177858576 bytes
+Final process: 38560; title: 100饭店; Responding: True
+
+Native window state was freshly acquired after each mouse action.
+Observed on the release before the final tooltip-color-only change:
+- Enter practice mode.
+- Drag olive oil off its shelf, then return it. The shelf becomes empty while held; bottle size remains consistent.
+- Drop tomato and egg into the same pan position; they separate into resting contacts.
+- Lift the pan by its handle with both foods inside.
+- Place carrot on the fixed board, cut it with the knife, move the knife away; separate pieces remain.
+- Move tomato from pan to plate, open plating, drag tomato to a different plate position.
+
+The final release was relaunched and freshly inspected after tooltip styling:
+- Practice kitchen renders normally.
+- Shelf paging responds, tooltip uses a light background with dark text.
+- No player content was saved during the manual check.
+
+Short clicks above the pan did not constitute a sustained pouring audition.
+Continuous dispensing is covered by automated input regressions, not claimed as manually verified here.
+No extended multi-customer stress play or human audio audition was completed.
+Native-window images contain existing private player work and were not saved or published.
+Committed GPU images use isolated QA recipe libraries.

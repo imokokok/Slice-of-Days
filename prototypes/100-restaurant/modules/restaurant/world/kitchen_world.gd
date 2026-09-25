@@ -47,7 +47,9 @@ func pan_contents_ml() -> float:
 		else:
 			# Displacement from mass / approximate bulk density, not piece count.
 			var density := maxf(0.2, float(body.get_meta("definition", {}).get("density_g_ml", 1.0)))
-			volume += body.mass * 1000.0 / density
+			var coating: Dictionary = body.get_meta("surface_sauce", {})
+			volume += maxf(0.0, body.mass - float(coating.get("mass_kg", 0.0))) * 1000.0 / density
+			volume += float(coating.get("volume_ml", 0.0))
 	return volume
 
 func pan_free_ml() -> float:
@@ -120,6 +122,10 @@ func _ready() -> void :
 	_held_foreground.world = self
 	_held_foreground.visible = false
 	held_layer.add_child(_held_foreground)
+	var stream := preload("res://modules/restaurant/world/dispensing_stream.gd").new()
+	stream.world = self
+	stream.z_index = 8
+	add_child(stream)
 	var surfaces: = preload("res://modules/restaurant/world/worktop_art.gd").new()
 	surfaces.z_index = -1
 	add_child(surfaces)
@@ -174,11 +180,12 @@ func _ready() -> void :
 	cloth.world = self
 	add_child(cloth)
 	var floating: = preload("res://modules/restaurant/world/floating_tools.gd").new()
+	floating.name = "FloatingTools"
 	floating.world = self
 	add_child(floating)
 	var plate_ink: = preload("res://modules/restaurant/world/plate_sauce.gd").new()
 	plate_ink.world = self
-	plate_ink.z_index = 10
+	plate_ink.z_index = 5
 	add_child(plate_ink)
 	_last_mouse = get_global_mouse_position()
 	set_process(true)
@@ -278,6 +285,7 @@ func _process(delta: float) -> void :
 				focus_changed.emit(str(_titles.get(next, "")), str(_hints.get(next, "")))
 	_sync_held_foreground()
 	_update_landed_seasoning()
+	_update_food_depth()
 	audio.update_kitchen(self)
 	queue_redraw()
 
@@ -483,7 +491,7 @@ func _make_food_visual(body: RigidBody2D, definition: Dictionary) -> void :
 		visual.name = "FoodArt"
 		visual.set_script(_food_art)
 		visual.set("definition", definition)
-		visual.scale = Vector2.ONE * 0.61
+		visual.scale = Vector2.ONE * preload("res://modules/restaurant/assets/sprite_library.gd").physical_art_scale(str(definition.get("id", "")))
 		body.add_child(visual)
 	else:
 		var sprite: = Polygon2D.new()
@@ -495,17 +503,52 @@ func _make_food_visual(body: RigidBody2D, definition: Dictionary) -> void :
 		body.add_child(sprite)
 
 func _food_at(pos: Vector2) -> RigidBody2D:
-	var found: RigidBody2D
-	var nearest: = 35.0
-	for body in _foods.get_children():
+	_update_food_depth()
+	var bodies := _foods.get_children()
+	bodies.sort_custom(func(a, b): return a.z_index < b.z_index or (a.z_index == b.z_index and a.get_index() < b.get_index()))
+	bodies.reverse()
+	for body in bodies:
 		if body.is_queued_for_deletion() or body == _held or body.get_meta("overflow", false): continue
-		var visual: = body.get_node_or_null("SauceBlob")
-		var center: Vector2 = to_local(visual.global_position if is_instance_valid(visual) else body.global_position)
-		var distance: float = center.distance_to(pos)
-		if distance < nearest:
-			nearest = distance
-			found = body
-	return found
+		if body.z_index + _foods.z_index < pan.pan_front.z_index and preload("res://modules/restaurant/world/pan_geometry.gd").front_occludes(pan.local_point(pos)): continue
+		if food_hit(body, pos): return body
+	return null
+
+func food_hit(body: RigidBody2D, pos: Vector2) -> bool:
+	var visual := body.get_node_or_null("FoodArt") as Node2D
+	if visual:
+		var p := visual.to_local(to_global(pos))
+		if body.get_meta("cut", false):
+			var polygon: PackedVector2Array = body.get_meta("fragment_polygon", PackedVector2Array())
+			return Geometry2D.is_point_in_polygon(p, polygon)
+		if str(body.get_meta("id", "")) == "noodles":
+			return (p / Vector2(lerpf(27, 67, visual.softness) + 2, lerpf(18, 12, visual.softness) + 7)).length() <= 1.0
+		var thermal: Dictionary = body.get_meta("thermal", {})
+		if float(thermal.get("liquid_kg", 0.0)) > 0.000001:
+			var initial := maxf(0.000001, float(thermal.initial_kg))
+			var liquid := clampf(float(thermal.liquid_kg) / initial, 0.0, 1.0)
+			if ((p - Vector2(0, 13)) / Vector2(22 + liquid * 19, 9 + liquid * 12)).length() <= 1.0: return true
+			var solid := clampf(1.0 - (float(thermal.converted_kg) + float(thermal.evaporated_kg)) / initial, 0.0, 1.0)
+			if solid < 0.025: return false
+			p /= sqrt(solid)
+		return preload("res://modules/restaurant/assets/sprite_library.gd").alpha_at(str(body.get_meta("id", "")), p) > 0.12
+	visual = body.get_node_or_null("SauceBlob")
+	if visual == null: return false
+	var fullness := clampf(sqrt(float(visual.liquid_state.get("volume_ml", 3.0)) / 3.0), 0.55, 2.25)
+	return (visual.to_local(to_global(pos)) / Vector2(13 * fullness, 11 * (0.72 + fullness * 0.28))).length() <= 1.0
+
+func _update_food_depth() -> void:
+	if not is_instance_valid(pan): return
+	var bodies := _foods.get_children()
+	# Stable painter order follows contact depth, never ingredient creation order.
+	bodies.sort_custom(func(a, b): return a.position.y < b.position.y or (is_equal_approx(a.position.y, b.position.y) and a.get_instance_id() < b.get_instance_id()))
+	for index in bodies.size():
+		var body: Node2D = bodies[index]
+		_foods.move_child(body, index)
+		if body == _held or _dragging and body.collision_layer == 0: continue
+		if body.get_meta("overflow", false): body.z_index = 6
+		elif body.get_meta("plated", false): body.z_index = 1
+		elif pan.contains(body.position): body.z_index = 0 if body.has_meta("liquid_state") else 1
+		else: body.z_index = 5 if body.position.y > pan.point(Vector2(810, 617)).y else 1
 
 func begin_food_drag(pointer: Vector2, from_storage: = false) -> void :
 	if not controls_enabled or not is_instance_valid(_held): return
@@ -719,9 +762,9 @@ func accept_food(body: RigidBody2D, accepted: bool) -> void :
 				spill_pan_water(displaced, pan.point(Vector2(920, 643)))
 				_overflow_until = _time + 0.35
 				_overflow_color = Color("75b9bd")
-		# Food in a shallow 2D pan should collide with the pan, not explode away
-		# because several cut pieces touch each other at the same time.
-		body.collision_mask = 1
+		# Independent solids contact one another; liquid batches stay non-solid.
+		# Cut batches use distinct starting positions to avoid coincident contacts.
+		body.collision_mask = 1 if body.has_meta("liquid_state") else 17
 	if not accepted:
 		body.set_meta("rejected", true)
 		if bool(body.get_meta("dispensed", false)):
@@ -763,7 +806,7 @@ func describe_body(body: RigidBody2D) -> Dictionary:
 	var state: = {
 		"instance_uid": str(body.get_meta("instance_uid", "food_%s" % body.get_instance_id())),
 		"batch_uid": str(body.get_meta("batch_uid", body.get_meta("instance_uid", "food_%s" % body.get_instance_id()))),
-		"mass_kg": snappedf(body.mass, 0.0001),
+		"mass_kg": body.mass,
 		"lineage": body.get_meta("lineage", []).duplicate(true),
 		"container": str(body.get_meta("container_location", "worktop")),
 		"surface_sauce": body.get_meta("surface_sauce", {}).duplicate(true)
@@ -1036,17 +1079,29 @@ func _sync_held_foreground() -> void :
 	_held_foreground.visible = controls_enabled and is_instance_valid(source)
 	_held_foreground.queue_redraw()
 
-func _draw_dispensing_stream(target: Node2D) -> void :
+func _draw_dispensing_stream(target: Node2D, in_world := false) -> void :
 	if not controls_enabled or not _squeezing or not is_instance_valid(_held):
 		return
 	var definition: Dictionary = _held.get_meta("definition", {})
 	var mode: = get_dispense_mode(definition)
 	var color: = Color.from_string(str(definition.get("color", "d96143")), Color("d96143"))
 	var nozzle_world: = _nozzle_world_position()
-	var canvas_transform: = get_global_transform_with_canvas()
+	var canvas_transform: = Transform2D.IDENTITY if in_world else get_global_transform_with_canvas()
 	var nozzle: = canvas_transform * to_local(nozzle_world)
 	var surface: Vector2 = pan.point(Vector2(810, lerpf(597, 574, pan_fill_ratio())))
-	var end: = canvas_transform * Vector2(to_local(nozzle_world).x, surface.y)
+	var endpoint := Vector2(to_local(nozzle_world).x, surface.y)
+	var start := to_local(nozzle_world)
+	# Terminate the visible stream at the first solid surface, not through it.
+	for body in _foods.get_children():
+		if body == _held or body.is_queued_for_deletion() or body.has_meta("liquid_state") or not body.get_meta("enrolled", false) or body.get_meta("plated", false): continue
+		var polygon: PackedVector2Array = body.get_meta("fragment_polygon", PackedVector2Array())
+		var deform: Vector2 = body.get_meta("thermal_shape", Vector2.ONE)
+		for i in polygon.size():
+			var a := to_local(body.to_global(polygon[i] * deform))
+			var b := to_local(body.to_global(polygon[(i + 1) % polygon.size()] * deform))
+			var crossing = Geometry2D.segment_intersects_segment(start, endpoint, a, b)
+			if crossing != null: endpoint = crossing
+	var end := canvas_transform * endpoint
 	var drawing_scale: = canvas_transform.get_scale().abs().x
 	if nozzle.y >= end.y:
 		return
@@ -1140,7 +1195,7 @@ func _dispense_seasoning(requested_ml: float = -1.0) -> RigidBody2D:
 		_stop_squeezing()
 		interaction.emit("notice", "%s已经挤空了。" % definition.get("name", "容器"))
 		return null
-	_held.set_meta("remaining_ml", snappedf(remaining_ml - volume_ml, 0.001))
+	_held.set_meta("remaining_ml", maxf(0.0, remaining_ml - volume_ml))
 	_held.refresh_response()
 	var source_uid: = str(_held.get_meta("instance_uid", id + "_container"))
 	var liquid_state: = SauceState.make_batch(definition, volume_ml, source_uid, squeeze_pressure)
@@ -1172,7 +1227,7 @@ func _dispense_seasoning(requested_ml: float = -1.0) -> RigidBody2D:
 		return target
 	var body: = preload("res://modules/restaurant/world/food_body.gd").new()
 	body.name = id.capitalize().replace("_", "") + "Portion"
-	body.mass = maxf(0.000001, volume_ml * float(definition.get("density_g_ml", 1.03)) / 1000.0)
+	body.mass = maxf(0.000000000001, volume_ml * float(definition.get("density_g_ml", 1.03)) / 1000.0)
 
 
 	body.collision_layer = 32
@@ -1233,7 +1288,8 @@ func _update_landed_seasoning() -> void :
 			visual.global_position = to_global(surface)
 			visual.global_rotation = global_rotation
 			visual.scale = Vector2(1.6, 0.85)
-			visual.z_index = 6
+			# Pan floor sauce is below solids and the wall, never over the rim.
+			visual.z_index = 0
 		else:
 			visual.position = Vector2.ZERO
 			visual.rotation = 0
@@ -1259,7 +1315,7 @@ func _add_overflow(definition: Dictionary, incoming_state: Dictionary = {}, spil
 			return null
 		spill = RigidBody2D.new()
 		spill.name = "CounterSpill"
-		spill.mass = maxf(0.000001, float(incoming_state.get("volume_ml", 0.0)) * float(definition.get("density_g_ml", 1.03)) / 1000.0)
+		spill.mass = maxf(0.000000000001, float(incoming_state.get("volume_ml", 0.0)) * float(definition.get("density_g_ml", 1.03)) / 1000.0)
 		spill.collision_layer = 32
 		spill.collision_mask = 1
 		spill.set_meta("id", id)
@@ -1290,7 +1346,7 @@ func _add_overflow(definition: Dictionary, incoming_state: Dictionary = {}, spil
 		SauceState.merge_into(spill_state, incoming_state, 0.0)
 		spill.set_meta("liquid_state", spill_state)
 		spill.set_meta("volume_ml", float(spill_state.get("volume_ml", 0.0)))
-		spill.mass = maxf(0.000001, float(spill_state.get("volume_ml", 0.0)) * float(definition.get("density_g_ml", 1.03)) / 1000.0)
+		spill.mass = maxf(0.000000000001, float(spill_state.get("volume_ml", 0.0)) * float(definition.get("density_g_ml", 1.03)) / 1000.0)
 		spill.get_node("SauceBlob").liquid_state = spill_state
 	spill.get_node("SauceBlob").scale = Vector2(minf(1.4 + sqrt(amount) * 0.55, 4.2), minf(0.65 + sqrt(amount) * 0.16, 1.5))
 	return spill

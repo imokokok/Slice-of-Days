@@ -27,6 +27,7 @@ var _carried: Array = []
 var _last_transport: = 0
 var pan_back: Node2D
 var pan_front: Node2D
+var pan_surface: Node2D
 var faucet_art: Node2D
 var residue = preload("res://modules/restaurant/world/pan_residue.gd").new()
 
@@ -45,6 +46,10 @@ func _ready() -> void :
 	pan_front.controller = self
 	pan_front.z_index = 9
 	world.add_child(pan_front)
+	pan_surface = preload("res://modules/restaurant/world/pan_surface.gd").new()
+	pan_surface.controller = self
+	pan_surface.z_index = 7
+	world.add_child(pan_surface)
 	faucet_art = preload("res://modules/restaurant/world/sink_faucet.gd").new()
 	faucet_art.controller = self
 	faucet_art.z_index = 11
@@ -72,6 +77,7 @@ func _process(delta: float) -> void :
 		# Fixed-step CookingReactions owns heat exchange and evaporation.
 	pan_back.queue_redraw()
 	pan_front.queue_redraw()
+	pan_surface.queue_redraw()
 	faucet_art.queue_redraw()
 	queue_redraw()
 
@@ -144,8 +150,9 @@ func contains(p: Vector2) -> bool:
 
 func can_grab(p: Vector2) -> bool:
 	var local: = local_point(p)
-	if Rect2(925, 548, 140, 35).has_point(local): return true
-	var rim: = (local - Vector2(810, 570)) / Vector2(116, 32)
+	if Rect2(925, 561, 173, 35).has_point(local): return true
+	var geometry := preload("res://modules/restaurant/world/pan_geometry.gd")
+	var rim: = (local - geometry.CENTER) / geometry.RADIUS
 	return rim.length() > 0.86 and rim.length() < 1.12 and world._food_at(p) == null
 
 func grab(p: Vector2) -> void :
@@ -177,6 +184,7 @@ func move_to(destination: Variant) -> void :
 	var pose: = transform_pan()
 	pan_back.transform = pose
 	pan_front.transform = pose
+	pan_surface.transform = pose
 	world._pan_area.transform = Transform2D(angle, ART_SCALE, 0, point(PIVOT))
 	for wall in world._pan_walls: wall.transform = pose
 	for body in _carried:

@@ -4,8 +4,9 @@ func _draw() -> void :
 	if controller.world.cooking and controller.on_stove():
 		_draw_burner_flame()
 	var tex: = preload("res://modules/restaurant/assets/sprite_library.gd").gear(0)
-	# Restore vertical body so the pan reads as a deep vessel.
-	if tex: draw_texture_rect(tex, Rect2(684, 534, 384, 112), false)
+	# This texture is the horizontal opening; the separate front supplies depth.
+	# Both share one ellipse, rather than painting two misaligned front rims.
+	if tex: draw_texture_rect(tex, preload("res://modules/restaurant/world/pan_geometry.gd").ART_RECT, false)
 	if controller.residue.total_kg() > 0.000001:
 		var index := 0
 		for item in controller.residue.components.values():
@@ -16,15 +17,11 @@ func _draw() -> void :
 	var water: float = controller.water_ml
 	if water > 0:
 		var fill: float = controller.world.pan_fill_ratio()
-		_ellipse(Vector2(810, 597 - fill * 18), Vector2(78 + fill * 32, 13 + fill * 21), Color("a1b9ae", 0.3))
+		var geometry = preload("res://modules/restaurant/world/pan_geometry.gd")
+		_ellipse(geometry.water_center(fill), geometry.water_radius(fill), Color("a1b9ae", 0.18))
 		if fill >= 0.999 and controller.faucet_on and controller.under_tap():
 			for x in [774.0, 810.0, 846.0]:
 				draw_line(Vector2(x, 604), Vector2(x + sin(controller.world._time * 4.0 + x) * 3.0, 628), Color("91d3d0", 0.8), 3.0, true)
-		var boiling: float = controller.world.reactions.water_activity()
-		if boiling>0.08:
-			for i in range(8):
-				var phase: float = fmod(controller.world._time * 1.8 + i * 0.173, 1)
-				draw_arc(Vector2(750 + i * 17, 581 + sin(i * 3) * 8), (1.5 + phase * 4)*boiling, 0, TAU, 12, Color("d5e1c5",(1.0-phase)*0.85), 1)
 
 func _draw_burner_flame() -> void :
 

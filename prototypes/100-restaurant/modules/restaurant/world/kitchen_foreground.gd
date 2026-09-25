@@ -1,5 +1,6 @@
 extends Node2D
 var controller: Node2D
+const Geometry = preload("res://modules/restaurant/world/pan_geometry.gd")
 
 func _draw() -> void:
 	# Opaque curved front wall; food and liquid are behind it.
@@ -7,7 +8,7 @@ func _draw() -> void:
 	var lip := PackedVector2Array()
 	for i in range(41):
 		var t := PI * float(i) / 40.0
-		var p := Vector2(810 + cos(t) * 124, 579 + sin(t) * 38)
+		var p := Geometry.CENTER + Vector2(cos(t), sin(t)) * Geometry.RADIUS
 		wall.append(p)
 		lip.append(p)
 	for i in range(40, -1, -1):

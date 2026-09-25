@@ -153,10 +153,13 @@ func _build_items() -> void :
 	_page_controls("fridge", Vector2(66, 563), 244, fridge_page, ceili(_cold_catalog.size() / 15.0))
 	var counter: = ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]
 	for i in counter.size():
-		if catalog.has(counter[i]): _slot(_content, catalog[counter[i]], Vector2(670 + i * 80, 549), Vector2(75, 66), 0.68, Color("493b2d"))
+		if catalog.has(counter[i]): _slot(_content, catalog[counter[i]], Vector2(670 + i * 80, 549), Vector2(75, 66), preload("res://modules/restaurant/assets/sprite_library.gd").physical_art_scale(counter[i]), Color("493b2d"))
 	# Separate condiment rack at the exact left-hand position in the source.
 	for spec in [["oil", Vector2(367, 458), Vector2(64, 167), 1.85], ["pepper", Vector2(436, 491), Vector2(56, 125), 1.25], ["salt", Vector2(441, 572), Vector2(34, 51), 0.54], ["sugar", Vector2(480, 559), Vector2(38, 64), 0.65], ["soy_sauce", Vector2(513, 541), Vector2(30, 76), 0.68]]:
-		if catalog.has(spec[0]): _slot(_content, catalog[spec[0]], spec[1], spec[2], spec[3], Color("493b2d"))
+		if catalog.has(spec[0]):
+			_slot(_content, catalog[spec[0]], spec[1], spec[2], preload("res://modules/restaurant/assets/sprite_library.gd").physical_art_scale(spec[0]), Color("493b2d"))
+			# Narrow overlapping rack bottles are identified by their hover label.
+			_content.get_node("Ingredient_" + spec[0] + "/IngredientName").hide()
 	var odd: = []
 	for id in ["sock", "confetti", "toilet_paper", "soap", "soap_smooth", "toothpaste", "resignation_letter", "alarm_clock", "yarn_ball", "tennis_ball", "dentures", "eraser", "sponge", "baseball_bat", "computer_mouse", "slipper", "rubber_duck", "rock"]:
 		if catalog.has(id): odd.append(catalog[id])

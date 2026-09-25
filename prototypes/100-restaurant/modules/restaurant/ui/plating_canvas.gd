@@ -22,7 +22,7 @@ func _ready() -> void :
 	clip_contents = true
 	var ink: = preload("res://modules/restaurant/world/plate_sauce.gd").new()
 	ink.canvas = self
-	ink.z_index = 3
+	ink.z_index = 0
 	add_child(ink)
 	# Container layout assigns the final size after _ready. Reproject existing
 	# food then, otherwise opening the workbench places it at the top-left.
@@ -60,6 +60,10 @@ func refresh_foods() -> void :
 			var p: Vector2 = (record.body.position - game.world.plate.center) / Vector2(100, 20)
 			record.art.position = center() + p * radius()
 			record.art.rotation = record.body.rotation
+	# Match the kitchen's depth order instead of creation order in the editor/photo.
+	var ordered := _visuals.values()
+	ordered.sort_custom(func(a, b): return a.art.position.y < b.art.position.y or (is_equal_approx(a.art.position.y, b.art.position.y) and a.body.get_instance_id() < b.body.get_instance_id()))
+	for record in ordered: move_child(record.art, get_child_count() - 1)
 	queue_redraw()
 
 func add_to_plate(body: RigidBody2D) -> void :
@@ -92,12 +96,17 @@ func _gui_input(event: InputEvent) -> void :
 			_last_pointer = _pointer
 		else:
 			selected = null
-			var distance: = 70.0
-			for record in _visuals.values():
-				var d: float = record.art.position.distance_to(event.position)
-				if d < distance:
-					distance = d
+			var ordered := _visuals.values()
+			ordered.sort_custom(func(a, b): return a.art.get_index() > b.art.get_index())
+			for record in ordered:
+				var source: Node2D = record.body.get_node_or_null("FoodArt")
+				if source == null: source = record.body.get_node_or_null("SauceBlob")
+				if source == null: continue
+				var art_point: Vector2 = record.art.transform.affine_inverse() * event.position
+				var world_point: Vector2 = game.world.to_local(source.to_global(art_point))
+				if game.world.food_hit(record.body, world_point):
 					selected = record.body
+					break
 			if is_instance_valid(selected):
 				dragging = true
 				_grab_offset = _visuals[selected.get_instance_id()].art.position - event.position

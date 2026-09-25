@@ -193,6 +193,18 @@ func _build_ui() -> void :
 	readable_font.variation_opentype = {2003265652: 400.0}
 	theme.default_font = readable_font
 	theme.default_font_size = 18
+	# Native tooltips otherwise inherit dark ink over Godot's dark popup panel.
+	# Keep the same warm paper and readable ink as the kitchen's other notes.
+	var tooltip_paper := StyleBoxFlat.new()
+	tooltip_paper.bg_color = Color("f3e3c2")
+	tooltip_paper.border_color = Color("b99a71")
+	tooltip_paper.set_border_width_all(1)
+	tooltip_paper.set_content_margin_all(10)
+	tooltip_paper.shadow_color = Color(0.16,0.12,0.09,0.2)
+	tooltip_paper.shadow_size = 3
+	theme.set_stylebox("panel", "TooltipPanel", tooltip_paper)
+	theme.set_color("font_color", "TooltipLabel", Color("44392c"))
+	theme.set_font_size("font_size", "TooltipLabel", 16)
 	theme.set_color("font_color", "Label", CREAM)
 	theme.set_color("font_color", "Button", CREAM)
 	theme.set_color("font_hover_color", "Button", DARK)
@@ -456,6 +468,7 @@ func _notify(message: String) -> void :
 		toast_label.text = message
 		toast_label.visible = true
 		toast_time = 4.2
+		if is_instance_valid(hint_label): hint_label.hide()
 
 func _interact(action: String, payload: String = "") -> void :
 	if modal.visible:
@@ -1247,7 +1260,7 @@ func _show_plating() -> void :
 		_tool_button(tools, "%s × %d" % [title, batch_bodies.size()], func(): _plate_bodies(batch_bodies), 280)
 	var modes: = _row(tools)
 	_tool_button(modes, "移动食物", func(): _plating_canvas.mode = "move", 144)
-	_tool_button(modes, "淋酱", func(): _plating_canvas.mode = "sauce", 144)
+	_tool_button(modes, "盘面淋酱", func(): _plating_canvas.mode = "sauce", 144)
 	var sauces: = OptionButton.new()
 	sauces.custom_minimum_size = Vector2(300, 38)
 	for id in ["ketchup", "mayonnaise", "mustard", "chili_sauce", "soy_sauce", "honey"]:

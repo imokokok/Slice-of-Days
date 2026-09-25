@@ -221,7 +221,7 @@ func _physics_process(_delta: float) -> void :
 				var moved := SauceState.transfer(liquid, _residue, minf(0.8, float(liquid.get("volume_ml", 0.0))))
 				var mass_moved := moved*density
 				_residue.mass_kg=float(_residue.get("mass_kg",0.0))+mass_moved
-				body.mass=maxf(0.000001,body.mass-mass_moved)
+				body.mass=maxf(0.000000000001,body.mass-mass_moved)
 				body.set_meta("liquid_state", liquid)
 				body.set_meta("volume_ml", liquid.get("volume_ml", 0.0))
 				queue_redraw()

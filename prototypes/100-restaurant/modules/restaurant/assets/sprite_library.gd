@@ -8,7 +8,11 @@ static var _bounds: Dictionary = {}
 static var _handdrawn: Dictionary = {}
 static var _outlines: Dictionary = {}
 static var _authored_pixels: Dictionary = {}
+static var _hit_pixels: Dictionary = {}
 const MYSTERY := ["baseball_bat","computer_mouse","slipper","sock","perfume","doll","lipstick","rubber_duck","rock"]
+static func physical_art_scale(id: String) -> float:
+	# Match the five authored rack bottles; they must not shrink on pickup.
+	return {"oil":1.85, "pepper":1.25, "salt":0.54, "sugar":0.65, "soy_sauce":0.68, "ketchup":0.68, "mayonnaise":0.68, "mustard":0.68, "chili_sauce":0.68, "vinegar":0.68}.get(id, 0.61)
 static func handdrawn_manifest() -> Dictionary:
 	if _handdrawn.is_empty():
 		_handdrawn = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/assets/handdrawn_manifest.json"))
@@ -44,7 +48,7 @@ static func body_outline(id: String) -> PackedVector2Array:
 	var rect := fit(texture, Vector2.ZERO, Vector2(78, 78))
 	for polygon in mask.opaque_to_polygons(Rect2i(Vector2i.ZERO, mask.get_size()), 1.0):
 		for point in polygon:
-			points.append((rect.position + point / texture.get_size() * rect.size) * 0.61)
+			points.append((rect.position + point / texture.get_size() * rect.size) * physical_art_scale(id))
 	# Stable convex support approximation, sharing the rendered art's coordinates.
 	var hull := Geometry2D.convex_hull(points)
 	if hull.size() > 1 and hull[0].is_equal_approx(hull[-1]): hull.remove_at(hull.size() - 1)
@@ -55,10 +59,23 @@ static func authored_alpha_at(id: String, body_point: Vector2) -> float:
 	var texture := handdrawn_food(id)
 	if texture == null: return 0.0
 	var rect := fit(texture, Vector2.ZERO, Vector2(78, 78))
-	var uv := (body_point / 0.61 - rect.position) / rect.size
+	var uv := (body_point / physical_art_scale(id) - rect.position) / rect.size
 	if uv.x < 0 or uv.y < 0 or uv.x >= 1 or uv.y >= 1: return 0.0
 	var pixels: Image = _authored_pixels[id]
 	return pixels.get_pixelv(Vector2i(uv * texture.get_size())).a
+
+static func alpha_at(id: String, art_point: Vector2) -> float:
+	if not art_point.is_finite(): return 0.0
+	var texture := food(id)
+	if texture == null: return 0.0
+	var rect := fit(texture, Vector2.ZERO, Vector2(78, 78))
+	var uv := (art_point - rect.position) / rect.size
+	if uv.x < 0 or uv.y < 0 or uv.x >= 1 or uv.y >= 1: return 0.0
+	if not _hit_pixels.has(id):
+		var pixels := texture.get_image()
+		if pixels.is_compressed(): pixels.decompress()
+		_hit_pixels[id] = pixels
+	return (_hit_pixels[id] as Image).get_pixelv(Vector2i(uv * texture.get_size())).a
 
 static func food(id: String) -> Texture2D:
 	var authored := handdrawn_food(id)

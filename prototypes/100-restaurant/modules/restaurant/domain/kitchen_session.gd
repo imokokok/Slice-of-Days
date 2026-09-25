@@ -31,6 +31,7 @@ var heat_contact: bool = true
 var water_ml: float = 0.0
 var water_heat: float = 0.0
 var garnishes: Array = []
+var plating_waste_ml: float = 0.0
 var presentation: Dictionary = {}
 const HEAT_RATES: = {"low": 0.55, "medium": 1.0, "high": 1.65}
 var heat_level: = "medium"
@@ -57,6 +58,7 @@ func setup() -> void :
 		_catalog[str(ingredient.get("id", ""))] = ingredient
 	dish.clear()
 	garnishes.clear()
+	plating_waste_ml = 0.0
 	presentation.clear()
 	elapsed = 0.0
 	phase = "prep"
@@ -289,7 +291,8 @@ func plate() -> Dictionary:
 		"pan_carryover": carryover,
 		"ingredients": combined.duplicate(true),
 		"presentation": presentation.duplicate(true),
-		"water_ml": water_ml,
+		# Only broth actually transferred to the serving vessel belongs to the dish.
+		"water_ml": float(presentation.get("broth_ml", 0.0)),
 		"quality": quality_sum / float(count) if count > 0 else 0.0,
 		"weirdness": weirdness,
 		"tags": tags,
@@ -520,16 +523,7 @@ func _evaluate(snapshot: Dictionary, customer: Dictionary) -> Dictionary:
 		score += 6.0 if int(snapshot["cut_count"]) == 0 else -6.0
 	var recipe_match: = -1.0
 	if customer.has("ordered_recipe"):
-		var expected: Dictionary = {}
-		for expected_item in customer.ordered_recipe.get("dish", {}).get("ingredients", []):
-			var expected_id: = str(expected_item.get("id", "") if expected_item is Dictionary else expected_item)
-			if expected_id not in BLOCKED_INGREDIENT_IDS: expected[expected_id] = true
-		var actual: Dictionary = {}
-		for actual_item in snapshot.get("ingredients", []): actual[str(actual_item.get("id", ""))] = true
-		var matches: = 0
-		for id in expected:
-			if actual.has(id): matches += 1
-		recipe_match = float(matches) / maxf(1.0, expected.size())
+		recipe_match = _recipe_match(snapshot, customer.ordered_recipe)
 		score += lerpf(-18.0, 14.0, recipe_match)
 	var final_score: int = clampi(roundi(score), 0, 100)
 	var charges: = payment_for_score(final_score, customer)
@@ -546,6 +540,73 @@ func _evaluate(snapshot: Dictionary, customer: Dictionary) -> Dictionary:
 	review["ordered_recipe_title"] = str(customer.get("ordered_recipe", {}).get("title", ""))
 	review.merge(charges)
 	return review
+
+func _recipe_match(snapshot: Dictionary, recipe: Dictionary) -> float:
+	var expected: Dictionary = {}
+	var actual: Dictionary = {}
+	for pair in [[recipe.get("dish", {}).get("ingredients", []), expected], [snapshot.get("ingredients", []), actual]]:
+		if not pair[0] is Array: continue
+		for value in pair[0]:
+			if not value is Dictionary and not value is String: continue
+			var item: Dictionary = {"id": value} if value is String else value
+			var id := str(item.get("id", ""))
+			if id.is_empty() or id in BLOCKED_INGREDIENT_IDS: continue
+			var key := id + ("_garnish" if bool(item.get("garnish", false)) else "_cooked")
+			var grouped: Dictionary = pair[1]
+			var state: Dictionary = grouped.get(key, {"mass_kg": 0.0, "volume_ml": 0.0, "cut": false, "heat": 0.0, "softness": 0.0,
+				"portion_weight": 0.0, "cut_weight": 0.0, "heat_sum": 0.0, "softness_sum": 0.0, "scorched_weight": 0.0})
+			var mass := maxf(0.0, float(item.get("mass_kg", 0.0)))
+			var volume := maxf(0.0, float(item.get("volume_ml", item.get("amount_ml", 0.0))))
+			var weight := mass if mass > 0.0 else (volume / 1000.0 if volume > 0.0 else 1.0)
+			state.mass_kg += mass
+			state.volume_ml += volume
+			state.cut = bool(state.cut) or bool(item.get("cut", false))
+			state.heat = maxf(float(state.heat), float(item.get("heat", 0.0)))
+			state.softness = maxf(float(state.softness), float(item.get("softness", 0.0)))
+			state.portion_weight += weight
+			if bool(item.get("cut", false)): state.cut_weight += weight
+			state.heat_sum += weight * maxf(0.0, float(item.get("heat", 0.0)))
+			state.softness_sum += weight * maxf(0.0, float(item.get("softness", 0.0)))
+			if float(item.get("heat", 0.0)) > BURNT_AFTER: state.scorched_weight += weight
+			grouped[key] = state
+	if expected.is_empty(): return 0.0
+	var matched := 0.0
+	for key in expected:
+		if not actual.has(key): continue
+		var target: Dictionary = expected[key]
+		var served: Dictionary = actual[key]
+		var similarity := 1.0
+		for field in ["mass_kg", "volume_ml"]:
+			var required := float(target[field])
+			if required <= 0.0: continue # Older recipes may omit quantities.
+			var received := float(served[field])
+			if received <= 0.0:
+				similarity = 0.0
+			else:
+				# The recipe guide also allows roughly 35% measuring tolerance.
+				similarity *= minf(1.0, minf(received / (required * 0.65), required * 1.35 / received))
+		var served_weight := maxf(0.000001, float(served.portion_weight))
+		if bool(target.cut): similarity *= clampf(float(served.cut_weight) / served_weight, 0.0, 1.0)
+		if float(target.heat) >= COOKED_AT:
+			similarity *= clampf(float(served.heat_sum) / served_weight / maxf(COOKED_AT, float(target.heat) - 1.0), 0.0, 1.0)
+			if float(target.heat) <= BURNT_AFTER:
+				similarity *= 1.0 - 0.75 * clampf(float(served.scorched_weight) / served_weight, 0.0, 1.0)
+		if float(target.softness) > 0.1:
+			similarity *= clampf(float(served.softness_sum) / served_weight / float(target.softness), 0.0, 1.0)
+		matched += similarity
+	# Broth is a separate measured ingredient and must reach the serving bowl.
+	var target_water := float(recipe.get("dish", {}).get("water_ml", 0.0))
+	var served_water := float(snapshot.get("water_ml", 0.0))
+	var water_slots := 0
+	if target_water > 0.0:
+		water_slots = 1
+		if served_water > 0.0:
+			matched += minf(1.0, minf(served_water / (target_water * 0.8), target_water * 1.2 / served_water))
+	elif served_water > 0.0:
+		water_slots = 1
+	# Extra ingredients occupy part of the served dish rather than disappearing
+	# from the denominator when every requested ID is present.
+	return clampf(matched / float(maxi(expected.size(), actual.size()) + water_slots), 0.0, 1.0)
 
 func add_garnish(id: String, ml: float) -> float:
 	if phase == "closed" or not _catalog.has(id) or ml <= 0 or not is_finite(ml): return 0.0

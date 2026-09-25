@@ -261,7 +261,7 @@ func _validate_dish(dish: Variant, allow_empty: bool, allow_retired: bool = fals
 	if not _safe_json(dish, 0) or JSON.stringify(dish).length() > 96000:
 		return _failure("菜品数据过长或含有不支持的字段。")
 	if dish.has("water_ml") and ( not _is_number(dish.water_ml) or float(dish.water_ml) < 0 or float(dish.water_ml) > 1500):
-		return _failure("锅中水量必须是 0–1500 毫升的有效数值。")
+		return _failure("成品汤量必须是 0–1500 毫升的有效数值。")
 	if dish.ingredients.is_empty():
 		if not allow_empty:
 			return _failure("这张纸还是空白的。请加入文字、照片、食材素材或绘画后再保存。")

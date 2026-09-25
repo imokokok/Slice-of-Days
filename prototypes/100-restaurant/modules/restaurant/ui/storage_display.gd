@@ -276,7 +276,7 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 			button.accept_event()
 			ingredient_chosen.emit(item.duplicate(true), button.get_global_transform_with_canvas() * event.position))
 	parent.add_child(button)
-	var label_height: = 16.0
+	var label_height: = 19.0
 	var icon_center := Vector2(dimensions.x * 0.5, (dimensions.y - label_height) * 0.47)
 	if surface in ["fridge", "odd"]:
 		var library = preload("res://modules/restaurant/assets/sprite_library.gd")
@@ -295,13 +295,16 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 	var label: = Label.new()
 	label.name = "IngredientName"
 	label.text = item.name
-	label.position = Vector2(0, dimensions.y + (3.0 if surface == "odd" else 1.0) if surface in ["fridge", "odd"] else (79.0 if surface == "rack" else dimensions.y - label_height))
-	label.size = Vector2(dimensions.x, 13.0 if surface in ["fridge", "odd"] else label_height)
+	label.position = Vector2(0, dimensions.y - 4.0 if surface in ["fridge", "odd"] else (79.0 if surface == "rack" else dimensions.y - label_height))
+	label.size = Vector2(dimensions.x, label_height)
 	label.clip_text = true
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 10 if surface in ["fridge", "odd"] else 12)
+	label.add_theme_font_size_override("font_size", 14 if surface in ["fridge", "odd"] else 12)
 	label.add_theme_color_override("font_color", name_color)
+	if surface in ["fridge", "odd"]:
+		label.add_theme_color_override("font_outline_color", Color("f7eed8") if surface == "fridge" else Color("302820"))
+		label.add_theme_constant_override("outline_size", 2)
 	if surface in ["fridge", "rack", "odd"]: label.z_index = 1
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(label)

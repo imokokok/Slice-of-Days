@@ -23,6 +23,11 @@ func run() -> void:
 	game.world.drop_into_pan()
 	await create_timer(0.9).timeout
 	expect(game.session.dish.size()==1,"cut piece enrolls once")
+	game._take_ingredient(game._definition("ketchup"))
+	var bottle: RigidBody2D=game.world._held
+	bottle.position=Vector2(1000,700)
+	game.world.drop_held(false)
+	expect(game._plating_bottle("ketchup")==bottle,"plating uses the actual bottle taken from the rack")
 	game._show_plating()
 	await process_frame
 	await process_frame
@@ -49,7 +54,7 @@ func run() -> void:
 	var amount:float=game.session.garnishes[0].amount_ml if not game.session.garnishes.is_empty() else 0.0
 	expect(amount>0 and game.session.presentation.get("strokes",[]).size()==1,"pointer drizzle creates measured edible sauce and a plate stroke")
 	await create_timer(0.1).timeout
-	expect(not canvas.drawing and game.world.audio.ui_dispense_mode.is_empty() and is_equal_approx(game.session.garnishes[0].amount_ml,amount),"release stops sauce quantity and looping sound")
+	expect(not canvas.drawing and game.world.audio.ui_dispense_mode.is_empty() and not game.session.garnishes.is_empty() and is_equal_approx(game.session.garnishes[0].amount_ml,amount),"release stops sauce quantity and looping sound")
 	expect(game.session.plate().ingredients.size()==2,"dish snapshot includes actual garnish")
 	var bounds:Rect2=game.modal_panel.get_global_rect()
 	expect(bounds.end.y<=900 and bounds.end.x<=1600,"plating editor fits viewport")

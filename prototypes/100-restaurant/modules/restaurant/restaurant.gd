@@ -490,6 +490,10 @@ func _interact(action: String, payload: String = "") -> void :
 		"pantry", "ingredient": _show_pantry()
 		"cook":
 			if world.plated:
+				if float(session.presentation.get("broth_ml", 0.0)) > world.pan_free_ml() + 0.001:
+					_notify("锅里空间不够，先倒出一些汤再让料理回锅。")
+					return
+				_return_broth_to_pan()
 				world.return_to_pan()
 				_notify("料理已回锅。食材落稳后，再点灶台开火。")
 			else:
@@ -713,13 +717,30 @@ func _return_to_storage(body: RigidBody2D) -> bool:
 	_notify("已放回%s，保留原来的物品和余量。" % body.get_meta("title", "物品"))
 	return true
 
+func _plating_bottle(id: String) -> RigidBody2D:
+	for body in world._foods.get_children():
+		if body is RigidBody2D and not body.is_queued_for_deletion() and str(body.get_meta("id", "")) == id and bool(body.get_meta("is_container", false)):
+			return body
+	return null
+
+func _dispense_plating_sauce(id: String, requested_ml: float) -> float:
+	if requested_ml <= 0.0 or not is_finite(requested_ml): return 0.0
+	var bottle := _plating_bottle(id)
+	if bottle == null: return 0.0
+	var remaining := maxf(0.0, float(bottle.get_meta("remaining_ml", 0.0)))
+	var accepted := session.add_garnish(id, minf(requested_ml, remaining))
+	if accepted <= 0.0: return 0.0
+	bottle.set_meta("remaining_ml", remaining - accepted)
+	bottle.refresh_response() # Packaging mass plus the actual remaining sauce.
+	return accepted
+
 func _serve() -> void :
 	if not world.plated:
-		_notify("请先把实际做好的食物装进盘子，再交给客人。")
+		_notify("请先把实际做好的食物装进餐具，再交给客人。")
 		return
 	for body in world._foods.get_children():
 		if body.get_meta("enrolled", false) and not body.get_meta("plated", false) and not body.is_queued_for_deletion():
-			_notify("还有食物没装盘。点击盘子，把本单料理装好后再出餐。")
+			_notify("还有食物没装盘。点击餐具，把本单料理装好后再出餐。")
 			return
 	var snapshot: Dictionary = session.plate()
 	var result: Dictionary = session.serve()
@@ -1207,7 +1228,7 @@ func _recipe_snapshot() -> Dictionary:
 				item.heat = float(current.get("heat", 0))
 				item["softness"] = float(current.get("softness", 0))
 		foods.append(item)
-	return {"foods":foods, "water_ml":world.pan.water_ml, "heating":session.heating, "garnishes":session.garnishes}
+	return {"foods":foods, "water_ml":world.pan.water_ml, "plated_water_ml":float(session.presentation.get("broth_ml", 0.0)), "heating":session.heating, "garnishes":session.garnishes}
 
 func _update_recipe_guide() -> void:
 	if not is_instance_valid(_guide_bar): return
@@ -1309,6 +1330,57 @@ func _request_exit() -> void :
 func _plating_changed() -> void :
 	_plating_revision += 1
 
+func _set_serving_vessel(vessel: String) -> void:
+	if vessel not in ["plate", "bowl"]: return
+	if vessel == "plate" and float(session.presentation.get("broth_ml", 0.0)) > 0.001:
+		_plating_canvas.status.emit("碗里还有汤；请先倒回锅，再换平盘。")
+		return
+	session.presentation["vessel"] = vessel
+	world.plate.queue_redraw()
+	_plating_canvas.queue_redraw()
+	_plating_canvas.changed.emit()
+	_plating_canvas.status.emit("已换成汤碗，可以盛汤。" if vessel == "bowl" else "已换成平盘。")
+
+func _transfer_broth_to_bowl(requested_ml: float) -> float:
+	if not is_instance_valid(_plating_canvas) or str(session.presentation.get("vessel", "plate")) != "bowl": return 0.0
+	var previous := float(session.presentation.get("broth_ml", 0.0))
+	var amount := minf(maxf(0.0, requested_ml), minf(world.pan.water_ml, maxf(0.0, 750.0 - previous)))
+	if amount <= 0.001: return 0.0
+	var previous_c := float(session.presentation.get("broth_c", 22.0))
+	session.presentation["broth_ml"] = previous + amount
+	session.presentation["broth_c"] = (previous * previous_c + amount * world.pan.water_heat) / (previous + amount)
+	world.pan.water_ml -= amount
+	session.water_ml = world.pan.water_ml
+	world.plate.queue_redraw()
+	_plating_canvas.queue_redraw()
+	_plating_canvas.changed.emit()
+	_plating_canvas.status.emit("从锅里盛出 %.0f ml 汤；碗中共 %.0f ml。" % [amount, previous + amount])
+	return amount
+
+func _return_broth_to_pan() -> float:
+	var amount := float(session.presentation.get("broth_ml", 0.0))
+	if amount <= 0.001: return 0.0
+	if amount > world.pan_free_ml() + 0.001: return 0.0
+	var old_pan: float = world.pan.water_ml
+	world.pan.water_heat = (old_pan * world.pan.water_heat + amount * float(session.presentation.get("broth_c", 22.0))) / (old_pan + amount)
+	world.pan.water_ml += amount
+	session.water_ml = world.pan.water_ml
+	session.presentation.erase("broth_ml")
+	session.presentation.erase("broth_c")
+	world.plate.queue_redraw()
+	if is_instance_valid(_plating_canvas):
+		_plating_canvas.queue_redraw()
+		_plating_canvas.changed.emit()
+	return amount
+
+func _pour_broth_action() -> void:
+	if _transfer_broth_to_bowl(100.0) <= 0.0:
+		_plating_canvas.status.emit("先选汤碗，并确认锅里有汤；汤碗最多盛 750 ml。")
+
+func _return_broth_action() -> void:
+	if _return_broth_to_pan() <= 0.0:
+		_plating_canvas.status.emit("锅里空间不够，先倒出一些汤。" if float(session.presentation.get("broth_ml", 0.0)) > 0.001 else "汤碗里还没有汤。")
+
 func _show_plating() -> void :
 	_open_modal("plating", "摆盘工作台  /  让这一餐成为你的作品", 1100)
 	modal_panel.position.y = 140
@@ -1325,6 +1397,12 @@ func _show_plating() -> void :
 	tools_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	columns.add_child(tools_scroll)
 	tools_scroll.add_child(tools)
+	_label(tools, "选用成品容器", Vector2.ZERO, 19)
+	var vessel_row := _row(tools)
+	_tool_button(vessel_row, "平盘", func(): _set_serving_vessel("plate"), 138)
+	_tool_button(vessel_row, "汤碗", func(): _set_serving_vessel("bowl"), 138)
+	_tool_button(tools, "从锅盛汤（100 ml）", _pour_broth_action, 280)
+	_tool_button(tools, "汤倒回锅", _return_broth_action, 280)
 	_label(tools, "按同一次切出的整组装盘", Vector2.ZERO, 19)
 	var all_food: Array = []
 	var batches: Dictionary = {}
@@ -1342,22 +1420,30 @@ func _show_plating() -> void :
 		_tool_button(tools, "%s × %d" % [title, batch_bodies.size()], func(): _plate_bodies(batch_bodies), 280)
 	var modes: = _row(tools)
 	_tool_button(modes, "移动食物", func(): _plating_canvas.mode = "move", 144)
-	_tool_button(modes, "盘面淋酱", func(): _plating_canvas.mode = "sauce", 144)
+	_tool_button(modes, "成品淋酱", func(): _plating_canvas.mode = "sauce", 144)
 	var sauces: = OptionButton.new()
 	sauces.custom_minimum_size = Vector2(300, 38)
+	var first_available_sauce := -1
 	for id in ["ketchup", "mayonnaise", "mustard", "chili_sauce", "soy_sauce", "honey"]:
-		sauces.add_item(str(_definition(id).get("name", id)))
+		var bottle := _plating_bottle(id)
+		var remaining := float(bottle.get_meta("remaining_ml", 0.0)) if bottle != null else 0.0
+		sauces.add_item("%s  %.0f ml" % [_definition(id).get("name", id), remaining])
 		sauces.set_item_metadata(sauces.item_count - 1, id)
+		sauces.set_item_disabled(sauces.item_count - 1, remaining <= 0.001)
+		if first_available_sauce < 0 and remaining > 0.001: first_available_sauce = sauces.item_count - 1
+	if first_available_sauce >= 0:
+		sauces.select(first_available_sauce)
+		_plating_canvas.sauce_id = str(sauces.get_item_metadata(first_available_sauce))
 	sauces.item_selected.connect( func(index: int): _plating_canvas.stop_gesture();_plating_canvas.sauce_id = str(sauces.get_item_metadata(index));_plating_canvas.mode = "sauce")
 	tools.add_child(sauces)
 	var rotation_row: = _row(tools)
 	_tool_button(rotation_row, "逆时针", func(): _plating_canvas.rotate_selected( - PI / 12), 95)
 	_tool_button(rotation_row, "顺时针", func(): _plating_canvas.rotate_selected(PI / 12), 95)
 	_tool_button(rotation_row, "清除酱汁", _plating_canvas.clear_sauce, 110)
-	var description: = _label(tools, "拖动食物；按钮或滚轮旋转。\n淋酱时按住鼠标，松手停止。\n食材和酱料均计入料理。", Vector2.ZERO, 16, MUTED)
+	var description: = _label(tools, "拖动食物；按钮或滚轮旋转。\n先从架上取出酱瓶，淋酱会扣瓶内余量。\n淋酱时按住鼠标，松手停止。", Vector2.ZERO, 16, MUTED)
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description.custom_minimum_size.x = 300
-	var status_label: = _label(modal_body, "照片只记录这只盘子的实际食物。选择交给客人，或带进 DIY 菜谱继续拼贴。", Vector2.ZERO, 17, MUTED)
+	var status_label: = _label(modal_body, "照片只记录当前餐具中的实际食物和汤。选择交给客人，或带进 DIY 菜谱继续拼贴。", Vector2.ZERO, 17, MUTED)
 	_plating_canvas.status.connect( func(message: String): status_label.text = message)
 	var actions: = _row(modal_body)
 	_button(actions, "拍照并交给顾客", func(): await _photograph_and_serve(status_label), 280)

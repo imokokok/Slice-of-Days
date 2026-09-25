@@ -4,6 +4,13 @@
 
 # 验证记录
 
+## 2026-09-26 厨房审查缺陷修复
+
+- `tools/test.ps1` 的 **40/40 个有效 Godot 入口通过**，退出码全为 0、无 `SCRIPT ERROR` / `ERROR` / `FAIL`；逐项清单见 [回归摘要](qa/20260926-fixed-regression.txt)。其中 8 个旧入口不使用 `PASS:` 字样，已按各自成功标记和退出码核对。
+- 新增出餐连续性测试：无实体酱瓶不能盘面淋酱；实际淋酱扣瓶中毫升与质量；空瓶不能继续使用；锅与碗转移和满锅拒绝倒回保持体积；清酱不抹掉汤；点单匹配识别少量、生食、未切、额外食材；汤出餐后仍显示在碗中，菜谱保存再打开仍记录 100 ml。无头 **16 项**、Apple M4/OpenGL 图形环境 **17 项**通过。
+- `tests/capture_full_cooking.gd` 在 Godot 4.7.2 / macOS OpenGL Compatibility 下以固定 24 FPS 复跑完整自动化操作：接水溢出、切番茄、翻锅、敲蛋、煎熟、放蘑菇、挤实体酱瓶、摆盘、出餐反馈、保存菜谱并翻页，最终 `PASS: full cooking capture`。图形出餐画面见 [完整流程](qa/20260926-fixed-full-flow-showcase.png)。另查看 [汤碗摆盘](qa/20260926-serving-bowl.png)、[实际照片](qa/20260926-serving-photo.png)、[汤碗出餐](qa/20260926-served-bowl.png) 与 [1152×681 小窗口](qa/20260926-small-window.png)。
+- 自动化全流程初次被系统窗口失焦影响热锅音效断言；录制夹具现仅在窗口有焦点时检查该音效，失焦时由游戏既有策略静音，独立 `test_recorded_audio.gd` 仍通过。水龙头的合成鼠标输入增加开水断言和一次重试。此项验证为脚本驱动的真实 GPU 画面，不等于人工连续自由试玩或逐条人耳试听。
+
 ## 2026-09-25 电饭煲与正式居民名册
 
 - 主游戏 `data/npcs/core_residents.json` 的 12 个稳定 ID 与姓名和厨房 `data/customers.json` 逐一对齐；后者保留厨房专用口味、台词及评分字段。`test_rice_cooker_cast.gd` 22 项通过，验证名册、开盖、盛饭库存、未加工归还及成品不能回锅。

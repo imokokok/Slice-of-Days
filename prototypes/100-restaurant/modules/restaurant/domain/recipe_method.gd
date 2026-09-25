@@ -3,7 +3,7 @@ extends RefCounted
 ## Old saves have final states, not action chronology; these are reconstruction hints.
 static func starter() -> Dictionary:
 	return {"id": "kitchen_tomato_noodles", "title": "番茄清汤面", "author": "100饭店 · 厨房示范", "reference": true,
-		"notes": "番茄切开，面条在沸水中慢慢散开。关火后装进盘子，留一点热汤。", "dish": {"water_ml": 250.0,
+		"notes": "番茄切开，面条在沸水中慢慢散开。关火后装进汤碗，从锅里盛入热汤。", "dish": {"water_ml": 250.0,
 		"ingredients": [{"id":"tomato", "cut":true, "heat":6.0}, {"id":"noodles", "heat":6.0, "softness":0.8}]}}
 
 static func targets(record: Dictionary) -> Array:
@@ -64,7 +64,7 @@ static func steps(record: Dictionary, catalog: Array) -> Array:
 		var detail := "锅放在炉灶上，开中火；留意变色，不要烧焦。全部食材做好后再关火。"
 		if item.softness > 0.1: detail = "把水烧开，保持水量；等面条吸水、散开变软。"
 		result.append({"kind":"cook", "target":item, "title":title + " · " + state, "detail":detail, "art":"cook"})
-	result.append({"kind":"plate", "title":"关火，慢慢装盘", "detail":"点击盘子打开摆盘，把做好的食材装进去；拍下这一餐，也可以直接出餐。", "art":"plate"})
+	result.append({"kind":"plate", "title":"关火，慢慢装盘", "detail":"点击盘子打开摆盘，选择汤碗，把做好的食材和锅里的热汤实际盛进去。" if water >= 80 else "点击盘子打开摆盘，把做好的食材装进去；拍下这一餐，也可以直接出餐。", "art":"plate", "water_ml":water})
 	for item in materials:
 		if item.garnish:
 			result.append({"kind":"garnish", "target":item, "title":"淋上" + name_of(item.id, catalog), "detail":"在摆盘页选择对应的酱，按住鼠标淋到盘里。", "art":"plate"})
@@ -105,6 +105,7 @@ static func satisfied(step: Dictionary, snapshot: Dictionary, materials: Array) 
 		"water": return float(snapshot.get("water_ml", 0)) >= float(step.amount) * 0.8
 		"plate":
 			if snapshot.get("heating", false): return false
+			if float(step.get("water_ml", 0.0)) >= 80.0 and float(snapshot.get("plated_water_ml", 0.0)) < float(step.water_ml) * 0.8: return false
 			for item in materials:
 				if not item.garnish and not enough(snapshot.get("foods", []), item, "plate"): return false
 			return true

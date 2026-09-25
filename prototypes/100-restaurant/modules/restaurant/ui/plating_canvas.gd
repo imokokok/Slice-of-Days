@@ -31,6 +31,10 @@ func _ready() -> void :
 
 func center() -> Vector2: return size * 0.5
 func radius() -> Vector2: return size * Vector2(0.41, 0.39)
+func presentation_data() -> Dictionary:
+	if render_only and game._modal_kind == "dish_showcase":
+		return game._last_dish.get("presentation", {})
+	return game.session.presentation
 func normalized(p: Vector2) -> Vector2:
 	return ((p - center()) / radius()).limit_length(0.86)
 
@@ -97,8 +101,12 @@ func _gui_input(event: InputEvent) -> void :
 		_pointer = event.position
 		if ((event.position - center()) / radius()).length() > 1: return
 		if mode == "sauce":
+			var bottle: RigidBody2D = game._plating_bottle(sauce_id)
+			if bottle == null or float(bottle.get_meta("remaining_ml", 0.0)) <= 0.001:
+				status.emit("先从调料架取出有余量的酱瓶，再给成品淋酱。")
+				return
 			if game.session.presentation.get("strokes", []).size() >= 24:
-				status.emit("盘面最多保留 24 笔酱汁，可清除后重淋。")
+				status.emit("成品最多保留 24 笔酱汁，可清除后重淋。")
 				return
 			drawing = true
 			_stroke = {}
@@ -149,10 +157,10 @@ func _process(delta: float) -> void :
 	if drawing and ((_pointer - center()) / radius()).length() <= 1:
 		_travel += _pointer.distance_to(_last_pointer)
 		_last_pointer = _pointer
-		var amount: float = game.session.add_garnish(sauce_id, delta * lerpf(2.0, 18.0, squeeze_pressure))
+		var amount: float = game._dispense_plating_sauce(sauce_id, delta * lerpf(2.0, 18.0, squeeze_pressure))
 		if amount <= 0:
 			stop_gesture()
-			status.emit("本盘酱料达到 120 ml 上限，或种类已满。")
+			status.emit("瓶中酱料已用完，或本盘达到 120 ml 上限。")
 			return
 		if _stroke.is_empty():
 			_stroke = {"id": sauce_id, "color": game._definition(sauce_id).get("color", "d96143"), "width": 4.0, "points": [], "amount_ml": 0.0, "pressure_samples": [], "colour_model": "weighted_srgb_visual_approximation"}
@@ -194,8 +202,10 @@ func _commit_layout() -> void :
 
 func clear_sauce() -> void :
 	stop_gesture()
+	for garnish in game.session.garnishes:
+		game.session.plating_waste_ml += maxf(0.0, float(garnish.get("amount_ml", 0.0)))
 	game.session.garnishes.clear()
-	game.session.presentation.clear()
+	game.session.presentation.erase("strokes")
 	changed.emit()
 	queue_redraw()
 
@@ -211,6 +221,18 @@ func _exit_tree() -> void : stop_gesture()
 
 func _draw() -> void :
 	draw_rect(Rect2(Vector2.ZERO, size), Color("b59a70"))
+	var presentation := presentation_data()
+	if str(presentation.get("vessel", "plate")) == "bowl":
+		_ellipse(center() + Vector2(0, 10), radius() + Vector2(22, 13), Color("88785b"))
+		_ellipse(center(), radius() + Vector2(18, 12), Color("f4e9d0"))
+		_ellipse(center(), radius() - Vector2(12, 9), Color("c8b994"))
+		var broth_ml := float(presentation.get("broth_ml", 0.0))
+		if broth_ml > 0.001:
+			var fill := clampf(broth_ml / 750.0, 0.0, 1.0)
+			_ellipse(center() + Vector2(0, 3), (radius() - Vector2(19, 15)) * lerpf(0.82, 0.99, fill), Color("c6ab66", 0.72))
+		if not render_only and is_instance_valid(selected) and _visuals.has(selected.get_instance_id()):
+			draw_arc(_visuals[selected.get_instance_id()].art.position, 62, 0, TAU, 48, Color("987642"), 2, true)
+		return
 	_ellipse(center() + Vector2(0, 10), radius() + Vector2(22, 13), Color("8c7e61"))
 	_ellipse(center(), radius() + Vector2(20, 12), Color("f7eed8"))
 	_ellipse(center(), radius(), Color("e6dcc0"))

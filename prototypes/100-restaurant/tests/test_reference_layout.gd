@@ -42,7 +42,9 @@ func run() -> void:
 		var shelf_front := 300.0 + row * 105.0
 		var art_bottom := item.position.y + art.position.y + visible_rect.end.y * art.scale.y
 		expect(absf(art_bottom - (shelf_front - 4.0)) < 1.0, "odd ingredient rests on its shelf floor: " + id)
-		expect(item.position.y + item.get_node("IngredientName").position.y >= shelf_front, "odd name is attached to the shelf front: " + id)
+		var name: Label = item.get_node("IngredientName")
+		var name_center := item.position.y + name.position.y + name.size.y * 0.5
+		expect(name_center >= shelf_front and name_center <= shelf_front + 14.0, "readable odd name remains centered on the shelf front: " + id)
 	for utensil in game.world.utensils:
 		expect(utensil.position.x >= 545 and utensil.position.x <= 630 and utensil.home_angle > 1, "utensil rests upright in the source cup")
 	expect(game.hud.find_child("ReferenceRecipeBook", true, false) == null and not game._recipe_stand.visible, "removed countertop recipe stand has no hotspot or visible art")

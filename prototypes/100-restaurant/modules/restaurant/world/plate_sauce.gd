@@ -3,7 +3,7 @@ var canvas: Control
 var world: Node2D
 func _process(_delta: float) -> void : queue_redraw()
 func _draw() -> void :
-	var data: Dictionary = canvas.game.session.presentation if is_instance_valid(canvas) else world.plate_presentation
+	var data: Dictionary = canvas.presentation_data() if is_instance_valid(canvas) else world.plate_presentation
 	var center: Vector2 = canvas.center() if is_instance_valid(canvas) else world.plate.center
 	var radius: Vector2 = canvas.radius() if is_instance_valid(canvas) else Vector2(100, 20)
 	for stroke in data.get("strokes", []):

@@ -22,8 +22,21 @@ func _draw() -> void :
 	paint(self)
 
 func paint(target: Node2D) -> void:
+	if str(world.plate_presentation.get("vessel", "plate")) == "bowl":
+		_ellipse(target, center + Vector2(0, 7), Vector2(124, 44), Color("85785d"))
+		_ellipse(target, center, Vector2(120, 40), Color("f6ead1"))
+		_ellipse(target, center, Vector2(99, 27), Color("bdad88"))
+		if float(world.plate_presentation.get("broth_ml", 0.0)) > 0.001:
+			_ellipse(target, center + Vector2(0, 2), Vector2(95, 25), Color("c6ab66", 0.72))
+		return
 	var tex: = preload("res://modules/restaurant/assets/sprite_library.gd").gear(1)
 	if tex: target.draw_texture_rect(tex, Rect2(center - Vector2(123, 39), Vector2(246, 86)), false)
+
+func _ellipse(target: Node2D, at: Vector2, radius: Vector2, color: Color) -> void:
+	var polygon := PackedVector2Array()
+	for index in 48:
+		polygon.append(at + Vector2.from_angle(float(index) * TAU / 48.0) * radius)
+	target.draw_colored_polygon(polygon, color)
 func _input(event: InputEvent) -> void :
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		var pointer: Vector2 = world.get_global_transform_with_canvas().affine_inverse() * event.position

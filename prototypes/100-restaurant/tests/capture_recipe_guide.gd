@@ -43,6 +43,9 @@ func run() -> void:
 	game.world.set_dish(game.session.dish, game.session.ingredients)
 	game._interact("plate")
 	game._plate_bodies(game.world._foods.get_children())
+	game._set_serving_vessel("bowl")
+	game._transfer_broth_to_bowl(250.0)
+	await capture("bowl-plating")
 	await game._photograph_plating()
 	var photographed := {"id":"capture", "title":"第一次番茄面", "author":"主厨", "notes":"番茄切两片，和面一起慢慢煮。", "dish":game.session.plate(), "thumbnail":game._photo}
 	game._view_recipe(photographed)

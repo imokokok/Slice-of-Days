@@ -17,20 +17,21 @@ var range_begin := -1.0
 var range_end := -1.0
 var range_track := 0
 var pixels_per_second := 30.0
+var view_seconds := 60.0
 const COLORS := [Color("b6cfcb"), Color("b4cedd"), Color("eed577"), Color("d0d8c2")]
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(1800, 310)
+	custom_minimum_size = Vector2(1170, 290)
 	mouse_default_cursor_shape = Control.CURSOR_CROSS
 
 func clip_rect(clip: Dictionary) -> Rect2:
-	return Rect2(float(clip.start) / 60.0 * size.x, 36 + int(clip.track) * 66, maxf(6, float(clip.length) / 60.0 * size.x), 54)
+	return Rect2(float(clip.start) / view_seconds * size.x, 36 + int(clip.track) * 66, maxf(6, float(clip.length) / view_seconds * size.x), 54)
 
 func _draw() -> void:
 	if arrangement == null:
 		return
-	for second in range(0, 61, 5):
-		var x := float(second) / 60.0 * size.x
+	for second in range(0, int(view_seconds)+1, 2 if view_seconds<=24 else 5):
+		var x := float(second) / view_seconds * size.x
 		draw_line(Vector2(x, 24), Vector2(x, 302), Color("d5d2c5"))
 		draw_string(ThemeDB.fallback_font, Vector2(x + 2, 17), str(second), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("5b665d"))
 	for track in 4:
@@ -41,7 +42,8 @@ func _draw() -> void:
 		var color: Color = COLORS[int(clip.track)]
 		if arrangement.muted[int(clip.track)]:
 			color.a = 0.3
-		draw_rect(rect, color)
+		var paper:=StyleBoxFlat.new(); paper.bg_color=color; paper.set_corner_radius_all(5)
+		draw_style_box(paper,rect)
 		if i == selected:
 			draw_rect(rect, Color("526d61"), false, 2)
 			draw_rect(Rect2(rect.position, Vector2(minf(12, rect.size.x / 3), rect.size.y)), Color("526d61"))
@@ -59,23 +61,26 @@ func _draw() -> void:
 					peaks.append(peak)
 				peak_cache[key] = peaks
 			var duration := float(source.pcm.size()) / float(source.rate)
+			# Display quiet field recordings legibly without changing their audio gain.
+			var display_peak:=.001
+			for value in peak_cache[key]: display_peak=maxf(display_peak,float(value))
 			for pixel in range(3, int(rect.size.x) - 3, 3):
 				var source_time := float(pixel) / rect.size.x * float(clip.length) * float(clip.speed) + float(clip.get("phase", 0.0))
 				var span := float(clip.source_end) - float(clip.source_start)
 				if span <= 0 or (not clip.loop and source_time > span):
 					continue
 				source_time = float(clip.source_start) + fposmod(source_time, span)
-				var height := float(peak_cache[key][clampi(int(source_time / duration * 300), 0, 299)]) * 15
+				var height := float(peak_cache[key][clampi(int(source_time / duration * 300), 0, 299)]) / display_peak * 17
 				var center := rect.position + Vector2(pixel, 35)
 				draw_line(center - Vector2(0, maxf(1, height)), center + Vector2(0, maxf(1, height)), Color("506052"), 1)
 		draw_string(get_theme_default_font(), rect.position + Vector2(5, 17), LocalizationSystem.text(str(clip.name)), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 10, 16, Color("273d31"))
 	if range_begin >= 0 and range_end >= 0:
 		var begin := minf(range_begin, range_end)
 		var end := maxf(range_begin, range_end)
-		var region := Rect2(begin / 60.0 * size.x, 32 + range_track * 66, (end - begin) / 60.0 * size.x, 62)
+		var region := Rect2(begin / view_seconds * size.x, 32 + range_track * 66, (end - begin) / view_seconds * size.x, 62)
 		draw_rect(region, Color(0.95, 0.67, 0.22, 0.32))
 		draw_rect(region, Color("526d61"), false, 2)
-	var cursor := playhead / 60.0 * size.x
+	var cursor := playhead / view_seconds * size.x
 	draw_line(Vector2(cursor, 22), Vector2(cursor, 302), Color("526d61"), 2)
 
 func _get_drag_data(_at: Vector2) -> Variant:
@@ -85,7 +90,7 @@ func _can_drop_data(_at: Vector2, data: Variant) -> bool:
 	return data is Dictionary and data.has("sample")
 
 func _drop_data(at: Vector2, data: Variant) -> void:
-	selected = arrangement.add_sample(data.sample, clampi(int((at.y - 32) / 66), 0, 3), clampf(at.x / size.x * 60.0, 0, 59.8))
+	selected = arrangement.add_sample(data.sample, clampi(int((at.y - 32) / 66), 0, 3), clampf(at.x / size.x * view_seconds, 0, 59.8))
 	selected_changed.emit(selected)
 	edited.emit()
 	queue_redraw()
@@ -103,10 +108,10 @@ func _gui_input(event: InputEvent) -> void:
 			return
 		down = event.position
 		if down.y < 30:
-			seek_requested.emit(clampf(down.x / size.x * 60.0, 0, 60))
+			seek_requested.emit(clampf(down.x / size.x * view_seconds, 0, 60))
 			return
 		if selection_mode:
-			range_begin = clampf(down.x / size.x * 60.0, 0, 60)
+			range_begin = clampf(down.x / size.x * view_seconds, 0, 60)
 			range_end = range_begin
 			range_track = clampi(int((down.y - 32) / 66), 0, 3)
 			drag_mode = "range"
@@ -126,14 +131,14 @@ func _gui_input(event: InputEvent) -> void:
 				break
 		selected_changed.emit(selected)
 		if selected < 0:
-			seek_requested.emit(clampf(down.x / size.x * 60.0, 0, 60))
+			seek_requested.emit(clampf(down.x / size.x * view_seconds, 0, 60))
 		queue_redraw()
 	elif event is InputEventMouseMotion and drag_mode == "range":
-		range_end = clampf(event.position.x / size.x * 60.0, 0, 60)
+		range_end = clampf(event.position.x / size.x * view_seconds, 0, 60)
 		queue_redraw()
 	elif event is InputEventMouseMotion and not drag_mode.is_empty() and selected >= 0:
 		var clip := arrangement.clips[selected]
-		var delta: float = (event.position.x - down.x) / size.x * 60.0
+		var delta: float = (event.position.x - down.x) / size.x * view_seconds
 		if drag_mode == "move":
 			clip.start = clampf(snappedf(float(original.start) + delta, 0.05), 0, 60 - float(clip.length))
 			clip.track = clampi(int((event.position.y - 32) / 66), 0, 3)

@@ -12,66 +12,41 @@ var pressing: Control
 var submitting := false
 var listening_controls: Array[BaseButton] = []
 
+var page: Control
 func _ready() -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	var scroll := ScrollContainer.new()
-	scroll.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	add_child(scroll)
-	column = VBoxContainer.new()
-	column.size_flags_horizontal = SIZE_EXPAND_FILL
-	scroll.add_child(column)
-	column.add_child(studio.label("MUSIC VISUAL / 声音的形状", 26))
-	var container := SubViewportContainer.new()
-	container.custom_minimum_size = Vector2(960, 540)
+	theme=preload("res://scripts/ui/components/interface_palette.gd").theme_for_tools()
+	var bg:=ColorRect.new(); bg.color=Color("e3cbb0"); bg.set_anchors_and_offsets_preset(PRESET_FULL_RECT); bg.mouse_filter=MOUSE_FILTER_IGNORE; add_child(bg)
+	page=Control.new(); page.size=Vector2(1600,900); add_child(page)
+	resized.connect(_fit_page); _fit_page()
+	column=VBoxContainer.new(); column.position=Vector2(250,36); column.size=Vector2(1100,830)
+	column.add_theme_constant_override("separation",15); page.add_child(column)
+	column.add_child(studio.label("先把这张声音明信片，放给老板听。",30))
+	column.add_child(studio.label("接下来：定格封面 → 装标签 → 拉下压机 → 三层包装 → 留在唱片架",19))
+	var container:=SubViewportContainer.new(); container.custom_minimum_size=Vector2(960,540); container.stretch=true
 	column.add_child(container)
-	viewport = SubViewport.new()
-	viewport.size = Vector2i(960, 540)
-	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	container.add_child(viewport)
-	canvas = VisualCanvas.new()
-	canvas.size = Vector2(960, 540)
-	canvas.model = model
-	canvas.configure(audio, model.prompt, model.seed_value)
-	viewport.add_child(canvas)
-	player = AudioStreamPlayer.new()
-	player.bus = "Music"
-	player.stream = audio
-	add_child(player)
-	prompt_input = LineEdit.new()
-	prompt_input.text = model.prompt
-	prompt_input.max_length = 160
-	column.add_child(prompt_input)
-	var modes := HBoxContainer.new(); column.add_child(modes)
-	modes.add_child(studio.label("MV 表现",17))
-	var selector := OptionButton.new()
-	selector.add_item("像素 · 跟随声音来源")
-	selector.add_item("康定斯基式 · 几何构图")
-	selector.item_selected.connect(func(index:int):
-		canvas.pixel_mode=index==0; canvas.profile["mode"]="pixel" if index==0 else "geometry"; canvas.queue_redraw())
-	modes.add_child(selector)
-	var controls := HBoxContainer.new()
-	column.add_child(controls)
-	controls.add_child(studio.button("生成画面", generate))
-	controls.add_child(studio.button("换一个种子", func() -> void:
-		model.seed_value = randi() % 2147483647
-		generate()))
-	controls.add_child(studio.button("▶ 播放", func() -> void:
-		if player.stream_paused: player.stream_paused = false
-		else: player.play()))
-	controls.add_child(studio.button("Ⅱ 暂停", func() -> void: player.stream_paused = true))
-	controls.add_child(studio.button("交给老板试听", submit))
-	controls.add_child(studio.button("返回 Studio", func() -> void:
-		model.prompt = prompt_input.text
-		if not model.save_project():
-			status.text = LocalizationSystem.text(model.error)
-			return
-		studio.show()
-		queue_free()))
-	for child in controls.get_children():
-		if child is BaseButton and child.text != "返回 Studio": listening_controls.append(child)
-	status = studio.label("像素影像跟随已录声源、剪辑位置与真实音频能量。切换几何模式可制作另一种封面。", 15)
-	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	column.add_child(status)
+	viewport=SubViewport.new(); viewport.size=Vector2i(960,540); viewport.render_target_update_mode=SubViewport.UPDATE_ALWAYS; container.add_child(viewport)
+	canvas=VisualCanvas.new(); canvas.size=Vector2(960,540); canvas.model=model
+	canvas.configure(audio,model.prompt,model.seed_value); viewport.add_child(canvas)
+	player=AudioStreamPlayer.new(); player.bus="Music"; player.stream=audio; add_child(player)
+	# Keep project compatibility without exposing seed/prompt/mode configuration.
+	prompt_input=LineEdit.new(); prompt_input.text=model.prompt; prompt_input.hide(); add_child(prompt_input)
+	var controls:=HBoxContainer.new(); controls.add_theme_constant_override("separation",18); column.add_child(controls)
+	var listen:Button=studio.button("▶ 再听一遍",func(): player.play())
+	var submit_button:Button=studio.button("请老板试听，开始制作 →",submit)
+	controls.add_child(listen); controls.add_child(submit_button)
+	controls.add_child(studio.button("回去剪贴",func():
+		if not model.save_project(): status.text=model.error; return
+		studio.show(); queue_free()))
+	listening_controls=[listen,submit_button]
+	status=studio.label("一小段声音也能做唱片。委托是额外挑战，不影响自由制作。",19)
+	status.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; column.add_child(status)
+	player.play()
+
+func _fit_page() -> void:
+	if page==null: return
+	var factor:=minf(size.x/1600.0,size.y/900.0)
+	page.scale=Vector2.ONE*factor; page.position=(size-Vector2(1600,900)*factor)*.5
 
 func generate() -> bool:
 	model.prompt = prompt_input.text
@@ -91,23 +66,20 @@ func _process(_delta: float) -> void:
 
 func submit() -> void:
 	if preload("res://scripts/town_sound/data/SoundAtlas.gd").audible_kinds(model).is_empty():
-		status.text="作品没有可听见的声音，请取消轨道静音或重新采样。"
+		status.text="作品没有可听见的声音，请把声音纸条的音量调大一点，或重新采样。"
 		return
-	var unique: Dictionary = {}
-	for clip in model.clips: unique[clip.sample_id] = true
-	if unique.size() < 2 or model.clips.size() < 2 or model.length() < 8.0:
-		status.text = LocalizationSystem.text("老板：这个还像个草稿。再弄一点，我给你留着位置。\n需要至少 2 种录音、2 个片段、8 秒作品。")
-		return
+	if model.clips.is_empty() or audio==null or audio.get_length()<.25:
+		status.text="先留下一小段声音（至少四分之一秒），再来做唱片。"; return
 	if pressing != null or submitting: return
 	if not generate(): return
-	status.text = LocalizationSystem.text("老板：新做的？行，放吧。\n正在试听作品（8 秒）……")
+	status.text = LocalizationSystem.text("老板：新做的？行，放吧。\n老板正在听。听完这一段，就开始动手……")
 	player.stream_paused = false
 	player.play()
 	# Submission is locked during listening; returning frees this node and cancels the continuation.
 	submitting = true
 	for button in listening_controls: button.disabled = true
 	prompt_input.editable = false
-	await get_tree().create_timer(8.0).timeout
+	await get_tree().create_timer(minf(8.0,audio.get_length())).timeout
 	player.stop()
 	pressing = load("res://scripts/town_sound/record_shop/PressingTable.gd").new()
 	pressing.room = self
@@ -115,5 +87,5 @@ func submit() -> void:
 	pressing.audio = audio
 	pressing.profile = canvas.profile
 	pressing.seed_value = model.seed_value
-	add_child(pressing)
+	page.add_child(pressing)
 	column.hide()

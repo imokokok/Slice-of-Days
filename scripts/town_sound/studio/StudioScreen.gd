@@ -1,7 +1,7 @@
 extends Control
 const Model = preload("res://scripts/town_sound/studio/Arrangement.gd")
 const Timeline = preload("res://scripts/town_sound/studio/Timeline.gd")
-const DragButton = preload("res://scripts/town_sound/studio/SampleDragButton.gd")
+const DragButton = preload("res://scripts/town_sound/studio/SoundCard.gd")
 var model := Model.new()
 var timeline: SoundTimeline
 var player: AudioStreamPlayer
@@ -29,180 +29,124 @@ var restoring_history := false
 var undo_button: Button
 var redo_button: Button
 
+var desk: Control
+var mv: VisualCanvas
+var mv_caption: Label
+var play_control: Button
+var make_control: Button
+var cut_control: Button
+var keep_control: Button
+var has_listened := false
+var revision := 0
+
 func _ready() -> void:
 	add_to_group("meta_modal")
 	theme=preload("res://scripts/ui/components/interface_palette.gd").theme_for_tools()
+	theme.set_constant("paragraph_spacing","Label",0)
+	theme.set_constant("line_spacing","Label",2)
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	if has_node("/root/GameState") and GameState.current_location != "record_store":
+		queue_free(); return
 	if has_node("/root/WorldSound"):
-		get_node("/root/WorldSound").lock_monitor(true)
-		monitor_locked = true
-	if has_node("/root/GameState") and get_node("/root/GameState").current_location != "record_store":
-		set_process(false)
-		queue_free()
-		return
+		WorldSound.lock_monitor(true); monitor_locked=true
 	_configure_role_project()
+	# Old hidden track controls must never leave an apparently silent workbench.
+	# Bake old audible track gain into clips once, then expose only clip loudness.
+	for clip in model.clips:
+		clip.volume=clampf(float(clip.volume)*float(model.gains[int(clip.track)]),0,1.5)
+	model.muted=[false,false,false,false]; model.gains=[1.0,1.0,1.0,1.0]
 	previous_edit=_edit_snapshot()
-	var backdrop := ColorRect.new(); backdrop.color=Color("f3eddd"); backdrop.set_anchors_and_offsets_preset(PRESET_FULL_RECT); backdrop.mouse_filter=MOUSE_FILTER_IGNORE; add_child(backdrop)
-	player = AudioStreamPlayer.new()
-	player.bus = "Music"
-	add_child(player)
-	player.finished.connect(func() -> void: paused_at = 0.0)
-	var scroll := ScrollContainer.new()
-	scroll.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	add_child(scroll)
-	var margin := MarginContainer.new()
-	margin.size_flags_horizontal = SIZE_EXPAND_FILL
-	for edge in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + edge, 48)
-	scroll.add_child(margin)
-	root_column = VBoxContainer.new()
-	root_column.add_theme_constant_override("separation", 18)
-	margin.add_child(root_column)
-	var header := HBoxContainer.new()
-	root_column.add_child(header)
-	var role_label := " · %s" % GameState.current_role if has_node("/root/CharacterSystem") and CharacterSystem.switch_unlocked() else ""
-	var heading := label("唱片店 · 声音工作台%s" % role_label, 32); heading.size_flags_horizontal=SIZE_EXPAND_FILL; header.add_child(heading)
-	tutorial=label("先从素材区放入一段声音，再试听。",19)
-	root_column.add_child(tutorial)
-	header.add_child(button("♪ 声音设置", func() -> void: get_node("/root/SoundSettings").show_dialog()))
-	header.add_child(button("返回录音", func() -> void:
-		if model.save_project():
-			player.stop()
-			get_parent().show()
-			queue_free()
-		else:
-			status.text = LocalizationSystem.text(model.error)))
-	var transport := HFlowContainer.new(); transport.add_theme_constant_override("h_separation",10); transport.add_theme_constant_override("v_separation",8)
-	root_column.add_child(transport)
-	transport.add_child(button("▶ 播放", play))
-	transport.add_child(button("Ⅱ 暂停", pause))
-	transport.add_child(button("■ 停止", stop))
-	transport.add_child(button("保存工程", func() -> void: status.text = LocalizationSystem.text("工程已保存。" if model.save_project() else model.error)))
-	transport.add_child(button("重载工程", func() -> void:
-		stop()
-		if model.load_project():
-			selected = -1
-			changed()
-			status.text = LocalizationSystem.text("工程已恢复。")
-		else:
-			status.text = LocalizationSystem.text(model.error)))
-	transport.add_child(button("制作唱片", request_visual))
-	transport.add_child(button("用收藏搭建 16 秒草稿",build_starter))
-	clock_label = label("00:00 / 00:00")
-	transport.add_child(clock_label)
-	undo_button=button("撤销",_undo_edit); redo_button=button("重做",_redo_edit); undo_button.disabled=true; redo_button.disabled=true
-	transport.add_child(undo_button); transport.add_child(redo_button)
-	var edit_tools := HFlowContainer.new(); edit_tools.add_theme_constant_override("h_separation",10)
-	root_column.add_child(edit_tools)
-	var mode_group := ButtonGroup.new()
-	var move_tool := button("↔ 移动片段", func() -> void:
-		timeline.selection_mode = false
-		status.text = LocalizationSystem.text("移动模式：拖片段中间移动，拖橙色边缘裁剪。"))
-	move_tool.toggle_mode = true
-	move_tool.button_group = mode_group
-	move_tool.button_pressed = true
-	edit_tools.add_child(move_tool)
-	var range_tool := button("▧ 拖选区域", func() -> void:
-		timeline.selection_mode = true
-		status.text = LocalizationSystem.text("选区模式：在任意轨道上按住鼠标拖出一段，再点删除选区或只保留选区。"))
-	range_tool.toggle_mode = true
-	range_tool.button_group = mode_group
-	edit_tools.add_child(range_tool)
-	edit_tools.add_child(button("✂ 删除选区", func() -> void: edit_region(false)))
-	edit_tools.add_child(button("只保留选区", func() -> void: edit_region(true)))
-	edit_tools.add_child(label("缩放", 13))
-	var zoom := HSlider.new()
-	zoom.min_value = 15
-	zoom.max_value = 100
-	zoom.value = 30
-	zoom.custom_minimum_size.x = 110
-	zoom.value_changed.connect(func(value: float) -> void:
-		timeline.custom_minimum_size.x = value * 60
-		timeline.queue_redraw())
-	edit_tools.add_child(zoom)
-	var samples := HBoxContainer.new()
-	root_column.add_child(samples)
-	samples.add_child(label("素材：拖入轨道\n或点击放到游标", 14))
-	var sample_scroll := ScrollContainer.new()
-	sample_scroll.custom_minimum_size.y = 66
-	sample_scroll.size_flags_horizontal = SIZE_EXPAND_FILL
-	samples.add_child(sample_scroll)
-	var sample_row := HBoxContainer.new()
-	sample_scroll.add_child(sample_row)
+	player=AudioStreamPlayer.new(); player.bus="Music"; add_child(player)
+	player.finished.connect(func(): paused_at=0.0; play_control.text="▶ 听听看"; _guide())
+	desk=Control.new(); desk.size=Vector2(1600,900); add_child(desk)
+	var surface=preload("res://scripts/town_sound/studio/SoundDesk.gd").new()
+	surface.size=Vector2(1600,900); desk.add_child(surface)
+	resized.connect(_fit_desk); _fit_desk()
+	_place(label("把今天，做成一张唱片",32),Vector2(56,30),Vector2(750,50))
+	_place(label("声音手作桌  /  采集 → 剪贴 → 听一遍 → 制作",18),Vector2(58,87),Vector2(760,28))
+	_place(button("收好，回店里",_leave_desk),Vector2(1342,35),Vector2(216,48))
+	tutorial=label("",21); tutorial.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	_place(tutorial,Vector2(65,137),Vector2(777,72))
+	_place(label("声音盒子 · 拿一卷，放到下面的纸带上",18),Vector2(65,211),Vector2(760,28))
+	var sample_scroll:=ScrollContainer.new(); sample_scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	_place(sample_scroll,Vector2(64,246),Vector2(782,127))
+	var row:=HBoxContainer.new(); row.add_theme_constant_override("separation",14); sample_scroll.add_child(row)
 	for item in SampleStore.new().list_samples():
-		var drag := DragButton.new()
-		drag.sample = item
-		drag.text = LocalizationSystem.text(str(item.name)).left(12)
-		drag.tooltip_text = LocalizationSystem.text("%s · %.2f 秒" % [item.name, item.duration])
-		drag.disabled = item.missing
-		drag.pressed.connect(func() -> void:
-			selected = model.add_sample(item, 0, minf(paused_at, 59.8))
-			timeline.selected = selected
-			changed())
-		sample_row.add_child(drag)
-	var track_row := HBoxContainer.new()
-	root_column.add_child(track_row)
-	var track_controls := VBoxContainer.new()
-	track_controls.custom_minimum_size.x = 115
-	track_row.add_child(track_controls)
-	track_controls.add_child(label("声音轨道", 13))
-	for i in 4:
-		var control := VBoxContainer.new()
-		control.custom_minimum_size.y = 66
-		track_controls.add_child(control)
-		var mute := CheckButton.new()
-		mute.text = LocalizationSystem.text("T%d 静音" % (i + 1))
-		mute.button_pressed = bool(model.muted[i])
-		mute.toggled.connect(func(value: bool) -> void:
-			model.muted[i] = value
-			changed())
-		control.add_child(mute)
-		mute_controls.append(mute)
-		var gain := HSlider.new()
-		gain.max_value = 1.5
-		gain.step = 0.05
-		gain.value = model.gains[i]
-		gain.tooltip_text = LocalizationSystem.text("轨道音量 0–150%")
-		gain.value_changed.connect(func(value: float) -> void:
-			model.gains[i] = value
-			changed())
-		control.add_child(gain)
-		gain_controls.append(gain)
-	timeline = Timeline.new()
-	timeline.arrangement = model
-	timeline.size_flags_horizontal = SIZE_EXPAND_FILL
-	timeline.selected_changed.connect(func(index: int) -> void:
-		selected = index
-		build_inspector())
+		var card:=DragButton.new(); card.sample=item; card.disabled=item.missing
+		card.pressed.connect(func():
+			selected=model.add_sample(item,0,minf(model.length(),59.8)); timeline.selected=selected; changed())
+		row.add_child(card)
+	if row.get_child_count()==0:
+		row.add_child(label("声音盒还是空的。\n回到街上，用右上角录音机留下一段声音。",21))
+	play_control=button("▶ 听听看",func():
+		if player.playing: pause()
+		else: play())
+	_place(play_control,Vector2(65,377),Vector2(165,43))
+	clock_label=label("",18); _place(clock_label,Vector2(250,383),Vector2(190,30))
+	make_control=button("拿去做唱片 →",request_visual)
+	_place(make_control,Vector2(598,377),Vector2(245,43))
+	mv=VisualCanvas.new(); mv.name="AlwaysVisibleMV"; mv.mouse_filter=MOUSE_FILTER_IGNORE
+	_place(mv,Vector2(922,126),Vector2(614,278))
+	mv.profile=VisualCanvas.parse_prompt(model.prompt,model.seed_value); mv.model=model
+	mv_caption=label("声音明信片 · 播放时，画面跟着声音走",17)
+	_place(mv_caption,Vector2(929,415),Vector2(607,28))
+	var tools:=HBoxContainer.new(); tools.add_theme_constant_override("separation",12)
+	_place(tools,Vector2(65,491),Vector2(970,48))
+	var group:=ButtonGroup.new()
+	var hand:=button("手 · 移动 / 修边",func(): timeline.selection_mode=false; _guide())
+	hand.toggle_mode=true; hand.button_group=group; hand.button_pressed=true; tools.add_child(hand)
+	var scissors:=button("剪刀 · 划出一段",func(): timeline.selection_mode=true; _guide())
+	scissors.toggle_mode=true; scissors.button_group=group; tools.add_child(scissors)
+	cut_control=button("剪掉",func(): edit_region(false)); tools.add_child(cut_control)
+	keep_control=button("只留下这段",func(): edit_region(true)); tools.add_child(keep_control)
+	undo_button=button("撤销",_undo_edit); redo_button=button("重做",_redo_edit)
+	tools.add_child(undo_button); tools.add_child(redo_button)
+	undo_button.disabled=true; redo_button.disabled=true
+	timeline=Timeline.new(); timeline.arrangement=model
+	timeline.view_seconds=clampf(ceilf(model.length()/4.0)*4.0+4.0,12,60)
+	var scroll:=ScrollContainer.new(); scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	_place(scroll,Vector2(68,545),Vector2(1190,293)); scroll.add_child(timeline)
+	timeline.selected_changed.connect(func(index:int): selected=index; build_inspector(); _guide())
 	timeline.edited.connect(changed)
-	timeline.seek_requested.connect(func(seconds: float) -> void:
-		paused_at = seconds
-		if player.playing:
-			player.seek(minf(seconds, model.length()))
-		timeline.playhead = seconds
-		timeline.queue_redraw())
-	var timeline_scroll := ScrollContainer.new()
-	timeline_scroll.custom_minimum_size = Vector2(650, 330)
-	timeline_scroll.size_flags_horizontal = SIZE_EXPAND_FILL
-	timeline_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	track_row.add_child(timeline_scroll)
-	timeline_scroll.add_child(timeline)
-	timeline.region_selected.connect(func(begin: float, end: float, track: int) -> void:
-		if begin < 0:
-			region_start = -1
-			region_end = -1
-			return
-		region_start = begin
-		region_end = end
-		region_track = track
-		status.text = LocalizationSystem.text("已选 T%d：%.2f–%.2f 秒。点击「删除选区」剪掉中间，或「只保留选区」。" % [track + 1, begin, end]))
-	inspector = VBoxContainer.new()
-	root_column.add_child(inspector)
-	status = label("四条轨道 · 60 秒 · 拖动片段边缘裁切，拖动中间移动。", 15)
-	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	root_column.add_child(status)
-	build_inspector()
+	timeline.seek_requested.connect(func(seconds:float):
+		paused_at=seconds
+		if player.playing: player.seek(minf(seconds,model.length()))
+		mv.time=seconds; mv.queue_redraw())
+	timeline.region_selected.connect(func(begin:float,end:float,track:int):
+		region_start=begin; region_end=end; region_track=track; _guide())
+	inspector=VBoxContainer.new(); inspector.add_theme_constant_override("separation",12)
+	_place(inspector,Vector2(1291,550),Vector2(236,271))
+	status=label("改动会自动保存在本机。拖片段两端修剪；点击纸带上方刻度定位。",17)
+	_place(status,Vector2(64,856),Vector2(1490,32))
+	build_inspector(); _guide()
 
+func _place(node:Control,at:Vector2,extent:Vector2) -> void:
+	node.position=at; node.size=extent; desk.add_child(node)
+
+func _fit_desk() -> void:
+	if desk==null: return
+	var factor:=minf(size.x/1600.0,size.y/900.0)
+	desk.scale=Vector2.ONE*factor; desk.position=(size-Vector2(1600,900)*factor)*.5
+
+func _leave_desk() -> void:
+	if mixing: status.text="声音正在整理，稍等一下。"; return
+	if not model.save_project(): status.text=model.error; return
+	player.stop(); get_parent().show(); queue_free()
+
+func _guide() -> void:
+	if not is_instance_valid(tutorial) or timeline==null: return
+	var empty:=model.clips.is_empty()
+	play_control.disabled=empty or mixing; make_control.disabled=empty or mixing
+	cut_control.disabled=region_start<0 or region_end-region_start<.01
+	keep_control.disabled=cut_control.disabled
+	if empty: tutorial.text="① 先留下一段声音\n把下方的小磁带拖到纸带上；也可以点一下。"
+	elif timeline.selection_mode and region_start>=0:
+		tutorial.text="② 已圈出 %.1f—%.1f 秒\n选「剪掉」或「只留下这段」。剪错可以撤销。"%[region_start,region_end]
+	elif timeline.selection_mode:
+		tutorial.text="② 拿好了剪刀\n在下面的波形上按住并横向划出范围，再松手。"
+	elif not has_listened:
+		tutorial.text="② 摆好声音，听听看\n拖中间换位置，拖两端修短。点选纸条可调音量和速度。"
+	else: tutorial.text="③ 喜欢这一段了吗？\n去店里挑封面、压片，再亲手包装。"
 
 func _configure_role_project() -> void:
 	if has_node("/root/GameState"):
@@ -214,6 +158,8 @@ func label(text: String, font_size: int = 16) -> Label:
 	var node := Label.new()
 	node.text = LocalizationSystem.text(text)
 	node.add_theme_font_size_override("font_size", maxi(18,font_size))
+	node.add_theme_constant_override("paragraph_spacing",0)
+	node.add_theme_constant_override("line_spacing",2)
 	return node
 
 func button(text: String, action: Callable) -> Button:
@@ -242,80 +188,47 @@ func field(row: HBoxContainer, title: String, key: String, low: float, high: flo
 	row.add_child(spin)
 
 func build_inspector() -> void:
-	for child in inspector.get_children():
-		inspector.remove_child(child)
-		child.queue_free()
-	if selected < 0 or selected >= model.clips.size():
-		inspector.add_child(label("点击片段调整音量、速度、循环和淡入淡出。", 15))
-		return
-	var row := HBoxContainer.new()
-	inspector.add_child(row)
-	field(row, "音量", "volume", 0, 1.5, 0.05)
-	field(row, "淡入", "fade_in", 0, 2, 0.1)
-	field(row, "淡出", "fade_out", 0, 2, 0.1)
-	var speed := OptionButton.new()
-	var speeds := [0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
-	for value in speeds:
-		speed.add_item(str(value) + "x")
-	speed.select(speeds.find(float(model.clips[selected].speed)))
-	speed.item_selected.connect(func(index: int) -> void:
-		var clip := model.clips[selected]
-		var old := float(clip.speed)
-		clip.speed = speeds[index]
-		clip.length = minf(float(clip.length) * old / float(clip.speed), 60.0 - float(clip.start))
-		changed())
-	row.add_child(speed)
-	var loop := CheckButton.new()
-	loop.text = LocalizationSystem.text("循环")
-	loop.button_pressed = model.clips[selected].loop
-	loop.toggled.connect(func(value: bool) -> void:
-		model.clips[selected].loop = value
-		changed())
-	row.add_child(loop)
-	row.add_child(button("拆分", split_clip))
-	row.add_child(button("复制", duplicate_clip))
-	row.add_child(button("删除片段", delete_clip))
-	var trim_row := HBoxContainer.new()
-	inspector.add_child(trim_row)
-	trim_row.add_child(label("精确裁剪 · 源音频起点", 13))
-	var trim_start := SpinBox.new()
-	trim_start.max_value = 60
-	trim_start.step = 0.01
-	trim_start.value = float(model.clips[selected].source_start) + float(model.clips[selected].get("phase", 0))
-	trim_row.add_child(trim_start)
-	trim_row.add_child(label("终点", 13))
-	var trim_end := SpinBox.new()
-	trim_end.max_value = 60
-	trim_end.step = 0.01
-	trim_end.value = minf(float(model.clips[selected].source_end), trim_start.value + float(model.clips[selected].length) * float(model.clips[selected].speed))
-	trim_row.add_child(trim_end)
-	trim_row.add_child(button("应用裁剪", func() -> void:
-		var clip := model.clips[selected]
-		var source := model.load_pcm(clip.sample_id)
-		if source.is_empty():
-			status.text = LocalizationSystem.text(model.error)
-			return
-		var duration := float(source.pcm.size()) / float(source.rate)
-		if trim_end.value <= trim_start.value or trim_end.value > duration:
-			status.text = LocalizationSystem.text("终点必须大于起点，且不能超过原始录音 %.2f 秒。" % duration)
-			return
-		clip.source_start = trim_start.value
-		clip.source_end = trim_end.value
-		clip.phase = 0.0
-		clip.length = minf((trim_end.value - trim_start.value) / float(clip.speed), 60.0 - float(clip.start))
-		changed()))
+	for child in inspector.get_children(): inspector.remove_child(child); child.queue_free()
+	if selected<0 or selected>=model.clips.size():
+		inspector.add_child(label("点一张声音纸条\n调节它的大小声\n和播放速度。",18)); return
+	inspector.add_child(label(str(model.clips[selected].name).left(10),20))
+	var caption:=label("音量  %d%%"%roundi(float(model.clips[selected].volume)*100),18)
+	inspector.add_child(caption)
+	var gain:=HSlider.new(); gain.min_value=0; gain.max_value=1.5; gain.step=.05
+	gain.value=float(model.clips[selected].volume); gain.custom_minimum_size=Vector2(210,34); gain.tooltip_text="左右拖动，调整这段声音的大小"
+	inspector.add_child(gain)
+	gain.value_changed.connect(func(value:float):
+		if selected<0: return
+		model.clips[selected].volume=value; caption.text="音量  %d%%"%roundi(value*100)
+		dirty=true; revision+=1; stop()
+		if not model.save_project(): status.text=model.error)
+	gain.drag_ended.connect(func(_changed:bool): _remember_edit())
+	gain.focus_exited.connect(_remember_edit)
+	inspector.add_child(label("速度",18))
+	var speed:=OptionButton.new(); speed.custom_minimum_size.y=38
+	var values:=[.5,.75,1.0,1.25,1.5,2.0]
+	for v in values: speed.add_item(str(v)+" ×"+("  原速" if v==1.0 else ""))
+	speed.select(values.find(float(model.clips[selected].speed)))
+	speed.item_selected.connect(func(index:int):
+		var clip:=model.clips[selected]; var old:=float(clip.speed)
+		clip.speed=values[index]; clip.length=minf(float(clip.length)*old/float(clip.speed),60.0-float(clip.start)); changed())
+	inspector.add_child(speed)
+	inspector.add_child(button("拿走这段",delete_clip))
 
 func changed() -> void:
-	if is_instance_valid(tutorial): tutorial.text=LocalizationSystem.text("可以拖动片段调整位置；点播放，先听一听。" if not model.clips.is_empty() else "先从素材区放入一段声音，再试听。")
+	revision+=1
+	has_listened=false
 	if not restoring_history: _remember_edit()
 	for i in mute_controls.size():
 		mute_controls[i].set_pressed_no_signal(bool(model.muted[i]))
 		gain_controls[i].set_value_no_signal(float(model.gains[i]))
 	dirty = true
 	stop()
+	timeline.view_seconds=clampf(ceilf(model.length()/4.0)*4.0+4.0,12,60)
 	timeline.queue_redraw()
 	build_inspector()
 	if not model.save_project(): status.text = LocalizationSystem.text(model.error)
+	_guide()
 
 func prepare_mix() -> bool:
 	if mixing:
@@ -323,10 +236,16 @@ func prepare_mix() -> bool:
 		return false
 	if dirty or mixdown == null:
 		mixing = true
+		_guide()
+		var mixing_revision:=revision
 		status.text = LocalizationSystem.text("后台混音中……")
 		mixdown = await model.mix_async()
 		mixing = false
-		dirty = false
+		dirty = revision!=mixing_revision
+		_guide()
+		if dirty:
+			status.text="刚刚改过纸带，再点一次试听就能听到新版本。"
+			return false
 	if mixdown == null:
 		status.text = LocalizationSystem.text(model.error)
 		return false
@@ -336,17 +255,20 @@ func play() -> void:
 	if not await prepare_mix():
 		return
 	player.stream = mixdown
+	mv.configure(mixdown,model.prompt,model.seed_value); mv.model=model
 	player.stream_paused = false
 	player.play(paused_at if paused_at < model.length() else 0.0)
-	tutorial.text=LocalizationSystem.text("听好后，可以制作封面并压片。完成交付约需 60 分钟。")
-	status.text = LocalizationSystem.text("播放中 · 所有轨道已混合到同一个采样时钟。")
+	has_listened=true; play_control.text="Ⅱ 暂停"; _guide()
+	status.text = "正在播放你的声音纸带 · 右边的画面跟随剪辑位置变化。"
 
 func pause() -> void:
+	play_control.text="▶ 继续听"
 	if player.playing:
 		paused_at = player.get_playback_position()
 		player.stop()
 
 func stop() -> void:
+	if is_instance_valid(play_control): play_control.text="▶ 听听看"
 	player.stop()
 	paused_at = 0
 	if timeline != null:
@@ -356,6 +278,8 @@ func stop() -> void:
 func _process(_delta: float) -> void:
 	if player.playing:
 		paused_at = maxf(0, player.get_playback_position() + AudioServer.get_time_since_last_mix() - AudioServer.get_output_latency())
+	if not is_visible_in_tree(): return
+	mv.time=paused_at; mv.queue_redraw()
 	timeline.playhead = paused_at
 	timeline.queue_redraw()
 	clock_label.text = "%.1f / %.1f s" % [paused_at, model.length()]
@@ -388,6 +312,8 @@ func edit_region(keep: bool) -> void:
 	timeline.selected = -1
 	timeline.range_begin = -1
 	region_start = -1
+	region_end = -1
+	timeline.range_end = -1
 	changed()
 	status.text = LocalizationSystem.text("已保留选区内的声音。" if keep else "选区已剪掉，左右两段保留在原来的位置。")
 

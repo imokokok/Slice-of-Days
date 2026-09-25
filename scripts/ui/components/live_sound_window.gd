@@ -28,4 +28,5 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if not is_instance_valid(source): return
 	var at: float = float(source.recorder.frame_count)/source.recorder.sample_rate if source.recorder.capturing else source.playback.get_playback_position()
-	preload("res://scripts/town_sound/visual/PixelScore.gd").paint(self,size,at,energy,bands,source.current_mv_kind(),source.mv_seed)
+	var seed_value:int=source.current_mv_seed() if source.has_method("current_mv_seed") else source.mv_seed
+	preload("res://scripts/town_sound/visual/PixelScore.gd").paint(self,size,at,energy,bands,source.current_mv_kind(),seed_value)

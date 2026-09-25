@@ -63,7 +63,20 @@ func run() -> void:
 	table.artist_input.text="Solmere"
 	table.advance()
 	await table.advance()
-	# Begin at the physical packing stage after the earlier full-flow test.
+	# A stationary click is not a press; pull the handle before the dwell starts.
+	if not OS.get_cmdline_user_args().has("--manual"):
+		table.step=4
+		var down:=InputEventMouseButton.new(); down.button_index=MOUSE_BUTTON_LEFT; down.pressed=true; down.position=Vector2(813,513)
+		table._gui_input(down)
+		await create_timer(1.1).timeout
+		check(table.step==4 and not table.locked,"Holding without pulling must not operate the press")
+		var pull:=InputEventMouseMotion.new(); pull.position=Vector2(813,633); pull.button_mask=MOUSE_BUTTON_MASK_LEFT
+		table._gui_input(pull)
+		await create_timer(.7).timeout
+		check(table.locked,"Pulling and holding activates the physical press")
+		await create_timer(4.6).timeout
+		check(table.step==5,"Press completes before sleeve packing")
+	# Continue at the physical packing stage after the earlier full-flow test.
 	table.step=5
 	table.instructions.text=table.STEPS[5]+"\n"+table.HINTS[5]
 	table.next_button.text="辅助操作：滑入内袋"

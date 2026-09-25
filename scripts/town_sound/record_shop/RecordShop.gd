@@ -43,16 +43,16 @@ func refresh() -> void:
 	header.add_child(button("回到店内",func(): queue_free()))
 	body.add_child(label("Xanni：先听、再收集，把路上的声音做成一张真正可以带走的唱片。",21))
 	var steps:=HBoxContainer.new(); steps.add_theme_constant_override("separation",16); body.add_child(steps)
-	for text in ["01  随身采集\n选择声源 → 录制 → 保存","02  工作台\n拖入素材 → 裁剪 → 试听","03  同步影像\n像素 MV → 选择封面","04  制作交付\n压片包装 → 入库 → 委托印章"]:
+	for text in ["01  留住声音\n选择声源 → 录制 → 保存","02  声音手作桌\n拖入素材 → 裁剪 → 试听","03  声音明信片\n像素 MV → 选择封面","04  制作交付\n压片包装 → 入库 → 委托印章"]:
 		var card:=PanelContainer.new(); card.size_flags_horizontal=SIZE_EXPAND_FILL; steps.add_child(card)
 		card.add_theme_stylebox_override("panel",card_style())
 		var content:=label(text,18); content.custom_minimum_size=Vector2(270,64); card.add_child(content)
 	var actions:=HBoxContainer.new(); actions.add_theme_constant_override("separation",14); body.add_child(actions)
 	actions.add_child(button("随身录音 / 素材库",func(): open_recorder(false)))
-	actions.add_child(button("进入编曲工作台",func(): open_recorder(true)))
+	actions.add_child(button("坐到声音手作桌",func(): open_recorder(true)))
 	actions.add_child(button("我的唱片 / 回放",open_shelf))
 	actions.add_child(button("店内试听台 ♪",toggle_radio))
-	info=label("已保存 %d 段声音 · 已制作 %d 张唱片。%s" % [samples.size(),records.size(),"先去不同地点录下两段声音，再回来编排。" if samples.size()<2 else "素材已够用，可以开始制作第一张。"],18); body.add_child(info)
+	info=label("已保存 %d 段声音 · 已制作 %d 张唱片。%s" % [samples.size(),records.size(),"先去街上留下一段声音，再回来剪贴。" if samples.is_empty() else "素材已够用，可以开始制作第一张。"],18); body.add_child(info)
 	var gate:=GameplayModuleSystem.entry_check("sound_sampling",60)
 	if not bool(gate.ok):
 		body.add_child(label("制作时间："+str(gate.reason),18))
@@ -61,7 +61,7 @@ func refresh() -> void:
 			body.add_child(button("将私人整理从 %02d:%02d 延后到 %02d:%02d，为制作腾出时间" % [int(merge.start)/60,int(merge.start)%60,int(merge.moved_to)/60,int(merge.moved_to)%60],func():
 				if GameState.combine_flexible_time(): refresh()
 				else: info.text="日程未能保存，安排保持原样。"))
-	body.add_child(label("声音委托 / 真实成品自动验收",26))
+	body.add_child(label("店里的小委托 / 可选挑战",26))
 	var grid:=GridContainer.new(); grid.columns=2; grid.add_theme_constant_override("h_separation",20); grid.add_theme_constant_override("v_separation",14); body.add_child(grid)
 	for quest in Atlas.QUESTS:
 		var matching:=records.filter(func(item:Dictionary): return Atlas.meets(quest,item) and FileAccess.file_exists(str(item.get("final_audio_path",""))))

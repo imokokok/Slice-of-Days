@@ -33,6 +33,10 @@ var holding := false
 var hold_seconds := 0.0
 var stamp_picked := false
 var serial := 1
+var assisted := false
+var helper: Button
+var lever_start := Vector2.ZERO
+var lever_pull := 0.0
 var summary_label: Label
 var cover_sources: HBoxContainer
 var pending_photo: Image
@@ -40,7 +44,7 @@ var photo_preview: TextureRect
 var cover_source := "visual"
 var source_photo_id := ""
 const STEPS := ["01 / 签下唱片信息", "02 / 留下封面画面", "03 / 印刷纸板封套", "04 / 装载中心标签", "05 / 压制、冷却与修边", "06 / 唱片装入纸内袋", "07 / 内袋装入纸板封套", "08 / 封套装入透明保护袋", "09 / 合上外袋翻盖", "10 / 贴上作品编号", "11 / 交给唱片店老板", "LOCAL RECORDINGS"]
-const HINTS := ["给作品写下标题、作者和一句话。", "拖动滑条取景，暂停后留下这一帧。", "点打印机绿色按钮，印好的封面按出纸进度露出。", "拿起 A 面纸标签，对齐左侧 PVC 料饼的中心；B 面标签已在下方。", "按住机器右侧红色把手 1 秒。标签与 PVC 一起压制，冷却后修边。", "握住左侧唱片边缘，移到右侧纸袋的上方开口，松手后垂直滑入。", "拿起右侧装好的纸内袋，对准左侧封套的右边开口，水平滑入。", "拿起左侧纸板封套，对准右侧透明保护袋上方开口，向下装入。", "从右侧袋口拿起透明翻盖，向下折合；胶条只贴保护袋，不贴封面。", "将左侧编号标签贴到透明袋右下角。编号不覆盖封面主体。", "把包装好的唱片递到左侧柜台托盘，等待老板收录。", "这段声音已经在店里有了一个位置。"]
+const HINTS := ["给作品写下标题、作者和一句话。", "拖动滑条取景，点画面定格封面；也能选自己拍的照片。", "点打印机绿色按钮，印好的封面按出纸进度露出。", "拿起 A 面纸标签，对齐左侧 PVC 料饼的中心；B 面标签已在下方。", "抓住右侧红把手向下拉，再保持半秒。标签与 PVC 一起压制，冷却后修边。", "握住左侧唱片边缘，移到右侧纸袋的上方开口，松手后垂直滑入。", "拿起右侧装好的纸内袋，对准左侧封套的右边开口，水平滑入。", "拿起左侧纸板封套，对准右侧透明保护袋上方开口，向下装入。", "从右侧袋口拿起透明翻盖，向下折合；胶条只贴保护袋，不贴封面。", "将左侧编号标签贴到透明袋右下角。编号不覆盖封面主体。", "把包装好的唱片递到左侧柜台托盘，等待老板收录。", "这段声音已经在店里有了一个位置。"]
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -82,6 +86,9 @@ func _ready() -> void:
 	cover_sources.hide()
 	next_button = room.studio.button("完成命名", advance)
 	column.add_child(next_button)
+	helper=room.studio.button("需要操作帮助？",func():
+		assisted=not assisted; next_button.visible=assisted; helper.text="收起辅助操作" if assisted else "需要操作帮助？")
+	helper.position=Vector2(1170,235); helper.size=Vector2(310,46); helper.hide(); add_child(helper)
 	cover_container = SubViewportContainer.new()
 	cover_container.position = Vector2(50, 350)
 	cover_container.size = Vector2(480, 270)
@@ -167,7 +174,8 @@ func advance() -> void:
 		crop_overlay.hide()
 		locked = false
 		step = 2
-		next_button.text = LocalizationSystem.text("打印封面纸套")
+		next_button.text = LocalizationSystem.text("辅助：打印封面纸套")
+		next_button.hide(); helper.show()
 	elif step >= 2 and step <= 10:
 		await complete_action()
 	elif step == 11:
@@ -240,6 +248,7 @@ func complete_action() -> void:
 	var buttons := {3: "辅助操作：对齐标签", 4: "辅助操作：压下把手", 5: "辅助操作：滑入内袋", 6: "辅助操作：装进外套", 7: "辅助操作：装入透明外袋", 8: "辅助操作：折合翻盖", 9: "辅助操作：贴上编号", 10: "辅助操作：交给老板", 11: "返回 Studio"}
 	next_button.text = LocalizationSystem.text(buttons.get(step, "继续"))
 	if step == 11:
+		next_button.show(); helper.hide()
 		var balance := GameState.money if has_node("/root/GameState") else library.money()
 		instructions.text = LocalizationSystem.text("「%s」已上架  +%d / LOCAL RECORDING LICENSE\n游戏内余额：%d · 唱片已本地保存。公共库尚未配置，保持 Local Mode。" % [saved_record.title, saved_record.payment, balance])
 	else:
@@ -267,9 +276,9 @@ func use_photo_cover(image: Image, metadata: Dictionary) -> void:
 
 func _process(delta: float) -> void:
 	if holding and step == 4 and not locked:
-		hold_seconds += delta
+		if lever_pull>=100: hold_seconds += delta
 		queue_redraw()
-		if hold_seconds >= 1:
+		if lever_pull>=100 and hold_seconds >= .6:
 			holding = false
 			complete_action()
 	if step == 1 and not locked:
@@ -335,13 +344,16 @@ func _target_rect() -> Rect2:
 	return Rect2(620,365,285,275)
 
 func _gui_input(event: InputEvent) -> void:
+	if step==1 and not locked and event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT and Rect2(50,350,480,270).has_point(event.position):
+		advance(); accept_event(); return
 	if locked or step<2 or step>10: return
 	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT:
 		if step==2 and event.pressed and Rect2(550,515,52,52).has_point(event.position):
 			complete_action(); accept_event(); return
 		if step==4:
 			holding=event.pressed and Rect2(765,480,95,240).has_point(event.position)
-			hold_seconds=0; queue_redraw(); accept_event(); return
+			lever_start=event.position; lever_pull=0; hold_seconds=0
+			queue_redraw(); accept_event(); return
 		if event.pressed and source_rect().has_point(event.position):
 			# Keep the exact grab offset; grabbing the rim never snaps the disc center to the cursor.
 			if step==5:
@@ -357,6 +369,10 @@ func _gui_input(event: InputEvent) -> void:
 				dropped=true; complete_action()
 			else: instructions.text="还没有对齐开口，物件已放回原处。\n"+HINTS[step]
 			queue_redraw(); accept_event()
+	elif event is InputEventMouseMotion and holding and step==4:
+		lever_pull=clampf(event.position.y-lever_start.y,0,150)
+		if lever_pull<100: hold_seconds=0
+		queue_redraw(); accept_event()
 	elif event is InputEventMouseMotion and dragging:
 		drag_position=(event.position-drag_offset).clamp(Vector2(28,324)+source_rect().size/2,Vector2(1063,850)-source_rect().size/2); queue_redraw(); accept_event()
 

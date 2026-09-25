@@ -174,8 +174,14 @@ static func paint(c: Control) -> void:
 			var lid: float=384.0+sin(c.progress*PI)*118
 			c.draw_rect(Rect2(370,lid,282,32),Color("adb9b3"))
 			c.draw_line(Vector2(511,354),Vector2(511,lid),Color("d0d8d0"),20)
-			c.draw_line(Vector2(744,450),Vector2(813,388+minf(c.hold_seconds,1)*85),Color("34443b"),10)
-			c.draw_circle(Vector2(813,388+minf(c.hold_seconds,1)*85),22,Color("a4523b"))
+			var pull: float=c.lever_pull if not c.locked else 120.0
+			c.draw_line(Vector2(744,450),Vector2(813,388+pull),Color("34443b"),10)
+			c.draw_circle(Vector2(813,388+pull),22,Color("a4523b"))
+			if not c.locked:
+				c.draw_line(Vector2(858,400),Vector2(858,535),Color("eadfc6"),2)
+				c.draw_line(Vector2(850,526),Vector2(858,535),Color("eadfc6"),2)
+				c.draw_line(Vector2(866,526),Vector2(858,535),Color("eadfc6"),2)
+				words(c,Vector2(640,657),"向下拉，再保持半秒",16,Color("fff6dd"))
 			words(c,Vector2(270,703),"装载双面标签与料饼 → 压制 → 冷却 → 修边与检视",17)
 		5:
 			paper_back(c,right); disc(c,moving); paper_front(c,right)

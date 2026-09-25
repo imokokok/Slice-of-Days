@@ -17,3 +17,5 @@
 后续修改推送见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)。公共联网唱片库未配置时保持本地模式；MV 为同步渲染，不导出视频文件。
 
 唱片包装结构与真实拖动修订见 [PACKAGING_V2.md](PACKAGING_V2.md)。
+
+明亮的声音手作桌、常驻 MV、基础剪辑与逐步引导见 [SOUND_SCRAPBOOK_UI.md](SOUND_SCRAPBOOK_UI.md)。

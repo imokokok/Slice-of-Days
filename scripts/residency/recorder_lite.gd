@@ -28,65 +28,58 @@ var record_context: Dictionary = {}
 
 func _ready() -> void:
 	theme=preload("res://scripts/ui/components/interface_palette.gd").theme_for_tools()
+	theme.set_constant("paragraph_spacing","Label",0)
+	theme.set_constant("line_spacing","Label",2)
 	add_to_group("world_tool")
 	add_to_group("mobile_recorder")
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter=MOUSE_FILTER_IGNORE
 	recorder=FieldRecorder.new(); add_child(recorder)
-	recorder.input_gain=float(GameState.artifacts.get("recorder_gain",1.0))
+	recorder.input_gain=1.0
 	source_player=AudioStreamPlayer.new(); source_player.bus="TownWorldSoundEffects"; add_child(source_player)
 	source_stop=Timer.new(); source_stop.one_shot=true; source_stop.wait_time=8; source_stop.timeout.connect(source_player.stop); add_child(source_stop)
 	playback=AudioStreamPlayer.new(); playback.bus="Music"; add_child(playback)
 	playback.finished.connect(func(): play_button.text=LocalizationSystem.text("试听"))
-	# Copy the actual scene before the recorder body draws. The view below
-	# reads this frame, so it cannot recursively photograph its own screen.
-	var world_frame := BackBufferCopy.new(); world_frame.copy_mode=BackBufferCopy.COPY_MODE_VIEWPORT
-	world_frame.name="LiveWorldFrame"; add_child(world_frame)
-	face=Control.new(); face.position=Vector2(300,140); face.size=Vector2(1000,600); face.mouse_filter=MOUSE_FILTER_IGNORE; add_child(face)
-	var shell := NinePatchRect.new(); shell.texture=preload("res://art/town_sound_cc0/panel.png")
-	shell.patch_margin_left=6; shell.patch_margin_right=6; shell.patch_margin_top=6; shell.patch_margin_bottom=6
-	shell.size=Vector2(1000,490); shell.position=Vector2(0,110); shell.mouse_filter=MOUSE_FILTER_IGNORE
-	shell.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST; face.add_child(shell)
+	face=Control.new(); face.size=Vector2(1200,720); face.mouse_filter=MOUSE_FILTER_STOP; add_child(face)
+	resized.connect(_fit_face); _fit_face()
+	var shell:=Panel.new(); shell.size=face.size; shell.mouse_filter=MOUSE_FILTER_IGNORE
+	var paper:=StyleBoxFlat.new(); paper.bg_color=Color("f4e6ca"); paper.set_corner_radius_all(32)
+	paper.set_border_width_all(4); paper.border_color=Color("aa9275"); paper.shadow_color=Color("6f5943",.2); paper.shadow_size=12
+	shell.add_theme_stylebox_override("panel",paper); face.add_child(shell)
 	var p=preload("res://scripts/ui/components/interface_palette.gd")
-	p.words(face,"FIELD NOTES / 随身录音机",Vector2(75,155),650,26)
-	sound_picker=OptionButton.new(); sound_picker.position=Vector2(75,108); sound_picker.size=Vector2(458,40); face.add_child(sound_picker)
+	p.words(face,"今天，听见了什么？",Vector2(42,26),830,32)
+	p.words(face,"声音采集  /  留住一段声音，也留住它的画面",Vector2(44,78),980,19)
+	_button("收进口袋",Vector2(992,29),Vector2(165,44),finish_for_exit)
+	sound_picker=OptionButton.new(); sound_picker.position=Vector2(44,131); sound_picker.size=Vector2(670,46); face.add_child(sound_picker)
 	for kind in Atlas.at(GameState.current_location):
 		sound_picker.add_item(Atlas.label(kind)); sound_picker.set_item_metadata(sound_picker.item_count-1,kind)
 	sound_kind=str(sound_picker.get_item_metadata(0))
-	sound_picker.item_selected.connect(func(i:int): sound_kind=str(sound_picker.get_item_metadata(i)))
-	source_picker=OptionButton.new(); source_picker.position=Vector2(580,215); source_picker.size=Vector2(338,40)
-	source_picker.add_item("小镇声源（默认）"); source_picker.add_item("真实人声 · 麦克风")
-	face.add_child(source_picker)
-	_button("触发声源",Vector2(580,485),Vector2(210,38),trigger_source)
-	p.words(face,"选择声源 → 录制 → 停止自动保存 → 唱片店编曲",Vector2(75,565),900,17)
-	status=p.words(face,"留下此刻听见的声音",Vector2(110,523),608,19)
-	var screen = preload("res://scripts/ui/components/live_sound_window.gd").new(); screen.source=self; screen.position=Vector2(75,241); screen.size=Vector2(458,260)
-	screen.name="LiveRecordingPicture"; live_screen=screen
-	var style := StyleBoxFlat.new(); style.bg_color=Color("e6e7d8"); style.set_corner_radius_all(5); style.set_border_width_all(2); style.border_color=Color("8b8264")
-	screen.add_theme_stylebox_override("panel",style); screen.mouse_filter=MOUSE_FILTER_IGNORE; face.add_child(screen)
-	var window_words := p.words(face,"实时画面 · 随声音变化",Vector2(95,215),414,16)
-	window_words.add_theme_color_override("font_color",p.MUTED)
-	record_button=_button("● 开始录音",Vector2(580,338),Vector2(210,65),toggle_recording)
-	record_button.name="RecordToggle"
-	mark_button=_button("留下标记",Vector2(580,435),Vector2(210,43),mark_recording); mark_button.disabled=true
-	_button("收起",Vector2(795,151),Vector2(126,38),finish_for_exit)
-	_button("录音收藏",Vector2(810,485),Vector2(145,39),_open_library)
-	play_button=_button("试听",Vector2(580,269),Vector2(100,40),_play_last)
-	play_button.disabled=true
-	_button("边走边录",Vector2(703,269),Vector2(155,40),_toggle_compact)
-	var knob=preload("res://scripts/ui/components/recorder_knob.gd").new()
-	knob.position=Vector2(831,343); knob.size=Vector2(84,84); knob.name="RecordingGain"; face.add_child(knob)
-	knob.value=recorder.input_gain; knob.accessibility_name=LocalizationSystem.text("录音增益")
-	var gain_caption=p.words(face,"增益 × %.2f"%knob.value,Vector2(811,431),145,17)
-	knob.value_changed.connect(func(v: float):
-		recorder.input_gain=v; GameState.artifacts.recorder_gain=v; gain_caption.text=LocalizationSystem.text("增益 × %.2f"%v))
+	sound_picker.item_selected.connect(func(i:int): sound_kind=str(sound_picker.get_item_metadata(i)); live_screen.queue_redraw())
+	var screen=preload("res://scripts/ui/components/live_sound_window.gd").new()
+	screen.source=self; screen.position=Vector2(44,193); screen.size=Vector2(670,377); screen.name="LiveRecordingPicture"
+	live_screen=screen; face.add_child(screen)
+	p.words(face,"声音明信片 · 录制和试听时一起变化",Vector2(48,582),660,19)
+	source_picker=OptionButton.new(); source_picker.position=Vector2(758,135); source_picker.size=Vector2(399,44)
+	source_picker.add_item("小镇环境声 · 默认"); source_picker.add_item("我想录人声 · 麦克风"); face.add_child(source_picker)
+	p.words(face,"① 挑一种声音\n② 按圆键开始，再按一次保存\n③ 去唱片店，把声音剪贴成唱片",Vector2(759,209),396,21)
+	record_button=preload("res://scripts/town_sound/studio/RecordKey.gd").new()
+	record_button.position=Vector2(867,326); record_button.size=Vector2(136,136)
+	record_button.text="● 开始录音"; record_button.name="RecordToggle"; record_button.accessibility_name="开始 / 停止并保存录音"
+	face.add_child(record_button); record_button.pressed.connect(toggle_recording)
+	p.words(face,"按下录制 / 再按保存",Vector2(822,475),290,19)
+	play_button=_button("▶ 听听刚才",Vector2(760,529),Vector2(186,48),_play_last); play_button.disabled=true
+	_button("边走边录",Vector2(962,529),Vector2(190,48),_toggle_compact)
+	_button("我的声音收藏",Vector2(760,590),Vector2(392,46),_open_library)
+	# Marker metadata remains readable for old recordings; the beginner surface has no marker tool.
+	mark_button=Button.new(); mark_button.hide(); mark_button.disabled=true; face.add_child(mark_button)
+	status=p.words(face,"准备好就按圆键。录到的声音和画面会一起留在本机。",Vector2(46,642),1100,21)
 	compact_button=preload("res://scripts/ui/components/solmere_button.gd").new()
 	compact_button.text="录音机 · 展开"; compact_button.variant="paper"; compact_button.position=Vector2(1300,775); compact_button.size=Vector2(258,68); compact_button.hide(); add_child(compact_button)
 	compact_button.pressed.connect(_toggle_compact)
 	recorder.meter_changed.connect(func(peak: float, seconds: float):
 		levels.append(peak)
 		if levels.size()>95: levels.pop_front()
-		status.text=LocalizationSystem.text("● %02d:%02d   %s · %d 个标记" % [int(seconds)/60,int(seconds)%60,TravelSystem.location_name(GameState.current_location),marks.size()])
+		status.text=LocalizationSystem.text("● %02d:%02d  正在留下%s的声音 · 再按圆键停止并保存" % [int(seconds)/60,int(seconds)%60,TravelSystem.location_name(GameState.current_location)])
 		compact_button.text=LocalizationSystem.text("● %02d:%02d · 展开录音机"%[int(seconds)/60,int(seconds)%60])
 		record_button.text=LocalizationSystem.text("■ 停止并保存"); mark_button.disabled=false
 		queue_redraw())
@@ -97,6 +90,11 @@ func _ready() -> void:
 		record_button.text="● 重新录音"; mark_button.disabled=true
 		play_button.disabled=playback.stream==null)
 	preload("res://scripts/ui/solmere_motion.gd").paper_open(face,SettingsSystem.reduced_motion())
+
+func _fit_face() -> void:
+	if face==null: return
+	var factor:=minf(1.0,minf((size.x-64)/1200.0,(size.y-64)/720.0))
+	face.scale=Vector2.ONE*factor; face.position=(size-Vector2(1200,720)*factor)*.5
 
 func _button(words: String, at: Vector2, extent: Vector2, action: Callable) -> Button:
 	var b=preload("res://scripts/ui/components/solmere_button.gd").new(); b.text=words; b.position=at; b.size=extent; b.variant="outlined"; face.add_child(b); b.pressed.connect(action); return b
@@ -109,7 +107,8 @@ func _toggle_compact() -> void:
 	queue_redraw()
 
 func _open_library() -> void:
-	get_parent().show_recording_library()
+	if recorder.capturing or pending_wav!=null: status.text="先停止并保存这一段，再打开收藏。"; return
+	if get_parent().has_method("show_recording_library"): get_parent().show_recording_library()
 
 func _play_last() -> void:
 	if playback.stream==null: return
@@ -140,7 +139,7 @@ func _save(warning := "") -> void:
 	record_button.text=LocalizationSystem.text("● 再录一段"); mark_button.disabled=true
 	status.text = LocalizationSystem.text("已保存到录音机\n"+warning)
 	if close_after: queue_free()
-	else: status.text=LocalizationSystem.text("已保存到录音机，可以继续录制。")
+	else: status.text=LocalizationSystem.text("✓ 声音和画面已保存。先听听看，再带去唱片店的声音手作桌。")
 
 func _dismiss_saved() -> void:
 	await get_tree().create_timer(0.8).timeout
@@ -196,3 +195,6 @@ func current_mv_kind() -> String:
 	for event in mv_events:
 		if float(event.time)<=at: kind=str(event.kind)
 	return kind
+
+func current_mv_seed() -> int:
+	return mv_seed

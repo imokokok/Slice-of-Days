@@ -1,6 +1,6 @@
 extends Panel
 ## A live view of the world plus imagery driven by recorded PCM, never a loop.
-var source: Control
+var source: Node
 var energy := 0.0
 var motion := 0.0
 var frames_seen := 0

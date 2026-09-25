@@ -33,7 +33,9 @@ func play(kind: String) -> void:
 	# Fixed speed preserves the alignment to animation keyframes.
 	player.pitch_scale = 1.0
 	player.volume_db = -5.0 if variants.has(kind) else -17.0
+	player.bus="TownWorldSoundEffects" if variants.has(kind) and AudioServer.get_bus_index("TownWorldSoundEffects")>=0 else "SoundEffects"
 	player.play()
+	if variants.has(kind) and has_node("/root/WorldSound"): get_node("/root/WorldSound").note_sound("paper")
 
 func synthesize(kind: String) -> AudioStreamWAV:
 	var duration := 0.24

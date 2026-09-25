@@ -1,4 +1,5 @@
 extends Node
+signal sound_occurred(kind: String)
 ## Authored procedural game ambience. Only this bus is captured in town mode;
 ## preview, pressing sounds and real microphones never feed it.
 const BUS := "TownWorld"
@@ -33,6 +34,7 @@ var bird_index := 0
 var detail_index := 0
 var last_ui_msec := -1000
 var last_ui_key := ""
+var world_pool: Node
 
 func _ready() -> void:
 	_ensure_bus(BUS, "Master")
@@ -63,6 +65,7 @@ func _ready() -> void:
 	steps=AudioStreamPlayer.new(); birds=AudioStreamPlayer.new()
 	for player in [natural,natural_previous,birds]: player.bus=MUSIC_BUS; add_child(player)
 	steps.bus=SOUND_EFFECTS_BUS; add_child(steps)
+	world_pool=preload("res://scripts/town_sound/audio/WorldAudioPool.gd").new(); add_child(world_pool)
 
 
 func _ensure_bus(bus_name: String, send_name: String) -> void:
@@ -76,6 +79,7 @@ func _ensure_bus(bus_name: String, send_name: String) -> void:
 func set_active(value: bool) -> void:
 	active = value
 	if not active:
+		world_pool.stop_all()
 		coast.stop()
 		ambience.stop()
 		foley.stop()
@@ -154,7 +158,7 @@ func _process(_delta: float) -> void:
 			bird_index+=1; next_bird=17.0+float(bird_index%4)*7.0
 			birds.stream=Production.sound("bird_%d" % (bird_index%4+1))
 			birds.volume_db=-27.0
-			if birds.stream!=null and AudioServer.get_driver_name()!="Dummy": birds.play()
+			if birds.stream!=null and AudioServer.get_driver_name()!="Dummy": birds.play(); sound_occurred.emit("bird")
 	if ambience_thread == null or ambience_thread.is_alive():
 		return
 	var completed_location := generating_location
@@ -200,6 +204,15 @@ func play_detail(footsteps := false) -> void:
 	foley.pitch_scale = 1.0
 	foley.stream = sample if sample!=null else make_detail(location, footsteps)
 	foley.play()
+	sound_occurred.emit("water" if kind=="water" else "paper" if kind=="paper" else "wood")
+
+func play_kind(kind:String,gain:=-16.0,duration:=2.0) -> void:
+	var stream:=preload("res://scripts/town_sound/data/SoundAtlas.gd").stream(kind)
+	if world_pool.play_stream(stream,gain,duration)!=null: sound_occurred.emit(kind)
+
+func note_sound(kind:String) -> void:
+	# Extension audio already playing on a world bus publishes only its identity.
+	sound_occurred.emit(kind)
 
 func play_ui(cue: String) -> void:
 	if AudioServer.get_driver_name() == "Dummy": return

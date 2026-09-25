@@ -1,6 +1,6 @@
 # 修改后直接推送
 
-仓库：https://github.com/imokokok/Slice-of-Days
+仓库：https://github.com/imokokok/Solmere（原 Slice-of-Days 地址会跳转）
 分支：main（跟踪 origin/main）。
 
 ## 唯一工作目录
@@ -10,6 +10,7 @@
 - 主 Godot 项目：仓库根目录 project.godot。
 - Town Sound 运行代码：scripts/town_sound/。
 - 旧完整录音面板作为唱片店工作台宿主，随身录音以 residency 工具为准。
+- 全局服务：scripts/town_sound/audio/RecordingSession.gd；全局入口：scripts/town_sound/GlobalRecorder.gd。
 - 主录音工具：scripts/residency/recorder_lite.gd；收藏：scripts/residency/paper_overlay.gd。
 - 小镇/室内入口：scripts/ui/town_day.gd、scripts/ui/interactive_space.gd、scripts/core/scene_router.gd。
 - 新增 CC0 素材与授权：art/town_sound_cc0/。

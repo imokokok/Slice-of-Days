@@ -30,3 +30,9 @@
 ## 后续实际采用时补齐
 
 每个条目记录上游版本/提交、逐文件来源与哈希、原始 LICENSE 路径、作者、修改说明、实际使用位置和发布方式。MIT 代码提取需要随附对应版权和许可原文；要求署名的素材还需进入玩家可见 Credits。只有阅读或设计参考的条目放入 [REFERENCE_LOG.md](REFERENCE_LOG.md)。
+
+## 2026-09-26 全局录音新增
+
+- Lucide 六个线描图标：`art/recording_icons/`；ISC / Feather MIT，完整许可 `third_party/licenses/lucide/LICENSE`。
+- Nathan Hoad Godot Sound Manager 音效池改编：`scripts/town_sound/audio/WorldAudioPool.gd`；MIT，完整许可 `third_party/licenses/godot_sound_manager/LICENSE`。
+- 固定版本、采纳范围及未采用候选见 [全局录音接入记录](prototypes/town-sound/GLOBAL_RECORDING.md)。

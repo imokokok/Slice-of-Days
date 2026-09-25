@@ -43,13 +43,12 @@ func refresh() -> void:
 	header.add_child(button("回到店内",func(): queue_free()))
 	body.add_child(label("Xanni：先听、再收集，把路上的声音做成一张真正可以带走的唱片。",21))
 	var steps:=HBoxContainer.new(); steps.add_theme_constant_override("separation",16); body.add_child(steps)
-	for text in ["01  留住声音\n选择声源 → 录制 → 保存","02  声音手作桌\n拖入素材 → 裁剪 → 试听","03  声音明信片\n像素 MV → 选择封面","04  制作交付\n压片包装 → 入库 → 委托印章"]:
+	for text in ["01  留住声音\n随时录制 → 收进口袋 → 自动保存","02  声音手作桌\n拖入素材 → 裁剪 → 试听","03  声音明信片\n像素 MV → 选择封面","04  制作交付\n压片包装 → 入库 → 委托印章"]:
 		var card:=PanelContainer.new(); card.size_flags_horizontal=SIZE_EXPAND_FILL; steps.add_child(card)
 		card.add_theme_stylebox_override("panel",card_style())
 		var content:=label(text,18); content.custom_minimum_size=Vector2(270,64); card.add_child(content)
 	var actions:=HBoxContainer.new(); actions.add_theme_constant_override("separation",14); body.add_child(actions)
-	if CharacterSystem.owns_pocket_item("recorder"):
-		actions.add_child(button("随身录音 / 素材库",func(): open_recorder(false)))
+	actions.add_child(button("声音收藏 / 带来的录音",func(): open_recorder(false)))
 	actions.add_child(button("坐到声音手作桌",func(): open_recorder(true)))
 	actions.add_child(button("我的唱片 / 回放",open_shelf))
 	actions.add_child(button("店内试听台 ♪",toggle_radio))
@@ -92,6 +91,7 @@ func can_edit_here() -> bool:
 func open_recorder(studio: bool, library_only := false) -> void:
 	if not studio and not library_only and not CharacterSystem.owns_pocket_item("recorder"): return
 	if is_instance_valid(modal): return
+	if not RecordingSession.finish_for_exit(): GlobalRecorder.open_recorder(); return
 	radio.stop()
 	# The recorder owns the Studio lifecycle, existing autosaves and delivery rules.
 	modal=load("res://scenes/town_sound/Recorder.tscn").instantiate(); modal.shop_mode=true

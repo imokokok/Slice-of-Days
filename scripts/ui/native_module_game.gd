@@ -66,6 +66,8 @@ var ingredient_previous_button: Button
 var ingredient_next_button: Button
 var plating_preview_choice := "space"
 var pending_prep_option := -1
+var fire_player: AudioStreamPlayer
+var fire_notice:=0.0
 var cooking_tick := 0.0
 
 
@@ -342,6 +344,7 @@ func _reset_cooking(refresh := true) -> void:
 
 
 func _process(delta: float) -> void:
+	_update_fire_sound(delta)
 	if module_id!="cooking" or completed or cooking_phase not in ["cook","stir"] or added_tokens.is_empty(): return
 	cooking_tick+=delta
 	if cooking_tick<0.16: return
@@ -476,7 +479,7 @@ func _advance_cooking() -> void:
 			pending_ingredient=""
 			status_label.text=LocalizationSystem.text(str(assessment.get("message","材料已经下锅。")))+LocalizationSystem.text(" 材料带走了一点锅温，现在是 %d%%。" % roundi(heat_after*100.0))
 			if is_instance_valid(cooking_feedback): cooking_feedback.pulse()
-			WorldSound.play_ui("drop")
+			WorldSound.play_kind("metal",-20,.4)
 			if added_tokens.size()==selected_tokens.size():
 				cooking_phase="stir"
 				status_label.text+=LocalizationSystem.text(" 三样都在锅里了。选一种手法回应锅里的状态；翻拌两次后，何时尝味由你决定。")
@@ -494,7 +497,7 @@ func _advance_cooking() -> void:
 func _simmer_cooking() -> void:
 	if completed or cooking_phase!="taste": return
 	_advance_food_heat(2.0)
-	WorldSound.play_ui("water" if COOKING.pan_moisture(cooking_additions)>0.4 else "drop")
+	WorldSound.play_kind("water" if COOKING.pan_moisture(cooking_additions)>0.4 else "metal",-20,.5)
 	status_label.text=LocalizationSystem.text("多照看了两拍。现在：%s。可以继续，也可以决定调味。" % str(COOKING.dish_doneness(cooking_additions).summary))
 	_update_state()
 
@@ -559,7 +562,7 @@ func _stir(style: String) -> void:
 	if cooking_stirs.size()>=4:
 		status_label.text+=LocalizationSystem.text(" 已经拌得很充分了，趁现在尝一口。")
 	if is_instance_valid(illustrated_pot): illustrated_pot.stir(style)
-	else: WorldSound.play_ui("water")
+	else: WorldSound.play_kind("water",-20,.5)
 	_update_state()
 
 
@@ -572,7 +575,7 @@ func _choose_seasoning(choice: String) -> void:
 	seasoning_layers.append(choice)
 	var labels := {"salt":"海盐","pepper":"黑胡椒","wasabi":"芥末","ketchup":"番茄酱","herbs":"香草"}
 	status_label.text=LocalizationSystem.text("第 %d 次调味：%s。%s" % [seasoning_layers.size(),str(labels.get(choice,choice)),"还可以再撒一点，或确认装盘。" if seasoning_layers.size()<3 else "尝味后确认装盘。"])
-	WorldSound.play_ui("water" if choice in ["wasabi","ketchup"] else "paper")
+	WorldSound.play_kind("water" if choice in ["wasabi","ketchup"] else "paper",-20,.4)
 	_update_state()
 
 
@@ -942,6 +945,7 @@ func _fail() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if GlobalRecorder.focused() or event.is_action_pressed("open_recorder"): return
 	if not get_tree().get_nodes_in_group("recipe_book").is_empty(): return
 	if not get_tree().get_nodes_in_group("native_confirmation").is_empty(): return
 	if not event.is_pressed() or event.is_echo():
@@ -1131,3 +1135,17 @@ func _button(parent: Node, text_value: String, at: Vector2, button_size: Vector2
 
 func _style_button(button: Button, selected_or_primary: bool) -> void:
 	button.selected=selected_or_primary
+
+
+func _update_fire_sound(delta:float) -> void:
+	var burning:=module_id=="cooking" and not completed and cooking_phase in ["cook","stir"] and not added_tokens.is_empty() and is_instance_valid(value_slider) and value_slider.value>.02
+	if not burning:
+		if is_instance_valid(fire_player): fire_player.stop()
+		return
+	if not is_instance_valid(fire_player):
+		fire_player=AudioStreamPlayer.new(); fire_player.bus="TownWorldSoundEffects"; add_child(fire_player)
+		fire_player.stream=preload("res://scripts/town_sound/data/SoundAtlas.gd").stream("fire")
+	fire_player.volume_db=lerpf(-32,-20,value_slider.value)
+	if not fire_player.playing and AudioServer.get_driver_name()!="Dummy": fire_player.play()
+	fire_notice-=delta
+	if fire_notice<=0 and fire_player.playing: fire_notice=1.2; WorldSound.note_sound("fire")

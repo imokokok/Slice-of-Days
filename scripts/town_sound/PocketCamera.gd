@@ -27,6 +27,7 @@ var hint: Label
 var _focusing := false
 
 func _ready() -> void:
+	add_to_group("photo_viewfinder")
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter = MOUSE_FILTER_IGNORE
 	add_to_group("world_tool")

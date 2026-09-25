@@ -2,6 +2,8 @@
 
 已接入 Solmere 主游戏，请打开仓库根目录 `project.godot`。
 
+当前全局录音、统一收藏、跨场景恢复和资源接入见 [全局录音说明](GLOBAL_RECORDING.md)。
+
 完整操作、参考游戏、素材许可与测试说明见 [本轮版本说明](RELEASE_20260926.md)。
 
 - 实际随身工具栏的录音工具：`scripts/residency/recorder_lite.gd`。

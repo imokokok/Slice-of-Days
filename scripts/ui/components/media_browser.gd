@@ -83,12 +83,8 @@ func show_entry(index: int) -> void:
 		for state in ["normal","focus"]: title.add_theme_stylebox_override(state,StyleBoxEmpty.new())
 		title.add_theme_font_size_override("font_size",25)
 		_button("✓",Vector2(602,113),Vector2(42,42),func() -> void:
-			if store.rename_sample(str(item.id),title.text):
-				item.name=title.text.strip_edges().left(60)
-				for record in GameState.artifacts.get("samples",[]):
-					if str(record.get("id",""))==str(item.id): record.title=item.name
-				ResidencySystem._sync_sources(); ResidencySystem.persist()
-			else: owner_ui.feedback.text=LocalizationSystem.text(store.last_error)).tooltip_text=LocalizationSystem.text("保存录音名称")
+			if RecordingSession.rename_sample(item,title.text): item.name=title.text.strip_edges().left(60)
+			else: owner_ui.feedback.text=LocalizationSystem.text(RecordingSession.message)).tooltip_text=LocalizationSystem.text("保存录音名称")
 		_label("Day %02d  ·  %s" % [int(item.get("game_day",0)),str(item.created_at).left(10)],Vector2(58,175),Vector2(596,31)).add_theme_font_size_override("font_size",14)
 		var waveform := preload("res://scripts/residency/sound_paper.gd").new(); waveform.wav=player.stream; waveform.position=Vector2(410,237); waveform.size=Vector2(272,112); add_child(waveform)
 		if player.stream!=null:
@@ -120,10 +116,8 @@ func show_entry(index: int) -> void:
 			owner_ui.add_child(confirm)
 			confirm.accepted.connect(func() -> void:
 				player.stop()
-				if store.delete_sample(str(item.id)):
-					GameState.artifacts.samples=GameState.artifacts.get("samples",[]).filter(func(row: Dictionary) -> bool: return str(row.get("id",""))!=str(item.id))
-					ResidencySystem.state().materials.erase(str(item.id)); ResidencySystem.persist(); refresh()
-				else: owner_ui.feedback.text=store.last_error
+				if RecordingSession.delete_sample(item): refresh()
+				else: owner_ui.feedback.text=RecordingSession.message
 				confirm.queue_free()))
 		for page in ResidencySystem.state().get("free_pages",{}).values():
 			if page.any(func(piece: Dictionary) -> bool: return str(piece.get("material",""))==str(item.id)):

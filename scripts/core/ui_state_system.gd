@@ -18,6 +18,7 @@ const POLICIES := {
 func current() -> String:
 	if get_tree().paused: return "PAUSE"
 	if SceneRouter.transitioning: return "TRAVEL"
+	if has_node("/root/GlobalRecorder") and GlobalRecorder.focused(): return "NOTEBOOK" if is_instance_valid(GlobalRecorder.collection) else "RECORDER"
 	for node in get_tree().get_nodes_in_group("memory_space"): if is_instance_valid(node): return "MEMORY"
 	var scene := get_tree().current_scene
 	if is_instance_valid(scene):

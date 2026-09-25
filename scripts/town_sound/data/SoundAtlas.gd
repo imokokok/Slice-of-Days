@@ -57,8 +57,13 @@ static func audible_kinds(model: Arrangement) -> Array:
 		var source:=model.load_pcm(str(clip.sample_id))
 		if source.is_empty(): continue
 		var pcm: PackedFloat32Array=source.pcm
-		var audible:=false
-		for i in range(maxi(0,int(float(clip.source_start)*float(source.rate))),mini(pcm.size(),int(float(clip.source_end)*float(source.rate))),16):
-			if absf(pcm[i])>.0001: audible=true; break
-		if audible and not kinds.has(str(clip.get("sound_kind","pulse"))): kinds.append(str(clip.get("sound_kind","pulse")))
+		var events:Array=clip.get("mv_events",[]).duplicate(true)
+		if events.is_empty() or float(events[0].time)>0: events.push_front({"time":0.0,"kind":str(clip.get("sound_kind","pulse"))})
+		for e in events.size():
+			var from:=maxf(float(clip.source_start),float(events[e].time))
+			var until:=minf(float(clip.source_end),float(events[e+1].time) if e+1<events.size() else float(clip.source_end))
+			var kind:=str(events[e].kind)
+			if kinds.has(kind) or until<=from: continue
+			for i in range(maxi(0,int(from*float(source.rate))),mini(pcm.size(),int(until*float(source.rate))),16):
+				if absf(pcm[i])>.0001: kinds.append(kind); break
 	return kinds

@@ -3,8 +3,8 @@ var waves := AudioStreamPlayer.new()
 var tone := AudioStreamPlayer.new()
 var fade: Tween
 func _ready() -> void:
- waves.bus = "Music"
- tone.bus = "SoundEffects"
+ waves.bus = "TownWorldMusic" if AudioServer.get_bus_index("TownWorldMusic")>=0 else "Music"
+ tone.bus = "TownWorldSoundEffects" if AudioServer.get_bus_index("TownWorldSoundEffects")>=0 else "SoundEffects"
  add_child(waves)
  add_child(tone)
  # Solmere supplies its sea through WorldSound. The standalone observatory
@@ -42,3 +42,4 @@ func feedback(found: bool) -> void:
   tone.stream = load(path)
   tone.volume_db = -24 if found else -32
   tone.play()
+  if has_node("/root/WorldSound"): get_node("/root/WorldSound").note_sound("metal")

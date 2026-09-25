@@ -55,6 +55,9 @@ func play(event: String, strength: float = 1.0) -> void:
 	var voice := pool[cursor]
 	cursor=(cursor+1)%pool.size()
 	voice.stop();voice.stream=bank[clip]
+	var physical:=event!="DIALOGUE_ADVANCE"
+	voice.bus="TownWorldSoundEffects" if physical and AudioServer.get_bus_index("TownWorldSoundEffects")>=0 else "SoundEffects"
+	if physical and has_node("/root/WorldSound"): get_node("/root/WorldSound").note_sound("fire" if event=="MATCH_STRIKE" else "paper")
 	voice.pitch_scale=rng.randf_range(0.96,1.04)
 	last_clip=clip
 	voice.volume_db=-5+linear_to_db(clampf(strength,0.1,1.4))

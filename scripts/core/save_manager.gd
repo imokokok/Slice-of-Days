@@ -87,6 +87,7 @@ func _save_error(message: String) -> bool:
 
 
 func load_game(path := "") -> bool:
+	if has_node("/root/RecordingSession") and not RecordingSession.finish_for_exit(): return false
 	var target_path := path_for_slot(active_slot) if str(path).is_empty() else str(path)
 	var source_path: String = target_path
 	if target_path == SAVE_PATH and not FileAccess.file_exists(target_path):
@@ -118,6 +119,7 @@ func load_game(path := "") -> bool:
 
 
 func load_slot(slot: int) -> bool:
+	if not RecordingSession.finish_for_exit(): return false
 	set_active_slot(slot)
 	return load_game()
 

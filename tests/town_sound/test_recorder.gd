@@ -15,6 +15,7 @@ func _initialize() -> void:
 func run() -> void:
 	var test_path := "user://tests/" + Crypto.new().generate_random_bytes(8).hex_encode()
 	var store := Store.new(test_path)
+	store.max_samples=20 # Exercise the cap with a small fixture; production permits 256.
 	var wav := AudioStreamWAV.new()
 	wav.mix_rate = 48000
 	wav.format = AudioStreamWAV.FORMAT_16_BITS

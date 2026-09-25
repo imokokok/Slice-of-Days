@@ -18,6 +18,8 @@ var pending_journey: Dictionary = {}
 
 func go_to(path: String, fade_duration := .3) -> void:
 	if transitioning: return
+	if path in [MAIN_MENU,CHAPTER_TRANSITION,ENDING] and not RecordingSession.finish_for_exit():
+		GlobalRecorder.open_recorder(); return
 	if not ResourceLoader.exists(path):
 		push_error("Scene does not exist: %s" % path)
 		return

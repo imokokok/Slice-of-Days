@@ -57,6 +57,8 @@ HouseholdSystem="*res://scripts/core/household_system.gd"
 
 LifeSystem="*res://scripts/core/life_system.gd"
 PeoplePuzzleSystem="*res://scripts/core/people_puzzle_system.gd"
+RecordingSession="*res://scripts/town_sound/audio/RecordingSession.gd"
+GlobalRecorder="*res://scripts/town_sound/GlobalRecorder.gd"
 
 [display]
 

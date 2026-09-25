@@ -2,7 +2,8 @@ class_name SampleStore
 extends RefCounted
 ## Per-sample metadata is the commit marker. Incomplete writes stay invisible.
 
-const MAX_SAMPLES := 20
+const MAX_SAMPLES := 256
+var max_samples := MAX_SAMPLES
 var root_path := "user://samples"
 var last_error := ""
 
@@ -52,8 +53,8 @@ func save_sample(wav: AudioStreamWAV, sample_name: String, context: Dictionary =
 	if wav == null or wav.data.is_empty():
 		last_error = "没有可保存的录音。"
 		return {}
-	if list_samples().size() >= MAX_SAMPLES:
-		last_error = "录音库已满（20 段），请先删除不需要的录音。"
+	if list_samples().size() >= max_samples:
+		last_error = "录音库已满（%d 段），请先整理不需要的录音。"%max_samples
 		return {}
 	if FileAccess.file_exists(root_path) or FileAccess.file_exists(root_path.get_base_dir()):
 		last_error = "保存目录被同名文件占用。"
@@ -62,7 +63,15 @@ func save_sample(wav: AudioStreamWAV, sample_name: String, context: Dictionary =
 	if error != OK:
 		last_error = "不能创建保存目录：" + error_string(error)
 		return {}
-	var id := "sample_" + Crypto.new().generate_random_bytes(12).hex_encode()
+	var id := str(context.get("recording_id","sample_"+Crypto.new().generate_random_bytes(12).hex_encode()))
+	if id.length()!=31 or not id.begins_with("sample_") or not id.substr(7).is_valid_hex_number():
+		last_error="录音编号无效。"; return {}
+	var existing_path:=root_path.path_join(id+".json")
+	if FileAccess.file_exists(existing_path):
+		var existing=JSON.parse_string(FileAccess.get_file_as_string(existing_path))
+		if existing is Dictionary and str(existing.get("id",""))==id and str(existing.get("journey_id",""))==str(context.get("journey_id","")) and str(existing.get("role",""))==str(context.get("role","")) and FileAccess.file_exists(root_path.path_join(id+".wav")):
+			existing.file_path=root_path.path_join(id+".wav"); return existing
+		last_error="原始录音需要保留，未覆盖同名文件。"; return {}
 	var final_path := root_path.path_join(id + ".wav")
 	var temporary_path := root_path.path_join(id + ".pending.wav")
 	error = wav.save_to_wav(temporary_path)
@@ -74,9 +83,9 @@ func save_sample(wav: AudioStreamWAV, sample_name: String, context: Dictionary =
 		last_error = "无法完成音频保存：" + error_string(error)
 		return {}
 	var clean_name := sample_name.strip_edges().left(60)
-	var signal_peak := 0.0
+	var signal_peak := clampf(float(context.get("signal_peak",0)),0,1)
 	var samples_data := wav.data
-	if wav.format == AudioStreamWAV.FORMAT_16_BITS:
+	if not context.has("signal_peak") and wav.format == AudioStreamWAV.FORMAT_16_BITS:
 		for offset in range(0,samples_data.size()-1,2): signal_peak=maxf(signal_peak,absf(float(samples_data.decode_s16(offset)))/32768.0)
 	var metadata := {
 		"signal_peak":signal_peak,
@@ -93,6 +102,7 @@ func save_sample(wav: AudioStreamWAV, sample_name: String, context: Dictionary =
 		"game_day": int(context.get("game_day", 0)),
 		"game_minute": int(context.get("game_minute", 0)),
 		"location": str(context.get("location", "")),
+		"locations": context.get("locations",[str(context.get("location",""))]).duplicate(),
 		"nearby_npcs": context.get("nearby_npcs", []).duplicate(),
 		"event_tag": str(context.get("event_tag", "")),
 		"usage_scope": str(context.get("usage_scope", "local_only")),
@@ -145,6 +155,13 @@ func delete_sample(id: String) -> bool:
 	last_error = "找不到这段录音。"
 	return false
 
+
+func restore_sample(id:String) -> bool:
+	if id.get_file()!=id or not id.begins_with("sample_"): return false
+	var base:=root_path.path_join("trash").path_join(id)
+	if not FileAccess.file_exists(base+".json"): return false
+	if FileAccess.file_exists(base+".wav") and DirAccess.rename_absolute(base+".wav",root_path.path_join(id+".wav"))!=OK: return false
+	return DirAccess.rename_absolute(base+".json",root_path.path_join(id+".json"))==OK
 
 func _sample_is_used_by_project(sample_id: String) -> bool:
 	var state := _game_state()

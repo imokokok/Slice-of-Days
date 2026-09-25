@@ -233,9 +233,7 @@ func _show_pocket_panel(panel: Control) -> void:
 func _open_pocket_recorder() -> void:
 	if not CharacterSystem.owns_pocket_item("recorder"): return
 	if is_instance_valid(pocket_panel) or pocket_opening: return
-	var panel = load("res://scenes/town_sound/Recorder.tscn").instantiate()
-	panel.shop_mode = false
-	_show_pocket_panel(panel)
+	GlobalRecorder.open_recorder()
 
 
 func _open_record_store() -> void:
@@ -253,6 +251,7 @@ func _open_pocket_album() -> void:
 func _open_pocket_camera() -> void:
 	if is_instance_valid(pocket_panel) or pocket_opening: return
 	pocket_opening = true
+	GlobalRecorder.capture_hidden=true
 	var hidden_widgets: Array[CanvasItem] = []
 	for child in get_children():
 		if child is CanvasItem and child != backdrop and child.visible:
@@ -263,6 +262,7 @@ func _open_pocket_camera() -> void:
 	for child in hidden_widgets:
 		if is_instance_valid(child): child.show()
 	pocket_opening = false
+	GlobalRecorder.capture_hidden=false
 	var camera = load("res://scripts/town_sound/PocketCamera.gd").new()
 	camera.source = frame
 	camera.context = {"location": GameState.current_location, "title": _location_name(GameState.current_location), "day": GameState.current_day, "role": GameState.current_role, "game_minute": GameState.current_minute, "subjects": _camera_subjects()}
@@ -518,12 +518,9 @@ func _exit_tree() -> void:
 	WorldSound.set_active(false)
 
 func _guard_pocket_audio() -> bool:
-	if is_instance_valid(pocket_panel) and pocket_panel.has_method("set_compact"):
-		if pocket_panel.recorder.capturing or pocket_panel.draft != null:
-			pocket_panel.set_compact(false)
-			pocket_panel.status_label.text = LocalizationSystem.text("请先停止并保存，或放弃当前录音，再离开小镇。")
-			return true
-	return false
+	# A focused tool owns input; a pocketed global recording survives travel.
+	return GlobalRecorder.focused()
+
 
 func _process(delta: float) -> void:
 	street.enabled = not is_instance_valid(conversation) and not event_overlay.visible and not _pocket_blocks_walking() and not pocket_opening and not SceneRouter.transitioning and not (has_node("GameplayShell") and get_node("GameplayShell").blocks_walking())

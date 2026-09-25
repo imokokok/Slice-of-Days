@@ -19,7 +19,7 @@ var bus_index := -1
 var elapsed := 0.0
 var largest_peak := 0.0
 var discarded_start := 0
-var source_mode := "microphone"
+var source_mode := "game"
 var capture_bus := ""
 var input_gain := 1.0
 var spectrum_effect: AudioEffectSpectrumAnalyzer
@@ -125,6 +125,13 @@ func stop() -> void:
 		warning += " 录音期间有丢帧，建议重录。"
 	completed.emit(wav, warning)
 	pcm = PackedByteArray()
+
+func snapshot() -> AudioStreamWAV:
+	if frame_count<1: return null
+	var wav:=AudioStreamWAV.new()
+	wav.format=AudioStreamWAV.FORMAT_16_BITS; wav.mix_rate=sample_rate; wav.stereo=false
+	wav.data=pcm.slice(0,frame_count*2)
+	return wav
 
 func _cancel() -> void:
 	capturing = false

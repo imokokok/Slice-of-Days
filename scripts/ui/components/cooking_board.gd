@@ -45,7 +45,7 @@ func _cut() -> void:
 		return
 	if disabled or target_id.is_empty() or not items.has(target_id): return
 	strokes+=1
-	WorldSound.play_ui(action_sound)
+	WorldSound.play_kind("water" if action_sound=="water" else "wood",-20.0,.3)
 	if motion and motion.is_valid(): motion.kill()
 	knife_drop=0.0
 	if not SettingsSystem.reduced_motion():

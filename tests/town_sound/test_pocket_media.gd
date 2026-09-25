@@ -7,7 +7,10 @@ func check(ok: bool, message: String) -> void:
 func _initialize() -> void: call_deferred("run")
 func run() -> void:
 	var game := root.get_node("GameState")
-	game.begin_vertical_slice("A")
+	root.get_node("ChapterSystem").start_new_game()
+	game.current_location="cafe"; game.current_minute=600; game.money=600
+	var film=root.get_node("FilmSystem")
+	check(film.acquire_camera(false).ok,"Acquire camera through the grocery counter")
 	game.current_location = "residence"
 	var town = load("res://scenes/town_day.tscn").instantiate()
 	root.add_child(town)
@@ -19,28 +22,16 @@ func run() -> void:
 	town.add_child(forbidden_studio)
 	await process_frame
 	check(not is_instance_valid(forbidden_studio), "Direct Studio construction bypassed location guard")
+	var global=root.get_node("GlobalRecorder")
+	town._open_pocket_recorder(); var view=global.view
+	check(is_instance_valid(view),"Global recorder opened from town")
+	check(view.source_picker.selected==0,"Game sound remains the default")
+	var first_id:int=view.get_instance_id()
 	town._open_pocket_recorder()
-	check(is_instance_valid(town.pocket_panel), "Recorder did not open")
-	check(not town.pocket_panel.can_edit_here(), "Pocket recorder exposed shop actions")
-	check(town.pocket_panel.source_picker.selected == 0, "Game sound is not the default source")
-	check(not town.pocket_panel.device_row.visible, "Microphone has priority in game capture UI")
-	town.pocket_panel.set_compact(true)
-	check(town.pocket_panel.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Compact recorder blocks town interactions")
-	check(not town.pocket_panel.page_scroll.visible and town.pocket_panel.compact_bar.visible, "Compact recorder layout failed")
-	town.pocket_panel.set_compact(false)
-	town.pocket_panel.draft = AudioStreamWAV.new()
-	check(town._guard_pocket_audio(), "Unsaved compact recording can be lost on scene transition")
-	town.pocket_panel.draft = null
-	if OS.get_cmdline_user_args().has("--screenshots"):
-		await RenderingServer.frame_post_draw
-		DirAccess.make_dir_recursive_absolute("user://tests/screenshots")
-		root.get_texture().get_image().save_png("user://tests/screenshots/game-recorder.png")
-	var first_id: int = town.pocket_panel.get_instance_id()
-	town._open_pocket_recorder()
-	check(town.pocket_panel.get_instance_id() == first_id, "Duplicate recorder opened")
-	town.pocket_panel.queue_free()
-	await process_frame
-	check(auto_accept_quit, "Closing recorder did not restore main window close behavior")
+	check(global.view.get_instance_id()==first_id,"Repeated entry reuses one recorder view")
+	view.put_away(); await process_frame; await process_frame
+	check(not is_instance_valid(global.view),"Pocketing releases the view")
+	check(not auto_accept_quit,"Global close handler protects audio through the full journey")
 	game.current_location = "record_store"
 	town.queue_free()
 	await process_frame
@@ -57,19 +48,23 @@ func run() -> void:
 	var photo_library := PhotoLibrary.new()
 	photo_library.root_path = "user://tests/photos_" + Crypto.new().generate_random_bytes(8).hex_encode()
 	camera.library = photo_library
-	camera.take_photo()
-	camera.take_photo()
-	check(photo_library.list_photos().size() == 1, "Duplicate shutter saved duplicate image")
-	var stored := photo_library.list_photos()[0]
-	var restored := PhotoLibrary.new()
-	restored.root_path = photo_library.root_path
-	var original := restored.load_photo(stored.photo_id)
-	check(original != null and original.get_width() > 0, "Photo did not survive reload")
-	check(restored.load_photo("../../outside") == null, "Untrusted photo path accepted")
-	await create_timer(0.5).timeout
-	camera._set_zoom(2)
-	camera.take_photo()
-	check(photo_library.list_photos().size() == 2, "New crop not saved")
+	await create_timer(.4).timeout
+	camera.take_photo(); camera.take_photo()
+	check(int(film.active_roll().exposures_used)==1,"Repeated shutter does not duplicate an exposure")
+	await create_timer(.5).timeout
+	camera._set_zoom(2); camera.take_photo()
+	check(int(film.active_roll().exposures_used)==2,"A new crop creates a second exposure")
+	var roll_id:String=str(film.active_roll().id)
+	game.current_location="cafe"
+	check(film.dropoff(roll_id,"rush").ok,"Send physical film for processing")
+	game.use_free_time(int(film.config.processing.rush.minutes)); film.update_processing()
+	var pickup:Dictionary=await film.pickup(roll_id)
+	check(pickup.ok,"Pick up developed pictures")
+	check(photo_library.list_photos().size()==2,"Developed photos enter the local album once")
+	var stored:=photo_library.list_photos()[0]
+	var original:=photo_library.load_photo(str(stored.photo_id))
+	check(original!=null and original.get_width()>0,"Photo survives reload")
+	check(photo_library.load_photo("../../outside")==null,"Untrusted photo path rejected")
 	camera.queue_free()
 	await process_frame
 	var album = load("res://scripts/town_sound/PhotoAlbum.gd").new()

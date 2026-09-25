@@ -84,30 +84,20 @@ func exercise_scene(indoor: bool) -> void:
 	var recorder = shell.tool
 	recorder.store_path = "user://recorder_movement_test_samples"
 	check(recorder.is_in_group("mobile_recorder"), label + " recorder declares mobile behavior")
-	check(not shell.blocks_walking(), label + " idle recorder does not block walking")
-	check(stage.enabled, label + " idle recorder leaves host walking enabled")
-	await hold_right(stage, true, label + " walking with idle recorder")
-
-	if not recorder.recorder.capturing:
-		await tap(KEY_R)
-	await create_timer(0.2).timeout
-	check(recorder.recorder.capturing, label + " R starts real TownWorld capture")
-	check(stage.enabled and not shell.blocks_walking(), label + " capture does not lock host")
-	await hold_right(stage, true, label + " walking during capture")
-	await tap(KEY_SPACE)
-	await create_timer(0.7).timeout
-	check(recorder.marks.size() == 1, label + " recording accepts a timestamp while mobile")
-	await tap(KEY_R)
-	await create_timer(0.2).timeout
-	check(is_instance_valid(recorder) and recorder.saved, label + " stop saves real audio")
-	check(gs.artifacts.get("samples", []).size() == before_samples + 1, label + " saved audio enters materials once")
-	check(stage.enabled, label + " saved confirmation leaves walking enabled")
-	await create_timer(1.0).timeout
-	check(is_instance_valid(shell.tool), label + " saved recording remains available for playback")
-	await tap(KEY_ESCAPE)
-	await create_timer(.2).timeout
-	check(not is_instance_valid(shell.tool), label + " Esc puts the saved recorder away")
-	check(get_nodes_in_group("mobile_recorder").is_empty(), label + " recorder releases scene ownership")
+	check(shell.blocks_walking(), label + " expanded recorder focuses controls")
+	await tap(KEY_R); await create_timer(.2).timeout
+	var session=root.get_node("RecordingSession")
+	check(session.recorder.capturing,label + " R starts real audio capture")
+	recorder.put_away(); await process_frame; await process_frame
+	check(not shell.blocks_walking(),label + " pocketing restores walking")
+	await hold_right(stage,true,label + " walking during background recording")
+	await create_timer(.7).timeout; await tap(KEY_R); await create_timer(.2).timeout
+	check(session.saved,label + " global R saves real audio")
+	check(gs.artifacts.get("samples",[]).size()==before_samples+1,label + " recording enters materials once")
+	await tap(KEY_R); await create_timer(.2).timeout
+	check(is_instance_valid(shell.tool),label + " R reopens saved recording")
+	await tap(KEY_ESCAPE); await create_timer(.2).timeout
+	check(not is_instance_valid(shell.tool),label + " Esc pockets the recorder")
 	await dismiss_meta_modals()
 	await hold_right(stage, true, label + " walking after recorder dismissal")
 

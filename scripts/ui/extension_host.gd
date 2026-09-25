@@ -21,6 +21,7 @@ var host_panel: Panel
 
 
 func _ready() -> void:
+	WorldSound.set_location(GameState.current_location); WorldSound.set_active(true)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	module_id = GameplayModuleSystem.pending_module_id()
 	session_context=GameplayModuleSystem.session_context()

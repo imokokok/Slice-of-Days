@@ -179,13 +179,14 @@ func studio() -> void:
 	var recorder=load("res://scripts/town_sound/RecorderScreen.gd").new()
 	recorder.shop_mode=true; current_scene.add_child(recorder)
 	await process_frame
+	var session=root.get_node("RecordingSession")
 	for index in 2:
-		recorder.source_picker.select(0); recorder._start_recording()
-		check(recorder.recorder.capturing,"capture actual game audio, no microphone")
+		session.start("game")
+		check(session.recorder.capturing,"capture actual game audio, no microphone")
 		await create_timer(4.5).timeout
-		recorder._stop()
-		check(recorder.draft!=null and recorder.draft.get_length()>=4,"game recording has real audio duration")
-		recorder.name_input.text="街边的声音 "+str(index+1); recorder._save_draft()
+		session.stop()
+		check(session.saved and session.playback.stream.get_length()>=4,"game recording auto-saves real audio")
+		session.rename_sample(session.last_sample,"街边的声音 "+str(index+1))
 	var samples: Array=recorder.store.list_samples()
 	check(samples.size()==2,"only this character's recordings appear")
 	var work=load("res://scripts/town_sound/studio/StudioScreen.gd").new()

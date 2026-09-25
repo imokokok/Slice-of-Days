@@ -44,7 +44,7 @@ func portrait_path(role := "") -> String:
 
 func owns_pocket_item(item: String, role := "") -> bool:
 	var owner := GameState.current_role if role.is_empty() else role
-	if item == "recorder": return owner == "A"
+	if item == "recorder": return owner in ["A","B"] # Global field recording; B still owns her notebook.
 	if item == "notebook": return owner == "B"
 	return true
 
@@ -53,6 +53,7 @@ func switch_unlocked() -> bool:
 func can_switch() -> bool:
 	return switch_unlocked() and SceneRouter.active_space_id.is_empty() and can_manage_schedule()
 func can_manage_schedule() -> bool:
+	if RecordingSession.recorder.capturing or RecordingSession.pending_wav!=null: return false
 	if SceneRouter.transitioning: return false
 	if not GameplayModuleSystem.pending_module_id().is_empty(): return false
 	if not get_tree().get_nodes_in_group("world_tool").is_empty(): return false

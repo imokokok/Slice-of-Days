@@ -46,7 +46,7 @@ func _ready() -> void:
 	theme.set_constant("line_spacing","Label",2)
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	if has_node("/root/GameState") and GameState.current_location != "record_store":
-		queue_free(); return
+		set_process(false); queue_free(); return
 	if has_node("/root/WorldSound"):
 		WorldSound.lock_monitor(true); monitor_locked=true
 	_configure_role_project()

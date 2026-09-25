@@ -139,14 +139,13 @@ func _blocked() -> bool:
 	return is_instance_valid(host.get("conversation")) or not get_tree().get_nodes_in_group("meta_dialogue").is_empty() or MetaExperience.modal_open() or SceneRouter.transitioning or is_instance_valid(host.get("pocket_panel")) or (host.get("event_overlay") != null and host.event_overlay.visible) or (host.get("room_dialogue") != null and host.room_dialogue.visible)
 
 func blocks_walking() -> bool:
+	if GlobalRecorder.focused(): return true
 	if not bool(UIStateSystem.policy().move): return true
 	if is_instance_valid(tool) and tool.get("focus_active") != null: return focus_opening or bool(tool.focus_active)
 	return focus_opening or (is_instance_valid(tool) and not tool.is_in_group("mobile_recorder"))
 
 func finish_recording_for_exit() -> bool:
-	if is_instance_valid(tool) and tool.is_in_group("mobile_recorder"):
-		return tool.finish_for_exit()
-	return true
+	return RecordingSession.finish_for_exit()
 
 func _process(delta: float) -> void:
 	switch_button.visible=true
@@ -163,7 +162,7 @@ func _process(delta: float) -> void:
 	var visible_index := 0
 	for i in pocket_objects.size():
 		var item := pocket_objects[i]
-		var owned := CharacterSystem.owns_pocket_item(str(item.name).trim_prefix("Pocket_"))
+		var owned := CharacterSystem.owns_pocket_item(str(item.name).trim_prefix("Pocket_")) and i!=3
 		item.visible=clear_view and owned
 		item.position=Vector2(30+visible_index*94,size.y-112)
 		if owned: visible_index+=1
@@ -307,7 +306,9 @@ func _handle_shortcut(event: InputEvent) -> void:
 		if event.is_action_pressed(action):
 			open_paper(str(modes[action])); get_viewport().set_input_as_handled(); return
 	if event.is_action_pressed("open_camera"): open_tool("camera")
-	elif event.is_action_pressed("open_recorder"): open_tool("recorder")
+	elif event.is_action_pressed("open_recorder"):
+		if RecordingSession.recorder.capturing: RecordingSession.stop()
+		else: open_tool("recorder")
 	elif event.is_action_pressed("talk"):
 		if not _talk_to_context(): return
 	elif event.is_action_pressed("interact") and not _special().is_empty():
@@ -334,8 +335,7 @@ func open_tool(mode: String) -> void:
 	if not CharacterSystem.owns_pocket_item(mode): return
 	if is_instance_valid(tool) or is_instance_valid(overlay) or _blocked(): return
 	if mode == "recorder":
-		tool = load("res://scripts/residency/recorder_lite.gd").new()
-		add_child(tool)
+		tool = GlobalRecorder.open_recorder()
 		return
 	if not FilmSystem.camera_available(): return
 	tool = load("res://scripts/town_sound/PocketCamera.gd").new()
@@ -357,6 +357,7 @@ func _show_camera_gallery() -> void:
 
 func _camera_source() -> Image:
 	focus_opening = true
+	GlobalRecorder.capture_hidden=true
 	var hidden: Array[CanvasItem] = []
 	for child in host.get_children():
 		if child != stage and child is CanvasItem and child.visible: hidden.append(child); child.hide()
@@ -365,6 +366,7 @@ func _camera_source() -> Image:
 	for child in hidden:
 		if is_instance_valid(child): child.show()
 	focus_opening = false
+	GlobalRecorder.capture_hidden=false
 	return image
 
 func _update_active_direction() -> void:

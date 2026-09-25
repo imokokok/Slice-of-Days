@@ -58,7 +58,7 @@ func _ready() -> void:
 	source_picker.add_item("小镇声源（默认）"); source_picker.add_item("真实人声 · 麦克风")
 	face.add_child(source_picker)
 	_button("触发声源",Vector2(580,485),Vector2(210,38),trigger_source)
-	p.words(face,"选择声源 → 录制 → 停止自动保存 → 唱片店编曲",Vector2(75,68),900,18)
+	p.words(face,"选择声源 → 录制 → 停止自动保存 → 唱片店编曲",Vector2(75,565),900,17)
 	status=p.words(face,"留下此刻听见的声音",Vector2(110,523),608,19)
 	var screen = preload("res://scripts/ui/components/live_sound_window.gd").new(); screen.source=self; screen.position=Vector2(75,241); screen.size=Vector2(458,260)
 	screen.name="LiveRecordingPicture"; live_screen=screen
@@ -70,7 +70,7 @@ func _ready() -> void:
 	record_button.name="RecordToggle"
 	mark_button=_button("留下标记",Vector2(580,435),Vector2(210,43),mark_recording); mark_button.disabled=true
 	_button("收起",Vector2(795,151),Vector2(126,38),finish_for_exit)
-	_button("录音收藏",Vector2(750,525),Vector2(160,39),_open_library)
+	_button("录音收藏",Vector2(810,485),Vector2(145,39),_open_library)
 	play_button=_button("试听",Vector2(580,269),Vector2(100,40),_play_last)
 	play_button.disabled=true
 	_button("边走边录",Vector2(703,269),Vector2(155,40),_toggle_compact)

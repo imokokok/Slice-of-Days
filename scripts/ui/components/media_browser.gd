@@ -90,17 +90,22 @@ func show_entry(index: int) -> void:
 				ResidencySystem._sync_sources(); ResidencySystem.persist()
 			else: owner_ui.feedback.text=LocalizationSystem.text(store.last_error)).tooltip_text=LocalizationSystem.text("保存录音名称")
 		_label("Day %02d  ·  %s" % [int(item.get("game_day",0)),str(item.created_at).left(10)],Vector2(58,175),Vector2(596,31)).add_theme_font_size_override("font_size",14)
-		var waveform := preload("res://scripts/residency/sound_paper.gd").new(); waveform.wav=player.stream; waveform.position=Vector2(58,237); waveform.size=Vector2(624,112); add_child(waveform)
-		progress=HSlider.new(); progress.position=Vector2(58,373); progress.size=Vector2(624,24); progress.max_value=maxf(.01,float(item.duration)); progress.step=.01; add_child(progress)
+		var waveform := preload("res://scripts/residency/sound_paper.gd").new(); waveform.wav=player.stream; waveform.position=Vector2(410,237); waveform.size=Vector2(272,112); add_child(waveform)
+		if player.stream!=null:
+			var visual=load("res://scripts/town_sound/visual/SampleVisual.gd").new()
+			visual.player=player; visual.model=Arrangement.new(); visual.model.add_sample(item,0,0)
+			visual.configure(player.stream,"像素",int(item.get("mv_seed",23817)))
+			visual.position=Vector2(58,215); visual.size=Vector2(320,180); visual.mouse_filter=MOUSE_FILTER_IGNORE; add_child(visual)
+		progress=HSlider.new(); progress.position=Vector2(58,415); progress.size=Vector2(624,24); progress.max_value=maxf(.01,float(item.duration)); progress.step=.01; add_child(progress)
 		progress.value_changed.connect(func(value: float) -> void:
 			if player.playing or player.stream_paused: player.seek(value))
-		elapsed=_label("",Vector2(58,406),Vector2(624,28)); elapsed.add_theme_font_size_override("font_size",14)
-		var play := _button("播放 / 暂停",Vector2(315,453),Vector2(80,68),_toggle_play)
+		elapsed=_label("",Vector2(58,446),Vector2(624,28)); elapsed.add_theme_font_size_override("font_size",14)
+		var play := _button("播放 / 暂停",Vector2(315,489),Vector2(80,68),_toggle_play)
 		# Accessible name stays on the real button; the drawn play symbol is decorative.
 		play.add_theme_color_override("font_color",Color.TRANSPARENT); play.add_theme_color_override("font_hover_color",Color.TRANSPARENT); play.add_theme_color_override("font_focus_color",Color.TRANSPARENT); play.add_theme_color_override("font_pressed_color",Color.TRANSPARENT)
 		playback_icon=preload("res://scripts/ui/components/ink_icon.gd").new(); playback_icon.kind="play"; playback_icon.position=Vector2(14,9); playback_icon.size=Vector2(50,50); play.add_child(playback_icon)
-		_button("− 5s",Vector2(180,467),Vector2(95,44),_seek_by.bind(-5.0))
-		_button("+ 5s",Vector2(420,467),Vector2(95,44),_seek_by.bind(5.0))
+		_button("− 5s",Vector2(180,503),Vector2(95,44),_seek_by.bind(-5.0))
+		_button("+ 5s",Vector2(420,503),Vector2(95,44),_seek_by.bind(5.0))
 		var scroll := ScrollContainer.new(); scroll.position=Vector2(755,120); scroll.size=Vector2(415,410); add_child(scroll)
 		var rows := VBoxContainer.new(); rows.size_flags_horizontal=SIZE_EXPAND_FILL; scroll.add_child(rows)
 		for i in entries.size():

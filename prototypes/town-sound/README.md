@@ -4,7 +4,7 @@
 
 完整操作、参考游戏、素材许可与测试说明见 [本轮版本说明](RELEASE_20260926.md)。
 
-- 实际右上角录音工具：`scripts/residency/recorder_lite.gd`。
+- 实际随身工具栏的录音工具：`scripts/residency/recorder_lite.gd`。
 - 唱片店入口：`scripts/town_sound/record_shop/RecordShop.gd`；工作台和本地唱片架均可进入。
 - 录音、编曲、照片封面、像素 MV 与压片代码：`scripts/town_sound/`。
 - 本地收藏详情：`scripts/residency/paper_overlay.gd`；保存声音可连同 MV 回放。

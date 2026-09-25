@@ -15,9 +15,9 @@ try {
     $currentBranch = (& git branch --show-current).Trim()
     if ($currentBranch -ne 'main') { throw "Expected main, found $currentBranch. Switch intentionally before pushing." }
     $remoteUrl = (& git remote get-url --push origin).Trim()
-    if ($remoteUrl -notmatch 'github\.com[:/]imokokok/Slice-of-Days(?:\.git)?$') { throw 'origin is not the expected Slice-of-Days repository.' }
+    if ($remoteUrl -notmatch 'github\.com[:/]imokokok/(?:Slice-of-Days|Solmere)(?:\.git)?$') { throw 'origin is not the expected Slice-of-Days repository.' }
     $scopes = @('prototypes/town-sound/', 'scripts/town_sound/', 'scenes/town_sound/', 'tests/town_sound/', 'art/town_sound_cc0/')
-    $sharedFiles = @('README.md', 'project.godot', 'scripts/ui/town_day.gd', 'scripts/ui/interactive_space.gd', 'scripts/core/scene_router.gd', 'scripts/residency/recorder_lite.gd', 'scripts/residency/paper_overlay.gd', 'scripts/ui/components/live_sound_window.gd')
+    $sharedFiles = @('README.md', 'project.godot', 'scripts/ui/town_day.gd', 'scripts/ui/interactive_space.gd', 'scripts/core/scene_router.gd', 'scripts/residency/recorder_lite.gd', 'scripts/residency/paper_overlay.gd', 'scripts/ui/components/live_sound_window.gd', 'scripts/ui/components/media_browser.gd')
     $changedPaths = @(& git diff --name-only) + @(& git diff --cached --name-only) + @(& git ls-files --others --exclude-standard)
     $otherPaths = @($changedPaths | Where-Object {
         $candidatePath = $_

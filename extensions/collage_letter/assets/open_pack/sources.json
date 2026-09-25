@@ -175,22 +175,6 @@
     "sha256": "5caab82c7c67ffbc7213a80dc1d010e497a4756726b1130fc3f30566dfbd398b"
   },
   {
-    "file": "paper/Papier1.png",
-    "source": "https://opengameart.org/content/paper-textures-seamless",
-    "license": "CC0-1.0",
-    "author": "Leschge",
-    "notes": "Original seamless texture; mixed lightly during rendering",
-    "sha256": "c1fa1e6e7f0684d5db0cdb5dfd498ec2b86ade62d7a846aa597bb91fda8df354"
-  },
-  {
-    "file": "paper/Papier6.png",
-    "source": "https://opengameart.org/content/paper-textures-seamless",
-    "license": "CC0-1.0",
-    "author": "Leschge",
-    "notes": "Original seamless texture; mixed lightly during rendering",
-    "sha256": "84d260637b91c6232e6ddcf98e55b00b971a675da3bfc6d9a1381f5ce47165c0"
-  },
-  {
     "file": "paintings/met-435882.jpg",
     "source": "https://www.metmuseum.org/art/collection/search/435882",
     "license": "CC0-1.0",
@@ -315,5 +299,1103 @@
     "license": "CC0-1.0",
     "notes": "Public author-provided preview",
     "sha256": "582ff29ef9e0d2031599ed119b3fccebe48710f4064fa58aaa110c79f73aa4b4"
+  },
+  {
+    "file": "paper/Papier1.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "c1fa1e6e7f0684d5db0cdb5dfd498ec2b86ade62d7a846aa597bb91fda8df354"
+  },
+  {
+    "file": "paper/Papier2.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "8afa86033cd8cdbcdfb3d771d224af48e06afc5a41e01d647ad2a84b35196dfe"
+  },
+  {
+    "file": "paper/Papier3.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "606820ccc9fb0e26e9eba5d0a5a5826973b03da243e31d6f4ce3b250df5aec77"
+  },
+  {
+    "file": "paper/Papier4.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "5f5584bce8f923dcaeff2018c7ac7f85e2d4cc55ddc63d404a6f6d7b927700c6"
+  },
+  {
+    "file": "paper/Papier5.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "c27b5f2764d5b31ede4637e8c154b6da0ba3709b8c4503f90dd04f3f133b5ba9"
+  },
+  {
+    "file": "paper/Papier6.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "84d260637b91c6232e6ddcf98e55b00b971a675da3bfc6d9a1381f5ce47165c0"
+  },
+  {
+    "file": "paper/Papier7.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "0251035e620729a3caf0d6ff72bcba270e26401dfe235e7954adc7a7efdb3b65"
+  },
+  {
+    "file": "paper/Papier8.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "69f0ac8016a46d5208ab84b2b93a79aaf42e48a463e7b5b886497ba06b4708f5"
+  },
+  {
+    "file": "paper/Papier9.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "30734b99b8782fc805c472e08b85c5507c6232f5f233a0e981d5d21e86e4ce06"
+  },
+  {
+    "file": "paper/Papier10.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "31c3df91fa778e8fdfa34980754f561287dcdd84a99fb1bca9686a1bfebbbb41"
+  },
+  {
+    "file": "paper/Papier11.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "8c778355aedff80e65256d261e1d017709df4dfe7481848b0300a459bc426e63"
+  },
+  {
+    "file": "paper/Papier12.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "df564f7212a625a58d1f6aba98e574791822cf444d9dcb5aa2404dd78675153d"
+  },
+  {
+    "file": "paper/Papier13.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "notes": "Unmodified paper texture from Leschge Paper Textures (Seamless)",
+    "sha256": "3cb426e7d443a106fcefa7dfd2b9aad9dc072e482eab6a2ff2c7f89bb53d19c1"
+  },
+  {
+    "file": "icons/extra-animal.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/animal.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "614852d954bcef623054cdf45c427034dd455ed0c7ede7e4776bf1f99f0e3e28"
+  },
+  {
+    "file": "icons/extra-bamboo-shoots.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/bamboo-shoots.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "216c56e4705e1ce6b8dba6b11588acf76d611e762c1b5f9f73a3e1d28754b3da"
+  },
+  {
+    "file": "icons/extra-bamboo.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/bamboo.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "c7830a8b3073425a244c2b53821404a7e4057070615cf0145201b385636227ec"
+  },
+  {
+    "file": "icons/extra-bear.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/bear.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "f47509b6289c9e9d818e881ec96c9dc560296b324578f10c210cd0b6141d5f98"
+  },
+  {
+    "file": "icons/extra-cactus.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/cactus.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "ae7b80b11cd5d8e7f7d4284b8916172e7d8687d62118c289577b294b681332c5"
+  },
+  {
+    "file": "icons/extra-cow.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/cow.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "a45d2c212577429bcc6aec96596fe8e9f90b99ad0a97f71c5ec42443a2ebba38"
+  },
+  {
+    "file": "icons/extra-fog.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/fog.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "930b76a2dd8b30646743a45f766714ebeb39c4efe05ae13fe000d1763ef43d66"
+  },
+  {
+    "file": "icons/extra-forest.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/forest.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "063e007ee4c73a6a28257e3145ce28d3fc9c9dbbd5f0730f158431a4fa63ee52"
+  },
+  {
+    "file": "icons/extra-fox.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/fox.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "42a7e56a3cef0266153f8ff74738b3c364d6f315b74184ed8c01ee86c5d37c15"
+  },
+  {
+    "file": "icons/extra-grass.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/grass.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "fcc056a8606503c5ba9d4c7eb65aa3e12aad7254a79493c88b306f22aba9d830"
+  },
+  {
+    "file": "icons/extra-horse.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/horse.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "b9454f2dd6a37c4f1563adabcaea50fee027abd592f816412052b97247422489"
+  },
+  {
+    "file": "icons/extra-jellyfish.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/jellyfish.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "e85e2f40f4714f959a7815750de1a8781581727400a3839f23c47a4fe450d48f"
+  },
+  {
+    "file": "icons/extra-lightning.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/lightning.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "675cb85bd0f64e52d681a9c0c1864af42022ddf472a26ea92e87600a4b0fc586"
+  },
+  {
+    "file": "icons/extra-meteor.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/meteor.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "3e4e852f768962c038ce7d144d0a051c0341610338927b0af0e21f9dfc64ba4f"
+  },
+  {
+    "file": "icons/extra-mouse.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/mouse.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "22762e25d40346e152d1f3ddfd0e9181401796d479940bebc1861093901dfafd"
+  },
+  {
+    "file": "icons/extra-panda.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/panda.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "0567e83ba3ed00adb491d9dd05ac7f4fcfd84d1b6fa34ced498b2cf2bdc3ac99"
+  },
+  {
+    "file": "icons/extra-pig.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/pig.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "dbc142e326c82ab2efb9b05b5137b59dca9a3b4d5a00874d24037c162d87f1b2"
+  },
+  {
+    "file": "icons/extra-rabbit.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/rabbit.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "baa136ff437f5a34d7b049c8f57b30155e014ad96373f8be46c2621d206caa7a"
+  },
+  {
+    "file": "icons/extra-rainbow.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/rainbow.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "b614c2d762eabaf9b7dfc172681044741046cdc46392d992e40194bb35acf96f"
+  },
+  {
+    "file": "icons/extra-river.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/river.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "fc6bceeb61288ec03201f6f4c6cb5ed302cd14cf026596948262d76c0e5033c2"
+  },
+  {
+    "file": "icons/extra-sheep.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/sheep.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "e69fc83ee385ebd94e38e894ec559a31786c127a0392f93c8dd84d3b7e60637f"
+  },
+  {
+    "file": "icons/extra-shrimp.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/shrimp.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "d14dd3d2c0f1d28190c1832238b86a20aef9d09e4a4ce681bfbddf01011ba77a"
+  },
+  {
+    "file": "icons/extra-snowflake.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/snowflake.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "eac2c7af92443b7e060ce9bd98941a8071521be988cb79bdf665869466731882"
+  },
+  {
+    "file": "icons/extra-stone.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/stone.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "3f8943efa65dc0a6e143617056243920a8f5847ce85b71b359749affb4d37b1c"
+  },
+  {
+    "file": "icons/extra-volcano.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/volcano.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "04927a807f8f14ca9bab922551f6d70d7920aca382d3ee197d477b710f046ba2"
+  },
+  {
+    "file": "icons/extra-water.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/water.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "2d4bd734e19319c15d7af8ab2728b6d31bdf10779605f0b17508d281543c21cd"
+  },
+  {
+    "file": "icons/extra-wind.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/wind.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "69f530718b3005edf8740ed9abb6bfc40bf238d8854936de8f0391cb88e92708"
+  },
+  {
+    "file": "icons/extra-wolf.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/wolf.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "e2f8cb799a6f3f714c9ddf1cef8a49152d743cf23f1695887c81489df5b88edb"
+  },
+  {
+    "file": "icons/extra-wood.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/4-nature/wood.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "7242c6c645d81d266a3ae4eb6e1ed790e54a3b2a0abd97a251a1c3393af68310"
+  },
+  {
+    "file": "icons/extra-a-bottle-of-water.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/a-bottle-of-water.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "f53e453f3a060704f967d37ffe3233a9abe480c14da0731e80a91dbfb9cc62c7"
+  },
+  {
+    "file": "icons/extra-beer.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/beer.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "cdaf38f2189621f5a2f1c138a8028ea6e2656841eb6cf6717d975c8ba4a71081"
+  },
+  {
+    "file": "icons/extra-bowl.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/bowl.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "8682a6c7402972c7fc355dc87a8a8b656f0cbf2b8c7fafe24f956695505cd21b"
+  },
+  {
+    "file": "icons/extra-carrot.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/carrot.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "ba070dd8b5be5d32708e91f2d2ab2151d1508a1992136c5ca41d88ac43964b95"
+  },
+  {
+    "file": "icons/extra-chopsticks.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/chopsticks.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "71219973b4aeaadd20d14986484cef7dc29ef7b8e78f3f572b69b3e3f56808d3"
+  },
+  {
+    "file": "icons/extra-drink.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/drink.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "dfe1651bc33e43b01d11c5e822dad7f0f10a80c5644e18eec5f9fedce0a82a9a"
+  },
+  {
+    "file": "icons/extra-eggplant.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/eggplant.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "4560b0c964b11277a2f9983d67d38bb9401cbef349c83b4febbdf644ebac5334"
+  },
+  {
+    "file": "icons/extra-fork.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/fork.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "91ddecc0d40670dfaba51bf82e334a18523ab1bbbd266b2640c79120956e3f62"
+  },
+  {
+    "file": "icons/extra-glass-of-water.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/glass-of-water.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "80250433601bef755290e8889033fce284041adf01c0f6b5bf6c86eaa5ca0a63"
+  },
+  {
+    "file": "icons/extra-ham.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/ham.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "f58a7cd5dd36c3f0cdadf3ade8c37779e7bb7c745f6bc671c3ca178f44ac8389"
+  },
+  {
+    "file": "icons/extra-milk.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/milk.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "e66000eb7bd24a9f81cbf2859186abad66116e5417319f3f86a2db78d70b2e57"
+  },
+  {
+    "file": "icons/extra-onigiri.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/onigiri.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "877d73ef3737968c6a854c360c8f4ec136efc9df46f4cf06657720ebcdd5dd9e"
+  },
+  {
+    "file": "icons/extra-peach.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/peach.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "c6e005502364eebec007c8d4d2c85b16842e1682f214b5f6e3cf02ff2fabc480"
+  },
+  {
+    "file": "icons/extra-pear.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/pear.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "092ffa88b331452171b1d6f73cc07ea820b250e4e61082a6d94ab421f941681c"
+  },
+  {
+    "file": "icons/extra-plate.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/plate.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "ebbf2e6a866977b47d04a39d0281a12bd0135ff8ac2e4b7f35908dcbe04d1088"
+  },
+  {
+    "file": "icons/extra-potato.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/potato.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "a21487e377b57e4a1467405fa93b987bc10ffb73fe72e0163bcee309eee6c368"
+  },
+  {
+    "file": "icons/extra-rice.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/rice.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "aa28dfa53b4f492f4b7e8b6f4d5eb9c6d96e0bc8cb5e4ae9e40055257fdf3d35"
+  },
+  {
+    "file": "icons/extra-spoon.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/spoon.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "70abc240faa7dbb36515f74ec6fcafb1f7bb269cadbdc3a3bf822c521aa124e2"
+  },
+  {
+    "file": "icons/extra-wineglass.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/wineglass.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "114b3f6ab23a97e229d9ff02572f658300211cb9f94283370b6a9d57fa453fed"
+  },
+  {
+    "file": "icons/extra-zongzi.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/5-food/zongzi.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "b86db42acb5e2f17db8de9acb3cfb0711d3484d38a1ec49da02c75e0e1654fda"
+  },
+  {
+    "file": "icons/extra-backpack.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/backpack.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "63cf6de2283a5698423f9cfb492d0e4009b7321f354ab20045d030b4a5ee699b"
+  },
+  {
+    "file": "icons/extra-basketball.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/basketball.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "97f0bf7f7d5e2e006ec870794930bad2e2ad49a769999b5351f5fa2939980ad1"
+  },
+  {
+    "file": "icons/extra-binoculars.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/binoculars.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "8bc1667f8ad18282336a0e42389eb81267ce111eb7706df7e82bdeac34993efe"
+  },
+  {
+    "file": "icons/extra-bullhorn.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/bullhorn.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "41c75f7f85002a147aa641cc7859f70ad20053f89b7b9f77fcfd8fed51914fa9"
+  },
+  {
+    "file": "icons/extra-chest.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/chest.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "1890736dc9ae66b5d27fd6e4f39569e73d145b1bd87d730c6df83f4e4b0b3ba8"
+  },
+  {
+    "file": "icons/extra-fishing-rod.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/fishing-rod.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "7562430d0b249b6aa6797867264490b1e964f95fcecb6727fa50dc967ac19bfe"
+  },
+  {
+    "file": "icons/extra-hammer.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/hammer.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "ff059f55c80e1381e8fefe9bbdd85a5d3d5c8d173e2c754e9ef28c654cd3f936"
+  },
+  {
+    "file": "icons/extra-light.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/light.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "a7272b6b7893ceb302e56dfc02178a8a3d76a250caa4d0fa5f0d9cddbacf2cf3"
+  },
+  {
+    "file": "icons/extra-magnet.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/magnet.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "03956cf333dde1336c3be2a9099712016c3c6765a74c337c56b037dd5b0d006e"
+  },
+  {
+    "file": "icons/extra-map.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/map.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "1fadb6d3d26025ff04611a660d701b7e284bf0409baeece88066315414afca8b"
+  },
+  {
+    "file": "icons/extra-pushpin.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/pushpin.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "5aa5fcf4c7c110f5abf14888a12e97316f4183bf81d19c072369ce6969f5e75f"
+  },
+  {
+    "file": "icons/extra-ruler.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/ruler.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "1b793a106df1ffb0eb3d0b9354998285f31f7d1aaa621eda15a67ff451de5aa0"
+  },
+  {
+    "file": "icons/extra-scissors.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/scissors.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "a9500cb792c775149de29424df1a180c0b6b61d9dc41d6b975630168b3100bdc"
+  },
+  {
+    "file": "icons/extra-soccer.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/soccer.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "364c63b21ea38d78f08f5fe5192ac6ded8062695ec71c7e4f66803b4c4f7eaed"
+  },
+  {
+    "file": "icons/extra-tool-kit.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/tool-kit.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "52196f1f5e35ef326eddc4c91fc2c11730b508c930d4754a5763dd1de49ede33"
+  },
+  {
+    "file": "icons/extra-wrench.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/2-items/wrench.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "5f04515bd5b360e80ed6c06fb1cb7a84c45aabfe26386f3ff38dc39cfb22c3d7"
+  },
+  {
+    "file": "icons/extra-bridge.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/6-buildings/bridge.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "4e774ebf890d7ca5d6ae307c9c055d8e0b16099a222fb5d4eda7de89a5e83a1b"
+  },
+  {
+    "file": "icons/extra-chair.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/6-buildings/chair.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "7c06e1ca515e7540c2139086ce1db581f265a4c3e6cfe83be7c939efce4fd45a"
+  },
+  {
+    "file": "icons/extra-flowerpot.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/6-buildings/flowerpot.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "6fcd8f04fdfeee064a11f8f70fbda1a7a33dbc2ac6dff4c8055637b43ed90b2d"
+  },
+  {
+    "file": "icons/extra-house.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/6-buildings/house.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "f07bf0b12b53062225c479456287ca06d91d1e6a925c8b464bd1da791418e9f1"
+  },
+  {
+    "file": "icons/extra-kettle.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/6-buildings/kettle.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "8e69eeb55b0603324e9007c23437ab19b3d86c393699a404b4a260a93c59a28a"
+  },
+  {
+    "file": "icons/extra-lantern.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/6-buildings/lantern.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "0052378d5126e86b036c1e6a34c467d7ec0f8ba52d1e2c02478154c172370a57"
+  },
+  {
+    "file": "icons/extra-shop.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/6-buildings/shop.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "3e84277c2fc0b6e7f824eb1cb8829cc556947d90daa5856fa5cdc2b153f398aa"
+  },
+  {
+    "file": "icons/extra-anchor.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/7-vehicles/anchor.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "ef0734be193bb4a43a8743397c8d8610dcd47ebf1fc87a3b55b00cd588492b26"
+  },
+  {
+    "file": "icons/extra-bike.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/7-vehicles/bike.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "d56267ced2d531ea5428ecdff6d5853d275b93c927d3ecc7551d863e5d9caeb8"
+  },
+  {
+    "file": "icons/extra-bus.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/7-vehicles/bus.svg",
+    "license": "CC0-1.0",
+    "notes": "Geometry retained; adapted color and 240px intrinsic dimensions",
+    "sha256": "68a612a436355a795b34dc48efb62b42d9a7fec680944e8d4bf764e9b795ad0c"
+  },
+  {
+    "file": "desk-wood.png",
+    "source": "https://opengameart.org/content/simple-wood-background",
+    "download": "https://opengameart.org/sites/default/files/bg-wood%402x.png",
+    "license": "CC0-1.0",
+    "sha256": "4e24c33df7ed25e9b148564e8b88b8075eb9f6531a4bebe51867037d0f1ec563"
+  },
+  {
+    "file": "paper/old-scan.jpg",
+    "source": "https://opengameart.org/content/old-paper-sheet-texture",
+    "download": "https://opengameart.org/sites/default/files/paper.jpg",
+    "license": "CC0-1.0",
+    "sha256": "f55576c3930ffb099df794529a7b330f94ec830ab61ffe37485e61b9ee6efde7"
+  },
+  {
+    "file": "audio/pencil.ogg",
+    "source": "https://opengameart.org/content/pencil-sounds",
+    "download": "https://opengameart.org/sites/default/files/pencil_write.ogg",
+    "license": "CC0-1.0",
+    "sha256": "478e9c93ae60261a49a10f56c4f76f8eb5257e83a69fc5632ee855e58eb7c3e8"
+  },
+  {
+    "file": "audio/tape.mp3",
+    "source": "https://freesound.org/people/crookedletter/sounds/54731/",
+    "download": "https://cdn.freesound.org/previews/54/54731_648636-hq.mp3",
+    "license": "CC0-1.0",
+    "sha256": "4eb927bed1c95dbfdcff3d431bfbd97aae053de022d671d10936c67352a314ce"
+  },
+  {
+    "file": "photos/bus_stop.png",
+    "source": "repository art/user_scenes/bus_stop.png",
+    "license": "User-supplied project artwork; not represented as CC0",
+    "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
+    "sha256": "8e69e0c923aa606877b0dcd4caa012859276c2e8bbfefc08c7fb915c9fe4b368"
+  },
+  {
+    "file": "photos/lookout_approach.png",
+    "source": "repository art/user_scenes/lookout_approach.png",
+    "license": "User-supplied project artwork; not represented as CC0",
+    "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
+    "sha256": "3a323e423619fadc889930df0d611926eb8e25150aecdf079c3d307f848aedbf"
+  },
+  {
+    "file": "photos/produce_stall.png",
+    "source": "repository art/user_scenes/produce_stall.png",
+    "license": "User-supplied project artwork; not represented as CC0",
+    "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
+    "sha256": "cdbe6271f250aea44732e3ad11bd75d92679ea5d25428ed93ea4e5a2f749a947"
+  },
+  {
+    "file": "photos/restaurant.png",
+    "source": "repository art/user_scenes/restaurant.png",
+    "license": "User-supplied project artwork; not represented as CC0",
+    "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
+    "sha256": "d3bccd4bed02ad03e6e652127308e87d3324a41be5cb60e6a3ca0c3a090c8cb1"
+  },
+  {
+    "file": "photos/correspondence_office.png",
+    "source": "repository art/user_scenes/correspondence_office.png",
+    "license": "User-supplied project artwork; not represented as CC0",
+    "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
+    "sha256": "3470dedf27d860b1375cbe3cdff5e2de0485de78943043e898f3cff66ddea33d"
+  },
+  {
+    "file": "photos/tarot_shop.png",
+    "source": "repository art/user_scenes/tarot_shop.png",
+    "license": "User-supplied project artwork; not represented as CC0",
+    "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
+    "sha256": "9fafbc03ce818140bb745972c72eb0eacd51c54a7641d90503c38f7fd9723ca8"
+  },
+  {
+    "file": "scores/original-rags-0.png",
+    "source": "https://commons.wikimedia.org/wiki/File:Original_Rags.pdf",
+    "download": "https://upload.wikimedia.org/wikipedia/commons/5/57/Original_Rags.pdf",
+    "license": "Public domain (composition and engraving declared public domain on source page)",
+    "notes": "Rendered from an existing complete engraved score; no generated notes",
+    "sha256": "acb266df1ea1c0a75164d5a8c29282cdbd37840c91d226b51ba57fe2e87a45b0"
+  },
+  {
+    "file": "scores/original-rags-1.png",
+    "source": "https://commons.wikimedia.org/wiki/File:Original_Rags.pdf",
+    "download": "https://upload.wikimedia.org/wikipedia/commons/5/57/Original_Rags.pdf",
+    "license": "Public domain (composition and engraving declared public domain on source page)",
+    "notes": "Rendered from an existing complete engraved score; no generated notes",
+    "sha256": "16d935b38469b030c9ef07ad37ef890f71c2ae94f7e2828224df3b5a00cf2778"
+  },
+  {
+    "file": "scores/original-rags-2.png",
+    "source": "https://commons.wikimedia.org/wiki/File:Original_Rags.pdf",
+    "download": "https://upload.wikimedia.org/wikipedia/commons/5/57/Original_Rags.pdf",
+    "license": "Public domain (composition and engraving declared public domain on source page)",
+    "notes": "Rendered from an existing complete engraved score; no generated notes",
+    "sha256": "9db9ec9a963310e23cb7537aab6d9e521403b35d2af7d56b8ed205a26c0f91d3"
+  },
+  {
+    "file": "scores/original-rags-3.png",
+    "source": "https://commons.wikimedia.org/wiki/File:Original_Rags.pdf",
+    "download": "https://upload.wikimedia.org/wikipedia/commons/5/57/Original_Rags.pdf",
+    "license": "Public domain (composition and engraving declared public domain on source page)",
+    "notes": "Rendered from an existing complete engraved score; no generated notes",
+    "sha256": "a2c5b96c8a3ffbebd22e7cee1f8bbb0d203cc1e5e9b00ab0689700229662686c"
+  },
+  {
+    "file": "letters/upper-g.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "36a21c5449e0004261bcb2be726beea6f9feae5548f074d9057fe9c9200b6c33"
+  },
+  {
+    "file": "letters/lower-g.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "610070df7c6aaa59b7345b5d6cb238ebee420f8b1a382dd0195a0fe156e25ff1"
+  },
+  {
+    "file": "letters/upper-q.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "81782ab52ab7205166ba9dc06a8f1c1032fcf245e43e78feb6f177975929acdb"
+  },
+  {
+    "file": "letters/lower-q.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "f75665e657d320af42d538d2993c1862abc5da80d4871399e738be3ed04e2ac1"
+  },
+  {
+    "file": "letters/upper-h.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "c5c9307dc8310eedefbcc9f383cf92da7cbe60dc71bb94a89a15a16ba49a96f3"
+  },
+  {
+    "file": "letters/lower-h.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "29536f063a7cb3572a38aa85fc09c7dfa24f7370862ad7574003d55d60529d4a"
+  },
+  {
+    "file": "letters/upper-r.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "910220cdbae2e373600af56b09eecd54ac4572570bde7bc8310aa355c846e4f8"
+  },
+  {
+    "file": "letters/lower-r.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "01df3b889a5c6b61ceed6e7b309deff108e886627dbd6444c4c76fdb9fe20637"
+  },
+  {
+    "file": "letters/upper-i.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "f1334ed57136dc6bd9356e7b02391e942b474c98a216614b91d544500dacbb3f"
+  },
+  {
+    "file": "letters/lower-i.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "f30cac5d3028f1a3cef2a75ab39485b3bcbdeaf489228557aa6ef71c5c6835c1"
+  },
+  {
+    "file": "letters/upper-s.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "e25d698d618b19225541fa08563f9fcde186c9a8dcb9b78123fb7662fc556336"
+  },
+  {
+    "file": "letters/lower-s.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "4d8b5a3060add682cbc2c5e9e532d1799114429cfd9e391c7f10c63dc2515937"
+  },
+  {
+    "file": "letters/upper-j.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "29dab229245e9aca5b33289f18864e43282f6611a9f23d3753019860be458f86"
+  },
+  {
+    "file": "letters/lower-j.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "e4650c3cc05c05d894bb9c4b51badff85bfa6f173f114c62bee7e662dc7c9454"
+  },
+  {
+    "file": "letters/upper-t.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "b9d096b3515ca63584fd895da3b1b6d197c01bcf38f206ce72253867a212bca4"
+  },
+  {
+    "file": "letters/lower-t.png",
+    "source": "User supplied alphabet sheet bd9f3834f5cc81bd15eebe768a32b119.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "1d7d741c12ab676c2fb23c0d67b005fd28b392ed5bb2cdbfb16c996678e2b239"
+  },
+  {
+    "file": "letters/upper-a.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "34089eab1d67231cace7333154c998f86640bd5b5541ba3be7f856a0b1cd02b0"
+  },
+  {
+    "file": "letters/lower-a.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "d6a2b57c6ba28c4c7a571eee72ad2700c76df02b13191bf3dfdc5a39f4c2652e"
+  },
+  {
+    "file": "letters/upper-k.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "69227cc26b7abf6b9391c005ec32843092bd18608301a23424588ed1819e97b1"
+  },
+  {
+    "file": "letters/lower-k.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "ee991a3e2e476d509b7742012e28486c119bccbcaa7e33650b463715beaafa87"
+  },
+  {
+    "file": "letters/upper-u.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "61706e47dbdbb5b168b913849a8b2c8ed94339b6f1aec225814860286bef52e7"
+  },
+  {
+    "file": "letters/lower-u.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "c67cdd8b33285b25a0b1a7906eff52d372ffd03ad6aae2ffea638d78c79cb8c8"
+  },
+  {
+    "file": "letters/upper-b.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "9321a39bd87d3a04d53635322734a67997dede1fcf96071d901ec93312c84eca"
+  },
+  {
+    "file": "letters/lower-b.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "082bbc4fef47e1c49fa8eea8a30037352a351e5542b8ecdb7e377930264cd2cb"
+  },
+  {
+    "file": "letters/upper-l.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "5b802b3d0f01a8595b538b4cd17edf5c9699871a9155ebffa7ca8e5ddb2ab90f"
+  },
+  {
+    "file": "letters/lower-l.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "15dc5b50d1f813f1954c9c8783a4bb5236634f4b5ca6f905c0ea5c57cb4f225e"
+  },
+  {
+    "file": "letters/upper-v.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "2a3656025e0bbaf80011c6a420786769d7aa1cdc2dfa6768d84a3f81cb8a5e4e"
+  },
+  {
+    "file": "letters/lower-v.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "4f89ef77ba42410e786d8b729a4908c8639652fd8087c4c4f64dc4e4708d2a6a"
+  },
+  {
+    "file": "letters/upper-c.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "564015180558419ff0773af784f7b256a77b05ab350490b5ed4c6797cd2a5b91"
+  },
+  {
+    "file": "letters/lower-c.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "c1f8cb7d38472dfec43e7774d1606d995ee708ce03096860ec9f189ac25bffb4"
+  },
+  {
+    "file": "letters/upper-m.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "fee107f98b0834e94990507594c01f42b414bf10f97238e24f2219df6b54c9a8"
+  },
+  {
+    "file": "letters/lower-m.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "7a4f7ed033df228cff97c42d37409f6e80c10614f984be325bca43554a305ac7"
+  },
+  {
+    "file": "letters/upper-w.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "7ee14aad05d6a4cddc45137b726535e00e15b649f0db4a275374a92337fb5796"
+  },
+  {
+    "file": "letters/lower-w.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "aa832589f35f8770be1387b75735980b889be64b98eaa92bfdba96507368b96e"
+  },
+  {
+    "file": "letters/upper-d.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "4c7ebc2739e333e998cbe7b1bda671570d4dc78912a87b94bb6a7602a07b9af8"
+  },
+  {
+    "file": "letters/lower-d.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "a78f1b84d0efce73ff9f6cfa23e5cbad433894fabbac84be50d537e8b4d48939"
+  },
+  {
+    "file": "letters/upper-n.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "8c0e20688e183d44e7bc6a1059dc74d3462f7587cf3d02d687381a72ce300eb4"
+  },
+  {
+    "file": "letters/lower-n.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "1efaabc52fd4ca2a2b2d90d43abd3c4fdf685d3f0842368a9666175b148924e2"
+  },
+  {
+    "file": "letters/upper-x.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "37f7ab1f00258e24202155f6cec6f87e4a282b7500c07a96ee0ea9954ae4b9f0"
+  },
+  {
+    "file": "letters/lower-x.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "5e62987f9cd242c539ae16d52fb8b7070725048d31bca7326fc15e8fa8153880"
+  },
+  {
+    "file": "letters/upper-e.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "ef94d322d3b29ede497e4fad8ba3b20dec1c03da79121a643db18a60d2682bcb"
+  },
+  {
+    "file": "letters/lower-e.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "a68c322ff41d3d61322f3271b986d6aaa185a52b37dc4ec81c06269d2fa42eab"
+  },
+  {
+    "file": "letters/upper-o.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "bf6f11a288a8cbf1b744b530ee500b224f94341c39d6bbe99314c03370a6426d"
+  },
+  {
+    "file": "letters/lower-o.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "b69865927e9e2425d083f7c8455667bcbf4949f30d35400d05c4dad451bcc308"
+  },
+  {
+    "file": "letters/upper-y.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "96c4e884bc47ca2d5a19d442a5fb83f36775ce3eb242ea1d34b220dfa562c509"
+  },
+  {
+    "file": "letters/lower-y.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "faa9f3279005fd2f3afe36904905b49b4093b10b2108a03298ae56848006aa8b"
+  },
+  {
+    "file": "letters/upper-f.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "55f05b056449a5dbcfe605621231e45c036e08f3563d0bcd628f7b4ea31db663"
+  },
+  {
+    "file": "letters/lower-f.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "c803312f8b655d5dcc727789322743244566d7ba8fba1e6e92d4affc381b3240"
+  },
+  {
+    "file": "letters/upper-p.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "f7e38bb09180f08498e17b7837c7093f1c08852dce0b6b9a64bde6a9620fb506"
+  },
+  {
+    "file": "letters/lower-p.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "804fec4992ba6900acd47a3bf29f0ce3b2c41b9217e25c33b66853f968734e6f"
+  },
+  {
+    "file": "letters/upper-z.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "f2f58a6cdd2aee684dcb81354909b183bb79e010c23e59067bd0e8f29fdd2ce7"
+  },
+  {
+    "file": "letters/lower-z.png",
+    "source": "User supplied alphabet sheet 0c581dfe507d7be45b153e17a7998a95.jpg",
+    "license": "User-provided artwork; not represented as CC0",
+    "notes": "Original 8-pixel silhouette grid; outer white blocks removed using interior color; retained RGB pixels unchanged",
+    "sha256": "49640418020a7198d320d3f62cee0b646e1d4c7b215eb0c63459e2b203e0754e"
+  },
+  {
+    "file": "desk-light-wood.png",
+    "source": "https://opengameart.org/content/light-wood-1024x1024",
+    "author": "qubodup",
+    "license": "CC0",
+    "notes": "Original file retained; source atlas regions and color washes applied at runtime",
+    "sha256": "9cc74dbef7c3b650e440c1002aa726c8621dd3232b0ea403ce6398d9d2d5a477"
+  },
+  {
+    "file": "stationery/painted-papers.png",
+    "source": "https://opengameart.org/content/papers",
+    "author": "Pavel Kutejnikov",
+    "license": "CC0",
+    "notes": "Original file retained; source atlas regions and color washes applied at runtime",
+    "sha256": "0d013d29e98541e61ae1423f2f11207ed90ea4fb7857389cfc3a46968729a27a"
   }
 ]

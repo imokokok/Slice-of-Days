@@ -1,0 +1,98 @@
+[
+  {
+    "name_zh": "林舟",
+    "name_en": "Lin Zhou",
+    "request_zh": "写给很久没见的朋友。不要直说想念，也不要像告别；放入那张旧车票。",
+    "request_en": "For an old friend. Hint at missing them without a farewell. Include the old tram ticket.",
+    "reply_zh": "她认出了车票上的站名，说下次一起坐到终点。",
+    "reply_en": "She recognized the stop on the ticket. Next time, she wants to ride to the end together."
+  },
+  {
+    "name_zh": "潮汐面包房",
+    "name_en": "Tide Bakery",
+    "request_zh": "给搬来的新邻居一张欢迎信。用暖色，留一点能写地址的空白。",
+    "request_en": "Welcome a new neighbor with warm colors. Leave room to write an address.",
+    "reply_zh": "她把欢迎信放在了早餐篮里，连同两只面包一起送过去。",
+    "reply_en": "The welcome note went into a breakfast basket with two warm rolls."
+  },
+  {
+    "name_zh": "灯塔看守人",
+    "name_en": "Lighthouse Keeper",
+    "request_zh": "写给第一次出海的学徒。要有海的颜色，不要写一路顺风。",
+    "request_en": "For a new sailor. Use sea colors, but avoid the usual good-luck phrases.",
+    "reply_zh": "学徒把这张信贴在了储物柜门里。",
+    "reply_en": "The apprentice tucked your letter inside the locker door."
+  },
+  {
+    "name_zh": "旧街花店",
+    "name_en": "Old Street Florist",
+    "request_zh": "给退休的园丁道谢。放一些植物，别写年龄，也别太隆重。",
+    "request_en": "Thank a retiring gardener. Include plants; avoid age and grand speeches.",
+    "reply_zh": "园丁笑着说，明年还会回来看看那棵树。",
+    "reply_en": "The gardener smiled and promised to visit the tree next year."
+  },
+  {
+    "name_zh": "海风唱片行",
+    "name_en": "Sea Breeze Records",
+    "request_zh": "给错过演出的朋友留个纪念。用一小片乐谱和一张票据。",
+    "request_en": "A keepsake for a friend who missed the show. Add a music scrap and a ticket.",
+    "reply_zh": "他认出了曲谱，轻轻哼了起来。",
+    "reply_en": "He recognized the score and began to hum."
+  },
+  {
+    "name_zh": "米娅",
+    "name_en": "Mia",
+    "request_zh": "我把室友的杯子打碎了。帮我道歉，真诚一点，不要找借口。",
+    "request_en": "I broke my roommate's cup. Help me apologize honestly, without excuses.",
+    "reply_zh": "室友说，下周一起去挑一只新的吧。",
+    "reply_en": "Her roommate suggested choosing a new cup together next week."
+  },
+  {
+    "name_zh": "码头书摊",
+    "name_en": "Harbor Bookstall",
+    "request_zh": "给常来读书的小朋友一封鼓励信。颜色明亮，不要像成绩单。",
+    "request_en": "Encourage a young regular at the bookstall. Bright colors, no report-card tone.",
+    "reply_zh": "小读者把信夹在了最喜欢的故事那一页。",
+    "reply_en": "The reader slipped it into the favorite page of a storybook."
+  },
+  {
+    "name_zh": "北窗裁缝铺",
+    "name_en": "North Window Tailor",
+    "request_zh": "想感谢替我照看店铺的人。用朴素的纸，留一点亲手画的东西。",
+    "request_en": "Thank the friend who watched my shop. Plain paper and a little doodle, please.",
+    "reply_zh": "他注意到了你画的小细节，认真看了很久。",
+    "reply_en": "He noticed your little drawing and studied it for a long time."
+  },
+  {
+    "name_zh": "周末集市",
+    "name_en": "Weekend Market",
+    "request_zh": "做一封邻里野餐邀请。带一点广告传单的活泼感，别像催人消费。",
+    "request_en": "Invite the neighbors to a picnic. Lively like a flyer, without a sales pitch.",
+    "reply_zh": "邀请信贴出去后，有人写上了自己会带的菜。",
+    "reply_en": "Neighbors began adding the dishes they would bring beneath the invitation."
+  },
+  {
+    "name_zh": "安宁",
+    "name_en": "Anning",
+    "request_zh": "给离家的姐姐报平安。放一张小镇照片，告诉她日子照常过。",
+    "request_en": "Write to my sister away from home. Include a town photo and a sense of daily life.",
+    "reply_zh": "姐姐回信说，她一眼就认出了那条路。",
+    "reply_en": "Her sister wrote back that she recognized the street at once."
+  },
+  {
+    "name_zh": "修车铺阿岳",
+    "name_en": "Yue at the Bike Shop",
+    "request_zh": "谢谢借给我工具的朋友。做得利落一点，可以有字母拼贴。",
+    "request_en": "Thank a friend for lending tools. Keep it simple; letter cutouts are welcome.",
+    "reply_zh": "他把这封信摆在工具箱旁边，没舍得收起来。",
+    "reply_en": "He left the letter beside his toolbox where he could see it."
+  },
+  {
+    "name_zh": "晚班邮差",
+    "name_en": "Evening Post Carrier",
+    "request_zh": "给明天接班的同事留封信。无需煽情，写一点日常的提醒和善意。",
+    "request_en": "A note for tomorrow's shift. Small reminders and kindness, without drama.",
+    "reply_zh": "第二天，同事在桌上留了一杯还热着的茶。",
+    "reply_en": "The next morning, a cup of warm tea was waiting on the desk."
+  }
+]

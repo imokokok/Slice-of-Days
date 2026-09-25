@@ -19,7 +19,7 @@ func run() -> void:
   if letter.ready_done: break
   await process_frame
  letter.smoke=true
- check(letter.ready_done and letter.materials.size()==67,"Original game with 67 replacement materials loads")
+ check(letter.ready_done and letter.materials.size()==678,"Original game with 678 replacement materials loads")
  check(letter.audio.pool.size()==10,"Fixed voice pool avoids accumulating audio nodes")
  for clip in letter.audio.bank.values():
   check(clip!=null and clip.get_length()>0,"Recorded sound loads")
@@ -29,7 +29,7 @@ func run() -> void:
  letter.audio.toggle()
  check(not letter.audio.pool.any(func(voice): return voice.playing),"Mute stops playing effects immediately")
  letter.audio.toggle()
- check(letter.stage=="DIALOGUE","Original opening dialogue restored")
+ check(letter.stage=="WORKBENCH","Commission opens in the workbench")
  check(letter.get_viewport()==host.letter_viewport and letter.ui.get_viewport()==host.letter_viewport,"Artwork and controls share viewport")
  for size in [Vector2(1600,900),Vector2(1280,720),Vector2(1920,1080)]:
   host.size=size;host._fit_experience()
@@ -39,39 +39,35 @@ func run() -> void:
   check(host.letter_viewport.size==Vector2i(1440,900),"Original canvas dimensions")
  host.size=Vector2(1600,900);host._fit_experience()
  await process_frame
- for page in 3:
-  var point: Vector2=host.letter_container.position+Vector2(700,578)*host.letter_container.scale
-  for pressed in [true,false]:
-   var event=InputEventMouseButton.new()
-   event.position=point;event.global_position=point;event.button_index=MOUSE_BUTTON_LEFT;event.pressed=pressed
-   root.push_input(event,true)
-   await process_frame
- check(letter.stage=="WORKBENCH","Real scaled clicks advance I am listening into original workbench")
- for type_name in {"图案":25,"纸张":8,"文字":12,"票据":9,"乐谱":6}:
-  var expected={"图案":25,"纸张":8,"文字":12,"票据":9,"乐谱":6}
+ for type_name in {"图案":100,"纸张":96,"广告":160,"文字":120,"票据":121,"乐谱":17}:
+  var expected={"图案":100,"纸张":96,"广告":160,"文字":120,"票据":121,"乐谱":17}
   check(letter.material_ids(type_name).size()==expected[type_name],"Material type count: "+type_name)
  letter.open_material_catalog()
  var cards=letter.catalog_layer.find_children("Material_*","Button",true,false)
- check(cards.size()==67,"Catalog exposes all materials, including art and private ticket")
+ check(cards.size()==24,"Catalog renders 24 items per page")
  letter.select_catalog_material(5)
  check(letter.category=="图案" and 5 in [letter.primary,letter.secondary],"Catalog selection reveals the chosen source sheet")
  letter.select_catalog_material(66)
  check(letter.album_source==66 and letter.sources[66].position.x==1070,"Paintings use the right album without conflicting with left sheets")
  letter.select_catalog_material(3)
- check(letter.sources[3].position.x==1074,"Private ticket stays in its original slot")
+ check(letter.sources[3].position.x<400,"Private ticket belongs to left material stack")
  letter.category="自然";letter.update_material_slots()
  check(letter.category=="全部","Legacy saved theme safely falls back to All")
  letter.album_source=4;letter.material_page=0;letter.update_material_slots();letter.build_ui()
  # Check every imported source on the renderer and through the real crop action.
  var image_hashes := {}
- var atlas := Image.create(300*8,240*9,false,Image.FORMAT_RGBA8)
+ var atlas := Image.create(180*10,144*68,false,Image.FORMAT_RGBA8)
  for id in letter.materials.size():
-  var image: Image=letter.textures[id].get_image()
+  letter.get_material_texture(id)
+  await process_frame
+  await RenderingServer.frame_post_draw
+  var image: Image=letter.get_material_texture(id).get_image()
   check(not image.is_empty() and image.get_size()==Vector2i(300,240),"Source page renders: "+str(id))
-  var hash=image.get_data().hex_encode().sha256_text()
+  var hash=image_hash(image.get_data())
   check(not image_hashes.has(hash),"Distinct rendered material: "+str(id))
   image_hashes[hash]=true
-  atlas.blit_rect(image,Rect2i(0,0,300,240),Vector2i((id%8)*300,(id/8)*240))
+  image.resize(180,144)
+  atlas.blit_rect(image,Rect2i(0,0,180,144),Vector2i((id%10)*180,(id/10)*144))
   letter.tool="rect";letter.cutting_source=id
   letter.start=letter.sources[id].position+Vector2(70,55)
   letter.finish_cut(letter.start+Vector2(160,125))
@@ -90,3 +86,8 @@ func run() -> void:
  letter.audio.shutdown();host.queue_free();gameplay.cancel_session();await process_frame
  print("ORIGINAL_COLLAGE_HOST_TEST: ","PASS" if failures==0 else "FAIL"," failures=",failures)
  quit(failures)
+
+func image_hash(bytes: PackedByteArray) -> String:
+	var context:=HashingContext.new()
+	context.start(HashingContext.HASH_SHA256);context.update(bytes)
+	return context.finish().hex_encode()

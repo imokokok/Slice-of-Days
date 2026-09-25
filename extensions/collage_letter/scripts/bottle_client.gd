@@ -1,4 +1,5 @@
 extends Node
+const L=preload("res://extensions/collage_letter/scripts/localization.gd")
 
 var base_url := "http://127.0.0.1:8787"
 var token := ""
@@ -8,6 +9,8 @@ var identities: Dictionary = {}
 var display_name := "海边来客"
 
 func _ready() -> void:
+	L.initialize()
+	display_name=L.t(display_name)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--profile="):
 			var profile := arg.trim_prefix("--profile=").validate_filename()

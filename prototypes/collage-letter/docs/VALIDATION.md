@@ -1,27 +1,12 @@
-# Validation: original layout, open materials and reliable mail
+# 验证记录 · 2026-09-26
 
-- Godot 4.5.1 rendered smoke: save/load, polygon UVs, rotation, flipping, scale, rectangle/free crop, tape, folds, envelope, wax, stamp, delivery: PASS.
-- Godot 4.7.2 host: 67 distinct rendered source pages and crop operations; three viewport sizes; actual scaled input into the dialogue; fold capture; isolated host save path: PASS.
-- Recorded audio: all streams have duration; fixed 10-player pool; event playback and immediate mute: PASS.
-- Python service unit/integration suite: 8/8 PASS, including concurrent send, debt, idempotency, pagination and restart persistence.
-- Godot two-player network flow against an isolated Waitress server: publish, debt block, reply, inbox, saved reply draft, repay debt, artwork display: PASS.
-- Godot client fault injection against Waitress: first publish commits then returns 503, second response replays same letter; one row stored; bounded retries; signup and business conflicts not retried: PASS.
-- Source package imports with Godot; all asset SHA-256 values match provenance. Final native-window interaction was not completed. The rendered screenshot in docs/preview.png comes from the tested game.
-- Public hosting and Docker execution were not performed. The server can be deployed using server/README.md.
+- Godot 4.5.1 独立项目：678 个素材渲染图像均不同，每个条目实际调用裁剪动作；中英文切换保留已裁纸片原语言。
+- 字母：52 张透明底 PNG，原图像素轮廓；点击拿取、独立变换、存档还原。字母内原有白色保留。
+- 涂鸦笔：自由曲线命中、存档恢复；8 种胶带保存和层序；实时拖带覆盖纸片；刀、笔、胶带使用三份不同的实际录音。
+- UI：2 种语言 × 3 种窗口大小 × 5 种工具状态；检查 Godot 实际控件尺寸、画布边界以及按钮相交，共 30 种组合无重叠。
+- 封信：真实时间等待加热与冷却，测试折叠、连续插入、拖翻盖、火柴划盒点蜡烛、蜡粒入勺、熔蜡、永久失败判定、压章、信箱遮挡和关闭投递，下一份委托与保存还原。
+- 主游戏集成：Godot 4.7.2 实际渲染宿主子视口、不同窗口尺寸、678 材料、裁剪、折信与独立存档。
+- 服务端：8 项自动测试通过，含真实 HTTP 双玩家、并发发送、回复义务、历史分页、重启持久化、认证和幂等。
+- 客户端重试：真实 Godot HTTP 客户端对接注入故障的 Waitress；第一次响应丢失后重试仍只生成一封信，注册不会自动重复。
 
-Reproduce from the prototype directory:
-
-```
-python -m unittest discover -s server -p test_service.py
-# GODOT_BIN must point to the console engine executable.
-python server/test_client_retry.py
-godot --path . -- --smoke-test --fresh
-```
-
-Host test from repository root (Godot 4.7.2):
-
-```
-godot --path . --script res://tests/integration/test_collage_viewport.gd -- --isolated-save --fresh
-```
-
-Material category update: type counts (25/8/12/9/6), 67 catalog entries, direct choice into the correct source slot, and legacy-category fallback all pass the host regression. The updated packaged window and catalog were opened and a material was selected through native mouse input.
+以上为本机验证。未声称已完成公网部署、第三方玩家连接或所有机器的扬声器输出验证。原草稿兼容；游戏音量与系统音量需同时开启。

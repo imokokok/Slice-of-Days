@@ -1,4 +1,5 @@
 extends CanvasLayer
+const L=preload("res://scripts/localization.gd")
 
 signal compose_requested(parent: Dictionary)
 signal closed
@@ -51,7 +52,7 @@ func open() -> void:
 	connection.add_child(address)
 	nickname=LineEdit.new()
 	nickname.text=client.display_name
-	nickname.placeholder_text="你的署名"
+	nickname.placeholder_text=L.t("你的署名")
 	nickname.max_length=24
 	nickname.custom_minimum_size=Vector2(210,42)
 	connection.add_child(nickname)
@@ -95,18 +96,18 @@ func open() -> void:
 	if not client.token.is_empty():
 		connect_now()
 
-func add_label(parent: Node, text: String, size: int = 20) -> Label:
+func add_label(parent: Node, text: String, size: int = 20, authored: bool = true) -> Label:
 	var label:=Label.new()
-	label.text=text
+	label.text=L.t(text) if authored else text
 	label.add_theme_font_override("font",font)
 	label.add_theme_font_size_override("font_size",size)
 	label.add_theme_color_override("font_color",Color("354a43"))
 	parent.add_child(label)
 	return label
 
-func add_button(parent: Node, text: String, action: Callable, network: bool = true) -> Button:
+func add_button(parent: Node, text: String, action: Callable, network: bool = true, authored: bool = true) -> Button:
 	var button:=Button.new()
-	button.text=text
+	button.text=L.t(text) if authored else text
 	button.custom_minimum_size=Vector2(120,42)
 	button.pressed.connect(action)
 	parent.add_child(button)
@@ -150,13 +151,13 @@ func connect_now() -> void:
 	if in_flight:
 		return
 	lock(true)
-	message.text="正在连接海岸邮局……"
+	message.text=L.t("正在连接海岸邮局……")
 	var result: Dictionary=await client.connect_service(address.text,nickname.text)
 	if not active:
 		return
 	lock(false)
 	if not result.ok:
-		message.text=result.get("error","连接失败。")
+		message.text=L.t(result.get("error","连接失败。"))
 		return
 	await refresh()
 
@@ -164,7 +165,7 @@ func refresh() -> void:
 	if in_flight:
 		return
 	if client.token.is_empty():
-		message.text="请先连接邮局。"
+		message.text=L.t("请先连接邮局。")
 		return
 	lock(true)
 	var path: String="/v1/letters?view="+view
@@ -175,21 +176,21 @@ func refresh() -> void:
 		return
 	lock(false)
 	if not result.ok:
-		message.text=result.get("error","暂时没有收到邮局的回应。")
+		message.text=L.t(result.get("error","暂时没有收到邮局的回应。"))
 		return
 	clear(letters_box)
 	next_before=result.get("next_before")
-	debt_label.text="待完成：回复一封来信，才能再次自由发信。" if client.player.get("reply_required",false) else "可以自由发信，也可以继续回复海上的旧信。"
+	debt_label.text=L.t("待完成：回复一封来信，才能再次自由发信。" if client.player.get("reply_required",false) else "可以自由发信，也可以继续回复海上的旧信。")
 	for letter in result.get("letters",[]):
 		var id: int=int(letter.id)
-		var label: String="#%d  %s\n%s · %d 封回复" % [id,letter.title,letter.name,int(letter.reply_count)]
-		var b:=add_button(letters_box,label,func(): show_letter(id))
+		var label: String=L.t("#%d  %s\n%s · %d 封回复") % [id,L.t(letter.title) if letter.is_seed else letter.title,L.t(letter.name) if letter.is_seed else letter.name,int(letter.reply_count)]
+		var b:=add_button(letters_box,label,func(): show_letter(id),true,false)
 		b.custom_minimum_size=Vector2(385,83)
 		b.alignment=HORIZONTAL_ALIGNMENT_LEFT
 		b.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	if result.get("letters",[]).is_empty():
 		add_label(letters_box,"暂时没有信件。",20)
-	message.text="每封信会留在邮局。起航信是事务所准备的，不冒充玩家来信。"
+	message.text=L.t("每封信会留在邮局。起航信是事务所准备的，不冒充玩家来信。")
 	lock(false)
 
 func show_letter(id: int) -> void:
@@ -201,12 +202,12 @@ func show_letter(id: int) -> void:
 		return
 	lock(false)
 	if not result.ok:
-		message.text=result.get("error","打开失败。")
+		message.text=L.t(result.get("error","打开失败。"))
 		return
 	clear(detail_box)
 	var letter: Dictionary=result.letter
-	add_label(detail_box,"#%d  %s" % [int(letter.id),letter.title],26)
-	add_label(detail_box,letter.name+ (" · 事务所起航信" if letter.is_seed else " · 玩家来信"),16)
+	add_label(detail_box,"#%d  %s" % [int(letter.id),L.t(letter.title) if letter.is_seed else letter.title],26,false)
+	add_label(detail_box,(L.t(letter.name) if letter.is_seed else letter.name)+L.t(" · 事务所起航信" if letter.is_seed else " · 玩家来信"),16,false)
 	if not letter.is_own and not letter.get("already_replied",false):
 		add_button(detail_box,"回到桌边，回复这封信",func(): compose_requested.emit(letter); close())
 	if not str(letter.get("art_png","")).is_empty():
@@ -218,7 +219,7 @@ func show_letter(id: int) -> void:
 			art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 			art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			detail_box.add_child(art)
-	var caption:=add_label(detail_box,letter.caption,22)
+	var caption:=add_label(detail_box,letter.caption,22,letter.is_seed)
 	caption.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	caption.custom_minimum_size.x=650
 	if letter.get("already_replied",false):
@@ -229,13 +230,13 @@ func show_letter(id: int) -> void:
 	add_label(detail_box,"回声 / 最新回复",20)
 	for reply in result.get("replies",[]):
 		var reply_id:=int(reply.id)
-		add_button(detail_box,"#%d  %s / %s" % [reply_id,reply.title,reply.name],func(): show_letter(reply_id))
+		add_button(detail_box,"#%d  %s / %s" % [reply_id,reply.title,reply.name],func(): show_letter(reply_id),true,false)
 	if result.get("replies",[]).is_empty():
 		add_label(detail_box,"还没有回信。",17)
 
 func compose_new() -> void:
 	if client.player.is_empty() or client.player.get("reply_required",false):
-		message.text="请先回复一封来信。"
+		message.text=L.t("请先回复一封来信。")
 		return
 	compose_requested.emit({})
 	close()

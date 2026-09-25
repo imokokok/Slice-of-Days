@@ -116,6 +116,12 @@ func _run() -> void:
 	print("CAPTURE: egg cooking frames=", cooking_frames, " cooked=", warmed_egg.get_meta("thermal", {}).get("cooked", -1.0))
 	if not _require(is_instance_valid(warmed_egg) and float(warmed_egg.get_meta("thermal", {}).get("cooked", 0.0)) >= 0.72, "egg reaches cooked state before serving"): return
 	print("CAPTURE: egg cooking frames=", cooking_frames)
+	if not _require(game.world.reactions.pan_c >= 115.0, "the skillet is hot enough to sizzle when fresh food lands"): return
+	var hot_sound_before := int(game.world.audio._last_effect.get("hot_drop", 0))
+	var hot_target: Vector2 = game.world.pan.point(Vector2(800, 552))
+	if not await _drag_slot("mushroom", hot_target, 24): return
+	await _frames(55)
+	if not _require(_dish_has("mushroom") and int(game.world.audio._last_effect.get("hot_drop", 0)) > hot_sound_before, "fresh mushroom lands in the hot skillet and triggers the new cooking foley"): return
 	game._interact("cook")
 	await _frames(24)
 	var ketchup_slot := game.storage_display.find_child("Ingredient_ketchup", true, false) as Button
@@ -247,6 +253,14 @@ func _record_cabinets_water_and_rice() -> bool:
 	_mouse(lid, "up")
 	await _frames(34)
 	if not _require(game.rice_cooker.lid_open, "rice cooker opens to show cooked rice and its paddle"): return false
+	_mouse(lid, "down")
+	_mouse(lid, "up")
+	await _frames(16)
+	if not _require(not game.rice_cooker.lid_open, "rice cooker lid closes with its own recorded sound"): return false
+	_mouse(lid, "down")
+	_mouse(lid, "up")
+	await _frames(16)
+	if not _require(game.rice_cooker.lid_open, "rice cooker reopens before serving rice"): return false
 	_mouse(bowl, "down")
 	await _frames(4)
 	if not _require(is_instance_valid(game.world._held) and str(game.world._held.get_meta("id", "")) == "rice", "paddle scoops a finite physical rice serving"): return false

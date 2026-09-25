@@ -242,16 +242,30 @@ def application(environ, start_response):
     return _service(environ,start_response)
 
 
+def create_http_server(app=application, host='127.0.0.1', port=8787):
+    """Pinned, unmodified Waitress serves both desktop and deployable builds."""
+    import sys
+    vendor = str(Path(__file__).resolve().parent / 'vendor')
+    if vendor not in sys.path:
+        sys.path.insert(0, vendor)
+    from waitress import create_server
+    return create_server(app, host=host, port=port, threads=8,
+                         connection_limit=128, channel_timeout=30,
+                         max_request_body_size=MAX_BODY,
+                         max_request_header_size=16384,
+                         expose_tracebacks=False)
+
+
 if __name__=='__main__':
     import argparse
-    from socketserver import ThreadingMixIn
-    from wsgiref.simple_server import WSGIServer, make_server
     parser = argparse.ArgumentParser()
     parser.add_argument('--host',default='127.0.0.1')
     parser.add_argument('--port',type=int,default=8787)
     args = parser.parse_args()
-    class ThreadedServer(ThreadingMixIn, WSGIServer):
-        daemon_threads=True
-    with make_server(args.host,args.port,application,server_class=ThreadedServer) as server:
+    server = create_http_server(host=args.host, port=args.port)
+    try:
         print(f'Collage Letter service: http://{args.host}:{args.port}',flush=True)
-        server.serve_forever()
+        server.run()
+    finally:
+        server.close()
+        server.task_dispatcher.shutdown()

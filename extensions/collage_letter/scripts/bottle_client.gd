@@ -57,27 +57,46 @@ func connect_service(url: String, nickname: String) -> Dictionary:
 	return me
 
 func request(path: String, method: int = HTTPClient.METHOD_GET, body: Dictionary = {}) -> Dictionary:
+	# Snapshot the destination, identity and bytes: retries must be the same operation.
+	var url := base_url
+	var identity := token
+	var serialized := JSON.stringify(body) if method!=HTTPClient.METHOD_GET else ""
+	var safe_retry := method==HTTPClient.METHOD_GET or (method==HTTPClient.METHOD_POST and path=="/v1/letters" and str(body.get("request_id","")).length()>=12)
+	var result: Dictionary
+	for attempt in (3 if safe_retry else 1):
+		if attempt>0:
+			await get_tree().create_timer(0.4*pow(2,attempt-1)+randf_range(0,0.15)).timeout
+		if base_url!=url or token!=identity:
+			return {"ok":false,"error":"邮局已切换，请在当前邮局重试。"}
+		result=await request_once(url,path,identity,method,serialized)
+		if not result.get("retryable",false): break
+	if base_url==url and token==identity and result.get("ok",false) and result.has("player"):
+		player=result.player
+	return result
+
+func request_once(url: String, path: String, identity: String, method: int, serialized: String) -> Dictionary:
 	var http := HTTPRequest.new()
 	http.timeout=12
 	http.body_size_limit=2_000_000
+	http.max_redirects=0
 	add_child(http)
 	var headers := PackedStringArray(["Content-Type: application/json"])
-	if not token.is_empty():
-		headers.append("Authorization: Bearer "+token)
-	var error := http.request(base_url+path,headers,method,JSON.stringify(body) if method!=HTTPClient.METHOD_GET else "")
+	if not identity.is_empty():
+		headers.append("Authorization: Bearer "+identity)
+	var error := http.request(url+path,headers,method,serialized)
 	if error!=OK:
 		http.queue_free()
 		return {"ok":false,"error":"无法发起连接，请检查邮局地址。"}
 	var response: Array=await http.request_completed
 	http.queue_free()
 	if response[0]!=HTTPRequest.RESULT_SUCCESS:
-		return {"ok":false,"error":"暂时连接不到邮局。作品仍在桌上，请启动服务或检查网络后重试。"}
+		return {"ok":false,"retryable":response[0] in [HTTPRequest.RESULT_CANT_CONNECT,HTTPRequest.RESULT_CONNECTION_ERROR,HTTPRequest.RESULT_NO_RESPONSE,HTTPRequest.RESULT_TIMEOUT],"error":"暂时连接不到邮局。作品仍在桌上，请启动服务或检查网络后重试。"}
+	if response[1] in [502,503,504]:
+		return {"ok":false,"retryable":true,"error":"邮局暂时繁忙，作品仍保存在桌上。稍后可再次寄出。"}
 	var data = JSON.parse_string(response[3].get_string_from_utf8())
 	if not data is Dictionary:
 		return {"ok":false,"error":"邮局返回了无法识别的内容。"}
 	data["ok"]=response[1]>=200 and response[1]<300
-	if data.has("player"):
-		player=data.player
 	return data
 
 func publish(payload: Dictionary) -> Dictionary:

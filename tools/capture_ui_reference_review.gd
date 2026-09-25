@@ -74,8 +74,10 @@ func run():
 	gs.current_location="night_market"; root.get_node("GameplayModuleSystem").begin_session("cooking","ui_review")
 	change_scene_to_file("res://scenes/native_module_game.tscn"); await settle(); await snap("kitchen",current_scene)
 	gs.current_location="handcraft_shop"
-	change_scene_to_file("res://extensions/collage_letter/workshop/Workshop.tscn"); await create_timer(2).timeout; await snap("letter_desk",current_scene)
-	current_scene.open_browser(); await snap("letter_materials",current_scene)
+	change_scene_to_file("res://extensions/collage_letter/Main.tscn"); await create_timer(2).timeout; await snap("letter_dialogue",current_scene)
+	for page in 3: current_scene.advance_dialogue()
+	await snap("letter_desk",current_scene)
+	current_scene.material_page+=1; current_scene.update_material_slots(); current_scene.build_ui(); await snap("letter_materials",current_scene)
 	for module: String in ["tarot","chess","contemplation"]:
 		root.get_node("GameplayModuleSystem").cancel_session()
 		gs.switch_to_role("A" if module=="contemplation" else "B",3 if module=="contemplation" else 4,true)

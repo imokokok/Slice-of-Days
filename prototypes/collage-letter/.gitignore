@@ -9,3 +9,6 @@ runtime/python/
 runtime/
 bottle_identity*.json
 letter_v1.json
+
+# Generated import metadata; source images remain tracked.
+*.import

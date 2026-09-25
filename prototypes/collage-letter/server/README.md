@@ -28,7 +28,7 @@ python .\server\app.py --host 127.0.0.1 --port 8787
 docker compose up -d --build
 ```
 
-提供的 Compose 将容器 8787 端口绑定到主机回环地址，并用持久卷保存 SQLite。容器采用 Gunicorn WSGI 服务；源码中的标准库 WSGI 启动器供本机与局域网试玩。
+提供的 Compose 将容器 8787 端口绑定到主机回环地址，并用持久卷保存 SQLite。桌面、局域网与容器统一使用随源码附带的 Waitress 3.0.2；限制 8 个工作线程、128 个连接、30 秒闲置连接超时与 1.1 MB 请求体，无需联网安装依赖。
 
 将 `Caddyfile.example` 中的 `letters.example.com` 换成实际域名，再配置 Caddy 反向代理到 `127.0.0.1:8787`。客户端邮局地址填 `https://实际域名`，也可以在分发前修改项目 `network.cfg` 的默认地址。
 
@@ -103,3 +103,11 @@ godot --path . -- --network-test
 ```
 
 Godot 测试需要图形显示环境，不能加 `--headless`。测试客户端使用专用临时草稿/身份，不覆盖玩家存档；服务端测试库中会保留测试信。
+
+## 自动重试与依赖许可
+
+客户端读取请求与带同一 request_id 的寄信请求遇到暂时断线或 502/503/504 时，最多自动重试两次，并保留同一地址、身份和请求内容。权限错误、回信义务冲突、建立新身份不自动重试。
+
+Waitress 原样附带于 vendor/；来源版本和下载 SHA-256 在 vendor/SOURCE.json。允许商用；随源码保留 ZPL-2.1 许可与作者版权说明，无游戏画面署名要求。SQLite 为公有领域。
+
+故障注入测试：设置 GODOT_BIN 后执行 `python server/test_client_retry.py`。它启动临时 Waitress 数据库，模拟已入库但响应失败，验证客户端重试仍只有一封信。

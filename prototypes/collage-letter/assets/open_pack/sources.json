@@ -1,0 +1,319 @@
+[
+  {
+    "file": "icons/flower.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "c6d3063dfd362050006cf8d3f2100d72169da1a486c9fb36a1507c3f1601d37a"
+  },
+  {
+    "file": "icons/leaves.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "ff495a7bb1b78b8bbfb9f6f581672ffcd957bb481f7e11caf3c3e2cda828be69"
+  },
+  {
+    "file": "icons/clover.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "166b69ad8059b9ad134f842dfbc267360bf927e5d40c7b680072b1e25fc13ffb"
+  },
+  {
+    "file": "icons/bulrush.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "45a65ad26e54dd8aaed0587213f17450bbff920ea5043fb367dc46db4beb1b06"
+  },
+  {
+    "file": "icons/sun.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "cd4c1d3eb3dd741bbb7687ee5ac836353785c0be7027b50a34eac29f5cbe2dc5"
+  },
+  {
+    "file": "icons/night.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "7249003dad630ff099730fac742b91bdcd7db8c32db9b5d13796fedc9e0dea2b"
+  },
+  {
+    "file": "icons/star.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "fba2d796573b2a79e523dc24e794c224b311077218c3ab2722032105d514b7dc"
+  },
+  {
+    "file": "icons/cloud.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "0f6870d97a98ab49840d1802db80cc2fcd50245efe9722227425c426551cced2"
+  },
+  {
+    "file": "icons/sea.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "6a24e6ed0573796e4564f06c6bc99c045d1dcef04101c3968a8f50b147a7ef73"
+  },
+  {
+    "file": "icons/fish.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "87a2a211302dfb895cf007a4f57c966ff7e9c3615366a59ab9fb28e1816f11ac"
+  },
+  {
+    "file": "icons/tree.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "4e63e8d3c5ae7c689f793fec31535d09e08f79250bc25e7481feda826ecdff22"
+  },
+  {
+    "file": "icons/mountain.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "f5438a80672dd2d4f40b7908a0de816a3637d2df7deea2cbe6f1c8e96fb0fc34"
+  },
+  {
+    "file": "icons/rain.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "36a8079af31acd33446ccaf30c952732482e6c040b3067ac3cc6005aa77757f8"
+  },
+  {
+    "file": "icons/cat.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "80f985627e1d15e669e15dbf9f9fdb4b83650c5ff26fc59f33879df69592f6ac"
+  },
+  {
+    "file": "icons/dog.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "31a735406702d523297396da6911d098fd4ec4a0b7bd22d65cc5b49d56f703ff"
+  },
+  {
+    "file": "icons/paper-boat.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/blob/b1a5fec8b68c99e7b46484db707610ab2414ad4c/svg/no-padding/7-vehicles/boat.svg",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "9b86d36f028eb3bee9ddea43eb8269732627d87c27be34d2c3386cb8d44b0d74"
+  },
+  {
+    "file": "icons/key.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "415e1cf816faf487633736c77cbafcc146fa6d9888806f5b05983ca83600bbac"
+  },
+  {
+    "file": "icons/book.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "b326a300053344b0129b07f2e48f8452800418b10384513efd2604cc0ad02d53"
+  },
+  {
+    "file": "icons/compass.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "a3c3ad1cee10668e8c537376389f53111decc6afb05df739115253be7fd202e8"
+  },
+  {
+    "file": "icons/umbrella.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "8b578dde873d395185d86713f61033d0aad5c558ffe2159209bc55eb7b853a45"
+  },
+  {
+    "file": "icons/paper-plane.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "328900f5fb3048fd534c24b03c0aeb19ad84df902619188e53293205eeb18d6f"
+  },
+  {
+    "file": "icons/music.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "7a599ef524974430f5d369abe8e271427209f20ae72e1f82262c9e3cc214c47f"
+  },
+  {
+    "file": "icons/camera.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "e023d220410d102941cd2fbb4d596e7d42a99a8a482b3fb9c259a34355f55766"
+  },
+  {
+    "file": "icons/apple.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "bd53398f909158176705d9c078be0a27e2a6f0c26b778c1df470a4a038771f46"
+  },
+  {
+    "file": "icons/bread.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Original SVG geometry; adapted palette; 240px intrinsic size for crisp paper-page rendering",
+    "sha256": "5caab82c7c67ffbc7213a80dc1d010e497a4756726b1130fc3f30566dfbd398b"
+  },
+  {
+    "file": "paper/Papier1.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "author": "Leschge",
+    "notes": "Original seamless texture; mixed lightly during rendering",
+    "sha256": "c1fa1e6e7f0684d5db0cdb5dfd498ec2b86ade62d7a846aa597bb91fda8df354"
+  },
+  {
+    "file": "paper/Papier6.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "author": "Leschge",
+    "notes": "Original seamless texture; mixed lightly during rendering",
+    "sha256": "84d260637b91c6232e6ddcf98e55b00b971a675da3bfc6d9a1381f5ce47165c0"
+  },
+  {
+    "file": "paintings/met-435882.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/435882",
+    "license": "CC0-1.0",
+    "notes": "Still Life with Apples and a Pot of Primroses — Paul Cézanne",
+    "sha256": "0b9fba184d463349df09b8c6e7ecfcff89bc1c1db31e526551250fcadf884f0e"
+  },
+  {
+    "file": "paintings/met-436528.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/436528",
+    "license": "CC0-1.0",
+    "notes": "Irises — Vincent van Gogh",
+    "sha256": "2df23777df020586fddefd46891b24ae5eda2094b6b2e5d03a12c236eed4f248"
+  },
+  {
+    "file": "paintings/met-436532.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/436532",
+    "license": "CC0-1.0",
+    "notes": "Self-Portrait with a Straw Hat (obverse: The Potato Peeler) — Vincent van Gogh",
+    "sha256": "03e6bb58feb2e091dbd56adb601b3fccba17386402d5676c994b806058a797da"
+  },
+  {
+    "file": "paintings/met-436534.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/436534",
+    "license": "CC0-1.0",
+    "notes": "Roses — Vincent van Gogh",
+    "sha256": "76e8b89371d4c4cc29abd13cde101bb3c786391cb9ea95ccea9390029f6c2413"
+  },
+  {
+    "file": "paintings/met-436535.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/436535",
+    "license": "CC0-1.0",
+    "notes": "Wheat Field with Cypresses — Vincent van Gogh",
+    "sha256": "af0e3486621c210b54932d055294051b5601aa3362af4b84ab97e2831f8163bc"
+  },
+  {
+    "file": "paintings/met-437984.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/437984",
+    "license": "CC0-1.0",
+    "notes": "La Berceuse (Woman Rocking a Cradle; Augustine-Alix Pellicot Roulin, 1851–1930) — Vincent van Gogh",
+    "sha256": "2a1759a51ff16d86c32053301802ad7ab6ac11149f934756cce626f3daee60c9"
+  },
+  {
+    "file": "audio/click1.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "59175ac17cd49a68dd736285738441287636112a84a6f7ce0d89921bda5a5360"
+  },
+  {
+    "file": "audio/click2.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "c394b46bc6737f7f7edfbfa3031ce621b7a43d498d456d6198364eee9cd3e306"
+  },
+  {
+    "file": "audio/click3.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "e3e7fc7ccd9c5cfdf77bffa05aee10d4973812076c76dc889ba2b16ea434127f"
+  },
+  {
+    "file": "audio/click4.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "9c02bbfc872b50eb8750adf4b7c343120f19f5d2f04ab06a7a8948368a77b872"
+  },
+  {
+    "file": "audio/click5.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "52d41e0bb012731bf2a391d53ffb52265ef21589c7701e66b391d5e36a65b293"
+  },
+  {
+    "file": "audio/rustle.mp3",
+    "source": "https://freesound.org/people/sokworks/sounds/860359/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "b02dc406b4486be7956c77156bb351f7ddc410819281e686abe6cf1e72f72c78"
+  },
+  {
+    "file": "audio/tear.mp3",
+    "source": "https://freesound.org/people/colorsCrimsonTears/sounds/566199/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "4a0868d64edf8fcaf3da78ad0bc89278c366c347646c5375b80a818532cbd169"
+  },
+  {
+    "file": "audio/scissors.mp3",
+    "source": "https://freesound.org/people/aldenroth2/sounds/272035/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "f958dcc79f54031f88240a7cc6d31e5764891c32c062edb5bfd1b10605a38f4b"
+  },
+  {
+    "file": "audio/stamp.mp3",
+    "source": "https://freesound.org/people/kermite607/sounds/362624/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "daaad886f71a57dca4b097550c1ecb4cc99d4fe3d7dd383841091c000cd6ab26"
+  },
+  {
+    "file": "audio/strokes.mp3",
+    "source": "https://freesound.org/people/ani_music/sounds/632477/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "9a02cf35de24cf47baa11e12670951da5ce7eeb156d7871ebb3c4637b4379713"
+  },
+  {
+    "file": "audio/paper.mp3",
+    "source": "https://freesound.org/people/DaleT92/sounds/244100/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "b4a5d61f9303fcc8c44bddef6f3fe2aa77ad13defa9e52fb913b035b8463def6"
+  },
+  {
+    "file": "audio/match.mp3",
+    "source": "https://freesound.org/people/Bertsz/sounds/524306/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "582ff29ef9e0d2031599ed119b3fccebe48710f4064fa58aaa110c79f73aa4b4"
+  }
+]

@@ -55,7 +55,7 @@ func _run() -> void:
 	return_key.pressed = true
 	Input.parse_input_event(return_key)
 	await process_frame
-	_expect(world._knife_visual.global_position.is_equal_approx(Vector2(1407,730)), "Q returns a released knife to its home rest")
+	_expect(world._knife_visual.global_position.is_equal_approx(world.KNIFE_HOME), "Q returns a released knife to its home rest")
 	var def := {"id":"tomato", "name":"番茄", "color":"d95034", "mass":0.18, "friction":0.6, "bounce":0.1}
 	_expect(world.spawn_ingredient(def), "whole food is available for input-driven cut test")
 	var original: RigidBody2D = world._held

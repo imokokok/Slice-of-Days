@@ -30,6 +30,10 @@ var compression := 0.0:
 	set(value):
 		compression = value
 		queue_redraw()
+var crack_progress := 0.0:
+	set(value):
+		crack_progress = value
+		queue_redraw()
 
 const CREAM: = Color("c7bca6")
 const GREEN: = Color("6e7455")
@@ -47,6 +51,12 @@ func _draw() -> void :
 		material = null
 		_current_id = id
 		_noodles(base)
+		return
+	# Only the player's rim strikes open the egg. The same thermal record then
+	# carries the edible portion through cooking, plating and recipe snapshots.
+	if id == "egg" and not cut and bool(thermal.get("egg_opened", false)):
+		material = null
+		_fried_egg()
 		return
 	var painted: Texture2D = preload("res://modules/restaurant/assets/sprite_library.gd").food(id)
 	if cut:
@@ -76,6 +86,8 @@ func _draw() -> void :
 		if definition.get("dispense_mode", "") == "squeeze" and compression > 0.0001:
 			_draw_grip_mesh(painted, rect)
 		else: draw_texture_rect(painted, rect, false)
+		if id == "egg" and crack_progress > 0.0:
+			_draw_egg_fissure(rect)
 		return
 	_current_id = id
 	if heat > 28.0:
@@ -121,6 +133,41 @@ func _draw() -> void :
 
 		for i in 3:
 			_ellipse(Vector2(27 + i * 4, 24 - i * 3), Vector2(2.4, 1.6), base.lightened(0.15))
+
+func _fried_egg() -> void:
+	var cooked: float = clampf(float(thermal.get("cooked", 0.0)), 0.0, 1.0)
+	var brown: float = maxf(float(thermal.get("brown", [0.0, 0.0])[0]), float(thermal.get("brown", [0.0, 0.0])[1]))
+	var outline := Color("b8a57a").lerp(Color("9a6840"), brown)
+	var white := Color("fff4d8", 0.55 + cooked * 0.45).lerp(Color("f1dfba"), brown * 0.62)
+	var edge := PackedVector2Array([
+		Vector2(-36, -3), Vector2(-32, -14), Vector2(-19, -17), Vector2(-13, -23),
+		Vector2(1, -19), Vector2(12, -22), Vector2(25, -14), Vector2(35, -8),
+		Vector2(31, 5), Vector2(36, 12), Vector2(20, 17), Vector2(7, 15),
+		Vector2(-5, 20), Vector2(-18, 14), Vector2(-31, 13)
+	])
+	draw_colored_polygon(edge, outline)
+	var inside := PackedVector2Array()
+	for point in edge: inside.append(point * 0.92 + Vector2(0, -1))
+	draw_colored_polygon(inside, white)
+	_egg_oval(Vector2(4, -2), Vector2(15, 13), Color("bd8241", 0.75))
+	_egg_oval(Vector2(3, -4), Vector2(13, 11), Color("edae3d").lerp(Color("f6c956"), cooked))
+	_egg_oval(Vector2(-1, -8), Vector2(4, 2), Color("fff0ae", 0.65))
+
+func _egg_oval(center: Vector2, radii: Vector2, color: Color) -> void:
+	var points := PackedVector2Array()
+	for index in 24:
+		var angle := TAU * index / 24.0
+		points.append(center + Vector2(cos(angle) * radii.x, sin(angle) * radii.y))
+	draw_colored_polygon(points, color)
+
+func _draw_egg_fissure(rect: Rect2) -> void:
+	var c := rect.get_center()
+	var line := PackedVector2Array([
+		c + Vector2(-22, -7), c + Vector2(-15, -11), c + Vector2(-9, -6),
+		c + Vector2(-3, -10), c + Vector2(4, -5), c + Vector2(11, -9), c + Vector2(19, -4)
+	])
+	draw_polyline(line, Color("88623d", 0.9), 2.8, true)
+	draw_polyline(line + PackedVector2Array([c + Vector2(23, 0)]), Color("fff7df", 0.65), 1.0, true)
 
 func grip_vertex(uv: Vector2, rect: Rect2) -> Vector2:
 	# The cap and base retain their original position. Only the middle grip

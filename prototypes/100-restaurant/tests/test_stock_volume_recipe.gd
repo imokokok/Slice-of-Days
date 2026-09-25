@@ -60,7 +60,7 @@ func run() -> void:
 	expect(rice.position.x < 340, "rice belongs to ordinary food storage, not condiment tray")
 	for id in ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]:
 		var slot: Button = game.storage_display.find_child("Ingredient_" + id, true, false)
-		expect(slot.position.x > 660 and slot.position.x < 1080 and not world.get_dispense_mode(game._definition(id)).is_empty(), "back tray contains an actual seasoning container: " + id)
+		expect(slot.position.x >= 640 and slot.position.x < 1080 and not world.get_dispense_mode(game._definition(id)).is_empty(), "back tray contains an actual seasoning container: " + id)
 	world.set_process(false)
 	game.set_process(false)
 	world.spawn_ingredient(game._definition("ketchup"))

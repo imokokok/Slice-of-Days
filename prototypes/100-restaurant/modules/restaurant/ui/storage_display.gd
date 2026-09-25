@@ -4,6 +4,7 @@ signal ingredient_chosen(definition: Dictionary, press_position: Vector2)
 signal mystery_requested
 
 const FoodArt = preload("res://modules/restaurant/assets/food_art.gd")
+const ROOM = preload("res://modules/restaurant/assets/kitchen_reference_playable.png")
 const FRIDGE: = Rect2(30, 175, 330, 360)
 const SHELVES: = Rect2(390, 421, 840, 114)
 const BASKETS: = Rect2(1260, 155, 326, 635)
@@ -39,6 +40,7 @@ func set_available(id: String, available: bool) -> void:
 	button.mouse_filter = Control.MOUSE_FILTER_STOP if available else Control.MOUSE_FILTER_IGNORE
 	button.get_node("FoodArt").visible = available
 	button.get_node("IngredientName").text = str(button.get_meta("definition").name) if available else "空位"
+	queue_redraw()
 
 func slot_at(id: String, point: Vector2) -> bool:
 	var button := find_child("Ingredient_" + id, true, false) as Button
@@ -149,16 +151,21 @@ func _build_items() -> void :
 	for item in definitions:
 		if item.get("category", "") in ["basic", "sweet"] and not cold.has(str(item.id)): _cold_catalog.append(item)
 	for i in mini(15, _cold_catalog.size() - fridge_page * 15):
-		_slot(_content, _cold_catalog[fridge_page * 15 + i], Vector2(45 + (i % 3) * 96, 181 + (i / 3) * 77), Vector2(90, 70), 0.76, Color("344854"))
+		_slot(_content, _cold_catalog[fridge_page * 15 + i], Vector2(45 + (i % 3) * 96, 181 + (i / 3) * 77), Vector2(90, 70), 0.76, Color("344854"), "fridge")
+	for row in 5:
+		_surface_front(_content, Rect2(51, 245 + row * 77, 281, 12))
 	_page_controls("fridge", Vector2(66, 563), 244, fridge_page, ceili(_cold_catalog.size() / 15.0))
 	var counter: = ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]
 	for i in counter.size():
-		if catalog.has(counter[i]): _slot(_content, catalog[counter[i]], Vector2(670 + i * 80, 549), Vector2(75, 66), preload("res://modules/restaurant/assets/sprite_library.gd").physical_art_scale(counter[i]), Color("493b2d"))
+		if catalog.has(counter[i]): _slot(_content, catalog[counter[i]], Vector2(688 + i * 77, 520), Vector2(75, 64), preload("res://modules/restaurant/assets/sprite_library.gd").physical_art_scale(counter[i]), Color("fff0d5"), "rack")
+	# The rack's front board is part of the approved room image. Draw that same
+	# board above the bottles so their bases sit inside the compartments.
+	_surface_front(_content, Rect2(635, 590, 425, 39))
 	# Separate condiment rack at the exact left-hand position in the source.
-	for spec in [["oil", Vector2(367, 458), Vector2(64, 167), 1.85], ["pepper", Vector2(436, 491), Vector2(56, 125), 1.25], ["salt", Vector2(441, 572), Vector2(34, 51), 0.54], ["sugar", Vector2(480, 559), Vector2(38, 64), 0.65], ["soy_sauce", Vector2(513, 541), Vector2(30, 76), 0.68]]:
+	for spec in [["oil", 364.0], ["pepper", 415.0], ["salt", 460.0], ["sugar", 497.0], ["soy_sauce", 534.0]]:
 		if catalog.has(spec[0]):
-			_slot(_content, catalog[spec[0]], spec[1], spec[2], preload("res://modules/restaurant/assets/sprite_library.gd").physical_art_scale(spec[0]), Color("493b2d"))
-			# Narrow overlapping rack bottles are identified by their hover label.
+			_counter_slot(catalog[spec[0]], spec[1])
+			# The crowded left rack uses hover labels rather than painting text over bottles.
 			_content.get_node("Ingredient_" + spec[0] + "/IngredientName").hide()
 	var odd: = []
 	for id in ["sock", "confetti", "toilet_paper", "soap", "soap_smooth", "toothpaste", "resignation_letter", "alarm_clock", "yarn_ball", "tennis_ball", "dentures", "eraser", "sponge", "baseball_bat", "computer_mouse", "slipper", "rubber_duck", "rock"]:
@@ -167,7 +174,9 @@ func _build_items() -> void :
 		if item.get("category", "") == "odd" and not odd.has(item): odd.append(item)
 	_odd_catalog = odd
 	for i in mini(odd.size() - odd_page * 12, 12):
-		_slot(_content, odd[odd_page * 12 + i], Vector2(1325 + (i % 4) * 67, 224 + (i / 4) * 105), Vector2(65, 78), 0.70, Color("fff0d5"))
+		_slot(_content, odd[odd_page * 12 + i], Vector2(1325 + (i % 4) * 67, 224 + (i / 4) * 105), Vector2(65, 78), 0.70, Color("fff0d5"), "odd")
+	for row in 3:
+		_surface_front(_content, Rect2(1320, 300 + row * 105, 274, 20))
 	_page_controls("odd", Vector2(1340, 518), 242, odd_page, ceili(odd.size() / 12.0))
 	var browse: = Button.new()
 	browse.name = "BrowseIngredientCupboard"
@@ -190,6 +199,29 @@ func _build_items() -> void :
 	for id in stock: set_available(id, bool(stock[id]))
 	queue_redraw()
 
+func _surface_front(parent: Control, region: Rect2) -> void:
+	var front := TextureRect.new()
+	var atlas := AtlasTexture.new()
+	atlas.atlas = ROOM
+	atlas.region = Rect2(region.position * Vector2(ROOM.get_size()) / Vector2(1600, 900), region.size * Vector2(ROOM.get_size()) / Vector2(1600, 900))
+	front.texture = atlas
+	front.position = region.position
+	front.size = region.size
+	front.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	front.stretch_mode = TextureRect.STRETCH_SCALE
+	front.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(front)
+
+func _counter_slot(item: Dictionary, center_x: float) -> void:
+	var art_library = preload("res://modules/restaurant/assets/sprite_library.gd")
+	var scale: float = art_library.physical_art_scale(str(item.id))
+	var texture: Texture2D = art_library.food(str(item.id))
+	var footprint := Vector2(78, 78)
+	if texture != null: footprint = art_library.fit(texture, Vector2.ZERO, Vector2(78, 78)).size
+	footprint *= scale
+	var dimensions := Vector2(maxf(footprint.x + 6.0, 24.0), footprint.y + 9.0)
+	_slot(_content, item, Vector2(center_x - dimensions.x * 0.5, 612.0 - dimensions.y), dimensions, scale, Color("493b2d"), "counter")
+
 func _compact_sign(button: Button) -> void:
 	for state in ["normal", "hover", "pressed"]:
 		var paper := StyleBoxFlat.new()
@@ -209,13 +241,14 @@ func _heading(words: String, location: Vector2, dimensions: Vector2, color: Colo
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_content.add_child(label)
 
-func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vector2, icon_scale: float, name_color: Color) -> void :
+func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vector2, icon_scale: float, name_color: Color, surface: String = "") -> void :
 	var button: = Button.new()
 	button.name = "Ingredient_" + str(item.id)
 	button.position = location
 	button.size = dimensions
 	button.set_meta("ingredient_id", item.id)
 	button.set_meta("definition", item.duplicate(true))
+	button.set_meta("display_surface", surface)
 	button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
 	button.tooltip_text = "%s\n按住即可拖出；也可单击拿起，再点击放下\n调料容器拿到锅上方，按住左键出料\n重量：%d 克%s" % [item.name, roundi(float(item.get("mass", 0.1)) * 1000), " · 需要加热" if item.get("needs_cook", false) else ""]
 	_transparent_button(button)
@@ -230,6 +263,14 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 	parent.add_child(button)
 	var label_height: = 16.0
 	var icon_center: = Vector2(dimensions.x * 0.5, (dimensions.y - label_height) * 0.47)
+	if surface == "fridge": icon_center.y += 6.0
+	if surface == "rack": icon_center.y += 12.0
+	if surface == "odd":
+		var library = preload("res://modules/restaurant/assets/sprite_library.gd")
+		var texture: Texture2D = library.food(str(item.id))
+		var visible_height := library.fit(texture, Vector2.ZERO, Vector2(78, 78)).size.y * icon_scale if texture != null else 78.0 * icon_scale
+		icon_center.y = 71.0 - visible_height * 0.5
+	if surface == "counter": icon_center = Vector2(dimensions.x * 0.5, dimensions.y - 4.0 - (dimensions.y - 9.0) * 0.5)
 	var art: = FoodArt.new()
 	art.name = "FoodArt"
 	art.definition = item.duplicate(true)
@@ -240,13 +281,14 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 	var label: = Label.new()
 	label.name = "IngredientName"
 	label.text = item.name
-	label.position = Vector2(0, dimensions.y - label_height)
-	label.size = Vector2(dimensions.x, label_height)
+	label.position = Vector2(0, 79.0 if surface in ["rack", "odd"] else dimensions.y - (8.0 if surface == "fridge" else label_height))
+	label.size = Vector2(dimensions.x, 12.0 if surface == "fridge" else label_height)
 	label.clip_text = true
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_font_size_override("font_size", 11 if surface == "fridge" else 12)
 	label.add_theme_color_override("font_color", name_color)
+	if surface in ["fridge", "rack", "odd"]: label.z_index = 1
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(label)
 
@@ -279,5 +321,18 @@ func _panel(rect: Rect2, color: Color, edge: Color, _radius: int = 0, _width: in
 	draw_style_box(style, rect)
 
 func _draw() -> void :
-	# Both wooden holders are already drawn in the approved image.
-	pass
+	# Small contact shadows connect the separate art nodes to the shelf floor.
+	if not is_instance_valid(_content): return
+	for slot in _content.get_children():
+		if not slot is Button or slot.disabled or not slot.has_meta("display_surface"): continue
+		var surface: String = slot.get_meta("display_surface")
+		if surface not in ["fridge", "rack", "odd", "counter"]: continue
+		var button := slot as Button
+		var center: float = button.position.x + button.size.x * 0.5
+		var floor_y: float = button.position.y + (62.0 if surface == "fridge" else (67.0 if surface == "odd" else (button.size.y - 4.0 if surface == "counter" else 63.0)))
+		var radius: float = 25.0 if surface == "fridge" else (19.0 if surface == "odd" else 16.0)
+		var points := PackedVector2Array()
+		for step in 16:
+			var angle := TAU * step / 16.0
+			points.append(Vector2(center + cos(angle) * radius, floor_y + sin(angle) * 3.0))
+		draw_colored_polygon(points, Color("172c38", 0.20) if surface == "fridge" else Color("2d2019", 0.28))

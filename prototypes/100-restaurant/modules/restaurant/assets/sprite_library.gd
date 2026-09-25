@@ -12,7 +12,7 @@ static var _hit_pixels: Dictionary = {}
 const MYSTERY := ["baseball_bat","computer_mouse","slipper","sock","perfume","doll","lipstick","rubber_duck","rock"]
 static func physical_art_scale(id: String) -> float:
 	# Match the five authored rack bottles; they must not shrink on pickup.
-	return {"oil":1.85, "pepper":1.25, "salt":0.54, "sugar":0.65, "soy_sauce":0.68, "ketchup":0.68, "mayonnaise":0.68, "mustard":0.68, "chili_sauce":0.68, "vinegar":0.68}.get(id, 0.61)
+	return {"oil":1.55, "pepper":1.13, "salt":0.48, "sugar":0.45, "soy_sauce":0.58, "ketchup":0.68, "mayonnaise":0.68, "mustard":0.68, "chili_sauce":0.68, "vinegar":0.68}.get(id, 0.61)
 static func handdrawn_manifest() -> Dictionary:
 	if _handdrawn.is_empty():
 		_handdrawn = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/assets/handdrawn_manifest.json"))

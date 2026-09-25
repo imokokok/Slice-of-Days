@@ -28,7 +28,7 @@ static func profile(definition: Dictionary) -> Dictionary:
 static func make_state(definition: Dictionary, mass: float, fraction := 1.0) -> Dictionary:
 	var p := profile(definition)
 	var start := -5.0 if str(definition.get("id",""))=="ice_cream" else AMBIENT
-	return {"version":1,"initial_kg":mass,"water_kg":mass*float(p.water),"evaporated_kg":0.0,"converted_kg":0.0,"liquid_kg":0.0,"phase_exported_kg":0.0,"absorbed_water_kg":0.0,"core_c":start,"faces_c":[start,start],"contact_face":0,"fraction":fraction,"cooked":0.0,"dose":0.0,"brown":[0.0,0.0],"char":[0.0,0.0],"softness":0.0,"stir_work":0.0,"spread":0.0,"phase":p.phase,"evap_rate":0.0}
+	return {"version":1,"initial_kg":mass,"water_kg":mass*float(p.water),"evaporated_kg":0.0,"converted_kg":0.0,"liquid_kg":0.0,"phase_exported_kg":0.0,"absorbed_water_kg":0.0,"core_c":start,"faces_c":[start,start],"contact_face":0,"fraction":fraction,"cooked":0.0,"dose":0.0,"brown":[0.0,0.0],"char":[0.0,0.0],"softness":0.0,"stir_work":0.0,"spread":0.0,"phase":p.phase,"evap_rate":0.0,"egg_opened":false}
 
 static func exchange(a: float,b: float,capacity_a: float,capacity_b: float,conductance: float,dt: float) -> float:
 	# Exact bounded two-lump heat exchange. Returned joules move from a to b.
@@ -104,6 +104,9 @@ static func split_state(s: Dictionary, ratio: float) -> Dictionary:
 
 static func shape(s: Dictionary, definition: Dictionary) -> Vector2:
 	var p := profile(definition)
+	if str(definition.get("id", "")) == "egg" and bool(s.get("egg_opened", false)):
+		# The white spreads as the shell appearance gives way to a fried egg.
+		return Vector2(1.3, 0.68)
 	var phase := clampf(float(s.get("converted_kg",0.0))/maxf(0.000001,float(s.get("initial_kg",0.1))),0.0,1.0)
 	var shrink := float(p.shrink)*float(s.get("softness",0.0))
 	return Vector2(1.0-shrink*0.35+phase*0.48,1.0-shrink-phase*0.67)

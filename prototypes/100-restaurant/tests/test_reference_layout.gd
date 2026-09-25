@@ -15,9 +15,25 @@ func run() -> void:
 	for id in ["oil", "pepper", "salt", "sugar", "soy_sauce"]:
 		var item: Button = game.hud.find_child("Ingredient_"+id, true, false)
 		expect(item != null and item.position.x >= 340 and item.position.x < 548 and item.position.y > 440, "condiment comes from the left condiment rack: " + id)
+		for other_id in ["oil", "pepper", "salt", "sugar", "soy_sauce"]:
+			if other_id == id: break
+			var other := game.hud.find_child("Ingredient_" + other_id, true, false) as Button
+			expect(item != null and other != null and not item.get_rect().intersects(other.get_rect()), "left condiment footprints stay separate: " + id + " / " + other_id)
 	for id in ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]:
 		var item: Button = game.hud.find_child("Ingredient_"+id, true, false)
-		expect(item != null and Rect2(660, 540, 430, 85).encloses(item.get_rect()), "ingredient belongs in the original five-slot tray: " + id)
+		expect(item != null and Rect2(640, 500, 435, 120).encloses(item.get_rect()), "ingredient belongs in the original five-slot tray: " + id)
+		expect(item != null and item.get_rect().end.y < 590, "tray click area stays inside its groove: " + id)
+	expect(game.world.pan.point(Vector2(809, 541)).y > 639.0, "pan opening starts below the rear rack front")
+	expect(game.world.cutting_board.rect().encloses(Rect2(game.world._knife_rest_position + Vector2(-93, -24), Vector2(188, 52))), "knife art rests entirely on the cutting board")
+	for id in ["sock", "confetti", "toilet_paper", "soap"]:
+		var item := game.hud.find_child("Ingredient_" + id, true, false) as Button
+		if item == null: continue
+		var art := item.get_node("FoodArt") as Node2D
+		var library = preload("res://modules/restaurant/assets/sprite_library.gd")
+		var tex: Texture2D = library.food(id)
+		var visible_height: float = library.fit(tex, Vector2.ZERO, Vector2(78, 78)).size.y * art.scale.y
+		var row := roundi((item.position.y - 224.0) / 105.0)
+		expect(absf(item.position.y + art.position.y + visible_height * 0.5 - (295.0 + row * 105.0)) < 1.0, "odd ingredient rests on its shelf floor: " + id)
 	for utensil in game.world.utensils:
 		expect(utensil.position.x >= 545 and utensil.position.x <= 630 and utensil.home_angle > 1, "utensil rests upright in the source cup")
 	var book: Button = game.hud.find_child("ReferenceRecipeBook", true, false)
@@ -39,6 +55,17 @@ func run() -> void:
 	expect(not sponge.active and is_zero_approx(game.world.pan.overflow_water_ml), "dragging sponge over water removes the tracked spill")
 	await process_frame
 	expect(game.world._foods.get_child_count() == 0, "wiped liquid has no ghost physical body")
+	var ketchup := game.storage_display.find_child("Ingredient_ketchup", true, false) as Button
+	_mouse(ketchup.get_global_rect().get_center(), "down")
+	_mouse(ketchup.get_global_rect().get_center(), "up")
+	await process_frame
+	var pan_point: Vector2 = game.world.pan.point(Vector2(800, 535))
+	_mouse(pan_point, "move")
+	_mouse(pan_point, "down")
+	await process_frame
+	expect(game.world._squeezing, "holding a rack bottle over the pan starts dispensing without the tray blocking input")
+	_mouse(pan_point, "up")
+	game.world.discard_held()
 	game.queue_free()
 	await process_frame
 	for failure in failures: push_error(failure)

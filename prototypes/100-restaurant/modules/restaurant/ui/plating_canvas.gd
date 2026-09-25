@@ -47,8 +47,9 @@ func refresh_foods() -> void :
 			for property in source.get_property_list():
 				if str(property.name) in ["definition", "cut", "heat", "softness", "thermal", "coating", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
 					art.set(property.name, source.get(property.name))
-			art.scale = source.scale * 2.8
-			art.z_index = 1
+			var is_sauce: bool = body.has_meta("liquid_state")
+			art.scale = source.scale * (1.25 if is_sauce else 2.8)
+			art.z_index = 0 if is_sauce else 1
 			add_child(art)
 			_visuals[id] = {"body": body, "art": art}
 	for id in _visuals.keys():
@@ -70,10 +71,19 @@ func add_to_plate(body: RigidBody2D) -> void :
 	if not is_instance_valid(body) or not body.get_meta("enrolled", false): return
 	if not body.get_meta("plated", false):
 		game.world.leave_pan_residue(body)
-		var index: = _visuals.size()
+		var is_sauce: bool = body.has_meta("liquid_state")
+		var index := 0
+		for record in _visuals.values():
+			if is_instance_valid(record.body) and record.body.get_meta("plated", false) and record.body.has_meta("liquid_state") == is_sauce:
+				index += 1
 		body.set_meta("plated", true)
 		body.freeze = true
-		body.position = game.world.plate.center + Vector2((index % 3 - 1) * 37, -5 + (index / 3) * 14)
+		var solid_places := [Vector2(-36, -5), Vector2(18, -6), Vector2(-2, 6), Vector2(46, 4), Vector2(-52, 5), Vector2(25, 7), Vector2(-22, -11), Vector2(7, -11)]
+		var sauce_places := [Vector2(-48, 10), Vector2(-27, 10), Vector2(-6, 11), Vector2(16, 10), Vector2(38, 9), Vector2(53, 6), Vector2(-57, 2), Vector2(56, -3)]
+		var places: Array = sauce_places if is_sauce else solid_places
+		var placement: Vector2 = places[index % places.size()]
+		if index >= places.size(): placement += Vector2((index / places.size()) % 3 - 1, (index / places.size()) % 2) * 3.0
+		body.position = game.world.plate.center + (placement / Vector2(100, 20)).limit_length(0.72) * Vector2(100, 20)
 		body.set_deferred("position", body.position)
 		game.world._update_plated_flag()
 		game.world.audio.play_effect("drop")

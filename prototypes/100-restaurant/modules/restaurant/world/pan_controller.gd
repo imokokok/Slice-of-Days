@@ -1,8 +1,8 @@
 extends Node2D
 
 const SINK_X: = 211.0
-const HOME: = Vector2(-11, 100)
-const ART_SCALE: = Vector2(1.25, 1.35)
+const HOME: = Vector2(-11, 110)
+const ART_SCALE: = Vector2(1.10, 1.14)
 const PIVOT: = Vector2(809, 599)
 var world: Node2D
 var active: = false

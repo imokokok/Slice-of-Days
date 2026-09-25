@@ -48,16 +48,18 @@ func _run() -> void:
 	game.session.set_heating(true)
 	await create_timer(0.1).timeout
 	_expect(game.world.audio.loops.flame.playing and not game.world.audio.loops.sizzle.playing, "dry rice in a dry pan has a burner sound without invented wet sizzling")
-	_mouse(Vector2(1037,654), "down")
+	var handle_home: Vector2 = game.world.pan.point(Vector2(1037, 578))
+	var handle_sink: Vector2 = handle_home + Vector2(-587, 0)
+	_mouse(handle_home, "down")
 	await process_frame
 	_expect(game.world.pan.active, "actual pan-handle press starts pan movement")
 	var before := rice.position
-	_mouse(Vector2(450,654), "move")
+	_mouse(handle_sink, "move")
 	await process_frame
 	await physics_frame
 	await process_frame
 	_expect(rice.position.x < before.x - 490, "moving pan carries the existing ingredient body")
-	_mouse(Vector2(450,654), "up")
+	_mouse(handle_sink, "up")
 	await create_timer(0.15).timeout
 	_expect(not game.world.pan.active and game.world.pan.under_tap(), "released pan stays under sink faucet")
 	_expect(game.session.dish.size() == 1 and rice.get_meta("enrolled", false), "pan transport preserves single recipe enrollment")
@@ -83,9 +85,9 @@ func _run() -> void:
 	var water: float = game.world.pan.water_ml
 	await create_timer(0.1).timeout
 	_expect(is_equal_approx(water, game.world.pan.water_ml) and not game.world.audio.loops.water.playing, "turning the handle back stops both filling and water sound")
-	_mouse(Vector2(450,654), "down")
-	_mouse(Vector2(1037,654), "move")
-	_mouse(Vector2(1037,654), "up")
+	_mouse(handle_sink, "down")
+	_mouse(handle_home, "move")
+	_mouse(handle_home, "up")
 	await create_timer(0.2).timeout
 	_expect(game.world.pan.on_stove() and game.world.pan.water_heat > 0, "returning a cold water-filled pan heats the water first")
 	game.world.pan.water_heat = 100
@@ -107,9 +109,9 @@ func _run() -> void:
 	await process_frame
 	for player in game.world.audio.loops.values(): _expect(not player.playing, "mute stops each loop independently of the host bus")
 	game.world.audio.muted = false
-	_mouse(Vector2(1037,654), "down")
-	_mouse(Vector2(450,654), "move")
-	_mouse(Vector2(450,654), "up")
+	_mouse(handle_home, "down")
+	_mouse(handle_sink, "move")
+	_mouse(handle_sink, "up")
 	await create_timer(0.15).timeout
 	_expect(game.world.pan.under_tap(), "pan settles beneath faucet before draining")
 	_mouse(Vector2(200,761), "down")

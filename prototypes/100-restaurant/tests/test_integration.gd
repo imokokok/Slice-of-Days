@@ -195,8 +195,11 @@ func _test_physics_and_service() -> void:
 	_expect(body.freeze and body.global_position.is_equal_approx(resting_position), "pause freezes loose ingredient physics")
 	game._close_modal()
 	game._interact("talk")
+	for frame in 150:
+		if game.world.pan.local_point(body.position).y >= 575.0: break
+		await physics_frame
 	game._interact("cook")
-	game.session.tick(8.0)
+	preload("res://tests/thermal_fixture.gd").cook(game, 80.0)
 	game._interact("cook")
 	_expect(bool(game.session.dish[0].get("cut", false)), "cutting state survives physical integration")
 	_expect(float(game.session.dish[0].get("heat", 0.0)) >= 8.0 and not game.session.heating, "stove interaction applies per-ingredient heat and turns off")

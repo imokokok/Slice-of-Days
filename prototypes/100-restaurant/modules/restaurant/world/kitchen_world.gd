@@ -15,6 +15,8 @@ var plated: = false
 var camera: Camera2D
 var _held: RigidBody2D
 var _foods: Node2D
+var _egg_shells: Node2D
+var shell_waste_kg := 0.0
 var _pan_area: Area2D
 var _pan_walls: Array = []
 var pan: Node2D
@@ -82,8 +84,9 @@ var _spatula: Node2D
 var _knife_cutting: = false
 var _knife_visual: Node2D
 var _previous_blade_tip: = Vector2.ZERO
-var _knife_rest_position: = Vector2(1407, 730)
-var _knife_last_valid_rest: = Vector2(1407, 730)
+const KNIFE_HOME := Vector2(1252, 731)
+var _knife_rest_position: = KNIFE_HOME
+var _knife_last_valid_rest: = KNIFE_HOME
 var _knife_drag_offset: = Vector2.ZERO
 var _poster_canvas: Control
 var _stations: = {
@@ -114,6 +117,10 @@ func _ready() -> void :
 	_foods.z_index = 5
 	add_child(_foods)
 	_foods.child_entered_tree.connect(_connect_food_audio)
+	_egg_shells = Node2D.new()
+	_egg_shells.name = "EggShells"
+	_egg_shells.z_index = 8
+	add_child(_egg_shells)
 	var held_layer: = CanvasLayer.new()
 	held_layer.name = "HeldIngredientForeground"
 	held_layer.layer = 2
@@ -227,7 +234,12 @@ func _draw() -> void :
 
 func _update_held_motion(delta: float, mouse: Vector2) -> void:
 	if is_instance_valid(_held) and controls_enabled:
-		_held.global_position = Vector2(clampf(mouse.x, 727.0 + pan.offset.x, 895.0 + pan.offset.x), minf(mouse.y, 526.0 + pan.offset.y)) if _squeezing else mouse + (_food_drag_offset if _dragging else Vector2.ZERO)
+		# Keep a dispensing container visibly above the rear rim. Its nozzle and
+		# stream still use the same transform as the held art.
+		if _is_whole_egg(_held) and int(_held.get_meta("egg_taps", 0)) == 1:
+			_held.position = _held.get_meta("egg_tap_point", _held.position)
+		else:
+			_held.global_position = Vector2(clampf(mouse.x, 727.0 + pan.offset.x, 895.0 + pan.offset.x), minf(mouse.y, 470.0 + pan.offset.y)) if _squeezing else mouse + (_food_drag_offset if _dragging else Vector2.ZERO)
 		if _squeezing:
 			var mode: = get_dispense_mode(_held.get_meta("definition", {}))
 			# The art adapter owns mouth orientation; rotating here as well
@@ -351,6 +363,11 @@ func _unhandled_input(event: InputEvent) -> void :
 			return
 		if event.pressed:
 			if is_instance_valid(_held):
+				var held_pointer: Vector2 = get_global_transform_with_canvas().affine_inverse() * event.position
+				if _is_whole_egg(_held) and _egg_tap_target(held_pointer):
+					_tap_egg(held_pointer)
+					get_viewport().set_input_as_handled()
+					return
 				if _held_is_sauce_bottle() and _squeeze_region().has_point(get_global_mouse_position()):
 					_squeezing = true
 					_squeeze_elapsed = 0.0
@@ -395,7 +412,7 @@ func _unhandled_input(event: InputEvent) -> void :
 					drop_held(false)
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.physical_keycode == KEY_Q:
-			if _knife_held or ( not is_instance_valid(_held) and not _knife_rest_position.is_equal_approx(Vector2(1407, 730))):
+			if _knife_held or ( not is_instance_valid(_held) and not _knife_rest_position.is_equal_approx(KNIFE_HOME)):
 				put_knife_back()
 			else:
 				drop_held(false)
@@ -530,6 +547,8 @@ func food_hit(body: RigidBody2D, pos: Vector2) -> bool:
 			var solid := clampf(1.0 - (float(thermal.converted_kg) + float(thermal.evaporated_kg)) / initial, 0.0, 1.0)
 			if solid < 0.025: return false
 			p /= sqrt(solid)
+		if str(body.get_meta("id", "")) == "egg" and bool(thermal.get("egg_opened", false)):
+			return (p / Vector2(38, 24)).length() <= 1.0
 		return preload("res://modules/restaurant/assets/sprite_library.gd").alpha_at(str(body.get_meta("id", "")), p) > 0.12
 	visual = body.get_node_or_null("SauceBlob")
 	if visual == null: return false
@@ -546,7 +565,7 @@ func _update_food_depth() -> void:
 		_foods.move_child(body, index)
 		if body == _held or _dragging and body.collision_layer == 0: continue
 		if body.get_meta("overflow", false): body.z_index = 6
-		elif body.get_meta("plated", false): body.z_index = 1
+		elif body.get_meta("plated", false): body.z_index = 0 if body.has_meta("liquid_state") else 1
 		elif pan.contains(body.position): body.z_index = 0 if body.has_meta("liquid_state") else 1
 		else: body.z_index = 5 if body.position.y > pan.point(Vector2(810, 617)).y else 1
 
@@ -595,6 +614,10 @@ func _finish_food_drag(force: = false) -> void :
 	var point: = to_local(_held.global_position)
 	if not force and _held_is_sauce_bottle() and _squeeze_region().has_point(point):
 		interaction.emit("notice", "调料已拿到锅边。" + get_held_operation_hint())
+		return
+	if not force and _is_whole_egg(_held) and _egg_tap_target(point) and _food_drag_moved:
+		_tap_egg(point)
+		_drag_group.clear()
 		return
 
 	var primary: RigidBody2D = _held
@@ -712,6 +735,87 @@ func drop_into_pan() -> void :
 		return
 	_held.global_position = pan.point(Vector2(809 + randf_range(-35, 35), 521))
 	drop_held(false)
+
+func _is_whole_egg(body: RigidBody2D) -> bool:
+	return is_instance_valid(body) and str(body.get_meta("id", "")) == "egg" and not bool(body.get_meta("thermal", {}).get("egg_opened", false))
+
+func _egg_tap_target(point: Vector2) -> bool:
+	if not pan.on_stove(): return false
+	var local: Vector2 = pan.local_point(point)
+	# The back rim is a narrow, visible hard surface; an arbitrary pan drop is
+	# never interpreted as a crack.
+	return local.x >= 738.0 and local.x <= 880.0 and local.y >= 535.0 and local.y <= 555.0
+
+func _tap_egg(point: Vector2) -> void:
+	if not _is_whole_egg(_held) or not _egg_tap_target(point): return
+	var taps := int(_held.get_meta("egg_taps", 0)) + 1
+	_held.set_meta("egg_taps", taps)
+	_held.position = point
+	_held.set_meta("egg_tap_point", point)
+	_held.impact(65.0)
+	if taps == 1:
+		var art := _held.get_node_or_null("FoodArt")
+		if art: art.set("crack_progress", 1.0)
+		_sync_held_foreground()
+		interaction.emit("notice", "咔——蛋壳裂了一道。再敲一下锅后沿。")
+		focus_changed.emit("鸡蛋", get_held_operation_hint())
+		return
+	_crack_egg(point)
+
+func _crack_egg(point: Vector2) -> void:
+	var body: RigidBody2D = _held
+	if not is_instance_valid(body): return
+	var total_mass := body.mass
+	var shell_mass := total_mass * 0.12
+	var edible_mass := total_mass - shell_mass
+	var source_uid := str(body.get_meta("instance_uid", ""))
+	var state: Dictionary = reactions.ensure_state(body)
+	state = preload("res://modules/restaurant/domain/food_thermal.gd").split_state(state, edible_mass / total_mass)
+	state["egg_opened"] = true
+	body.mass = edible_mass
+	body.set_meta("source_egg_mass_kg", total_mass)
+	body.set_meta("shell_mass_kg", shell_mass)
+	body.set_meta("egg_taps", 2)
+	body.set_meta("thermal", state)
+	for side in [-1, 1]:
+		var shell := preload("res://modules/restaurant/world/egg_shell_piece.gd").new()
+		shell.mass = shell_mass * 0.5
+		shell.side = side
+		shell.set_meta("source_uid", source_uid)
+		shell.set_meta("source_egg_mass_kg", total_mass)
+		_egg_shells.add_child(shell)
+		# Flick the emptied halves onto the spare counter to the left of the
+		# skillet. Their flight is animated; the same mass-bearing bodies settle
+		# under gravity once they clear the pan rim.
+		shell.launch(point + Vector2(side * 8.0, -8.0), Vector2(557.0 if side < 0 else 584.0, 690.0))
+	_dragging = false
+	_held = null
+	_sync_held_foreground()
+	held_changed.emit("")
+	body.position = pan.point(Vector2(809, 583))
+	body.set_deferred("position", body.position)
+	body.freeze = true
+	body.collision_layer = 0
+	body.z_index = 6
+	var art := body.get_node_or_null("FoodArt")
+	if art: art.visible = false
+	var effect := preload("res://modules/restaurant/world/egg_crack_effect.gd").new()
+	effect.origin = point
+	effect.target = body.position
+	effect.z_index = 12
+	add_child(effect)
+	effect.finished.connect(func() -> void:
+		if is_instance_valid(body) and not body.is_queued_for_deletion():
+			reactions._apply(body, state)
+			if is_instance_valid(art): art.visible = true
+			body.collision_layer = 16
+			body.freeze = false
+			body.sleeping = false
+			body.linear_velocity = Vector2(0, 20)
+			body.z_index = 0
+			if pan.contains(body.position): _on_pan_entered(body)
+	)
+	interaction.emit("notice", "蛋液落进锅里；两片蛋壳留在台面，清理台面会计入废料。")
 
 func chop_held() -> void :
 
@@ -946,6 +1050,9 @@ func clear_workspace() -> void:
 			_held = null
 		body.set_meta("enrolled", false)
 		body.queue_free()
+	for shell in _egg_shells.get_children():
+		shell_waste_kg += shell.mass
+		shell.queue_free()
 	plated = false
 	held_changed.emit("")
 
@@ -1014,6 +1121,8 @@ func get_dispense_mode(definition: Dictionary) -> String:
 	return "squeeze" if str(definition.get("id", "")) == "ketchup" else ""
 
 func ingredient_operation_hint(definition: Dictionary) -> String:
+	if str(definition.get("id", "")) == "egg":
+		return "把鸡蛋移到锅后沿，敲两下破壳；蛋液入锅，壳片落到台面"
 	var mode: = get_dispense_mode(definition)
 	if mode.is_empty():
 		if not bool(definition.get("cuttable", true)):
@@ -1025,6 +1134,8 @@ func ingredient_operation_hint(definition: Dictionary) -> String:
 func get_held_operation_hint() -> String:
 	if _knife_held:
 		return "按住并拖动刀刃切食材；松开就放下"
+	if is_instance_valid(_held) and _is_whole_egg(_held) and int(_held.get_meta("egg_taps", 0)) == 1:
+		return "蛋壳已有裂纹，再点一下锅后沿敲开"
 	return ingredient_operation_hint(_held.get_meta("definition", {})) if is_instance_valid(_held) else ""
 
 func _sync_held_foreground() -> void :
@@ -1065,7 +1176,7 @@ func _sync_held_foreground() -> void :
 
 			for property in source.get_property_list():
 				var property_name: = str(property.name)
-				if property_name in ["definition", "cut", "heat", "softness", "thermal", "coating", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
+				if property_name in ["definition", "cut", "heat", "softness", "thermal", "coating", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction", "crack_progress"]:
 					_held_proxy.set(property_name, source.get(property_name))
 			_held_proxy.z_index = 1
 			_held_foreground.add_child(_held_proxy)
@@ -1073,7 +1184,7 @@ func _sync_held_foreground() -> void :
 		source.visible = false
 		_held_proxy.transform = source.get_global_transform_with_canvas() * _container_art_transform()
 
-		for property_name in ["cut", "heat", "softness", "compression", "thermal", "coating"]:
+		for property_name in ["cut", "heat", "softness", "compression", "thermal", "coating", "crack_progress"]:
 			if property_name in source:
 				_held_proxy.set(property_name, source.get(property_name))
 	_held_foreground.visible = controls_enabled and is_instance_valid(source)
@@ -1380,7 +1491,7 @@ func pickup_knife(pointer: = Vector2.INF) -> bool:
 	return true
 
 func put_knife_back() -> void :
-	_knife_last_valid_rest = Vector2(1407, 730)
+	_knife_last_valid_rest = KNIFE_HOME
 	_release_knife()
 
 func _release_knife() -> void :

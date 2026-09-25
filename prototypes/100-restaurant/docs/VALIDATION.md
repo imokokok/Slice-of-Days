@@ -1,5 +1,20 @@
 # 验证记录
 
+## 2026-09-25 手动敲壳与壳片动画
+
+- `test_egg_cracking.gd` **14 项通过**：完整蛋直接落锅不破壳；第一下只留下裂纹；第二下才分出蛋液与两片蛋壳；两部分质量守恒、来源 ID 相同；壳片停在锅外台面；清理时计入废料。`capture_egg_cracking.gd` 用真实柜格取物和鼠标事件通过同一流程。
+- 受影响回归通过：`test_kitchen_interactions.gd` 35、`test_visual_spatial_consistency.gd` 36、`test_reaction_kitchen.gd` 32、`test_material_physics.gd` 333、`test_integration.gd` 124、`test_stock_volume_recipe.gd` 25、`test_seasoning.gd` 155、`test_recorded_audio.gd` 151、`test_slice_cooking_continuity.gd` 37。Godot 4.7.2 无头启动 120 帧退出 0；macOS 系统 CA 证书提示不是脚本错误。
+- 同一空间专项在 Apple M4 / OpenGL 图形环境下 **41 项通过**，包含实际锅壁遮挡像素与手持/陈列尺度复查。
+- Apple M4 / OpenGL 实际图形录得 [敲蛋短片](qa/20260925-egg-cracking.mp4) **163 帧 / 24 fps / 6.79 秒**，以及 [更新后的完整烹饪录像](qa/20260925-full-cooking.mp4) **1195 帧 / 24 fps / 49.79 秒**，均合成 Godot 当次实录音频。逐帧查看裂壳后的鸡蛋、蛋液下落、锅中蛋与锅左侧两片壳、锅中挤酱和 **92 分**出餐评价。完整录像的拍照步骤未录入：Movie Maker 下异步 `frame_post_draw` 不可靠，拍照沿用独立 GUI 测试。以上是自动化 QA 操作和图形目视检查，未冒称人工自由试玩。
+- 仍为二维近似：两次锅后沿点击代表接触施力；蛋液、蛋黄与壳片的连续性有质量及来源记录，但蛋白/蛋黄没有独立流体物性或搅散状态。壳片飞行由动画引导，落地后交给刚体。系统鼠标长期自由玩法尚待人工验收。
+
+## 2026-09-25 厨房空间与完整烹饪二次优化
+
+- Godot **4.7.2** 无头启动 120 帧、退出 0，无脚本错误。定向回归通过：`test_reference_layout.gd` **40**、`test_shelf_pages.gd` **260**、`test_visual_spatial_consistency.gd` **36**、`test_kitchen_interactions.gd` **35**、`test_knife_drag.gd` **20**、`test_seasoning.gd` **155**、`test_stock_volume_recipe.gd` **25**、`test_material_physics.gd` **333**、`test_reaction_kitchen.gd` **32**、`test_thermal_reactions.gd` **20**、`test_cut_clean_share.gd` **86**、`test_recipe_guide.gd` **40**、`test_handdrawn_assets.gd` **227**、`test_slice_cooking_continuity.gd` **37**、`test_integration.gd` **124**。锅柄和热状态夹具已改为依据当前锅变换与真实接触，不再用旧绝对坐标或会绕过热模型的计时加热。macOS 系统 CA 证书提示与厨房脚本无关。
+- Mac Apple M4 / OpenGL 下重新抓取并目视检查 [厨房全景](qa/20260925-storage-compositing.png)：锅口在木架前沿下方留出间距；五格瓶底进入沟槽；左侧五瓶显示和命中区域彼此分开；奇物落在层板上，标签处于木前沿；刀完全在菜板内。布局测试同时断言架子、锅、刀、奇物底线及左侧调料区域。
+- 完整录像已在后续敲壳更新中重录为 **1195 帧 / 49.79 秒**，详情见上节。摄像脚本断言蛋熟、挤酱入锅、摆盘物件在盘内；录制时清空番茄酱格原生 tooltip，正式游戏提示未改。
+- 当前背景仍是一张图；局部层板前沿重绘不等于完整深度场景。鸡蛋的后续敲壳实现见上节。不同批次素材的光照、视角和笔触仍需逐件美术验收。
+
 ## 2026-09-25 素材贴合、遮挡与质量关系
 
 问题清单及实现边界见 `VISUAL_SPATIAL_AUDIT_20260925.md`，证据目录 `qa/20260925-visual-spatial/`。

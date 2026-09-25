@@ -43,7 +43,7 @@ func run() -> void:
 	check(cut.decode_s16(3 * 22050 * 2) > 0, "Right segment was destroyed")
 	edit.keep_range(3, 4, 0)
 	check(edit.clips.size() == 1 and is_equal_approx(edit.clips[0].length, 1.0), "Keep selection failed")
-	var timeline := SoundTimeline.new()
+	var timeline = load("res://scripts/town_sound/studio/Timeline.gd").new()
 	timeline.arrangement = edit
 	root.add_child(timeline)
 	timeline.size = Vector2(1800, 310)

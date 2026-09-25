@@ -92,6 +92,8 @@ func _ready() -> void:
 	preview = VisualCanvas.new()
 	preview.size = Vector2(480, 270)
 	preview.configure(audio, model.prompt, seed_value)
+	preview.model=model
+	preview.profile=profile.duplicate(true)
 	cover_viewport.add_child(preview)
 	cover_container.hide()
 	photo_preview = TextureRect.new()
@@ -199,7 +201,7 @@ func complete_action() -> void:
 			var day := GameState.current_day if has_node("/root/GameState") else 0
 			saved_record = library.save_record({"title": title_input.text, "artist": artist_input.text,
 				"one_line_note": note_input.text, "duration": audio.get_length(), "visual_prompt": model.prompt,
-				"visual_profile": profile, "visual_seed": seed_value, "visual_version": int(profile.get("visual_version", 2)), "source_sample_count": samples.size(),
+				"visual_profile": profile, "mv_clips": model.clips.duplicate(true), "mv_muted":model.muted.duplicate(), "mv_gains":model.gains.duplicate(), "sound_kinds":preload("res://scripts/town_sound/data/SoundAtlas.gd").audible_kinds(model), "visual_seed": seed_value, "visual_version": int(profile.get("visual_version", 2)), "source_sample_count": samples.size(),
 				"cover_source": cover_source, "source_photo_id": source_photo_id,
 				"payment": payment, "project_path": model.project_path, "created_by": role,
 				"game_day": day, "location": "record_store"}, audio, cover)

@@ -216,7 +216,9 @@ func _open_selected() -> void:
 	if module_id == "cooking":
 		EconomySystem.open_counter(self, "restaurant")
 		return
-	if str(item.get("kind","")) == "record_shop": module_id = "sound_sampling"
+	if str(item.get("kind","")) == "record_shop":
+		_open_record_shop()
+		return
 	if str(item.get("kind","")) == "tarot": module_id = "tarot"
 	var invite := DialogueSystem.invitation_for_module(module_id)
 	if module_id not in ChapterSystem.MAIN_OWNERS and not invite.is_empty() and not DialogueSystem.invitation_accepted(module_id):
@@ -262,13 +264,9 @@ func _open_clock_repair(item: Dictionary) -> void:
 
 
 func _open_record_shop() -> void:
-	if not ChapterSystem.module_available("sound_sampling"):
-		GameState.message_posted.emit("今天先做手边的事情。")
-		return
 	if is_instance_valid(pocket_panel):
 		return
-	pocket_panel = load("res://scenes/town_sound/Recorder.tscn").instantiate()
-	pocket_panel.shop_mode = true
+	pocket_panel = load("res://scripts/town_sound/record_shop/RecordShop.gd").new()
 	pocket_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(pocket_panel)
 	pocket_panel.tree_exited.connect(func() -> void:

@@ -43,6 +43,13 @@ var shop_mode := false
 var closing_to_town := false
 var previous_auto_accept_quit := true
 var draft_context: Dictionary = {}
+const Atlas = preload("res://scripts/town_sound/data/SoundAtlas.gd")
+var sound_picker: OptionButton
+var sound_kind := "wind"
+var mv_seed := 23817
+var playback_context: Dictionary = {}
+var source_player: AudioStreamPlayer
+var source_stop: Timer
 
 func _draw() -> void:
 	pass # The scene remains visible around the physical recorder and notes.
@@ -60,6 +67,11 @@ func _ready() -> void:
 	player.bus = "Music"
 	playback=player
 	add_child(player)
+	source_player = AudioStreamPlayer.new()
+	source_player.bus = "TownWorldSoundEffects"
+	add_child(source_player)
+	source_stop = Timer.new(); source_stop.one_shot = true; source_stop.wait_time = 8
+	source_stop.timeout.connect(source_player.stop); add_child(source_stop)
 	_build_ui()
 	get_node("/root/SoundSettings").input_changed.connect(func(_device: String) -> void: _refresh_devices())
 	load("res://scripts/town_sound/record_shop/PresetRecords.gd").ensure_presets()
@@ -126,16 +138,27 @@ func _build_ui() -> void:
 	page_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(page_scroll)
 	workspace=Control.new(); workspace.name="RecorderWorkspace"; workspace.custom_minimum_size=Vector2(1600,900); page_scroll.add_child(workspace)
 	var dim := ColorRect.new(); dim.color=Color("263d39",.50); _place(dim,Vector2.ZERO,Vector2(1600,900))
-	var title := _label("声音采集",36); title.add_theme_color_override("font_color",Color("fff7e7")); _place(title,Vector2(65,42),Vector2(720,54))
+	var title := _label("FIELD NOTES / 随身声音采集",36); title.add_theme_color_override("font_color",Color("fff7e7")); _place(title,Vector2(65,42),Vector2(720,54))
 	var help := _label("R 录制 / 停止 · Ctrl+S 保存 · Esc 返回",20); help.add_theme_color_override("font_color",Color("fff7e7")); _place(help,Vector2(65,101),Vector2(900,32))
 	_place(_button("收起",request_close),Vector2(1385,55),Vector2(150,48))
 	_place(_button("声音设置",func():
 		if recorder.capturing: status_label.text=LocalizationSystem.text("请先停止录音，再切换声音设备。"); return
 		get_node("/root/SoundSettings").show_dialog()),Vector2(1195,55),Vector2(165,48))
-	var shell := TextureRect.new(); shell.name="RecorderBody"
-	var region := AtlasTexture.new(); region.atlas=preload("res://art/ui/pocket_doodles/recorder-refined.png"); region.region=Rect2(48,128,1460,730)
-	shell.texture=region; shell.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; shell.mouse_filter=MOUSE_FILTER_IGNORE
-	_place(shell,Vector2(35,147),Vector2(1010,610))
+	sound_picker=OptionButton.new()
+	for kind in Atlas.at(GameState.current_location):
+		sound_picker.add_item(Atlas.label(kind)); sound_picker.set_item_metadata(sound_picker.item_count-1,kind)
+	sound_kind=str(sound_picker.get_item_metadata(0))
+	sound_picker.item_selected.connect(func(i:int):
+		sound_kind=str(sound_picker.get_item_metadata(i)))
+	_place(sound_picker,Vector2(110,253),Vector2(425,45))
+	var field_guide := _label("① 选择身边声源   ② 录制并触发声音   ③ 停止、试听、保存",18)
+	field_guide.add_theme_color_override("font_color",Color("fff7e7"))
+	_place(field_guide,Vector2(74,139),Vector2(1400,36))
+	var shell := NinePatchRect.new(); shell.name="RecorderBody"
+	shell.texture=preload("res://art/town_sound_cc0/panel.png")
+	shell.patch_margin_left=6; shell.patch_margin_right=6; shell.patch_margin_top=6; shell.patch_margin_bottom=6
+	shell.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST; shell.mouse_filter=MOUSE_FILTER_IGNORE
+	_place(shell,Vector2(74,226),Vector2(945,528)); workspace.move_child(shell,1)
 	_place(_label("随身录音机",27),Vector2(150,337),Vector2(480,38))
 	var screen := preload("res://scripts/ui/components/live_sound_window.gd").new()
 	screen.source=self; screen.name="LiveRecordingPicture"; live_screen=screen
@@ -170,7 +193,7 @@ func _build_ui() -> void:
 	var scroll := ScrollContainer.new(); scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
 	_place(scroll,Vector2(1116,348),Vector2(387,355))
 	library=VBoxContainer.new(); library.add_theme_constant_override("separation",22); library.size_flags_horizontal=SIZE_EXPAND_FILL; scroll.add_child(library)
-	_place(_button("听听身边的声音",func():get_node("/root/WorldSound").play_detail(); status_label.text=LocalizationSystem.text(get_node("/root/WorldSound").detail_label())),Vector2(74,781),Vector2(250,46))
+	_place(_button("触发所选声源 · 8 秒",_trigger_source),Vector2(74,781),Vector2(250,46))
 	_place(_button("边逛边录",func():set_compact(true)),Vector2(346,781),Vector2(194,46))
 	if can_edit_here():
 		_place(_button("进入 STUDIO · 编排",_open_studio),Vector2(1084,774),Vector2(265,50))
@@ -249,8 +272,14 @@ func _start_recording() -> void:
 	timer_label.text = "00:00.00"
 	var source_mode := "game" if source_picker.selected == 0 else "microphone"
 	draft_context = _capture_context(source_mode)
+	mv_seed = randi_range(1,999999)
+	draft_context["sound_kind"] = sound_kind if source_mode == "game" else "voice"
+	draft_context["mv_seed"] = mv_seed
+	draft_context["mv_version"] = 3
+	draft_context["mv_events"] = [{"time":0.0,"kind":draft_context.sound_kind}]
 	if recorder.start(str(devices.get_item_metadata(devices.selected)) if devices.selected >= 0 else "", source_mode):
 		WorldSound.play_ui("record_start")
+		if source_mode == "game": _trigger_source()
 		status_label.text = LocalizationSystem.text("正在录制 · 录完请按 STOP，最长 60 秒。")
 	_refresh_controls()
 
@@ -261,6 +290,7 @@ func _device_display_name(device: String) -> String:
 
 func _stop() -> void:
 	if recorder.capturing:
+		source_player.stop(); source_stop.stop()
 		WorldSound.play_ui("record_stop")
 		recorder.stop()
 	else:
@@ -270,6 +300,7 @@ func _stop() -> void:
 
 func _on_recorded(wav: AudioStreamWAV, warning: String) -> void:
 	set_compact(false)
+	source_player.stop(); source_stop.stop()
 	draft = wav
 	waveform.set_audio(wav)
 	var place := str(draft_context.get("location", "小镇"))
@@ -284,6 +315,7 @@ func _on_recorded(wav: AudioStreamWAV, warning: String) -> void:
 func _preview_draft() -> void:
 	if draft == null:
 		return
+	playback_context = draft_context.duplicate(true)
 	player.stream = draft
 	player.play()
 	status_label.text = LocalizationSystem.text("正在试听未保存的录音。" if audio_peak(draft) > 0.0001 else "这段录音为静音，播放不会出声。请检查所选声源后重录。")
@@ -407,6 +439,7 @@ func _play_sample(item: Dictionary) -> void:
 	if wav == null:
 		status_label.text = LocalizationSystem.text(store.last_error)
 		return
+	playback_context = item
 	waveform.set_audio(wav)
 	player.stream = wav
 	player.play()
@@ -456,6 +489,8 @@ func set_compact(value: bool) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not page_scroll.visible and not compact: return
+	if get_viewport().gui_get_focus_owner() is LineEdit: return
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if event.is_command_or_control_pressed() and event.keycode == KEY_S:
@@ -469,3 +504,26 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("ui_cancel"):
 		request_close()
 	get_viewport().set_input_as_handled()
+
+func _trigger_source() -> void:
+	if source_picker.selected != 0:
+		status_label.text = "当前是麦克风输入，请说话或哼唱；游戏声源请切换回小镇环境声音。"
+		return
+	source_player.stream = Atlas.stream(sound_kind)
+	if source_player.stream == null:
+		status_label.text = "这段声源暂时无法读取，请选择另一种。"
+		return
+	source_player.volume_db = -8
+	if AudioServer.get_driver_name() != "Dummy": source_player.play()
+	source_stop.start()
+	if recorder.capturing:
+		draft_context.mv_events.append({"time":float(recorder.frame_count)/recorder.sample_rate,"kind":sound_kind})
+	status_label.text = "正在听：" + Atlas.label(sound_kind) + (" · 录音中，停止后保存。" if recorder.capturing else " · 按录制，把它留进声音收藏。")
+
+func current_mv_kind() -> String:
+	var context := draft_context if recorder.capturing or not player.playing else playback_context
+	var at := float(recorder.frame_count)/recorder.sample_rate if recorder.capturing else player.get_playback_position()
+	var kind := str(context.get("sound_kind", sound_kind))
+	for event in context.get("mv_events",[]):
+		if float(event.get("time",0)) <= at: kind=str(event.get("kind",kind))
+	return kind

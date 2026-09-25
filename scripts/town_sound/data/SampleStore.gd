@@ -74,11 +74,20 @@ func save_sample(wav: AudioStreamWAV, sample_name: String, context: Dictionary =
 		last_error = "无法完成音频保存：" + error_string(error)
 		return {}
 	var clean_name := sample_name.strip_edges().left(60)
+	var signal_peak := 0.0
+	var samples_data := wav.data
+	if wav.format == AudioStreamWAV.FORMAT_16_BITS:
+		for offset in range(0,samples_data.size()-1,2): signal_peak=maxf(signal_peak,absf(float(samples_data.decode_s16(offset)))/32768.0)
 	var metadata := {
+		"signal_peak":signal_peak,
 		"id": id, "name": clean_name if not clean_name.is_empty() else "未命名的声音",
 		"duration": wav.get_length(), "created_at": Time.get_datetime_string_from_system(true),
 		"file_path": final_path, "sample_rate": wav.mix_rate, "channels": 2 if wav.stereo else 1,
 		"source_mode": str(context.get("source_mode", "unknown")),
+		"sound_kind": str(context.get("sound_kind", "pulse")),
+		"mv_seed": int(context.get("mv_seed",23817)),
+		"mv_version": int(context.get("mv_version",3)),
+		"mv_events": context.get("mv_events",[]).duplicate(true),
 		"role": str(context.get("role", "")),
 		"journey_id":str(context.get("journey_id","")),
 		"game_day": int(context.get("game_day", 0)),

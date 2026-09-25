@@ -240,8 +240,7 @@ func _open_pocket_recorder() -> void:
 func _open_record_store() -> void:
 	if GameState.current_location != "record_store": return
 	if is_instance_valid(pocket_panel) or pocket_opening: return
-	var panel = load("res://scenes/town_sound/Recorder.tscn").instantiate()
-	panel.shop_mode = true
+	var panel = load("res://scripts/town_sound/record_shop/RecordShop.gd").new()
 	_show_pocket_panel(panel)
 
 

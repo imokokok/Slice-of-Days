@@ -16,8 +16,8 @@ try {
     if ($currentBranch -ne 'main') { throw "Expected main, found $currentBranch. Switch intentionally before pushing." }
     $remoteUrl = (& git remote get-url --push origin).Trim()
     if ($remoteUrl -notmatch 'github\.com[:/]imokokok/Slice-of-Days(?:\.git)?$') { throw 'origin is not the expected Slice-of-Days repository.' }
-    $scopes = @('prototypes/town-sound/', 'scripts/town_sound/', 'scenes/town_sound/', 'tests/town_sound/')
-    $sharedFiles = @('README.md', 'project.godot', 'scripts/ui/town_day.gd')
+    $scopes = @('prototypes/town-sound/', 'scripts/town_sound/', 'scenes/town_sound/', 'tests/town_sound/', 'art/town_sound_cc0/')
+    $sharedFiles = @('README.md', 'project.godot', 'scripts/ui/town_day.gd', 'scripts/ui/interactive_space.gd', 'scripts/core/scene_router.gd', 'scripts/residency/recorder_lite.gd', 'scripts/residency/paper_overlay.gd', 'scripts/ui/components/live_sound_window.gd')
     $changedPaths = @(& git diff --name-only) + @(& git diff --cached --name-only) + @(& git ls-files --others --exclude-standard)
     $otherPaths = @($changedPaths | Where-Object {
         $candidatePath = $_
@@ -28,7 +28,8 @@ try {
     if ($otherPaths.Count -gt 0) {
         throw "Changes outside Town Sound exist. Commit or handle them separately first: $($otherPaths -join ', ')"
     }
-    Invoke-ProjectGit -GitArguments @('add', '--', 'prototypes/town-sound', 'scripts/town_sound', 'scenes/town_sound', 'tests/town_sound', 'README.md', 'project.godot', 'scripts/ui/town_day.gd')
+    Invoke-ProjectGit -GitArguments (@('add', '--') + $scopes + $sharedFiles)
+    Invoke-ProjectGit -GitArguments @('diff', '--cached', '--check')
     & git diff --cached --quiet
     if ($LASTEXITCODE -eq 1) {
         Invoke-ProjectGit -GitArguments @('commit', '-m', $Message)
@@ -36,6 +37,10 @@ try {
     Invoke-ProjectGit -GitArguments @('fetch', 'origin', 'main')
     Invoke-ProjectGit -GitArguments @('rebase', 'origin/main')
     Invoke-ProjectGit -GitArguments @('push', 'origin', 'main')
+    $localHead = (& git rev-parse HEAD).Trim()
+    $remoteHead = ((& git ls-remote origin refs/heads/main) -split '\s+')[0]
+    if ($localHead -ne $remoteHead) { throw 'Remote main differs from local HEAD; inspect before retrying.' }
+    Write-Host "Verified main: $localHead"
     Write-Host 'Town Sound is synchronized with GitHub.'
 } finally {
     Pop-Location

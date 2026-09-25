@@ -87,6 +87,7 @@ func _ready() -> void:
 		else:
 			status.text = LocalizationSystem.text(model.error)))
 	transport.add_child(button("制作唱片", request_visual))
+	transport.add_child(button("用收藏搭建 16 秒草稿",build_starter))
 	clock_label = label("00:00 / 00:00")
 	transport.add_child(clock_label)
 	undo_button=button("撤销",_undo_edit); redo_button=button("重做",_redo_edit); undo_button.disabled=true; redo_button.disabled=true
@@ -448,3 +449,21 @@ func _undo_edit() -> void:
 func _redo_edit() -> void:
 	if redo_history.is_empty(): return
 	edit_history.append(_edit_snapshot()); _restore_edit(redo_history.pop_back())
+
+func build_starter() -> void:
+	if not model.clips.is_empty():
+		status.text="时间轴已有作品。为避免覆盖，请先保存并清空片段，或直接继续编辑。"
+		return
+	var items:=SampleStore.new().list_samples().filter(func(item:Dictionary): return not bool(item.get("missing",true)) and float(item.get("duration",0))>=0.15 and float(item.get("signal_peak",1))>.0001)
+	if items.size()<2:
+		status.text="先保存至少两段真实采样。去公交站录风、饭店录火，或在书店录翻页。"
+		return
+	for i in mini(items.size(),4):
+		var index:=model.add_sample(items[i],i,float(i)*2)
+		model.clips[index].loop=true
+		model.clips[index].length=16-float(i)*2
+		model.clips[index].volume=.6
+		model.clips[index].fade_in=.2
+		model.clips[index].fade_out=.5
+	changed()
+	status.text="已用你的录音搭出 16 秒草稿。可撤销；试听后拖选裁剪，调整每种声音出现的位置。"

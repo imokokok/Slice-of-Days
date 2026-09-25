@@ -102,8 +102,7 @@ func gameplay_module(module_id: String, source_event_id := "", rollback_snapshot
 		var gate:=GameplayModuleSystem.entry_check(module_id)
 		if not bool(gate.ok): GuidanceSystem.blocked(str(gate.reason)); return false
 		if not get_tree().get_nodes_in_group("town_sound_workspace").is_empty(): return false
-		var workspace=load("res://scenes/town_sound/Recorder.tscn").instantiate()
-		workspace.shop_mode=true
+		var workspace=load("res://scripts/town_sound/record_shop/RecordShop.gd").new()
 		get_tree().current_scene.add_child(workspace)
 		return true
 	var session_snapshot := rollback_snapshot.duplicate(true)

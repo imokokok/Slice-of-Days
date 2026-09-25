@@ -5,7 +5,7 @@ const RATE := 22050
 var clips: Array[Dictionary] = []
 var muted := [false, false, false, false]
 var gains := [1.0, 1.0, 1.0, 1.0]
-var prompt := "温暖，圆，细线，慢慢漂浮"
+var prompt := "像素 · 随声音变化"
 var seed_value := 23817
 var cache: Dictionary = {}
 var error := ""
@@ -24,7 +24,7 @@ func add_sample(item: Dictionary, track: int, at: float) -> int:
 	var duration := minf(float(item.duration), 60.0 - at)
 	if duration <= 0:
 		return -1
-	clips.append({"sample_id": item.id, "name": item.name, "track": clampi(track, 0, 3), "start": at,
+	clips.append({"sample_id": item.id, "name": item.name, "sound_kind":str(item.get("sound_kind","pulse")), "mv_events":item.get("mv_events",[]).duplicate(true), "track": clampi(track, 0, 3), "start": at,
 		"source_start": 0.0, "source_end": float(item.duration), "volume": 1.0, "speed": 1.0,
 		"loop": false, "fade_in": 0.0, "fade_out": 0.0, "length": duration})
 	return clips.size() - 1

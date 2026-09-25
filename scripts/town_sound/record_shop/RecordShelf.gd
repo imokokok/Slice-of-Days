@@ -63,6 +63,10 @@ func listen(record: Dictionary) -> void:
 	visual.configure(wav, str(record.get("visual_prompt", "warm")), int(record.get("visual_seed", 23817)))
 	if record.get("visual_profile") is Dictionary and not record.visual_profile.is_empty():
 		visual.profile = record.visual_profile
+	visual.model = null
+	if record.get("mv_clips") is Array:
+		visual.model=Arrangement.new(); visual.model.clips.assign(record.mv_clips)
+		visual.model.muted=record.get("mv_muted",[false,false,false,false]); visual.model.gains=record.get("mv_gains",[1,1,1,1])
 	player.stream = wav
 	player.play()
 	note.text = LocalizationSystem.text("正在试听：「%s」" % record.title)

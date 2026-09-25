@@ -8,7 +8,13 @@ func check(ok: bool, message: String) -> void:
 func _initialize() -> void:
 	call_deferred("run")
 func run() -> void:
+	if not OS.get_cmdline_user_args().has("--isolated-save"): quit(2); return
+	root.get_node("ChapterSystem").start_new_game()
 	root.get_node("GameState").current_location = "record_store"
+	var gs=root.get_node("GameState")
+	gs.current_minute=545
+	check(gs.combine_flexible_time(),"Player can combine adjacent private time before pressing")
+	check(root.get_node("GameplayModuleSystem").entry_check("sound_sampling",60).ok,"Delivery fixture has a real free hour during opening hours")
 	var host = load("res://scenes/town_sound/Recorder.tscn").instantiate()
 	root.add_child(host)
 	await process_frame
@@ -82,7 +88,7 @@ func run() -> void:
 			table.library.root_path = good_path
 			DirAccess.remove_absolute(blocked_path)
 		await table.complete_action()
-	check(table.step == 11, "Packaging did not finish")
+	check(table.step == 11, "Packaging did not finish: step=%d %s" % [table.step,table.instructions.text])
 	check(not table.saved_record.is_empty(), "Final record not saved")
 	var restored := LocalRecordLibrary.new()
 	restored.root_path = table.library.root_path

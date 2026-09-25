@@ -16,6 +16,15 @@ var play_button: Button
 var playback: AudioStreamPlayer
 var focus_active := true
 var live_screen: Control
+const Atlas = preload("res://scripts/town_sound/data/SoundAtlas.gd")
+var sound_kind := "wind"
+var mv_seed := 23817
+var mv_events: Array = []
+var sound_picker: OptionButton
+var source_picker: OptionButton
+var source_player: AudioStreamPlayer
+var source_stop: Timer
+var record_context: Dictionary = {}
 
 func _ready() -> void:
 	theme=preload("res://scripts/ui/components/interface_palette.gd").theme_for_tools()
@@ -25,6 +34,8 @@ func _ready() -> void:
 	mouse_filter=MOUSE_FILTER_IGNORE
 	recorder=FieldRecorder.new(); add_child(recorder)
 	recorder.input_gain=float(GameState.artifacts.get("recorder_gain",1.0))
+	source_player=AudioStreamPlayer.new(); source_player.bus="TownWorldSoundEffects"; add_child(source_player)
+	source_stop=Timer.new(); source_stop.one_shot=true; source_stop.wait_time=8; source_stop.timeout.connect(source_player.stop); add_child(source_stop)
 	playback=AudioStreamPlayer.new(); playback.bus="Music"; add_child(playback)
 	playback.finished.connect(func(): play_button.text=LocalizationSystem.text("试听"))
 	# Copy the actual scene before the recorder body draws. The view below
@@ -32,11 +43,22 @@ func _ready() -> void:
 	var world_frame := BackBufferCopy.new(); world_frame.copy_mode=BackBufferCopy.COPY_MODE_VIEWPORT
 	world_frame.name="LiveWorldFrame"; add_child(world_frame)
 	face=Control.new(); face.position=Vector2(300,140); face.size=Vector2(1000,600); face.mouse_filter=MOUSE_FILTER_IGNORE; add_child(face)
-	var shell := TextureRect.new()
-	var region := AtlasTexture.new(); region.atlas=preload("res://art/ui/pocket_doodles/recorder-refined.png"); region.region=Rect2(48,128,1460,730)
-	shell.texture=region; shell.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; shell.size=face.size; shell.mouse_filter=MOUSE_FILTER_IGNORE; face.add_child(shell)
+	var shell := NinePatchRect.new(); shell.texture=preload("res://art/town_sound_cc0/panel.png")
+	shell.patch_margin_left=6; shell.patch_margin_right=6; shell.patch_margin_top=6; shell.patch_margin_bottom=6
+	shell.size=Vector2(1000,490); shell.position=Vector2(0,110); shell.mouse_filter=MOUSE_FILTER_IGNORE
+	shell.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST; face.add_child(shell)
 	var p=preload("res://scripts/ui/components/interface_palette.gd")
-	p.words(face,"随身录音机",Vector2(111,187),420,26)
+	p.words(face,"FIELD NOTES / 随身录音机",Vector2(75,155),650,26)
+	sound_picker=OptionButton.new(); sound_picker.position=Vector2(75,108); sound_picker.size=Vector2(458,40); face.add_child(sound_picker)
+	for kind in Atlas.at(GameState.current_location):
+		sound_picker.add_item(Atlas.label(kind)); sound_picker.set_item_metadata(sound_picker.item_count-1,kind)
+	sound_kind=str(sound_picker.get_item_metadata(0))
+	sound_picker.item_selected.connect(func(i:int): sound_kind=str(sound_picker.get_item_metadata(i)))
+	source_picker=OptionButton.new(); source_picker.position=Vector2(580,215); source_picker.size=Vector2(338,40)
+	source_picker.add_item("小镇声源（默认）"); source_picker.add_item("真实人声 · 麦克风")
+	face.add_child(source_picker)
+	_button("触发声源",Vector2(580,485),Vector2(210,38),trigger_source)
+	p.words(face,"选择声源 → 录制 → 停止自动保存 → 唱片店编曲",Vector2(75,68),900,18)
 	status=p.words(face,"留下此刻听见的声音",Vector2(110,523),608,19)
 	var screen = preload("res://scripts/ui/components/live_sound_window.gd").new(); screen.source=self; screen.position=Vector2(75,241); screen.size=Vector2(458,260)
 	screen.name="LiveRecordingPicture"; live_screen=screen
@@ -47,7 +69,7 @@ func _ready() -> void:
 	record_button=_button("● 开始录音",Vector2(580,338),Vector2(210,65),toggle_recording)
 	record_button.name="RecordToggle"
 	mark_button=_button("留下标记",Vector2(580,435),Vector2(210,43),mark_recording); mark_button.disabled=true
-	_button("收起",Vector2(795,184),Vector2(126,38),finish_for_exit)
+	_button("收起",Vector2(795,151),Vector2(126,38),finish_for_exit)
 	_button("录音收藏",Vector2(750,525),Vector2(160,39),_open_library)
 	play_button=_button("试听",Vector2(580,269),Vector2(100,40),_play_last)
 	play_button.disabled=true
@@ -68,8 +90,12 @@ func _ready() -> void:
 		compact_button.text=LocalizationSystem.text("● %02d:%02d · 展开录音机"%[int(seconds)/60,int(seconds)%60])
 		record_button.text=LocalizationSystem.text("■ 停止并保存"); mark_button.disabled=false
 		queue_redraw())
-	recorder.failed.connect(func(message: String): status.text=LocalizationSystem.text(message); close_after=false; record_button.text="● 重新录音"; mark_button.disabled=true)
 	recorder.completed.connect(_complete)
+	recorder.failed.connect(func(message: String):
+		source_player.stop(); source_stop.stop(); source_picker.disabled=false
+		status.text=LocalizationSystem.text(message); close_after=false
+		record_button.text="● 重新录音"; mark_button.disabled=true
+		play_button.disabled=playback.stream==null)
 	preload("res://scripts/ui/solmere_motion.gd").paper_open(face,SettingsSystem.reduced_motion())
 
 func _button(words: String, at: Vector2, extent: Vector2, action: Callable) -> Button:
@@ -91,6 +117,7 @@ func _play_last() -> void:
 	else: playback.play(); play_button.text="停止试听"
 
 func _complete(wav: AudioStreamWAV, warning: String) -> void:
+	source_player.stop(); source_stop.stop(); source_picker.disabled=false
 	playback.stream=wav; play_button.disabled=false
 	pending_wav = wav
 	saved = false
@@ -100,7 +127,7 @@ func _save(warning := "") -> void:
 	if pending_wav == null: return
 	var store := SampleStore.new(store_path)
 	var item := pending_sample
-	if item.is_empty(): item=store.save_sample(pending_wav,TravelSystem.location_name(GameState.current_location)+" · "+GameState.clock_text(),{"role":GameState.current_role,"game_day":GameState.current_day,"game_minute":GameState.current_minute,"location":GameState.current_location,"source_mode":"game","consent_status":"game_audio","usage_scope":"local_game","markers":marks})
+	if item.is_empty(): item=store.save_sample(pending_wav,TravelSystem.location_name(GameState.current_location)+" · "+GameState.clock_text(),record_context.merged({"markers":marks,"mv_events":mv_events},true))
 	if item.is_empty(): status.text = LocalizationSystem.text(store.last_error+"\n"+SettingsSystem.binding_text("open_recorder")+" 重试保存"); record_button.text="重试保存"; mark_button.disabled=true; close_after = false; return
 	pending_sample=item
 	var before := GameState.to_save_data().duplicate(true)
@@ -134,7 +161,16 @@ func toggle_recording() -> void:
 	WorldSound.play_ui("record_stop" if recorder.capturing else "record_start")
 	if pending_wav!=null: _save()
 	elif recorder.capturing: recorder.stop()
-	else: playback.stop(); play_button.text="试听"; saved=false; marks.clear(); levels.clear(); recorder.start("","game")
+	else:
+		playback.stop(); play_button.text="试听"; saved=false; marks.clear(); levels.clear()
+		mv_seed=randi_range(1,999999)
+		var mode:="game" if source_picker.selected==0 else "microphone"
+		record_context={"role":GameState.current_role,"game_day":GameState.current_day,"game_minute":GameState.current_minute,"location":GameState.current_location,"source_mode":mode,"consent_status":"game_audio" if mode=="game" else "user_voice","usage_scope":"local_game","sound_kind":sound_kind if mode=="game" else "voice","mv_seed":mv_seed,"mv_version":3}
+		mv_events=[{"time":0.0,"kind":record_context.sound_kind}]
+		if recorder.start(SoundSettings.input_device,mode):
+			source_picker.disabled=true
+			play_button.disabled=true
+			if mode=="game": trigger_source()
 func mark_recording() -> void:
 	if recorder.capturing: marks.append(snappedf(recorder.elapsed,.01))
 func _input(event: InputEvent) -> void:
@@ -144,3 +180,19 @@ func _input(event: InputEvent) -> void:
 	elif event.is_action_pressed("ui_cancel"): finish_for_exit()
 	else: return
 	get_viewport().set_input_as_handled()
+
+func trigger_source() -> void:
+	if source_picker.selected!=0: status.text="麦克风模式，请对着设备说话。"; return
+	source_player.stream=Atlas.stream(sound_kind)
+	source_player.volume_db=-8
+	if source_player.stream!=null and AudioServer.get_driver_name()!="Dummy": source_player.play()
+	source_stop.start()
+	if recorder.capturing: mv_events.append({"time":float(recorder.frame_count)/recorder.sample_rate,"kind":sound_kind})
+	status.text="正在听："+Atlas.label(sound_kind)+" · 录制后自动保存声音和同步影像。"
+
+func current_mv_kind() -> String:
+	var kind:=str(record_context.get("sound_kind",sound_kind))
+	var at:=float(recorder.frame_count)/recorder.sample_rate if recorder.capturing else playback.get_playback_position()
+	for event in mv_events:
+		if float(event.time)<=at: kind=str(event.kind)
+	return kind

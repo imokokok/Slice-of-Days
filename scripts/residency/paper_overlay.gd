@@ -789,6 +789,14 @@ func _show_detail(id: String) -> void:
 			waveform.position = Vector2(35,320)
 			waveform.size = Vector2(590,140)
 			detail.add_child(waveform)
+			if audio_player.stream!=null:
+				var visual=load("res://scripts/town_sound/visual/SampleVisual.gd").new()
+				visual.player=audio_player
+				visual.model=Arrangement.new(); visual.model.add_sample(sample,0,0)
+				visual.configure(audio_player.stream,"像素",int(sample.get("mv_seed",23817)))
+				visual.position=Vector2(330,95); visual.size=Vector2(305,172)
+				visual.mouse_filter=Control.MOUSE_FILTER_IGNORE
+				detail.add_child(visual)
 	else:
 		var description := str(item.get("text",item.get("detail","")))
 		if item.kind == "proof": description = "%s\n申请人：%s\n日期：%s\n时长：%s\n实付：%s\n开具：Day %s\n签记：%s" % [item.title,item.get("applicant",GameState.current_role),item.get("work_dates",item.get("dates","")),item.get("hours","—"),str(item.get("paid","—")),str(item.get("issued_day",item.day)),item.get("signature","")]

@@ -5,6 +5,8 @@ var model: Arrangement
 var profile: Dictionary = {}
 var time := 0.0
 var frozen := false
+var force_kind := ""
+var pixel_mode := true
 var pcm := PackedByteArray()
 var shapes: Array[Dictionary] = []
 var features := [0.0, 0.0, 0.0, 0.0, 0.0]
@@ -32,7 +34,7 @@ func configure(wav: AudioStreamWAV, prompt: String, seed_number: int) -> void:
 static func parse_prompt(text: String, seed_number: int) -> Dictionary:
 	var value := text.to_lower()
 	var result := {"palette": "warm", "circle": 0.55, "density": 0.4, "speed": 0.7,
-		"motion": "floating", "randomness": 0.2, "seed": seed_number, "visual_version": 2}
+		"motion": "floating", "randomness": 0.2, "seed": seed_number, "visual_version": 3}
 	if has_words(value, ["冷", "蓝", "cold", "blue", "海", "wave"]): result.palette = "cool"
 	if has_words(value, ["红", "red", "黑", "black"]): result.palette = "red"
 	if has_words(value, ["黄", "yellow", "快乐", "happy"]): result.palette = "yellow"
@@ -87,6 +89,24 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color("efe7d3"))
 	if profile.is_empty(): return
 	analyze()
+	if pixel_mode and not str(profile.get("mode", "")).contains("geometry"):
+		var kind := force_kind if not force_kind.is_empty() else str(profile.get("kind","pulse"))
+		if model != null:
+			var weight := -1.0
+			for clip in model.clips:
+				var track := int(clip.track)
+				if model.muted[track] or time < float(clip.start) or time >= float(clip.start)+float(clip.length): continue
+				var level := float(clip.volume)*float(model.gains[track])
+				if level < weight: continue
+				weight=level; kind=str(clip.get("sound_kind","pulse"))
+				var local := (time-float(clip.start))*float(clip.speed)+float(clip.get("phase",0))
+				var span := float(clip.source_end)-float(clip.source_start)
+				if clip.loop and span>0: local=fposmod(local,span)
+				local+=float(clip.source_start)
+				for event in clip.get("mv_events",[]):
+					if float(event.get("time",0))<=local: kind=str(event.get("kind",kind))
+		preload("res://scripts/town_sound/visual/PixelScore.gd").paint(self,size,time,float(features[0]),PackedFloat32Array([features[2],features[3],features[4]]),kind,int(profile.seed))
+		return
 	# Work in a fixed artboard so covers and playback have identical composition.
 	draw_set_transform(Vector2.ZERO, 0, size / Vector2(960, 540))
 	var ink := Color("25242c")

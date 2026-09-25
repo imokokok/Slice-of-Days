@@ -9,8 +9,10 @@
 
 - 主 Godot 项目：仓库根目录 project.godot。
 - Town Sound 运行代码：scripts/town_sound/。
-- 相册和相机也在该目录，没有另一份独立实现。
-- 小镇入口：scripts/ui/town_day.gd。
+- 旧完整录音面板作为唱片店工作台宿主，随身录音以 residency 工具为准。
+- 主录音工具：scripts/residency/recorder_lite.gd；收藏：scripts/residency/paper_overlay.gd。
+- 小镇/室内入口：scripts/ui/town_day.gd、scripts/ui/interactive_space.gd、scripts/core/scene_router.gd。
+- 新增 CC0 素材与授权：art/town_sound_cc0/。
 - 测试：tests/town_sound/。
 
 旧 outputs/TownSound 和早期 ZIP 是快照，不会自动同步。prototypes/town-sound 仅保留文档和推送脚本。

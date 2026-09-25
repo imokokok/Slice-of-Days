@@ -4,7 +4,7 @@
     "name": "石泳琪",
     "kind": "regular",
     "quote": "今天我也坐下来尝一口。来份暖和的饭，辣味轻一点。",
-    "today_story": "后厨刚收拾好，想看看从电饭煲盛出的米饭能做出什么。",
+    "today_story": "后厨刚收拾好，想看看厨房的新食材能做出什么。",
     "past_story": "开这家店以后，我总记得第一锅热饭的味道。",
     "mood_base": 38,
     "likes": [
@@ -22,7 +22,7 @@
     "schedule": "晚间经过饭店",
     "review_voice": "chef",
     "role": "饭店老板",
-    "habit": "米饭热乎，调味别盖过食材",
+    "habit": "菜要热乎，调味别盖过食材",
     "cut_preference": "small",
     "tip_min": 0.03,
     "tip_max": 0.1,

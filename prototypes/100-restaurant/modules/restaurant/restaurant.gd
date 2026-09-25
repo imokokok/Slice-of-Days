@@ -81,7 +81,6 @@ var _food_by_physics: Dictionary = {}
 var _mystery_bag: Array = []
 var _last_mystery: = ""
 var storage_display
-var rice_cooker: Control
 var _stock: Dictionary = {}
 var _stock_bodies: Dictionary = {}
 var _recipe_stand
@@ -243,11 +242,6 @@ func _build_ui() -> void :
 	storage_display.ingredient_chosen.connect(_take_ingredient)
 	storage_display.browse_requested.connect(_show_pantry)
 	storage_display.mystery_requested.connect(_draw_mystery)
-	rice_cooker = preload("res://modules/restaurant/ui/rice_cooker.gd").new()
-	hud.add_child(rice_cooker)
-	rice_cooker.serving_requested.connect(_take_rice_from_cooker)
-	rice_cooker.notice_requested.connect(_notify)
-	rice_cooker.sound_requested.connect(func(effect: String) -> void: world.audio.play_effect(effect))
 	world.storage_return_handler = _return_to_storage
 	clock_label = _label(hud, "准备营业", Vector2(366, 36), 20, Color("fff0b8"))
 	money_label = _label(hud, "¥ 0.00", Vector2(1230, 34), 20, Color("f7d96f"))
@@ -255,8 +249,8 @@ func _build_ui() -> void :
 	settings.position = Vector2(1440, 28)
 	_recipe_stand = preload("res://modules/restaurant/ui/recipe_stand.gd").new()
 	hud.add_child(_recipe_stand)
+	_recipe_stand.visible = false # Keep the shared page renderer for the open cookbook.
 	_refresh_recipe_stand()
-	_hotspot("ReferenceRecipeBook", Rect2(1122, 468, 215, 200), "打开实际菜谱与创作工作台", _show_cookbook)
 	var trash: = _dock_button(hud, "丢弃 / 清理台面", func():
 		if is_instance_valid(world._held): world.discard_held()
 		else: _interact("trash"), 130)
@@ -606,7 +600,7 @@ func _definition(id: String) -> Dictionary:
 
 func _show_pantry() -> void :
 	_open_modal("pantry", "食材架  /  自由搭配", 1120)
-	_text("每种原料本班备一件；米饭请到水槽旁开电饭煲盛取。未加工原料和调料瓶可拖回原位；用过的瓶子保留余量。", 16)
+	_text("每种原料本班备一件；未加工原料和调料瓶可拖回原位，用过的瓶子保留余量。", 16)
 	var search: = LineEdit.new()
 	search.placeholder_text = "搜索食材，例如：番茄、虾、袜子…"
 	search.text = _pantry_search
@@ -633,7 +627,6 @@ func _refresh_pantry() -> void :
 		_pantry_grid.remove_child(child)
 		child.queue_free()
 	for entry in session.active_ingredients():
-		if str(entry.get("id", "")) == "rice": continue
 		if _pantry_category != "all" and entry.get("category", "basic") != _pantry_category: continue
 		if not _pantry_search.is_empty() and not str(entry.get("name", "")).contains(_pantry_search) and not str(entry.get("id", "")).contains(_pantry_search): continue
 		var button: = _button(_pantry_grid, "%s\n%.0f g  ·  %s" % [entry["name"], float(entry.get("mass", 0.15)) * 1000.0, "需做熟" if entry.get("needs_cook", false) else "自由处理"], func(): _take_ingredient(entry), 198)
@@ -663,14 +656,9 @@ func _refresh_pantry() -> void :
 		if not world.get_dispense_mode(entry).is_empty():
 			button.tooltip_text += "\n" + world.ingredient_operation_hint(entry)
 
-func _take_rice_from_cooker(press_position: Vector2) -> void:
-	_take_ingredient(_definition("rice"), press_position, true)
-
-func _take_ingredient(entry: Dictionary, press_position := Vector2.INF, from_rice_cooker := false) -> void :
+func _take_ingredient(entry: Dictionary, press_position := Vector2.INF) -> void :
 	var id := str(entry.get("id", ""))
-	if id == "rice" and not from_rice_cooker:
-		_notify("米饭放在水槽旁的电饭煲里；先开盖，再用饭勺盛取。")
-		return
+	if id.is_empty() or id in Session.BLOCKED_INGREDIENT_IDS: return
 	if not bool(_stock.get(id, true)):
 		_notify("这件%s已取走，请使用台面上的那一件。" % entry.get("name", "食材"))
 		return
@@ -689,9 +677,6 @@ func _take_ingredient(entry: Dictionary, press_position := Vector2.INF, from_ric
 		_stock[id] = false
 		storage_display.reveal_ingredient(id)
 		storage_display.set_available(id, false)
-		if id == "rice":
-			rice_cooker.set_serving_available(false)
-			world.audio.play_effect("rice_scoop")
 		_close_modal()
 		if press_position != Vector2.INF:
 			world.begin_food_drag(world.get_global_transform_with_canvas().affine_inverse() * press_position, true)
@@ -710,9 +695,7 @@ func _take_ingredient(entry: Dictionary, press_position := Vector2.INF, from_ric
 func _return_to_storage(body: RigidBody2D) -> bool:
 	var id := str(body.get_meta("id", ""))
 	if bool(_stock.get(id, true)): return false
-	if id == "rice":
-		if not rice_cooker.slot_at(body.global_position): return false
-	elif not storage_display.slot_at(id, body.global_position): return false
+	if not storage_display.slot_at(id, body.global_position): return false
 	if body.get_meta("cut", false) or body.get_meta("dispensed", false) or float(body.get_meta("saved_heat", 0.0)) > 0.0 or float(body.get_meta("surface_sauce", {}).get("volume_ml", 0.0)) > 0.0:
 		_notify("加工过的食材请留在菜板、锅或盘子里，不能放回原料格。")
 		return false
@@ -726,7 +709,6 @@ func _return_to_storage(body: RigidBody2D) -> bool:
 	_stock_bodies[id] = body
 	_stock[id] = true
 	storage_display.set_available(id, true)
-	if id == "rice": rice_cooker.set_serving_available(true)
 	world.held_changed.emit("")
 	_notify("已放回%s，保留原来的物品和余量。" % body.get_meta("title", "物品"))
 	return true
@@ -1117,10 +1099,12 @@ func _view_recipe(record: Dictionary) -> void :
 	var row: = _row(modal_body)
 	var follow := _paper_action(row, "照着做这道菜", func(): _start_recipe_guide(record), "check", 245)
 	follow.name = "FollowRecipe"
-	follow.disabled = sequence.is_empty() or session.phase == "closed"
-	follow.tooltip_text = "收班后可翻阅，重新进入厨房后再跟做。" if session.phase == "closed" else "按真实切配、入锅和熟度推进；不会替你做菜。"
+	var retired_ingredient := _recipe_has_retired_ingredient(record)
+	follow.disabled = sequence.is_empty() or session.phase == "closed" or retired_ingredient
+	follow.tooltip_text = "这道旧菜谱含已下架的米饭，仍可翻阅和分享。" if retired_ingredient else ("收班后可翻阅，重新进入厨房后再跟做。" if session.phase == "closed" else "按真实切配、入锅和熟度推进；不会替你做菜。")
 	if not record.get("reference", false):
-		_paper_action(row, "继续 DIY", func(): _show_recipe_editor(record), "book", 180)
+		if not retired_ingredient:
+			_paper_action(row, "继续 DIY", func(): _show_recipe_editor(record), "book", 180)
 		_paper_action(row, "分享这一页", func(): _share_recipe_page(record), "book", 180)
 		_button(row, "喜欢这道菜", func():
 			var liked: bool = repository.like_recipe(str(record.get("id", "")))
@@ -1199,8 +1183,15 @@ func _build_recipe_guide() -> void:
 		button.add_theme_font_size_override("font_size", 15)
 	_guide_bar.visible = false
 
+func _recipe_has_retired_ingredient(record: Dictionary) -> bool:
+	var dish: Dictionary = record.get("dish", {})
+	for item in dish.get("ingredients", []):
+		var ingredient_id: String = str(item.get("id", item.get("ingredient_id", ""))) if item is Dictionary else str(item)
+		if ingredient_id in repository.RETIRED_INGREDIENT_IDS: return true
+	return false
+
 func _start_recipe_guide(record: Dictionary) -> void:
-	if session.phase == "closed": return
+	if session.phase == "closed" or _recipe_has_retired_ingredient(record): return
 	recipe_guide.start(record, session.ingredients)
 	_close_modal()
 	_update_recipe_guide()

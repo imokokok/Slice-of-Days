@@ -52,12 +52,9 @@ func run() -> void:
 	expect(world._held == bottle and is_equal_approx(float(bottle.get_meta("remaining_ml")), 57.25), "returned bottle retains identity and remaining liquid")
 	world.discard_held()
 	await process_frame
-	world.pickup_knife()
-	game._take_ingredient(game._definition("rice"))
-	expect(not game._stock.has("rice"), "failed pickup never consumes inventory")
-	world._release_knife()
-	expect(game.storage_display.find_child("Ingredient_rice", true, false) == null, "rice is not stranded on a shelf")
-	expect(is_instance_valid(game.rice_cooker) and game.rice_cooker.serving_available, "rice has a finite countertop cooker source")
+	expect(game._definition("rice").is_empty() and not game._stock.has("rice"), "removed rice has no inventory definition")
+	expect(game.storage_display.find_child("Ingredient_rice", true, false) == null and game._pantry_grid.find_child("Pantry_rice", true, false) == null, "removed rice has no shelf or pantry slot")
+	expect(game.hud.get_node_or_null("RiceCooker") == null, "no countertop rice cooker is created")
 	for id in ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]:
 		var slot: Button = game.storage_display.find_child("Ingredient_" + id, true, false)
 		expect(slot.position.x >= 640 and slot.position.x < 1080 and not world.get_dispense_mode(game._definition(id)).is_empty(), "back tray contains an actual seasoning container: " + id)
@@ -93,7 +90,7 @@ func run() -> void:
 	expect(is_equal_approx(mass, parts[0].mass + parts[1].mass), "slice mass is conserved")
 	game._show_cookbook()
 	var preview: TextureRect = game.modal_body.find_child("SharedRecipePage", true, false)
-	expect(preview.texture == game._recipe_stand.viewport.get_texture(), "outside stand and opened page share one live image")
+	expect(preview.texture == game._recipe_stand.viewport.get_texture(), "opened cookbook retains a live page renderer without a counter stand")
 	var record := {"title":"今天的手记", "author":"主厨", "notes":"番茄慢慢炒。", "dish":{"ingredients":[{"id":"tomato","heat":8.0,"cut":true}]}}
 	expect(game.repository.save_recipe(record), "sample real recipe saves")
 	var stored: Dictionary = game.repository.load_recipes()[0]

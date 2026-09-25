@@ -21,7 +21,7 @@ func run() -> void:
 		var pixels := texture.get_image()
 		expect(pixels.get_pixel(0, 0).a < 0.01 and pixels.get_pixel(pixels.get_width() - 1, pixels.get_height() - 1).a < 0.01, id + " black matte is transparent")
 		expect(Art.body_outline(id).size() >= 3, id + " physical silhouette follows visible art")
-	for id in ["egg", "rice", "noodles", "bread"]:
+	for id in ["egg", "noodles", "bread"]:
 		var texture := Art.food(id)
 		expect(texture != null and texture == Art.supplementary_food(id), id + " uses labeled new illustration")
 		if texture != null: expect(texture.get_image().get_pixel(0, 0).a < 0.01, id + " generated art has transparent margins")

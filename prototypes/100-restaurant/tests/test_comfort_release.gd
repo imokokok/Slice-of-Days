@@ -24,7 +24,7 @@ func run() -> void:
 		expect(bill.payment<0 if score<20 else bill.payment>=0,"signed fee boundary %d"%score)
 		expect(bill.tip>0 if score>80 else bill.tip==0,"tip boundary %d"%score)
 		expect(is_equal_approx(bill.payment,bill.meal_fee+bill.tip-bill.compensation),"bill balances %d"%score)
-	var snap={"ingredients":[{"id":"rice","heat":18,"cut":false}],"quality":0.18,"weirdness":0.0,"tags":["grain","comfort"],"raw_count":0,"cut_count":0,"burnt":true}
+	var snap={"ingredients":[{"id":"bread","heat":18,"cut":false}],"quality":0.18,"weirdness":0.0,"tags":["grain","comfort"],"raw_count":0,"cut_count":0,"burnt":true}
 	var regular: Dictionary=s._evaluate(snap,s.customers[0])
 	var charred: Dictionary=s._evaluate(snap,s.customers[1])
 	expect(charred.score>regular.score+30,"char lover meaningfully prefers browned food")

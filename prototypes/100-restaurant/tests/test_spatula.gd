@@ -59,7 +59,7 @@ func _run() -> void:
 	_expect(tool.position.is_equal_approx(home), "released spatula never follows mouse")
 	_expect(tool.stir_sweep(Vector2(740, 600), Vector2(870, 600)) == 0, "idle tool cannot apply impulses")
 	_expect(world.audio.stir_profile(game._definition("beef"))=="meat", "meat has a heavier contact profile")
-	_expect(world.audio.stir_profile(game._definition("rice"))=="dry", "grain has a dry brushing profile")
+	_expect(world.audio.stir_profile(game._definition("bread"))=="dry", "bread has a dry brushing profile")
 	_expect(world.audio.stir_profile(game._definition("rock"))=="hard", "strange hard objects have a restrained knock profile")
 	await create_timer(0.8).timeout
 	_expect(game.session.dish.size() == 1, "flipped ingredient remains in recipe after settling")

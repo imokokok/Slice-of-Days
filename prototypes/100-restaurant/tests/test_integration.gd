@@ -115,7 +115,7 @@ func _test_modals() -> void:
 	game._show_pantry()
 	await process_frame
 	await process_frame
-	_expect(game._pantry_grid.get_child_count() == game.session.active_ingredients().size() - 1, "pantry shows allowed ingredients except rice, which is served from its cooker")
+	_expect(game._pantry_grid.get_child_count() == game.session.active_ingredients().size(), "pantry shows every available ingredient without removed rice")
 	_check_modal_bounds("pantry")
 	game._pantry_category = "odd"
 	game._refresh_pantry()

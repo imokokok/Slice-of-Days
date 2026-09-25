@@ -66,22 +66,6 @@
     "model": "shrimp"
   },
   {
-    "id": "rice",
-    "name": "米饭",
-    "category": "basic",
-    "color": "f1e9cb",
-    "tags": [
-      "grain",
-      "comfort"
-    ],
-    "weirdness": 0.0,
-    "needs_cook": false,
-    "mass": 0.22,
-    "friction": 0.55,
-    "bounce": 0.04,
-    "model": "rice"
-  },
-  {
     "id": "cheese",
     "name": "芝士",
     "category": "basic",

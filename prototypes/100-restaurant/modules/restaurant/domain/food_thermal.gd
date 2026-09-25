@@ -21,7 +21,7 @@ static func profile(definition: Dictionary) -> Dictionary:
 	elif id == "chocolate": p.merge({"water":0.02,"soften":0.9,"cp":2000.0,"melt_c":33.0,"latent":60000.0,"phase":"chocolate"},true)
 	elif id == "ice_cream": p.merge({"water":0.6,"soften":0.9,"melt_c":2.0,"latent":150000.0,"phase":"cream"},true)
 	elif id == "bread": p.merge({"water":0.25,"soften":0.2,"shrink":0.08,"thickness":0.55},true)
-	elif id in ["rice","noodles"]: p.merge({"water":0.1,"soften":0.7,"shrink":0.03,"thickness":0.32},true)
+	elif id == "noodles": p.merge({"water":0.1,"soften":0.7,"shrink":0.03,"thickness":0.32},true)
 	elif id == "egg": p.merge({"water":0.75,"soften":0.15,"shrink":0.08,"thickness":0.4},true)
 	return p
 

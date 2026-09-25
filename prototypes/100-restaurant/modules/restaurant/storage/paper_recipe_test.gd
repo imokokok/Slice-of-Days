@@ -66,7 +66,7 @@ func run() -> void:
 	invalid = record.duplicate(true)
 	invalid.poster.stickers = [{"kind": "ingredient", "id": "unknown_ingredient", "cut": false, "position": [0.5, 0.5], "scale": 0.1}]
 	check(not book.save_recipe(invalid), "unknown collage ingredient rejected")
-	var cooked := {"title": "六种食材", "author": "主厨", "dish": {"ingredients": ["egg", "tomato", "rice", "shrimp", "cheese", "mushroom"], "quality": 0.8}, "poster": {}}
+	var cooked := {"title": "六种食材", "author": "主厨", "dish": {"ingredients": ["egg", "tomato", "bread", "shrimp", "cheese", "mushroom"], "quality": 0.8}, "poster": {}}
 	check(book.save_recipe(cooked), "valid six-ingredient cooked recipe still saves")
 	check(book.load_recipes()[-1].dish.quality == 0.8, "actual cooking metrics preserved")
 	var legacy := cooked.duplicate(true)
@@ -76,6 +76,16 @@ func run() -> void:
 	check(book.save_recipe(legacy), "full 48-piece kitchen record remains writable")
 	var legacy_reload := Repository.new(folder + "/book.json")
 	check(legacy_reload.load_recipes().size() == 4 and legacy_reload.load_recipes()[-1].dish.ingredients.size() == 48, "48-piece record does not invalidate the existing book")
+	var retired_path := folder + "/retired-rice.json"
+	var retired_record: Dictionary = legacy_reload.load_recipes()[-1].duplicate(true)
+	retired_record.dish.ingredients = ["rice", "egg"]
+	var retired_file := FileAccess.open(retired_path, FileAccess.WRITE)
+	retired_file.store_string(JSON.stringify({"schema_version": 1, "recipes": [retired_record], "liked_ids": []}))
+	retired_file.close()
+	var retired_book := Repository.new(retired_path)
+	check(retired_book.load_recipes().size() == 1 and retired_book.load_recipes()[0].dish.ingredients[0] == "rice", "historical rice cookbook still reads without losing the file")
+	check(not retired_book.save_recipe({"title": "new rice", "author": "tester", "dish": {"ingredients": ["rice"]}, "poster": {}}), "new rice recipe cannot be saved")
+	check(retired_book.load_recipes().size() == 1, "rejected rice save preserves historical cookbook")
 	legacy.dish.ingredients.append("chili")
 	check(not book.save_recipe(legacy), "49 entries exceed the physical kitchen limit")
 	var blank_update := edited.duplicate(true)

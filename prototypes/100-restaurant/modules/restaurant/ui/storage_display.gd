@@ -117,7 +117,6 @@ func _organize() -> void :
 	var used: Dictionary = {}
 	for item in definitions:
 		catalog[item.id] = item
-	if catalog.has("rice"): used["rice"] = true # Rice is served from the countertop cooker.
 	for id in COLD_IDS:
 		if catalog.has(id):
 			sections.fridge.append(catalog[id])
@@ -157,7 +156,7 @@ func _build_items() -> void :
 	for id in cold:
 		if catalog.has(id): _cold_catalog.append(catalog[id])
 	for item in definitions:
-		if item.get("category", "") in ["basic", "sweet"] and not cold.has(str(item.id)) and str(item.id) != "rice": _cold_catalog.append(item)
+		if item.get("category", "") in ["basic", "sweet"] and not cold.has(str(item.id)): _cold_catalog.append(item)
 	var fridge_count := mini(15, _cold_catalog.size() - fridge_page * 15)
 	for i in fridge_count:
 		# A partially stocked layer rests on the lower shelves first. The image,

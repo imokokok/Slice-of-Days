@@ -25,16 +25,8 @@ func _run() -> void:
 			_expect(stream != null and stream.get_length() > 0.1, "recording decodes to playable audio")
 	_expect(sound.banks.chop.size() >= 3, "chopping has independently recorded variants")
 	_expect(sound.banks.boil.size() >= 2, "boiling has multiple recordings")
-	_expect(sound.banks.rice_open.size() >= 2 and sound.banks.rice_close.size() >= 1, "rice cooker lid uses verified open and close recordings")
+	_expect(not sound.banks.has("rice_open") and not sound.banks.has("rice_close"), "removed cooker sounds are absent from playback banks")
 	_expect(sound.banks.toss.size() >= 2 and sound.banks.hot_drop.size() >= 1, "pan motion and hot food entry have separate recorded layers")
-	var lid_click := InputEventMouseButton.new()
-	lid_click.button_index = MOUSE_BUTTON_LEFT
-	lid_click.pressed = true
-	lid_click.position = Vector2(60, 20)
-	game.rice_cooker._gui_input(lid_click)
-	_expect(game.rice_cooker.lid_open and sound.effects.rice_open.playing, "opening the actual rice cooker triggers its lid sound")
-	game.rice_cooker._gui_input(lid_click)
-	_expect(not game.rice_cooker.lid_open and sound.effects.rice_close.playing, "closing the actual rice cooker triggers a different lid sound")
 	world.spawn_ingredient(game._definition("tomato"))
 	var tomato: RigidBody2D = world._held
 	world.drop_into_pan()
@@ -56,9 +48,9 @@ func _run() -> void:
 	_expect(sound.cooking_profile(world) == "fry_egg", "egg selects actual frying egg recording")
 	tomato.set_meta("definition", game._definition("beef"))
 	_expect(sound.cooking_profile(world) == "fry_meat", "meat selects separate frying recording")
-	tomato.set_meta("definition", game._definition("rice"))
+	tomato.set_meta("definition", game._definition("bread"))
 	thermal.water_kg=0.0
-	_expect(sound.cooking_profile(world) == "", "dry rice alone does not invent wet sizzling")
+	_expect(sound.cooking_profile(world) == "", "dry bread alone does not invent wet sizzling")
 	tomato.set_meta("surface_sauce", {"volume_ml": 8.0, "composition_ml": {"oil": 8.0}})
 	_expect(sound.cooking_profile(world) == "", "oil cannot create water bubbles in completely dry food")
 	thermal.water_kg=0.012

@@ -79,7 +79,7 @@ func _step(dt: float) -> void:
 				world.pan.water_heat=maxf(22.0,world.pan.water_heat-absorbed_heat/maxf(1.0,world.pan.water_ml*4.18))
 			elif contact: pan_c=maxf(22.0,pan_c-absorbed_heat/450.0)
 		body.mass=maxf(0.000001,body.mass-(float(state.evaporated_kg)-before))
-		if str(definition.get("id","")) in ["noodles","bread","rice"] and wet and world.pan.water_heat>=80.0:
+		if str(definition.get("id","")) in ["noodles","bread"] and wet and world.pan.water_heat>=80.0:
 			var limit := float(state.initial_kg)*(0.8 if str(definition.id)=="noodles" else 0.25)
 			var absorbed := minf(maxf(0.0,limit-float(state.absorbed_water_kg)),float(state.initial_kg)*dt*0.025)
 			absorbed=minf(absorbed,world.pan.water_ml/1000.0)

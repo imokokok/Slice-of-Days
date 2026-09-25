@@ -11,7 +11,7 @@ const BURNT_AFTER: = 14.0
 const DEFAULT_CUSTOMER_WAIT: = 120.0
 const MIN_CUSTOMER_WAIT: = 120.0
 const MAX_CUSTOMER_WAIT: = 120.0
-const BLOCKED_INGREDIENT_IDS: = ["fish", "salmon"]
+const BLOCKED_INGREDIENT_IDS: = ["fish", "salmon", "rice"]
 
 var ingredients: Array = []
 var customers: Array = []

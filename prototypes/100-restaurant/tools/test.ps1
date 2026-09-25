@@ -25,7 +25,7 @@ Invoke-GodotTest tests/test_handdrawn_assets.gd
 Invoke-GodotTest tests/test_team_food_art.gd
 if ($LASTEXITCODE -ne 0) { throw 'Hand-drawn asset tests failed' }
 Invoke-GodotTest tests/test_shelf_pages.gd
-Invoke-GodotTest tests/test_rice_cooker_cast.gd
+Invoke-GodotTest tests/test_removed_counter_items_cast.gd
 if ($LASTEXITCODE -ne 0) { throw 'Shelf page tests failed' }
 Invoke-GodotTest tests/test_recipe_guide.gd
 if ($LASTEXITCODE -ne 0) { throw 'Recipe guide tests failed' }

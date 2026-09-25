@@ -40,29 +40,29 @@ func _run() -> void:
 		_expect(is_instance_valid(game.world._held), "a simple shelf click still supports click-to-carry")
 		game.world.discard_held()
 	# Independent loose food can be picked up more than once.
-	game.world.spawn_ingredient(game._definition("rice"))
-	var rice: RigidBody2D = game.world._held
+	game.world.spawn_ingredient(game._definition("bread"))
+	var bread: RigidBody2D = game.world._held
 	game.world.drop_into_pan()
 	await create_timer(0.6).timeout
-	_expect(rice.get_meta("enrolled", false), "pan fixture really enrolls through physics")
+	_expect(bread.get_meta("enrolled", false), "pan fixture really enrolls through physics")
 	game.session.set_heating(true)
 	await create_timer(0.1).timeout
-	_expect(game.world.audio.loops.flame.playing and not game.world.audio.loops.sizzle.playing, "dry rice in a dry pan has a burner sound without invented wet sizzling")
+	_expect(game.world.audio.loops.flame.playing and not game.world.audio.loops.sizzle.playing, "dry bread in a dry pan has a burner sound without invented wet sizzling")
 	var handle_home: Vector2 = game.world.pan.point(Vector2(1037, 578))
 	var handle_sink: Vector2 = handle_home + Vector2(-587, 0)
 	_mouse(handle_home, "down")
 	await process_frame
 	_expect(game.world.pan.active, "actual pan-handle press starts pan movement")
-	var before := rice.position
+	var before := bread.position
 	_mouse(handle_sink, "move")
 	await process_frame
 	await physics_frame
 	await process_frame
-	_expect(rice.position.x < before.x - 490, "moving pan carries the existing ingredient body")
+	_expect(bread.position.x < before.x - 490, "moving pan carries the existing ingredient body")
 	_mouse(handle_sink, "up")
 	await create_timer(0.15).timeout
 	_expect(not game.world.pan.active and game.world.pan.under_tap(), "released pan stays under sink faucet")
-	_expect(game.session.dish.size() == 1 and rice.get_meta("enrolled", false), "pan transport preserves single recipe enrollment")
+	_expect(game.session.dish.size() == 1 and bread.get_meta("enrolled", false), "pan transport preserves single recipe enrollment")
 	var heat: float = game.session.dish[0].heat
 	await create_timer(0.15).timeout
 	_expect(is_equal_approx(game.session.dish[0].heat, heat), "pan away from burner stops receiving heat")
@@ -90,7 +90,7 @@ func _run() -> void:
 	_mouse(handle_home, "up")
 	await create_timer(0.2).timeout
 	_expect(game.world.pan.on_stove() and game.world.pan.water_heat > 0, "returning a cold water-filled pan heats the water first")
-	_expect(game.session.heating and rice.get_meta("enrolled", false), "moving the pan back does not drop its food or switch off the burner")
+	_expect(game.session.heating and bread.get_meta("enrolled", false), "moving the pan back does not drop its food or switch off the burner")
 	game.world.pan.water_heat = 100
 	game.world.pan.water_ml=600.0
 	game.world.reactions.pan_c=130.0

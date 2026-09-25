@@ -112,7 +112,7 @@ func _draw() -> void :
 			_greens(id, base)
 		"mushroom":
 			_mushroom(base)
-		"rice", "noodles", "tapioca", "natto":
+		"noodles", "tapioca", "natto":
 			_bowl(id, base)
 		"shrimp", "fish", "salmon", "squid", "mussel":
 			_seafood(id, base)

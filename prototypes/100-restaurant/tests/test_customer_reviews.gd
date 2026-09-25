@@ -21,20 +21,20 @@ func _initialize() -> void:
 	model.dish = [{"id":"chili", "heat":0, "cut":false}]
 	var disliked: Dictionary = model._evaluate(model.plate(), model.customers[0])
 	_expect(disliked.reason == "dislike" and "辣椒" in disliked.detail, "specific disliked ingredient is mentioned")
-	model.dish = [{"id":"ketchup","heat":0},{"id":"ketchup","heat":0},{"id":"ketchup","heat":0},{"id":"rice","heat":8}]
+	model.dish = [{"id":"ketchup","heat":0},{"id":"ketchup","heat":0},{"id":"ketchup","heat":0},{"id":"bread","heat":8}]
 	var sauce: Dictionary = model._evaluate(model.plate(), model.customers[0])
 	_expect(sauce.reason == "seasoning" and "3份" in sauce.detail, "excessive sauce feedback uses actual dish quantities")
-	model.dish = [{"id":"rice", "heat":8, "mass_kg":0.16}]
+	model.dish = [{"id":"bread", "heat":8, "mass_kg":0.16}]
 	for index in 6:
 		model.dish.append({"id":"ketchup", "heat":0, "batch_uid":"one_ketchup_bottle", "liquid_state":{"volume_ml":3.0}, "mass_kg":0.003})
 	var small_squeeze: Dictionary = model._evaluate(model.plate(), model.customers[0])
 	_expect(small_squeeze.reason != "seasoning", "six small drops from one bottle are not six separate condiment portions")
-	model.dish = [{"id":"rice", "heat":8, "mass_kg":0.16}, {"id":"ketchup", "heat":0, "batch_uid":"one_ketchup_bottle", "liquid_state":{"volume_ml":70.0}, "mass_kg":0.07}]
+	model.dish = [{"id":"bread", "heat":8, "mass_kg":0.16}, {"id":"ketchup", "heat":0, "batch_uid":"one_ketchup_bottle", "liquid_state":{"volume_ml":70.0}, "mass_kg":0.07}]
 	var heavy_squeeze: Dictionary = model._evaluate(model.plate(), model.customers[0])
 	_expect(heavy_squeeze.reason == "seasoning" and "70毫升" in heavy_squeeze.detail, "one genuinely excessive squeeze is judged by volume")
-	model.dish = [{"id":"rice","heat":8,"cut":true}]
+	model.dish = [{"id":"bread","heat":8,"cut":true}]
 	var good: Dictionary = model._evaluate(model.plate(), model.customers[0])
-	_expect(good.reason == "liked" and "米饭" in good.detail and not "番茄" in good.detail, "positive feedback names actual preferred food without stale ingredients")
+	_expect(good.reason == "liked" and "面包" in good.detail and not "番茄" in good.detail, "positive feedback names actual preferred food without stale ingredients")
 	var custom := {"id":"host_custom", "name":"外部NPC", "kind":"gourmet", "review_voice":"unknown", "likes":[], "dislikes":[]}
 	_expect(not model._evaluate(model.plate(), custom).feedback.is_empty(), "unknown host voice falls back to kind")
 	model.start_shift()
@@ -43,8 +43,8 @@ func _initialize() -> void:
 	_expect(receipt.has("reaction") and receipt.has("detail") and receipt.has("role"), "serve result carries personality fields across module boundary")
 	_expect(receipt.payment > 0 and model.dish.is_empty(), "feedback preserves settlement and serving semantics")
 	var repo = preload("res://modules/restaurant/storage/recipe_repository.gd").new("user://water_save_%s/book.json" % Time.get_ticks_usec())
-	var water_dish := {"ingredients":[{"id":"rice","heat":8}], "water_ml":720.0}
-	_expect(repo.save_recipe({"title":"汤饭", "author":"测试", "dish":water_dish}), "actual water quantity saves with the recipe")
+	var water_dish := {"ingredients":[{"id":"bread","heat":8}], "water_ml":720.0}
+	_expect(repo.save_recipe({"title":"面包汤", "author":"测试", "dish":water_dish}), "actual water quantity saves with the recipe")
 	var reload = preload("res://modules/restaurant/storage/recipe_repository.gd").new(repo.storage_path)
 	var records: Array = reload.load_recipes()
 	_expect(records.size() == 1 and records[0].dish.water_ml == 720, "water quantity survives repository reload")

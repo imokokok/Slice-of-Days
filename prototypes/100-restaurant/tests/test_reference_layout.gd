@@ -45,11 +45,14 @@ func run() -> void:
 		expect(item.position.y + item.get_node("IngredientName").position.y >= shelf_front, "odd name is attached to the shelf front: " + id)
 	for utensil in game.world.utensils:
 		expect(utensil.position.x >= 545 and utensil.position.x <= 630 and utensil.home_angle > 1, "utensil rests upright in the source cup")
-	var book: Button = game.hud.find_child("ReferenceRecipeBook", true, false)
-	expect(book != null, "visible recipe book has a real entry")
-	book.pressed.emit()
+	expect(game.hud.find_child("ReferenceRecipeBook", true, false) == null and not game._recipe_stand.visible, "removed countertop recipe stand has no hotspot or visible art")
+	var book: Button = null
+	for child in game.hud.get_node("KitchenActionDock").get_children():
+		if child is Button and child.text == "菜谱": book = child
+	expect(book != null, "cookbook remains available in the action dock")
+	if book != null: book.pressed.emit()
 	await process_frame
-	expect(game.modal.visible, "reference book opens the working recipe interface")
+	expect(game.modal.visible, "dock cookbook opens the working recipe interface")
 	game._close_modal()
 	game.world.pan.overflow_water_ml = 100
 	game.world.spill_pan_water(100, Vector2(480, 716))

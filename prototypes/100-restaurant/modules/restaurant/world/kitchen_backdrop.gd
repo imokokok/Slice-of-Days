@@ -5,7 +5,7 @@ var customer: Dictionary = {}
 var knife_held: = false
 var time: = 0.0
 var bell_time := 0.0
-const ROOM = preload("res://modules/restaurant/assets/kitchen_reference_playable.png")
+const ROOM = preload("res://modules/restaurant/assets/kitchen_reference_no_recipe_stand.png")
 const FONT = preload("res://modules/restaurant/assets/fonts/noto_serif_sc.ttf")
 func _draw() -> void :
 	draw_texture_rect(ROOM, Rect2(0, 0, 1600, 900), false)

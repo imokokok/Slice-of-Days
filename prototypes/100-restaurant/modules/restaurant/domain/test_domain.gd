@@ -52,8 +52,8 @@ func _score(ids: Array, heat: float, kind: String = "regular", likes: Array = []
 
 func _test_catalog() -> void:
 	var session = _fresh()
-	_expect(session.ingredients.size() == 106, "catalog has 106 definitions after team vegetable additions")
-	_expect(session.active_ingredients().size() == 104, "104 ingredients are available; fish stays disabled")
+	_expect(session.ingredients.size() == 105, "catalog has 105 definitions after team vegetable additions")
+	_expect(session.active_ingredients().size() == 103, "103 ingredients are available; fish stays disabled")
 	var ids: Dictionary = {}
 	var categories: Dictionary = {"basic": 0, "seasoning": 0, "sweet": 0, "odd": 0}
 	for ingredient in session.ingredients:
@@ -67,7 +67,7 @@ func _test_catalog() -> void:
 		_expect(float(ingredient.get("mass", 0.0)) > 0.0, "positive mass for " + id)
 		_expect(float(ingredient.get("friction", -1.0)) >= 0.0 and float(ingredient.get("friction", 2.0)) <= 1.0, "friction range for " + id)
 		_expect(float(ingredient.get("bounce", -1.0)) >= 0.0 and float(ingredient.get("bounce", 2.0)) <= 1.0, "bounce range for " + id)
-	_expect(categories == {"basic": 41, "seasoning": 16, "sweet": 16, "odd": 33}, "catalog categories include team vegetables and supplied odd items")
+	_expect(categories == {"basic": 40, "seasoning": 16, "sweet": 16, "odd": 33}, "catalog categories include team vegetables and supplied odd items")
 
 func _test_cooking_and_tastes() -> void:
 	var raw: Dictionary = _score(["egg", "shrimp"], 0.0, "gourmet", ["protein", "umami"])
@@ -77,9 +77,9 @@ func _test_cooking_and_tastes() -> void:
 	_expect(int(cooked["score"]) > int(burnt["score"]), "burning reduces score")
 	_expect(int(raw["dish"]["raw_count"]) == 2 and not bool(raw["dish"]["burnt"]), "raw and burnt states are distinct")
 	_expect(bool(burnt["dish"]["burnt"]), "burnt flag recorded")
-	var normal_plain: Dictionary = _score(["rice"], 0.0)
+	var normal_plain: Dictionary = _score(["bread"], 0.0)
 	var normal_odd: Dictionary = _score(["sock"], 0.0)
-	var adventurous_plain: Dictionary = _score(["rice"], 0.0, "adventurous")
+	var adventurous_plain: Dictionary = _score(["bread"], 0.0, "adventurous")
 	var adventurous_odd: Dictionary = _score(["sock"], 0.0, "adventurous")
 	_expect(int(normal_plain["score"]) > int(normal_odd["score"]), "normal NPC penalizes odd ingredients")
 	_expect(int(adventurous_odd["score"]) > int(adventurous_plain["score"]), "adventurous NPC rewards odd ingredients")
@@ -103,11 +103,11 @@ func _test_cooking_and_tastes() -> void:
 func _test_capacity_and_repeated_ingredients() -> void:
 	var session = _fresh()
 	for i in range(6):
-		_expect(session.add_ingredient("rice"), "accept ingredient up to capacity %d" % i)
-	_expect(not session.add_ingredient("rice") and session.dish.size() == 6, "seventh ingredient rejected without mutating dish")
+		_expect(session.add_ingredient("bread"), "accept ingredient up to capacity %d" % i)
+	_expect(not session.add_ingredient("bread") and session.dish.size() == 6, "seventh ingredient rejected without mutating dish")
 	_expect(not session.add_ingredient("missing_id"), "unknown ingredient rejected")
-	var one: Dictionary = _score(["rice"], 0.0, "regular", ["comfort", "grain"])
-	var six: Dictionary = _score(["rice", "rice", "rice", "rice", "rice", "rice"], 0.0, "regular", ["comfort", "grain"])
+	var one: Dictionary = _score(["bread"], 0.0, "regular", ["comfort", "grain"])
+	var six: Dictionary = _score(["bread", "bread", "bread", "bread", "bread", "bread"], 0.0, "regular", ["comfort", "grain"])
 	_expect(int(one["score"]) == int(six["score"]) and float(one["meal_fee"]) == float(six["meal_fee"]), "duplicate ingredients cannot multiply preference payment")
 	session.start_shift()
 	session.clear_dish()
@@ -135,11 +135,11 @@ func _test_schedule_and_posters() -> void:
 	_expect(not bool(session.current_customer.get("preferences_known", false)), "preferences are hidden before conversation")
 	session.talk()
 	_expect(bool(session.current_customer.get("preferences_known", false)), "conversation reveals preferences")
-	session.add_ingredient("rice")
+	session.add_ingredient("bread")
 	session.serve()
 	session.tick(2.1)
 	_expect(str(session.current_customer.get("id", "")) == "invited", "poster attracts available NPC who actually saw it")
-	session.add_ingredient("rice")
+	session.add_ingredient("bread")
 	session.serve()
 	session.apply_poster(["umami"])
 	session.tick(3.0)
@@ -185,7 +185,7 @@ func _test_generous_wait_budgets() -> void:
 	closing.set_customers([first, late])
 	closing.start_shift()
 	closing.tick(100.0)
-	closing.add_ingredient("rice")
+	closing.add_ingredient("bread")
 	closing.serve()
 	closing.tick(2.0)
 	_expect(str(closing.current_customer.get("id", "")) == "late_guest" and closing.customer_wait == 120.0, "late-arriving customer receives a full independent wait budget")
@@ -196,7 +196,7 @@ func _test_generous_wait_budgets() -> void:
 func _test_settlement() -> void:
 	var session = _fresh()
 	session.start_shift()
-	session.add_ingredient("rice")
+	session.add_ingredient("bread")
 	var served: Dictionary = session.serve()
 	var settlement: Dictionary = session.end_shift()
 	var first_revenue: float = session.revenue
@@ -204,7 +204,7 @@ func _test_settlement() -> void:
 	_expect(is_equal_approx(float(settlement["share"]), snappedf(first_revenue * 0.30, 0.01)), "settlement pays 30 percent of revenue")
 	settlement["share"] = 99999.0
 	_expect(float(session.end_shift()["share"]) < 99999.0, "settlement snapshot protects authoritative result")
-	_expect(not session.add_ingredient("rice") and session.serve().is_empty(), "closed session cannot cook or earn again")
+	_expect(not session.add_ingredient("bread") and session.serve().is_empty(), "closed session cannot cook or earn again")
 	session.tick(300.0)
 	session.start_shift()
 	_expect(session.phase == "closed" and session.revenue == first_revenue and session.served == 1, "closed session stays settled after further ticks or starts")

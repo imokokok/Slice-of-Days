@@ -127,10 +127,10 @@ func test_edge_cases() -> void:
 	check(Method.targets(recipe).size() == 1 and is_equal_approx(Method.targets(recipe)[0].mass_kg, 0.2), "recipe consolidates fragments by type and sums actual mass")
 	Method.steps(recipe, game.session.ingredients)
 	check(recipe == backup, "reading old recipes does not overwrite their provenance or shapes")
-	var rice_recipe := {"dish":{"ingredients":[{"id":"rice", "mass_kg":0.22}, {"id":"ketchup", "volume_ml":15}]}}
-	var rice_steps: Array = Method.steps(rice_recipe, game.session.ingredients)
-	check("电饭煲" in str(rice_steps[0].detail), "rice recipe directs players to scoop from the cooker")
-	check("调料架" in str(rice_steps[1].detail), "sauce recipe names its physical rack")
+	var source_recipe := {"dish":{"ingredients":[{"id":"tomato", "mass_kg":0.16}, {"id":"ketchup", "volume_ml":15}]}}
+	var source_steps: Array = Method.steps(source_recipe, game.session.ingredients)
+	check("食材柜" in str(source_steps[0].detail), "fresh produce recipe directs players to its real cabinet")
+	check("调料架" in str(source_steps[1].detail), "sauce recipe names its physical rack")
 	var sauce_recipe := {"dish":{"ingredients":[{"id":"ketchup", "volume_ml":15, "heat":6}, {"id":"ketchup", "amount_ml":5, "garnish":true}]}}
 	var sauce_targets := Method.targets(sauce_recipe)
 	check(sauce_targets.size() == 2, "the same sauce in pan and on plate remains two separate operations")

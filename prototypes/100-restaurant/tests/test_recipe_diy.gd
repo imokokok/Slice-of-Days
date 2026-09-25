@@ -107,7 +107,7 @@ func _test_edit_and_copy(first: Dictionary) -> void:
 	test_thumbnail = Marshalls.raw_to_base64(image.save_png_to_buffer())
 	first["thumbnail"] = test_thumbnail
 	_expect(game.repository.save_recipe(first), "thumbnail fixture can be attached to the first recipe")
-	var second := {"id": "recipe_diy_unrelated_second", "title": "第二条独立菜谱", "author": "另一位主厨", "notes": "编辑第一条时不可修改我。", "created_at": "2026-09-08 00:00:00 UTC", "dish": {"ingredients": [{"id": "rice", "cut": false, "heat": 8.0}]}, "thumbnail": "", "poster": {"version": 1, "caption": "", "strokes": [], "stickers": []}}
+	var second := {"id": "recipe_diy_unrelated_second", "title": "第二条独立菜谱", "author": "另一位主厨", "notes": "编辑第一条时不可修改我。", "created_at": "2026-09-08 00:00:00 UTC", "dish": {"ingredients": [{"id": "bread", "cut": false, "heat": 8.0}]}, "thumbnail": "", "poster": {"version": 1, "caption": "", "strokes": [], "stickers": []}}
 	_expect(game.repository.save_recipe(second), "an unrelated final record exists before editing the first")
 	var second_before: Dictionary = _fresh_record(second.id)
 	var first_id: String = str(first.id)

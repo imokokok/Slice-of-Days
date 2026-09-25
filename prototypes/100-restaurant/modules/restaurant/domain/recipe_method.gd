@@ -36,12 +36,10 @@ static func steps(record: Dictionary, catalog: Array) -> Array:
 		if item.garnish: continue
 		var title := name_of(item.id, catalog)
 		var source := "从食材柜取出，放到台面。"
-		if item.id == "rice": source = "打开水槽旁的电饭煲，点击锅内米饭，用饭勺盛取一份。"
-		else:
-			for definition in catalog:
-				if str(definition.get("id", "")) == item.id and str(definition.get("category", "")) == "seasoning":
-					source = "从锅后的调料架取出，瓶身留在手中。"
-					break
+		for definition in catalog:
+			if str(definition.get("id", "")) == item.id and str(definition.get("category", "")) == "seasoning":
+				source = "从锅后的调料架取出，瓶身留在手中。"
+				break
 		result.append({"kind":"take", "target":item, "title":"取出" + title, "detail":source, "art":"raw"})
 		if item.cut:
 			result.append({"kind":"cut", "target":item, "title":"切开" + title, "detail":"放在右侧菜板，按住刀柄拖过食材；切块可以整批拖动。", "art":"cut"})

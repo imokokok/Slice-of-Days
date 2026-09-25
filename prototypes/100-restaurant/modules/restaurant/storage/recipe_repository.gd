@@ -5,6 +5,7 @@ const SCHEMA_VERSION: = 1
 const PosterCanvas = preload("res://modules/restaurant/ui/poster_canvas.gd")
 const DEFAULT_PATH: = "user://after_hours_kitchen/cookbook.json"
 const CATALOG_PATH: = "res://modules/restaurant/data/ingredients.json"
+const RETIRED_INGREDIENT_IDS: = ["rice"]
 const MAX_FILE_BYTES: = 16 * 1024 * 1024
 const MAX_RECIPES: = 200
 const MAX_DISH_INGREDIENTS: = 48
@@ -205,7 +206,7 @@ func _read_document(path: String) -> Dictionary:
 	for record in data.recipes:
 		if not record is Dictionary:
 			return _failure("菜谱必须是 JSON 对象。")
-		var checked: = _validate_record(record)
+		var checked: = _validate_record(record, true)
 		if not checked.ok:
 			return checked
 		if ids.has(checked.record.id):
@@ -223,7 +224,7 @@ func _read_document(path: String) -> Dictionary:
 				liked.append(recipe_id)
 	return {"ok": true, "recipes": records, "liked_ids": liked, "error": ""}
 
-func _validate_record(record: Dictionary) -> Dictionary:
+func _validate_record(record: Dictionary, allow_retired: bool = false) -> Dictionary:
 	for field in ["title", "author"]:
 		if not record.get(field) is String or record[field].strip_edges().is_empty():
 			return _failure("菜名和署名不能为空。")
@@ -239,7 +240,7 @@ func _validate_record(record: Dictionary) -> Dictionary:
 	if not poster is Dictionary or not _valid_poster(poster):
 		return _failure("纸面笔画或素材图层数据无效。")
 	# Written instructions now live directly on paper and are valid DIY content.
-	var dish_result: = _validate_dish(record.get("dish", {}), _poster_has_content(poster) or not str(record.get("notes", "")).strip_edges().is_empty())
+	var dish_result: = _validate_dish(record.get("dish", {}), _poster_has_content(poster) or not str(record.get("notes", "")).strip_edges().is_empty(), allow_retired)
 	if not dish_result.ok:
 		return dish_result
 	var dish: Dictionary = dish_result.dish
@@ -254,7 +255,7 @@ func _validate_record(record: Dictionary) -> Dictionary:
 		"created_at": record.get("created_at", ""), "dish": dish.duplicate(true),
 		"thumbnail": thumbnail, "poster": poster.duplicate(true), "likes": int(likes)}, "error": ""}
 
-func _validate_dish(dish: Variant, allow_empty: bool) -> Dictionary:
+func _validate_dish(dish: Variant, allow_empty: bool, allow_retired: bool = false) -> Dictionary:
 	if not dish is Dictionary or not dish.get("ingredients") is Array or dish.ingredients.size() > MAX_DISH_INGREDIENTS:
 		return _failure("料理食材记录超出存档上限（最多 48 项），或食材列表格式无效。")
 	if not _safe_json(dish, 0) or JSON.stringify(dish).length() > 96000:
@@ -275,7 +276,7 @@ func _validate_dish(dish: Variant, allow_empty: bool) -> Dictionary:
 			ingredient_id = ingredient.get("id", ingredient.get("ingredient_id", ""))
 			if not preload("res://modules/restaurant/domain/food_snapshot.gd").valid(ingredient):
 				return _failure("菜谱的食材温度、形态或酱汁记录格式无效。")
-		if not ingredient_id is String or not _ingredient_ids.has(ingredient_id):
+		if not ingredient_id is String or (not _ingredient_ids.has(ingredient_id) and not (allow_retired and ingredient_id in RETIRED_INGREDIENT_IDS)):
 			return _failure("菜谱包含未知食材。")
 	return {"ok": true, "dish": dish.duplicate(true), "error": ""}
 

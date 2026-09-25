@@ -23,7 +23,7 @@ func _run() -> void:
 	await _frames(36)
 	game._start_shift()
 	await _frames(48)
-	if not await _record_cabinets_water_and_rice(): return
+	if not await _record_cabinets_and_water(): return
 	if not await _drag_slot("tomato", Vector2(1200, 725), 24): return
 	await _frames(30)
 	var tomato := _food("tomato")
@@ -40,7 +40,7 @@ func _run() -> void:
 		await process_frame
 	await _frames(18)
 	var floating: Node = game.world.get_node("FloatingTools")
-	if not _require(floating.copies.has(game.world._knife_visual.get_instance_id()), "held knife is visible above the recipe paper"): return
+	if not _require(floating.copies.has(game.world._knife_visual.get_instance_id()), "held knife is visible over the cleared countertop"): return
 	var cut_start: Vector2 = tomato_center + Vector2(0, -55) - drag_offset - blade_offset
 	for i in 12:
 		_mouse(book_pointer.lerp(cut_start, (i + 1) / 12.0), "move")
@@ -91,7 +91,7 @@ func _run() -> void:
 		if not game.session.dish.is_empty(): break
 		await process_frame
 	if not _require(not game.session.dish.is_empty(), "tomato pieces enter the pan through physics"): return
-	# The pan carries the actual tomato and rice bodies during an upward toss.
+	# The pan carries the actual tomato pieces during an upward toss.
 	var pan_handle: Vector2 = game.world.pan.point(Vector2(1037, 578))
 	_mouse(pan_handle, "down")
 	await _frames(3)
@@ -194,7 +194,7 @@ func _run() -> void:
 	if DisplayServer.get_name() != "headless": Input.warp_mouse(original_pointer)
 	quit(0)
 
-func _record_cabinets_water_and_rice() -> bool:
+func _record_cabinets_and_water() -> bool:
 	game._show_order_paper()
 	await _frames(35)
 	game._close_modal()
@@ -247,30 +247,7 @@ func _record_cabinets_water_and_rice() -> bool:
 	_mouse(home_handle, "up")
 	await _frames(28)
 	if not _require(game.world.pan.on_stove(), "drained pan returns to the burner"): return false
-	var lid: Vector2 = game.rice_cooker.position + Vector2(66, 22)
-	var bowl: Vector2 = game.rice_cooker.position + Vector2(66, 67)
-	_mouse(lid, "down")
-	_mouse(lid, "up")
-	await _frames(34)
-	if not _require(game.rice_cooker.lid_open, "rice cooker opens to show cooked rice and its paddle"): return false
-	_mouse(lid, "down")
-	_mouse(lid, "up")
-	await _frames(16)
-	if not _require(not game.rice_cooker.lid_open, "rice cooker lid closes with its own recorded sound"): return false
-	_mouse(lid, "down")
-	_mouse(lid, "up")
-	await _frames(16)
-	if not _require(game.rice_cooker.lid_open, "rice cooker reopens before serving rice"): return false
-	_mouse(bowl, "down")
-	await _frames(4)
-	if not _require(is_instance_valid(game.world._held) and str(game.world._held.get_meta("id", "")) == "rice", "paddle scoops a finite physical rice serving"): return false
-	var pan_point: Vector2 = game.world.pan.point(Vector2(800, 575))
-	for index in 27:
-		_mouse(bowl.lerp(pan_point, (index + 1) / 27.0), "move")
-		await process_frame
-	_mouse(pan_point, "up")
-	await _frames(40)
-	return _require(_dish_has("rice") and not game.rice_cooker.serving_available, "the scooped rice enters the pan and cooker stock is empty")
+	return true
 
 func _record_recipe_turn() -> bool:
 	# A served plate contains transient physics and surface state. Save the food
@@ -283,9 +260,9 @@ func _record_recipe_turn() -> bool:
 				if item.has(key): recipe_item[key] = float(item[key])
 			recipe_ingredients.append(recipe_item)
 	var record := {
-		"title": "今晚这一锅 · 番茄蛋炒饭",
+		"title": "今晚这一锅 · 番茄蛋蘑菇",
 		"author": "厨房实录",
-		"notes": "从电饭煲盛饭，番茄切块，与蛋一同下锅；翻炒后装盘。",
+		"notes": "番茄切块，与鸡蛋、蘑菇一起入锅；翻炒后装盘。",
 		"dish": {"ingredients": recipe_ingredients}
 	}
 	if not _require(not recipe_ingredients.is_empty() and game.repository.save_recipe(record), "actual served ingredients are written to a recipe page (" + game.repository.get_last_error() + ")"): return false

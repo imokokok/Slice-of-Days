@@ -57,8 +57,6 @@ SOURCES = [
     ("jopimblett", 388744, "Grapes dropped into a bowl", [("drop", 0, 0, False)]),
     ("KaleidacousticsAudio", 627655, "Pasta stirred in sauce in a saucepan", [("stir_pasta", 5, 0.8, False), ("stir_pasta", 15, 0.8, False)]),
     ("KaleidacousticsAudio", 627656, "Dry pasta dropped in ceramic bowl", [("drop_dry", 4, 0.8, False)]),
-    ("bowlingballout", 210100, "Domed metal pot lid lifted from platter", [("rice_open", 0.8, 1.8, False), ("rice_open", 5.3, 1.4, False)]),
-    ("greenlinker", 757514, "Pot lid placed on a cooking pot", [("rice_close", 0.0, 1.2, False)]),
     ("SpliceSound", 218339, "Metal pot rattling while moved on stove", [("toss", 3.8, 1.3, False), ("toss", 7.3, 1.3, False)]),
     ("postworkflow", 360648, "Vegetables dropped into hot oil on stovetop", [("hot_drop", 11.7, 1.8, False)]),
 ]

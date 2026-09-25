@@ -53,7 +53,10 @@ func run() -> void:
 			for point in points: left = minf(left, point.x)
 		world._time += 0.4
 		# Settling may rotate the remainder: parallel strokes follow its local axis.
-		world._perform_knife_sweep(remainder.to_global(Vector2(left + 6.0, -40)), remainder.to_global(Vector2(left + 6.0, 40)))
+		var stroke_from: Vector2 = remainder.to_global(Vector2(left + 6.0, -40))
+		var stroke_to: Vector2 = remainder.to_global(Vector2(left + 6.0, 40))
+		world._knife_visual.rotation = (stroke_to - stroke_from).angle() - PI / 2.0
+		world._perform_knife_sweep(stroke_from, stroke_to)
 		await process_frame
 	world.put_knife_back()
 	var pieces: Array = world._foods.get_children()

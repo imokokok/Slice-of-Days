@@ -24,6 +24,14 @@ func _initialize() -> void:
 	model.dish = [{"id":"ketchup","heat":0},{"id":"ketchup","heat":0},{"id":"ketchup","heat":0},{"id":"rice","heat":8}]
 	var sauce: Dictionary = model._evaluate(model.plate(), model.customers[0])
 	_expect(sauce.reason == "seasoning" and "3份" in sauce.detail, "excessive sauce feedback uses actual dish quantities")
+	model.dish = [{"id":"rice", "heat":8, "mass_kg":0.16}]
+	for index in 6:
+		model.dish.append({"id":"ketchup", "heat":0, "batch_uid":"one_ketchup_bottle", "liquid_state":{"volume_ml":3.0}, "mass_kg":0.003})
+	var small_squeeze: Dictionary = model._evaluate(model.plate(), model.customers[0])
+	_expect(small_squeeze.reason != "seasoning", "six small drops from one bottle are not six separate condiment portions")
+	model.dish = [{"id":"rice", "heat":8, "mass_kg":0.16}, {"id":"ketchup", "heat":0, "batch_uid":"one_ketchup_bottle", "liquid_state":{"volume_ml":70.0}, "mass_kg":0.07}]
+	var heavy_squeeze: Dictionary = model._evaluate(model.plate(), model.customers[0])
+	_expect(heavy_squeeze.reason == "seasoning" and "70毫升" in heavy_squeeze.detail, "one genuinely excessive squeeze is judged by volume")
 	model.dish = [{"id":"rice","heat":8,"cut":true}]
 	var good: Dictionary = model._evaluate(model.plate(), model.customers[0])
 	_expect(good.reason == "liked" and "米饭" in good.detail and not "番茄" in good.detail, "positive feedback names actual preferred food without stale ingredients")

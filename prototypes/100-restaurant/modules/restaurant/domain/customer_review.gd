@@ -23,9 +23,12 @@ static func compose(snapshot: Dictionary, customer: Dictionary, catalog: Diction
 	var liked: Array[String] = []
 	var strange: Array[String] = []
 	var seasonings: Array[String] = []
-	var seasoning_count: = 0
+	var seasoning_batches: Dictionary = {}
+	var seasoning_volume_ml := 0.0
+	var food_mass_kg := 0.0
 	var entries: Array = snapshot.get("ingredients", [])
-	for item in entries:
+	for index in entries.size():
+		var item: Dictionary = entries[index]
 		var def: Dictionary = catalog.get(str(item.get("id", "")), {})
 		if def.is_empty(): continue
 		var title: = str(def.get("name", item.id))
@@ -37,8 +40,15 @@ static func compose(snapshot: Dictionary, customer: Dictionary, catalog: Diction
 			if customer.get("likes", []).has(tag) and not liked.has(title): liked.append(title)
 		if float(def.get("weirdness", 0)) >= 0.35 and not strange.has(title): strange.append(title)
 		if not str(def.get("dispense_mode", "")).is_empty():
-			seasoning_count += 1
+			var batch := str(item.get("batch_uid", ""))
+			if batch.is_empty(): batch = "%s_portion_%d" % [str(item.get("id", "")), index]
+			seasoning_batches[batch] = true
+			seasoning_volume_ml += float(item.get("liquid_state", {}).get("volume_ml", item.get("amount_ml", 0.0)))
 			if not seasonings.has(title): seasonings.append(title)
+		else:
+			food_mass_kg += float(item.get("mass_kg", 0.15))
+	var seasoning_count := seasoning_batches.size()
+	var excessive_volume := seasoning_volume_ml > maxf(30.0, food_mass_kg * 300.0)
 	var reason: = "plain"
 	var details: Array[String] = []
 	for trace in snapshot.get("pan_carryover", {}).values():
@@ -59,9 +69,9 @@ static func compose(snapshot: Dictionary, customer: Dictionary, catalog: Diction
 	elif not burnt.is_empty() and bool(customer.get("likes_burnt", false)):
 		reason = "burnt"
 		details.append("%s的焦边正合我的偏好。" % _names(burnt))
-	elif seasoning_count >= 3 and seasoning_count * 2 >= entries.size():
+	elif (seasoning_count >= 3 and seasoning_count * 2 >= entries.size()) or excessive_volume:
 		reason = "seasoning"
-		details.append("%s加了不少，整份里有%d份是调料。" % [_names(seasonings), seasoning_count])
+		details.append("%s大约加了%d毫升，盖过了食材本身。" % [_names(seasonings), roundi(seasoning_volume_ml)] if excessive_volume else "%s加了不少，整份里用了%d份调料。" % [_names(seasonings), seasoning_count])
 	elif float(snapshot.get("weirdness", 0)) > 0.45:
 		reason = "strange"
 		details.append("%s这个组合%s。" % [_names(strange if not strange.is_empty() else liked), "够出乎意料，我喜欢" if kind == "adventurous" else "对我来说太奇怪了"])

@@ -451,7 +451,7 @@ func _show_help() -> void :
 	_text("01  取材", 22, ACCENT)
 	_text("%d 种材料分层放在冰箱和奇物架上，箭头可翻层。每件取出后原位留空。点击拿取，再点击放下；台面上的食材可以拖拽。TAB 可搜索。" % session.active_ingredients().size())
 	_text("02  切配与入锅", 22, ACCENT)
-	_text("食材放在固定的右侧菜板。按住刀柄划过食材；顺着同方向切成片，交叉切成块。切片会落稳，拖住其中一片可把同批切块一起送入锅中。")
+	_text("食材放在固定的右侧菜板。按住刀柄，沿箭头让刀刃标记从食材一侧划到另一侧；落刀位置决定薄片厚度，提刀返回不会切。拿刀时按 R 转刀 90°，滚轮微调角度，对准切片横向划切成块。松手放刀；拖住其中一片可把同批切块一起送入锅中。")
 	_text("03  掌握火候", 22, ACCENT)
 	_text("在灶台选火力，观察变色、焦边与沸腾。每块独立受热；锅容纳 6 份原料、最多 48 个切块，总容量 1500 ml。拿起铲子推拌；调料瓶口对准锅，按住出料、松开停止。")
 	_text("04  留下你的招牌", 22, ACCENT)
@@ -482,7 +482,7 @@ func _interact(action: String, payload: String = "") -> void :
 			else:
 				session.set_heating( not session.heating)
 				_notify(session.last_notice)
-		"chop": _notify("食材放在菜板上，按住刀柄拖动刀刃切开。")
+		"chop": _notify("食材放在菜板上，按住刀柄顺箭头压切；按 R 转刀横切成块。")
 		"plate":
 			session.set_heating(false)
 			_show_plating()

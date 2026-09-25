@@ -84,6 +84,8 @@ var _spatula: Node2D
 var _knife_cutting: = false
 var _knife_visual: Node2D
 var _previous_blade_tip: = Vector2.ZERO
+const KNIFE_BLADE_MID := Vector2(-50, -22)
+var _knife_stroke_origin := Vector2.ZERO
 const KNIFE_HOME := Vector2(1252, 731)
 var _knife_rest_position: = KNIFE_HOME
 var _knife_last_valid_rest: = KNIFE_HOME
@@ -100,7 +102,7 @@ var _stations: = {
 	"trash": Rect2(1440, 825, 130, 60)
 }
 var _titles: = {"pantry": "食材架", "chop": "料理台", "cook": "平底锅", "plate": "装盘台", "serve": "出餐窗口", "talk": "今日客人", "cookbook": "公共菜谱", "poster": "海报工作台", "trash": "回收桶"}
-var _hints: = {"pantry": "挑选食材", "chop": "食材放稳后，按住刀柄拖动切开", "cook": "空手点击开火 / 离火；食材拖入锅中", "plate": "放大餐盘，自由摆放、淋酱与拍照", "serve": "给客人上菜", "talk": "聊聊口味与忌口", "cookbook": "命名 · 署名 · 分享", "poster": "涂鸦 · 拼贴 · 招呼街坊", "trash": "丢弃手中食材 / 清空料理"}
+var _hints: = {"pantry": "挑选食材", "chop": "按住刀柄顺箭头压切；拿刀后按 R 横切成块", "cook": "空手点击开火 / 离火；食材拖入锅中", "plate": "放大餐盘，自由摆放、淋酱与拍照", "serve": "给客人上菜", "talk": "聊聊口味与忌口", "cookbook": "命名 · 署名 · 分享", "poster": "涂鸦 · 拼贴 · 招呼街坊", "trash": "丢弃手中食材 / 清空料理"}
 
 func _ready() -> void :
 	_backdrop = preload("res://modules/restaurant/world/kitchen_backdrop.gd").new()
@@ -290,7 +292,7 @@ func _process(delta: float) -> void :
 						focus_changed.emit(utensil.title, "轻移承托、滚轮倾勺；快速甩动会滑出" if utensil.kind == "spoon" else "按住拖入锅中推拌、向上翻动；松开放回锅边")
 						break
 			elif _knife_held:
-				focus_changed.emit("主厨刀", "按住并拖动刀刃切食材；松开就放下")
+				focus_changed.emit("主厨刀", "顺箭头划完整刀线；R 转刀 90°，滚轮微调角度，松手放刀")
 			elif _held_is_sauce_bottle():
 				focus_changed.emit(get_held_name(), get_held_operation_hint())
 			else:
@@ -356,6 +358,10 @@ func _input(event: InputEvent) -> void :
 func _unhandled_input(event: InputEvent) -> void :
 	if not controls_enabled or pan.active or plate.active:
 		return
+	if event is InputEventMouseButton and event.pressed and _knife_held and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		_rotate_knife_by(deg_to_rad(-15.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 15.0))
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if not event.pressed and _squeezing:
 			_stop_squeezing()
@@ -416,6 +422,9 @@ func _unhandled_input(event: InputEvent) -> void :
 				put_knife_back()
 			else:
 				drop_held(false)
+		elif event.physical_keycode == KEY_R and _knife_held:
+			_rotate_knife()
+			get_viewport().set_input_as_handled()
 		elif event.physical_keycode == KEY_G:
 			drop_held(true)
 		elif event.physical_keycode == KEY_E and not _focus.is_empty():
@@ -626,20 +635,21 @@ func _finish_food_drag(force: = false) -> void :
 		var grouped: RigidBody2D = member.get("body")
 		if is_instance_valid(grouped): dropped_batch.append(grouped)
 	if pan.contains(point) and bool(primary.get_meta("cut", false)) and not bool(primary.get_meta("is_container", false)):
-		# Every slot is unique.  Reusing six positions made large cut batches start
-		# inside one another, so the physics solver ejected them across the room.
-		var pan_slots := [
-			Vector2(742, 552), Vector2(774, 550), Vector2(806, 549), Vector2(838, 550), Vector2(870, 552),
-			Vector2(754, 566), Vector2(786, 564), Vector2(818, 563), Vector2(850, 565), Vector2(882, 567),
-			Vector2(744, 580), Vector2(776, 578), Vector2(808, 577), Vector2(840, 578), Vector2(872, 580),
-			Vector2(761, 590), Vector2(793, 589), Vector2(825, 589), Vector2(857, 590)
+		# Land close to the release point while keeping independent fragments
+		# apart. A fixed leftmost slot made each batch visibly jump on release.
+		var center: Vector2 = pan.local_point(point).clamp(Vector2(770, 570), Vector2(850, 584))
+		var pan_offsets := [
+			Vector2(0, 0), Vector2(-28, -7), Vector2(28, -7), Vector2(-56, -11), Vector2(56, -11),
+			Vector2(-42, 10), Vector2(-14, 10), Vector2(14, 10), Vector2(42, 10),
+			Vector2(-70, -24), Vector2(-42, -24), Vector2(-14, -24), Vector2(14, -24), Vector2(42, -24), Vector2(70, -24),
+			Vector2(-56, 24), Vector2(-28, 24), Vector2(0, 24), Vector2(28, 24), Vector2(56, 24)
 		]
 		for index in dropped_batch.size():
-			# More than nineteen fragments are layered with a small, deterministic
+			# More than twenty fragments are layered with a small, deterministic
 			# offset.  Accepted pan food does not collide with other food, so it can
 			# overlap naturally without gaining an explosive impulse.
-			var layer: int = index / pan_slots.size()
-			var slot: Vector2 = pan_slots[index % pan_slots.size()] + Vector2(layer * 3, -layer * 3)
+			var layer: int = index / pan_offsets.size()
+			var slot: Vector2 = center + pan_offsets[index % pan_offsets.size()] + Vector2(layer * 3, -layer * 3)
 			dropped_batch[index].position = pan.point(slot)
 			dropped_batch[index].set_deferred("position", dropped_batch[index].position)
 	else:
@@ -1073,7 +1083,7 @@ func get_held_name() -> String:
 	for utensil in utensils:
 		if utensil.active: return utensil.title
 	if _knife_held:
-		return "主厨刀 · 按住拖动，松手放下；Q 归位"
+		return "主厨刀 · 顺箭头拖动切菜；R 转刀，滚轮微调；Q 归位"
 	return str(_held.get_meta("title", "")) if is_instance_valid(_held) else ""
 
 func show_notice(_message: String) -> void :
@@ -1133,7 +1143,7 @@ func ingredient_operation_hint(definition: Dictionary) -> String:
 
 func get_held_operation_hint() -> String:
 	if _knife_held:
-		return "按住并拖动刀刃切食材；松开就放下"
+		return "顺箭头让刀刃标记划过食材；R 转刀，滚轮微调；松手放下"
 	if is_instance_valid(_held) and _is_whole_egg(_held) and int(_held.get_meta("egg_taps", 0)) == 1:
 		return "蛋壳已有裂纹，再点一下锅后沿敲开"
 	return ingredient_operation_hint(_held.get_meta("definition", {})) if is_instance_valid(_held) else ""
@@ -1482,13 +1492,24 @@ func pickup_knife(pointer: = Vector2.INF) -> bool:
 	_knife_held = true
 	_knife_cutting = true
 	_knife_visual.visible = true
+	_knife_visual.cutting_guide = true
 	var grab_point: = get_global_mouse_position() if pointer == Vector2.INF else pointer
 	_knife_drag_offset = _knife_visual.global_position - grab_point
 	_knife_last_valid_rest = _knife_rest_position
-	_previous_blade_tip = _knife_visual.global_position + Vector2(-50, -22)
+	_previous_blade_tip = _knife_visual.to_global(KNIFE_BLADE_MID)
+	_knife_stroke_origin = _previous_blade_tip
 	held_changed.emit("主厨刀")
-	focus_changed.emit("主厨刀", "按住并拖动刀刃切食材；松开就放下")
+	focus_changed.emit("主厨刀", "顺箭头划完整刀线；R 转刀 90°，滚轮微调角度，松手放刀")
 	return true
+
+func _rotate_knife() -> void:
+	_rotate_knife_by(-PI / 2.0)
+
+func _rotate_knife_by(amount: float) -> void:
+	_knife_visual.rotation = wrapf(_knife_visual.rotation + amount, -PI, PI)
+	# Rotation alone never cuts. The next stroke starts at the new edge position.
+	_previous_blade_tip = _knife_visual.to_global(KNIFE_BLADE_MID)
+	_knife_stroke_origin = _previous_blade_tip
 
 func put_knife_back() -> void :
 	_knife_last_valid_rest = KNIFE_HOME
@@ -1497,6 +1518,8 @@ func put_knife_back() -> void :
 func _release_knife() -> void :
 	_knife_held = false
 	_knife_cutting = false
+	_knife_visual.cutting_guide = false
+	_knife_visual.rotation = 0.0
 	_knife_rest_position = _knife_last_valid_rest
 	_knife_visual.global_position = _knife_rest_position
 	_knife_visual.visible = true
@@ -1507,11 +1530,14 @@ func _move_knife(pointer: Vector2) -> void :
 	if not _knife_held or not _knife_cutting or not controls_enabled:
 		return
 	_knife_visual.global_position = pointer + _knife_drag_offset
-	var blade_tip: = _knife_visual.global_position + Vector2(-50, -22)
+	var blade_tip: = _knife_visual.to_global(KNIFE_BLADE_MID)
 	if blade_tip.distance_to(_previous_blade_tip) > 2.0:
-		_perform_knife_sweep(_previous_blade_tip - Vector2(34, 0), blade_tip - Vector2(34, 0))
-		_perform_knife_sweep(_previous_blade_tip, blade_tip)
-		_perform_knife_sweep(_previous_blade_tip + Vector2(22, 0), blade_tip + Vector2(22, 0))
+		var forward := Vector2.DOWN.rotated(_knife_visual.rotation)
+		var motion := blade_tip - _previous_blade_tip
+		if motion.normalized().dot(forward) >= 0.7:
+			_perform_knife_sweep(_knife_stroke_origin, blade_tip)
+		else:
+			_knife_stroke_origin = blade_tip
 	_previous_blade_tip = blade_tip
 	if _stations.chop.grow(22.0).has_point(_knife_visual.global_position):
 		_knife_last_valid_rest = _knife_visual.global_position
@@ -1537,8 +1563,12 @@ func _exit_tree() -> void :
 func _perform_knife_sweep(from: Vector2, to: Vector2) -> void :
 	if not _knife_held or not _knife_cutting or from.distance_to(to) < 2.0:
 		return
-	var direction: = (to - from).normalized()
-	var normal: = Vector2( - direction.y, direction.x)
+	var direction := (to - from).normalized()
+	var normal := Vector2(-direction.y, direction.x)
+	# The blade marker traces the player's cut line. It must travel forward;
+	# lifting the knife or sweeping its handle never creates a second cut.
+	if direction.dot(Vector2.DOWN.rotated(_knife_visual.rotation)) < 0.7:
+		return
 	for body in _foods.get_children():
 		if body.is_queued_for_deletion() or body == _held or bool(body.get_meta("is_container", false)) or bool(body.get_meta("dispensed", false)):
 			continue
@@ -1546,9 +1576,23 @@ func _perform_knife_sweep(from: Vector2, to: Vector2) -> void :
 			continue
 		if _time - float(body.get_meta("last_cut_time", -100.0)) < 0.3:
 			continue
-		var point: = Geometry2D.get_closest_point_to_segment(body.global_position, from, to)
-		if point.distance_to(body.global_position) <= float(body.get_meta("cut_radius", 22.0)):
-			split_food(body, normal, point, 8)
+		var polygon: PackedVector2Array = body.get_meta("fragment_polygon", PackedVector2Array())
+		if polygon.size() < 3:
+			continue
+		var local_from: Vector2 = body.to_local(from)
+		var local_to: Vector2 = body.to_local(to)
+		var local_direction := (local_to - local_from).normalized()
+		var path_length := local_from.distance_to(local_to)
+		var first_contact := INF
+		var last_contact := -INF
+		for vertex in polygon:
+			var along: float = (vertex - local_from).dot(local_direction)
+			first_contact = minf(first_contact, along)
+			last_contact = maxf(last_contact, along)
+		# A full edge-to-edge stroke is needed. split_food checks whether this
+		# exact line leaves two usable pieces, including narrow off-centre slices.
+		if first_contact >= -2.0 and last_contact <= path_length + 2.0:
+			split_food(body, normal, from, 6)
 
 func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2.INF, max_depth: = 2) -> Array[RigidBody2D]:
 	var result: Array[RigidBody2D] = []
@@ -1664,7 +1708,7 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 	body.queue_free()
 	_chop_flash = 0.2
 	audio.play_chop(definition)
-	interaction.emit("notice", "切开了！每块保留独立重量和碰撞；拖任意一块可把同批切块一起下锅。")
+	interaction.emit("notice", ("横切成小块了" if cut_style == "dice" else "切出食材片了") + "；拖任意一块可把同批切块一起下锅。")
 	return result
 
 func _clip_half(polygon: PackedVector2Array, normal: Vector2, distance: float) -> PackedVector2Array:

@@ -61,7 +61,14 @@ func _step(dt: float) -> void:
 		var in_pan: bool = body!=world._held and body.get_meta("enrolled",false) and not body.get_meta("plated",false) and world.pan.contains(body.position)
 		var wet: bool = in_pan and world.pan.water_ml>=80.0
 		var local: Vector2 = world.pan.local_point(body.position)
-		var contact: bool = in_pan and local.y>=568.0 and not world.utensil_holds(body)
+		# Contact belongs to the lower edge of the actual food outline. Looking
+		# only at its centre left a cracked egg balanced on tomato pieces raw.
+		var bottom := local.y
+		if in_pan:
+			var outline: PackedVector2Array = body.get_meta("fragment_polygon", PackedVector2Array())
+			for vertex in outline:
+				bottom = maxf(bottom, world.pan.local_point(body.to_global(vertex)).y)
+		var contact: bool = in_pan and bottom>=585.0 and not world.utensil_holds(body)
 		var env := pan_c if contact else 22.0
 		var before := float(state.evaporated_kg)
 		var film: Dictionary = body.get_meta("surface_sauce",{})

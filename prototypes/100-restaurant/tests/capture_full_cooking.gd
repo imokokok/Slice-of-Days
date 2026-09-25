@@ -38,6 +38,31 @@ func _run() -> void:
 	await _frames(32)
 	var pieces := _pieces("tomato")
 	if not _require(pieces.size() >= 2, "knife creates physical tomato pieces"): return
+	# Regrip and aim across the slice's actual settled orientation. The R key
+	# makes the broad turn; wheel steps show the same fine aiming a player uses.
+	var target: RigidBody2D = pieces[0]
+	var previous_axis: Vector2 = target.get_meta("cut_axis", Vector2.LEFT)
+	var stroke_direction: Vector2 = -previous_axis.rotated(target.rotation).normalized()
+	var cross_center: Vector2 = target.position
+	_mouse(game.world._knife_handle_rect().get_center(), "down")
+	await _frames(5)
+	_key(KEY_R)
+	await _frames(5)
+	var desired_rotation := wrapf(stroke_direction.angle() - PI / 2.0, -PI, PI)
+	var turn_steps := roundi(wrapf(desired_rotation - game.world._knife_visual.rotation, -PI, PI) / deg_to_rad(15.0))
+	for index in absi(turn_steps):
+		_wheel(MOUSE_BUTTON_WHEEL_DOWN if turn_steps > 0 else MOUSE_BUTTON_WHEEL_UP)
+		await _frames(2)
+	var cross_offset: Vector2 = game.world.KNIFE_BLADE_MID.rotated(game.world._knife_visual.rotation)
+	var cross_drag: Vector2 = game.world._knife_drag_offset
+	_mouse(cross_center - stroke_direction * 64.0 - cross_drag - cross_offset, "move")
+	await _frames(8)
+	_mouse(cross_center + stroke_direction * 64.0 - cross_drag - cross_offset, "move")
+	await _frames(8)
+	_mouse(Vector2(1180, 690), "up")
+	await _frames(24)
+	pieces = _pieces("tomato")
+	if not _require(pieces.size() >= 3 and pieces.any(func(item): return item.get_meta("cut_style", "") == "dice"), "player-driven crosscut makes diced tomato pieces"): return
 	var first: RigidBody2D = pieces[0]
 	_mouse(first.position, "move")
 	game.world._pickup(first)
@@ -64,6 +89,7 @@ func _run() -> void:
 	while cooking_frames < 1500 and is_instance_valid(warmed_egg) and float(warmed_egg.get_meta("thermal", {}).get("cooked", 0.0)) < 0.72:
 		await _capture_frame()
 		cooking_frames += 1
+	print("CAPTURE: egg cooking frames=", cooking_frames, " cooked=", warmed_egg.get_meta("thermal", {}).get("cooked", -1.0))
 	if not _require(is_instance_valid(warmed_egg) and float(warmed_egg.get_meta("thermal", {}).get("cooked", 0.0)) >= 0.72, "egg reaches cooked state before serving"): return
 	print("CAPTURE: egg cooking frames=", cooking_frames)
 	game._interact("cook")
@@ -215,3 +241,18 @@ func _mouse(point: Vector2, kind: String) -> void:
 		button.global_position = window_point
 		Input.parse_input_event(button)
 	previous_pointer = point
+
+func _key(code: Key) -> void:
+	var event := InputEventKey.new()
+	event.physical_keycode = code
+	event.keycode = code
+	event.pressed = true
+	Input.parse_input_event(event)
+
+func _wheel(button: MouseButton) -> void:
+	var event := InputEventMouseButton.new()
+	event.button_index = button
+	event.pressed = true
+	event.position = root.get_final_transform() * previous_pointer
+	event.global_position = event.position
+	Input.parse_input_event(event)

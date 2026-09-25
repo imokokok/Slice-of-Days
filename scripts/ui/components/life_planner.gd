@@ -29,6 +29,14 @@ func rebuild() -> void:
 		"plan": _plans()
 		"work": _work()
 		"people": _people()
+	if GameState.current_role=="B": _notebook_ink(self)
+
+func _notebook_ink(node: Node) -> void:
+	var pen := preload("res://art/ui/fonts/xiaolai/Xiaolai-Regular.ttf")
+	if node is Label or node is Button or node is LineEdit or node is TextEdit:
+		node.add_theme_font_override("font",pen)
+	elif node is RichTextLabel: node.add_theme_font_override("normal_font",pen)
+	for child in node.get_children(): _notebook_ink(child)
 
 func _me() -> void:
 	var left := _scroll(Vector2(0,154),Vector2(520,368))

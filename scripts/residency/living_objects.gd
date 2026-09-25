@@ -377,6 +377,7 @@ func _notebook_page() -> void:
 		var b := button(body,str(categories[i][2]) if SettingsSystem.language()=="en" else str(categories[i][1]),Vector2(40,75+i*62),Vector2(162,55),func() -> void: notebook_section=key; build())
 		b.name="NotebookTab_"+key
 		b.variant="tab"; b.selected=notebook_section==key; b.refresh(); b.add_theme_font_size_override("font_size",22); b.alignment=HORIZONTAL_ALIGNMENT_LEFT
+		b.add_theme_font_override("font",preload("res://art/ui/fonts/xiaolai/Xiaolai-Regular.ttf"))
 	if notebook_section=="schedule":
 		var agenda := preload("res://scripts/ui/components/notebook_agenda.gd").new(); agenda.owner_ui=self; agenda.position=Vector2(236,75); body.add_child(agenda); return
 	if notebook_section=="me":
@@ -536,6 +537,7 @@ func _hand(value: String, at: Vector2, dimensions: Vector2, point: int) -> Label
 	var words := label(body,value,at,dimensions,point,BLUE)
 	var font := SystemFont.new(); font.font_names=PackedStringArray(["Segoe Script","KaiTi","Microsoft YaHei"])
 	words.add_theme_font_override("font",font)
+	if mode=="notebook": words.add_theme_font_override("font",preload("res://art/ui/fonts/xiaolai/Xiaolai-Regular.ttf"))
 	return words
 func _icon(parent: Node, kind: String, at: Vector2, dimensions: Vector2) -> Control:
 	var icon := preload("res://scripts/ui/components/ink_icon.gd").new(); icon.kind=kind; icon.position=at; icon.size=dimensions; parent.add_child(icon); return icon

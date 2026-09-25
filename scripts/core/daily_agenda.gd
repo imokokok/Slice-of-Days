@@ -40,6 +40,17 @@ static func next_row() -> Dictionary:
 		if str(row.status) not in CLOSED and int(row.end)>GameState.current_minute: return row
 	return {}
 
+static func note_text(row: Dictionary) -> String:
+	if str(row.id)=="home_deadline": return "23:59 前到家，00:00 就是下一天了。"
+	if str(row.kind)=="计划" and str(row.location)=="residence": return "在家给自己留 %d 分钟。" % [int(row.end)-int(row.start)]
+	match str(row.kind):
+		"固定": return "提前到店，备料、做菜、出餐。"
+		"约定": return "答应过的见面，记得准时到。"
+		_: return str(row.detail)
+
+static func todo_title(row: Dictionary) -> String:
+	return "去%s上班" % str(row.place) if str(row.kind)=="固定" else str(row.title)
+
 static func status_text(row: Dictionary) -> String:
 	var status := str(row.status)
 	if status=="planned" and GameState.current_minute>=int(row.start): return "现在该做"

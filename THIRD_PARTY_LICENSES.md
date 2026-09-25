@@ -8,6 +8,7 @@
 
 | 已包含内容 / 路径 | 作者、来源与许可记录 | 修改和范围 |
 | --- | --- | --- |
+| B 的随身本 / `art/ui/fonts/xiaolai/` | LXGW、Nozomi Seto；[Xiaolai v3.126](https://github.com/lxgw/kose-font/releases/tag/v3.126)；SIL OFL 1.1，[完整许可](art/ui/fonts/xiaolai/OFL.txt) | 原字体未经修改，随成品与许可分发，用于日程和手写待办；[来源与校验值](art/ui/fonts/xiaolai/SOURCE.md)。 |
 | Godot 运行依赖 | Godot Engine contributors；[官方 MIT 许可](https://github.com/godotengine/godot/blob/master/LICENSE.txt) | 工程依赖，不表示本项目美术/剧本也获得 MIT 许可。引擎及导出模板的随附声明继续保留。 |
 | Little Chef / `art/licensed/kitchen/`（本地安装） | hello erika；[官方素材页](https://hello-erika.itch.io/cute-cozy-cooking-game-assest)；[随包 ReadMe](third_party/licenses/little_chef/ReadMe.txt) | 10 张选择性厨房图层，原包完整留在本地缓存。官方页允许个人/商业项目、禁止素材转售/再分发；随包 ReadMe 自称 CC0 又附原样转售限制，两者均保留，不将其简化为无限制公共领域。 |
 | `art/ui/third_party_adapted/solmere_pot_front.png` | 基于上述 hello erika 的锅前景，用图像编辑生成适配版 | 蓝色花朵锅改为更宽矮的海绿锅、陶土手柄与两条米白装饰带；见 [改造记录](docs/art/third_party_adaptations_20260924.md)。 |

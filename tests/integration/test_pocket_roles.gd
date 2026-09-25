@@ -110,6 +110,19 @@ func run() -> void:
 	router.active_space_id=""
 	gs.spend_time(640-gs.current_minute)
 	check(agenda.rows().any(func(row: Dictionary): return row.id=="pocket_appointment" and row.status=="missed"),"missed real appointment is not called complete")
+	key(shell,"open_notebook"); await process_frame
+	var written=shell.overlay.find_child("NotebookAgenda",true,false)
+	var cancelled=shell.overlay.find_child("Todo_"+plan_id,true,false)
+	check(written!=null and cancelled!=null and not bool(cancelled.get_meta("completed")) and cancelled.get_meta("agenda_status")=="cancelled","cancelled to-do stays crossed out without a completion tick")
+	var missed=shell.overlay.find_child("Todo_pocket_appointment",true,false)
+	check(missed!=null and not bool(missed.get_meta("completed")) and missed.get_meta("agenda_status")=="missed","missed to-do remains distinct from completion")
+	var finished: Dictionary=agenda.rows().filter(func(row: Dictionary): return row.status=="done")[0]
+	var done=shell.overlay.find_child("Todo_"+str(finished.id),true,false)
+	check(done!=null and bool(done.get_meta("completed")),"actual activity completion appears as a checked to-do")
+	var pen=load("res://art/ui/fonts/xiaolai/Xiaolai-Regular.ttf")
+	check(done.title_line.get_theme_font("font")==pen and pen.has_char("饭".unicode_at(0)) and pen.has_char("勾".unicode_at(0)),"notebook uses the bundled Chinese handwriting font without system fallback")
+	await capture("b-todo-status")
+	await close_paper(shell)
 	check(root.get_node("SaveManager").save_game() and root.get_node("SaveManager").load_game(),"role-specific plans persist through save reload")
 	gs.switch_to_role("A",3,true)
 	check(not life.state().plans.any(func(row: Dictionary): return str(row.id)==plan_id),"B plans do not leak into A")

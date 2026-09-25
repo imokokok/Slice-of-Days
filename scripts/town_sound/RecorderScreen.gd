@@ -125,7 +125,7 @@ func _open_studio() -> void:
 	player.stop()
 	var studio=load("res://scripts/town_sound/studio/StudioScreen.gd").new()
 	studio.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(studio); page_scroll.hide()
-	studio.tree_exited.connect(func(): page_scroll.show())
+	studio.tree_exited.connect(_return_from_shop_tool)
 
 func _open_record_shelf() -> void:
 	if not can_edit_here(): return
@@ -133,7 +133,12 @@ func _open_record_shelf() -> void:
 		status_label.text=LocalizationSystem.text("请先保存或放弃当前录音。"); return
 	player.stop()
 	var shelf=load("res://scripts/town_sound/record_shop/RecordShelf.gd").new(); shelf.host=self
-	add_child(shelf); page_scroll.hide(); shelf.tree_exited.connect(func(): page_scroll.show())
+	add_child(shelf); page_scroll.hide(); shelf.tree_exited.connect(_return_from_shop_tool)
+
+func _return_from_shop_tool() -> void:
+	if is_queued_for_deletion(): return
+	if CharacterSystem.owns_pocket_item("recorder"): page_scroll.show()
+	else: queue_free()
 
 func _build_ui() -> void:
 	var copy := BackBufferCopy.new(); copy.name="LiveWorldFrame"; copy.copy_mode=BackBufferCopy.COPY_MODE_VIEWPORT; add_child(copy)
@@ -260,6 +265,7 @@ func _refresh_devices() -> void:
 	_refresh_controls()
 
 func _start_recording() -> void:
+	if not CharacterSystem.owns_pocket_item("recorder"): return
 	player.stop()
 	if draft != null or (source_picker.selected == 1 and devices.selected < 0):
 		return

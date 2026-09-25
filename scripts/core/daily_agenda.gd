@@ -2,6 +2,11 @@ extends RefCounted
 ## Read-only view of the current role's real reservations and completed actions.
 const CLOSED := ["done", "missed", "cancelled"]
 
+static func place_name(location: String) -> String:
+	if location=="residence": return "家 · 海风路17号"
+	var display := TravelSystem.location_name(location)
+	return display if not location.is_empty() and display!=location else "地点待确认"
+
 static func rows() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for shift in GameState.commitments_for_day():
@@ -19,13 +24,13 @@ static func rows() -> Array[Dictionary]:
 		var finish := int(appointment.get("end", int(appointment.get("start",0))+120))
 		if status not in CLOSED and GameState.current_minute >= finish: status="missed"
 		var location := str(appointment.get("location",""))
-		result.append({"id":str(appointment.get("id","")), "kind":"约定", "start":int(appointment.get("start",0)), "end":finish, "title":str(appointment.get("label","约定")), "location":location, "place":TravelSystem.location_name(location) if not location.is_empty() else "地点待确认", "status":status, "detail":"在约定时段到场；只有实际赴约才算完成。"})
+		result.append({"id":str(appointment.get("id","")), "kind":"约定", "start":int(appointment.get("start",0)), "end":finish, "title":str(appointment.get("label","约定")), "location":location, "place":place_name(location), "status":status, "detail":"在约定时段到场；只有实际赴约才算完成。"})
 	for plan in LifeSystem.state().plans:
 		if int(plan.day) != GameState.current_day: continue
 		var status := str(plan.status)
 		if status == "planned" and GameState.current_minute >= int(plan.end): status="missed"
 		var travel: String = {"walk":"步行", "bus":"公交", "taxi":"出租车"}.get(str(plan.get("transport","walk")), "步行")
-		result.append({"id":str(plan.id), "kind":"计划", "start":int(plan.start), "end":int(plan.end), "title":str(plan.title), "location":str(plan.location), "place":TravelSystem.location_name(str(plan.location)), "status":status, "detail":"打算%s前往 · 活动 %d 分钟，另外留出路程。" % [travel, int(plan.end)-int(plan.start)]})
+		result.append({"id":str(plan.id), "kind":"计划", "start":int(plan.start), "end":int(plan.end), "title":str(plan.title), "location":str(plan.location), "place":place_name(str(plan.location)), "status":status, "detail":"打算%s前往 · 活动 %d 分钟，另外留出路程。" % [travel, int(plan.end)-int(plan.start)]})
 	result.append({"id":"home_deadline", "kind":"回家", "start":1439, "end":1440, "title":"回家，结束今天", "location":"residence", "place":"A、B 的家", "status":"planned", "detail":"23:59 前到家，00:00 进入下一天。"})
 	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a.start)<int(b.start))
 	return result

@@ -23,7 +23,7 @@ func _ready() -> void:
 	scroll.add_child(column)
 	column.add_child(host._label("LOCAL RECORDINGS / 本地唱片架", 28))
 	column.add_child(host._button("♪ 声音设置 / 测试音", func() -> void: get_node("/root/SoundSettings").show_dialog()))
-	column.add_child(host._button("返回录音", func() -> void: queue_free()))
+	column.add_child(host._button("返回录音" if CharacterSystem.owns_pocket_item("recorder") else "回到唱片店", func() -> void: queue_free()))
 	var balance := GameState.money if has_node("/root/GameState") else library.money()
 	column.add_child(host._label("游戏内余额：%d   /   LOCAL MODE" % balance, 18))
 	note = host._label("居民唱片与自己的成品，随时回来听。", 16)

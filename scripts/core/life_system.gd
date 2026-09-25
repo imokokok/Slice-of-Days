@@ -127,6 +127,9 @@ func add_plan(id: String, start: int, transport: String) -> Dictionary:
 	if start<GameState.current_minute or not GameState.can_fit_at(GameState.current_role,GameState.current_day,start,int(card.minutes)): return fail("这件事需要 %d 分钟连续空档。先重组私人安排，或换个时间。"%int(card.minutes))
 	for row in state().plans:
 		if int(row.day)==GameState.current_day and str(row.status)=="planned" and start<int(row.end) and end>int(row.start): return fail("和已经写下的安排重叠了。")
+	for appointment in GameState.appointments:
+		if int(appointment.get("day",0))!=GameState.current_day or str(appointment.get("status","scheduled")) not in ["scheduled","active"]: continue
+		if start<int(appointment.get("end",0)) and end>int(appointment.get("start",0)): return fail("这个时间已经答应了另一件事，先在日程里确认约定，再换个空档。")
 	var npc := str(card.get("npc",""))
 	if not npc.is_empty():
 		var activity := ScheduleSystem.activity_at(npc,GameState.current_day,start)

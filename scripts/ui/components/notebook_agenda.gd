@@ -7,14 +7,14 @@ func _ready() -> void:
 	name="NotebookAgenda"
 	PALETTE.words(self,"B 的随身本 · 今日日程",Vector2.ZERO,1000,30,PALETTE.INK)
 	PALETTE.words(self,"第 %d 天  /  现在 %s  /  可支配 %d 元" % [GameState.current_day,GameState.clock_text(),GameState.money],Vector2(0,48),1000,20,PALETTE.MUTED)
-	var left := _scroll(Vector2(0,108),Vector2(565,399))
+	var left := _scroll(Vector2(0,108),Vector2(395,399))
 	for row in AGENDA.rows():
 		_words(left,"%s—%s   %s · %s" % [GuidanceSystem.time_text(int(row.start)),GuidanceSystem.time_text(int(row.end)),str(row.kind),AGENDA.status_text(row)],20,PALETTE.MUTED)
 		_words(left,str(row.title),25)
 		_words(left,"地点："+str(row.place),21)
 		_words(left,str(row.detail),20,PALETTE.MUTED)
 		var line := HSeparator.new(); line.custom_minimum_size.y=21; left.add_child(line)
-	var right := _scroll(Vector2(606,108),Vector2(387,399))
+	var right := _scroll(Vector2(506,108),Vector2(487,399))
 	var next := AGENDA.next_row()
 	_words(right,"接下来",25)
 	if not next.is_empty():

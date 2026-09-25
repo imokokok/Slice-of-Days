@@ -70,6 +70,13 @@ func run() -> void:
 	shell.overlay._home_action("recorder"); await process_frame
 	check(not is_instance_valid(shell.tool) and is_instance_valid(shell.overlay),"secondary recorder action also respects ownership")
 	await close_paper(shell)
+	gs.current_location="record_store"
+	var shop=load("res://scripts/town_sound/record_shop/RecordShop.gd").new(); current_scene.add_child(shop)
+	check(not has_text(shop,"随身录音 / 素材库"),"B record shop has no personal recorder entrance")
+	shop.open_shelf(); await process_frame
+	check(is_instance_valid(shop.modal) and not shop.modal.page_scroll.visible,"B can listen to records without exposing recorder")
+	shop.modal._start_recording(); check(not shop.modal.recorder.capturing,"B cannot record through shop wrapper")
+	shop.queue_free(); await process_frame; gs.current_location="residence"
 	key(shell,"open_notebook"); await process_frame
 	check(shell.overlay.notebook_section=="schedule" and shell.overlay.find_child("NotebookAgenda",true,false)!=null,"B notebook opens directly on today's agenda")
 	check(has_text(shell.overlay,"14:00—18:00") and has_text(shell.overlay,"地点：饭店"),"agenda shows actual shift time and workplace")
@@ -80,8 +87,9 @@ func run() -> void:
 	await close_paper(shell)
 	check(life.add_plan("rest",540,"walk").ok,"B can reserve a real morning home activity")
 	var plan_id: String=life.state().plans[-1].id
-	gs.add_appointment({"id":"pocket_appointment","day":2,"start":600,"end":630,"label":"和居民在海边见面","location":"seafront"})
-	gs.add_appointment({"id":"other_day","day":4,"start":600,"end":630,"label":"未来的约定","location":"seafront"})
+	gs.add_appointment({"id":"pocket_appointment","day":2,"start":600,"end":630,"label":"和居民在棋摊见面","location":"chess_stall"})
+	gs.add_appointment({"id":"other_day","day":4,"start":600,"end":630,"label":"未来的约定","location":"chess_stall"})
+	check(not life.add_plan("quiet",600,"walk").ok,"new plans cannot overlap accepted appointments")
 	check(agenda.next_row().id==plan_id,"next activity follows chronology, not fixed-job priority")
 	check(not agenda.rows().any(func(row: Dictionary): return str(row.id)=="other_day"),"today agenda excludes other days")
 	check(agenda.free_windows()==[[480,540],[570,600],[630,840],[1080,1439]],"available windows subtract both plan and appointment")
@@ -115,17 +123,29 @@ func run() -> void:
 	key(shell,"open_notebook"); await process_frame
 	shell.overlay.find_child("AgendaEdit",true,false).pressed.emit(); await process_frame
 	var choose=shell.overlay.find_child("Choose_A",true,false)
+	var b_plan_count: int=life.state().plans.size()
 	check(choose!=null,"B schedule exposes unlocked fifth-day role switch")
 	if choose!=null: choose.pressed.emit()
 	await process_frame; await process_frame
 	check(gs.current_role=="A" and shell.overlay.mode=="day_schedule","switching B to A immediately retires B's notebook")
 	check(not has_text(shell.overlay,"随身本"),"A planner has no notebook label after switching")
+	var back=shell.overlay.find_child("Choose_B",true,false)
+	if back!=null: back.pressed.emit()
+	await process_frame; await process_frame
+	check(gs.current_role=="B" and life.state().plans.size()==b_plan_count,"switching back to B restores B's own state")
+	var return_to_a=shell.overlay.find_child("Choose_A",true,false)
+	if return_to_a!=null: return_to_a.pressed.emit()
+	await process_frame; await process_frame
 	await close_paper(shell); await process_frame
 	check(shell.get_node("Pocket_recorder").visible and not shell.get_node("Pocket_notebook").visible,"same HUD updates ownership after role switch")
 	# Leave a readable B agenda available for a native-window inspection.
+	root.get_node("ChapterSystem").start_new_game()
 	gs.switch_to_role("B",2,true); gs.current_minute=480; gs.current_location="residence"; router.town_day(.01); await settle()
 	shell=current_scene.get_node("GameplayShell"); key(shell,"open_notebook"); await process_frame
+	await capture("b-default-agenda")
 	print("POCKET_ROLES: ",checks," checks / ",failures," failures")
 	if failures==0 and OS.get_cmdline_user_args().has("--keep-open"):
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		DisplayServer.window_set_size(Vector2i(1280,720)); DisplayServer.window_set_position(Vector2i(120,80))
 		DisplayServer.window_set_title("Solmere · A/B 随身物品"); current_scene.set_process(true); return
 	quit(failures)

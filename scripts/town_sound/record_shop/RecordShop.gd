@@ -48,7 +48,8 @@ func refresh() -> void:
 		card.add_theme_stylebox_override("panel",card_style())
 		var content:=label(text,18); content.custom_minimum_size=Vector2(270,64); card.add_child(content)
 	var actions:=HBoxContainer.new(); actions.add_theme_constant_override("separation",14); body.add_child(actions)
-	actions.add_child(button("随身录音 / 素材库",func(): open_recorder(false)))
+	if CharacterSystem.owns_pocket_item("recorder"):
+		actions.add_child(button("随身录音 / 素材库",func(): open_recorder(false)))
 	actions.add_child(button("坐到声音手作桌",func(): open_recorder(true)))
 	actions.add_child(button("我的唱片 / 回放",open_shelf))
 	actions.add_child(button("店内试听台 ♪",toggle_radio))
@@ -88,7 +89,8 @@ func refresh() -> void:
 func can_edit_here() -> bool:
 	return GameState.current_location=="record_store"
 
-func open_recorder(studio: bool) -> void:
+func open_recorder(studio: bool, library_only := false) -> void:
+	if not studio and not library_only and not CharacterSystem.owns_pocket_item("recorder"): return
 	if is_instance_valid(modal): return
 	radio.stop()
 	# The recorder owns the Studio lifecycle, existing autosaves and delivery rules.
@@ -103,7 +105,7 @@ func open_recorder(studio: bool) -> void:
 	if studio: modal._open_studio()
 
 func open_shelf() -> void:
-	open_recorder(false)
+	open_recorder(false,true)
 	if is_instance_valid(modal): modal._open_record_shelf()
 
 func toggle_radio() -> void:

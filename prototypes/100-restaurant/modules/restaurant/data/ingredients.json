@@ -1738,5 +1738,158 @@
     "density_g_ml": 1.2,
     "viscosity": 0.92,
     "flow_ml_s": 7
+  },
+  {
+    "id": "zucchini",
+    "name": "西葫芦",
+    "category": "basic",
+    "color": "82c971",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.21,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "vegetable"
+  },
+  {
+    "id": "bell_pepper_yellow",
+    "name": "黄甜椒",
+    "category": "basic",
+    "color": "efce48",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.18,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "vegetable"
+  },
+  {
+    "id": "bell_pepper_lavender",
+    "name": "浅紫甜椒",
+    "category": "basic",
+    "color": "b55da9",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.18,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "vegetable"
+  },
+  {
+    "id": "bell_pepper_gold",
+    "name": "金黄甜椒",
+    "category": "basic",
+    "color": "efa923",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.18,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "vegetable"
+  },
+  {
+    "id": "bell_pepper_purple",
+    "name": "深紫甜椒",
+    "category": "basic",
+    "color": "5b254e",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.18,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "vegetable"
+  },
+  {
+    "id": "bell_pepper_brown",
+    "name": "棕甜椒",
+    "category": "basic",
+    "color": "9a642d",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.18,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "vegetable"
+  },
+  {
+    "id": "bell_pepper_white",
+    "name": "白甜椒",
+    "category": "basic",
+    "color": "e7e5ca",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.18,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "vegetable"
+  },
+  {
+    "id": "bell_pepper_orange",
+    "name": "橙红甜椒",
+    "category": "basic",
+    "color": "df632d",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.18,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "vegetable"
+  },
+  {
+    "id": "bell_pepper_green",
+    "name": "绿甜椒",
+    "category": "basic",
+    "color": "629531",
+    "tags": [
+      "vegetable",
+      "fresh",
+      "crisp"
+    ],
+    "weirdness": 0.0,
+    "needs_cook": false,
+    "mass": 0.18,
+    "friction": 0.55,
+    "bounce": 0.04,
+    "model": "vegetable"
   }
 ]

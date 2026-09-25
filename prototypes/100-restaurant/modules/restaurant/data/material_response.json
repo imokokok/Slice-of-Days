@@ -588,6 +588,33 @@
     },
     "dentures": {
       "family": "plastic"
+    },
+    "zucchini": {
+      "family": "soft_produce"
+    },
+    "bell_pepper_yellow": {
+      "family": "soft_produce"
+    },
+    "bell_pepper_lavender": {
+      "family": "soft_produce"
+    },
+    "bell_pepper_gold": {
+      "family": "soft_produce"
+    },
+    "bell_pepper_purple": {
+      "family": "soft_produce"
+    },
+    "bell_pepper_brown": {
+      "family": "soft_produce"
+    },
+    "bell_pepper_white": {
+      "family": "soft_produce"
+    },
+    "bell_pepper_orange": {
+      "family": "soft_produce"
+    },
+    "bell_pepper_green": {
+      "family": "soft_produce"
     }
   }
 }

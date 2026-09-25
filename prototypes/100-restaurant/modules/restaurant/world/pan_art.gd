@@ -19,9 +19,6 @@ func _draw() -> void :
 		var fill: float = controller.world.pan_fill_ratio()
 		var geometry = preload("res://modules/restaurant/world/pan_geometry.gd")
 		_ellipse(geometry.water_center(fill), geometry.water_radius(fill), Color("a1b9ae", 0.18))
-		if fill >= 0.999 and controller.faucet_on and controller.under_tap():
-			for x in [774.0, 810.0, 846.0]:
-				draw_line(Vector2(x, 604), Vector2(x + sin(controller.world._time * 4.0 + x) * 3.0, 628), Color("91d3d0", 0.8), 3.0, true)
 
 func _draw_burner_flame() -> void :
 

@@ -118,6 +118,16 @@ func _run() -> void:
 		game.world.pan.move_to(Vector2(game.world.pan.SINK_X-809,game.world.pan.HOME.y))
 		game.world.pan.faucet_amount=0.82
 		for i in range(8): await physics_frame
+	elif mode == "faucet_overflow":
+		game.world.clear_food()
+		game.session.clear_dish()
+		game.world.pan.move_to(Vector2(game.world.pan.SINK_X-809,game.world.pan.HOME.y))
+		game.world.pan.water_ml = game.world.PAN_CAPACITY_ML - 8.0
+		game.world.pan.faucet_amount = 1.0
+		await create_timer(0.3).timeout
+	elif mode == "shelf_last":
+		game.storage_display.fridge_page = ceili(game.storage_display._cold_catalog.size() / 15.0) - 1
+		game.storage_display._build_items()
 	elif mode in ["seasoning", "seasoning_powder", "seasoning_pour", "overflow"]:
 		await _stage_seasoning_scene(mode)
 	elif mode == "water":

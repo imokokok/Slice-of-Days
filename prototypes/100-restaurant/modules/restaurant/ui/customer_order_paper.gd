@@ -13,16 +13,16 @@ func _ready() -> void:
 	paper.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(paper)
 	paper.z_index=-1
-	heading = _label(Vector2(19,20),Vector2(size.x-87,34),24)
+	heading = _label(Vector2(19,29),Vector2(size.x-87,34),24)
 	heading.clip_text = true
 	heading.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	body = _label(Vector2(19,70),Vector2(size.x-38,size.y-116),20)
+	body = _label(Vector2(19,79),Vector2(size.x-38,size.y-125),20)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.clip_text = true
 	body.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_setup_footer()
 	mood = preload("res://modules/restaurant/ui/mood_icon.gd").new()
-	mood.position = Vector2(size.x-64,17)
+	mood.position = Vector2(size.x-64,26)
 	add_child(mood)
 	tooltip_text = "拿近一点，读完整的叮嘱"
 
@@ -60,8 +60,14 @@ func update_order(npc: Dictionary, wait: float, preference: String) -> void:
 
 func _draw() -> void:
 	# A short pencilled rule and an off-centre translucent tape tab.
-	draw_polyline(PackedVector2Array([Vector2(18,57),Vector2(size.x*.48,58),Vector2(size.x-22,56)]),Color("b59570",0.5),1.2,true)
-	draw_colored_polygon(PackedVector2Array([Vector2(77,-7),Vector2(150,-4),Vector2(148,10),Vector2(79,8)]),Color("bcad7c",0.6))
+	draw_polyline(PackedVector2Array([Vector2(18,68),Vector2(size.x*.48,69),Vector2(size.x-22,67)]),Color("b59570",0.5),1.2,true)
+	# The original room has an empty clipped sheet. This replacement sheet covers
+	# its top edge; two visible clips now connect the note to that board.
+	for x in [22.0, size.x - 22.0]:
+		draw_line(Vector2(x, -9), Vector2(x, 7), Color("3d3630", 0.55), 6.0, true)
+		draw_circle(Vector2(x, 8), 5.0, Color("4b4036"))
+		draw_circle(Vector2(x - 1, 7), 2.0, Color("bca88a"))
+	draw_colored_polygon(PackedVector2Array([Vector2(83,8),Vector2(154,10),Vector2(152,22),Vector2(84,20)]),Color("bcad7c",0.42))
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:

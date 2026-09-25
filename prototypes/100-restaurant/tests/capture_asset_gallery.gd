@@ -21,15 +21,19 @@ func run() -> void:
 			errors+=1
 			continue
 		var image:=texture.get_image()
+		# New team JPEGs have an in-memory alpha matte; supplementary paintings
+		# retain their soft alpha brush edges. The legacy atlas matte audit below
+		# applies only to older generated atlas sprites.
+		var has_source_alpha := art.handdrawn_manifest().has(str(rows[i].id)) or art.team_jpeg_manifest().has(str(rows[i].id)) or str(rows[i].id) in ["egg", "rice", "noodles", "bread"]
 		for y in image.get_height():
 			for x in image.get_width():
 				var c:=image.get_pixel(x,y)
 				# Authored PNGs have genuine low-alpha brush edges. Their pixels
 				# are verified against the source in test_handdrawn_assets.gd.
-				if not art.handdrawn_manifest().has(str(rows[i].id)) and c.a > 0.0 and c.a < 0.045:
+				if not has_source_alpha and c.a > 0.0 and c.a < 0.045:
 					push_error("Residual translucent rectangle: " + rows[i].id)
 					errors += 1
-				if not art.handdrawn_manifest().has(str(rows[i].id)) and c.a>0.1 and minf(c.r,c.b)-c.g>0.78:
+				if not has_source_alpha and c.a>0.1 and minf(c.r,c.b)-c.g>0.78:
 					push_error("Visible matte: "+rows[i].id)
 					errors+=1
 		var view:=TextureRect.new()

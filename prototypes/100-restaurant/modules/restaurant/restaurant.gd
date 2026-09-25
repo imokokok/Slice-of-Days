@@ -53,6 +53,10 @@ var _pantry_category: String = "all"
 var _pantry_search: String = ""
 var _pantry_grid: GridContainer
 var _last_dish: Dictionary = {}
+var _pending_serve_result: Dictionary = {}
+var _recipe_pages: Array[Dictionary] = []
+var _recipe_page_index := 0
+var _recipe_turning := false
 var _photo: String = ""
 var _poster_data: Dictionary = {}
 var _poster_canvas
@@ -77,6 +81,7 @@ var _food_by_physics: Dictionary = {}
 var _mystery_bag: Array = []
 var _last_mystery: = ""
 var storage_display
+var rice_cooker: Control
 var _stock: Dictionary = {}
 var _stock_bodies: Dictionary = {}
 var _recipe_stand
@@ -167,6 +172,10 @@ func _process(delta: float) -> void :
 
 func _unhandled_input(event: InputEvent) -> void :
 	if event is InputEventKey and event.pressed and not event.echo:
+		if modal.visible and _modal_kind == "recipe" and event.keycode in [KEY_LEFT, KEY_RIGHT]:
+			_turn_recipe(-1 if event.keycode == KEY_LEFT else 1)
+			get_viewport().set_input_as_handled()
+			return
 		if event.keycode == KEY_ESCAPE:
 			if modal.visible and _modal_kind != "intro" and _modal_kind != "result":
 				_close_modal()
@@ -234,6 +243,10 @@ func _build_ui() -> void :
 	storage_display.ingredient_chosen.connect(_take_ingredient)
 	storage_display.browse_requested.connect(_show_pantry)
 	storage_display.mystery_requested.connect(_draw_mystery)
+	rice_cooker = preload("res://modules/restaurant/ui/rice_cooker.gd").new()
+	hud.add_child(rice_cooker)
+	rice_cooker.serving_requested.connect(_take_rice_from_cooker)
+	rice_cooker.notice_requested.connect(_notify)
 	world.storage_return_handler = _return_to_storage
 	clock_label = _label(hud, "准备营业", Vector2(366, 36), 20, Color("fff0b8"))
 	money_label = _label(hud, "¥ 0.00", Vector2(1230, 34), 20, Color("f7d96f"))
@@ -248,8 +261,8 @@ func _build_ui() -> void :
 		else: _interact("trash"), 130)
 	trash.position = Vector2(1440, 832)
 	_order_paper = preload("res://modules/restaurant/ui/customer_order_paper.gd").new()
-	_order_paper.position = Vector2(1070,164)
-	_order_paper.size = Vector2(233,299)
+	_order_paper.position = Vector2(1068,130)
+	_order_paper.size = Vector2(237,317)
 	hud.add_child(_order_paper)
 	customer_label = _order_paper.body
 	customer_mood_icon = _order_paper.mood
@@ -388,6 +401,7 @@ func _open_modal(kind: String, title: String, width: float = 800) -> void :
 	for child in modal_body.get_children():
 		modal_body.remove_child(child)
 		child.queue_free()
+	if kind != "recipe": _recipe_turning = false
 	_modal_kind = kind
 	modal.visible = true
 	if is_instance_valid(_guide_bar): _guide_bar.visible = false
@@ -403,11 +417,15 @@ func _open_modal(kind: String, title: String, width: float = 800) -> void :
 	heading.add_theme_font_size_override("font_size", 30)
 	heading.text = title
 	title_row.add_child(heading)
-	if kind != "intro" and kind != "result":
+	if kind != "intro" and kind != "result" and kind != "dish_showcase":
 		if kind in ["recipe", "cookbook", "recipe_editor", "poster", "order_paper"]: _paper_action(title_row, "合上手记", _close_modal, "arrow", 175)
 		else: _button(title_row, "关闭  ×", _close_modal)
 
 func _close_modal() -> void :
+	if _modal_kind == "recipe": _recipe_turning = false
+	if _modal_kind == "dish_showcase":
+		_show_serve_feedback()
+		return
 	_stash_recipe_draft()
 	if is_instance_valid(_plating_canvas): _plating_canvas.stop_gesture()
 	if session.phase == "closed" and _modal_kind != "intro":
@@ -587,7 +605,7 @@ func _definition(id: String) -> Dictionary:
 
 func _show_pantry() -> void :
 	_open_modal("pantry", "食材架  /  自由搭配", 1120)
-	_text("每种原料本班备一件，拿走后原位留空。未加工原料和调料瓶可拖回原位；用过的瓶子保留余量。", 16)
+	_text("每种原料本班备一件；米饭请到水槽旁开电饭煲盛取。未加工原料和调料瓶可拖回原位；用过的瓶子保留余量。", 16)
 	var search: = LineEdit.new()
 	search.placeholder_text = "搜索食材，例如：番茄、虾、袜子…"
 	search.text = _pantry_search
@@ -614,6 +632,7 @@ func _refresh_pantry() -> void :
 		_pantry_grid.remove_child(child)
 		child.queue_free()
 	for entry in session.active_ingredients():
+		if str(entry.get("id", "")) == "rice": continue
 		if _pantry_category != "all" and entry.get("category", "basic") != _pantry_category: continue
 		if not _pantry_search.is_empty() and not str(entry.get("name", "")).contains(_pantry_search) and not str(entry.get("id", "")).contains(_pantry_search): continue
 		var button: = _button(_pantry_grid, "%s\n%.0f g  ·  %s" % [entry["name"], float(entry.get("mass", 0.15)) * 1000.0, "需做熟" if entry.get("needs_cook", false) else "自由处理"], func(): _take_ingredient(entry), 198)
@@ -643,8 +662,14 @@ func _refresh_pantry() -> void :
 		if not world.get_dispense_mode(entry).is_empty():
 			button.tooltip_text += "\n" + world.ingredient_operation_hint(entry)
 
-func _take_ingredient(entry: Dictionary, press_position := Vector2.INF) -> void :
+func _take_rice_from_cooker(press_position: Vector2) -> void:
+	_take_ingredient(_definition("rice"), press_position, true)
+
+func _take_ingredient(entry: Dictionary, press_position := Vector2.INF, from_rice_cooker := false) -> void :
 	var id := str(entry.get("id", ""))
+	if id == "rice" and not from_rice_cooker:
+		_notify("米饭放在水槽旁的电饭煲里；先开盖，再用饭勺盛取。")
+		return
 	if not bool(_stock.get(id, true)):
 		_notify("这件%s已取走，请使用台面上的那一件。" % entry.get("name", "食材"))
 		return
@@ -663,6 +688,7 @@ func _take_ingredient(entry: Dictionary, press_position := Vector2.INF) -> void 
 		_stock[id] = false
 		storage_display.reveal_ingredient(id)
 		storage_display.set_available(id, false)
+		if id == "rice": rice_cooker.set_serving_available(false)
 		_close_modal()
 		if press_position != Vector2.INF:
 			world.begin_food_drag(world.get_global_transform_with_canvas().affine_inverse() * press_position, true)
@@ -680,7 +706,10 @@ func _take_ingredient(entry: Dictionary, press_position := Vector2.INF) -> void 
 
 func _return_to_storage(body: RigidBody2D) -> bool:
 	var id := str(body.get_meta("id", ""))
-	if bool(_stock.get(id, true)) or not storage_display.slot_at(id, body.global_position): return false
+	if bool(_stock.get(id, true)): return false
+	if id == "rice":
+		if not rice_cooker.slot_at(body.global_position): return false
+	elif not storage_display.slot_at(id, body.global_position): return false
 	if body.get_meta("cut", false) or body.get_meta("dispensed", false) or float(body.get_meta("saved_heat", 0.0)) > 0.0 or float(body.get_meta("surface_sauce", {}).get("volume_ml", 0.0)) > 0.0:
 		_notify("加工过的食材请留在菜板、锅或盘子里，不能放回原料格。")
 		return false
@@ -694,6 +723,7 @@ func _return_to_storage(body: RigidBody2D) -> bool:
 	_stock_bodies[id] = body
 	_stock[id] = true
 	storage_display.set_available(id, true)
+	if id == "rice": rice_cooker.set_serving_available(true)
 	world.held_changed.emit("")
 	_notify("已放回%s，保留原来的物品和余量。" % body.get_meta("title", "物品"))
 	return true
@@ -718,6 +748,25 @@ func _serve() -> void :
 	world.audio.play_effect("bell")
 	_last_dish = snapshot
 	if not (_photo_is_plating and _plating_photo_revision == _plating_revision): _photo = ""
+	_pending_serve_result = result.duplicate(true)
+	_open_modal("dish_showcase", "这道菜，做好了", 1030)
+	_paper_modal()
+	modal_panel.position.y = 24
+	_label(modal_body, "从锅里到盘中，每一块都是刚才亲手做的。", Vector2.ZERO, 21, MUTED)
+	var showcase := preload("res://modules/restaurant/ui/plating_canvas.gd").new()
+	showcase.name = "FinishedDishShowcase"
+	showcase.game = self
+	showcase.render_only = true
+	showcase.custom_minimum_size = Vector2(920, 475)
+	modal_body.add_child(showcase)
+	_label(modal_body, _dish_names(snapshot), Vector2.ZERO, 25, CREAM)
+	var actions := _row(modal_body)
+	_button(actions, "看看客人的反馈  →", _show_serve_feedback, 310)
+
+func _show_serve_feedback() -> void:
+	if _pending_serve_result.is_empty(): return
+	var result: Dictionary = _pending_serve_result.duplicate(true)
+	_pending_serve_result.clear()
 	world.clear_food()
 	_food_by_physics.clear()
 	_open_modal("feedback", "这一口，客人怎么说", 860)
@@ -989,6 +1038,14 @@ func _show_cookbook() -> void :
 		button.custom_minimum_size.y = 90
 
 func _view_recipe(record: Dictionary) -> void :
+	_recipe_pages.clear()
+	_recipe_pages.append(RecipeMethod.starter())
+	for saved in repository.load_recipes(): _recipe_pages.append(saved)
+	_recipe_page_index = 0
+	for index in _recipe_pages.size():
+		if str(_recipe_pages[index].get("id", "")) == str(record.get("id", "")):
+			_recipe_page_index = index
+			break
 	_recipe_selected = record
 	_recipe_stand.setup(record)
 	_open_modal("recipe", str(record.get("title", "菜谱")), 1230)
@@ -1047,6 +1104,13 @@ func _view_recipe(record: Dictionary) -> void :
 		_label(method, "主厨的叮嘱", Vector2.ZERO, 20, ACCENT)
 		var notes := _label(method, record.notes, Vector2.ZERO, 18, MUTED)
 		notes.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var page_row := _row(modal_body)
+	var previous_page := _paper_action(page_row, "← 上一页", func(): _turn_recipe(-1), "arrow", 175)
+	previous_page.disabled = _recipe_page_index == 0
+	_label(page_row, "第 %d / %d 页" % [_recipe_page_index + 1, _recipe_pages.size()], Vector2.ZERO, 19, MUTED)
+	var next_page := _paper_action(page_row, "下一页 →", func(): _turn_recipe(1), "arrow", 175)
+	next_page.disabled = _recipe_page_index >= _recipe_pages.size() - 1
+
 	var row: = _row(modal_body)
 	var follow := _paper_action(row, "照着做这道菜", func(): _start_recipe_guide(record), "check", 245)
 	follow.name = "FollowRecipe"
@@ -1061,6 +1125,30 @@ func _view_recipe(record: Dictionary) -> void :
 	_paper_action(row, "翻到目录", _show_cookbook, "arrow", 210)
 	if session.phase == "closed": _text("今天已经收班。先收好做法，下次营业再试。", 16)
 
+func _turn_recipe(direction: int) -> void:
+	if _recipe_turning or _modal_kind != "recipe" or _recipe_pages.is_empty(): return
+	var target := _recipe_page_index + direction
+	if target < 0 or target >= _recipe_pages.size(): return
+	_recipe_turning = true
+	var page := modal_body.find_child("SharedRecipePage", true, false) as TextureRect
+	if is_instance_valid(page):
+		page.pivot_offset = page.size * 0.5
+		var fold := create_tween()
+		fold.tween_property(page, "scale:x", 0.05, 0.18).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		await fold.finished
+		if _modal_kind != "recipe":
+			_recipe_turning = false
+			return
+	_view_recipe(_recipe_pages[target])
+	await get_tree().process_frame
+	page = modal_body.find_child("SharedRecipePage", true, false) as TextureRect
+	if is_instance_valid(page):
+		page.pivot_offset = page.size * 0.5
+		page.scale.x = 0.05
+		var unfold := create_tween()
+		unfold.tween_property(page, "scale:x", 1.0, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		await unfold.finished
+	_recipe_turning = false
 func _share_recipe_page(record: Dictionary) -> void:
 	var dialog := FileDialog.new()
 	dialog.title = "分享这一页 · 朋友用浏览器就能看"

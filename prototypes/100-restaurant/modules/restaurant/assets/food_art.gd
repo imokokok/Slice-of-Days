@@ -50,7 +50,12 @@ func _draw() -> void :
 	if id == "noodles":
 		material = null
 		_current_id = id
-		_noodles(base)
+		var raw_noodles: Texture2D = preload("res://modules/restaurant/assets/sprite_library.gd").food(id)
+		var loosened := clampf(softness * 3.0, 0.0, 1.0)
+		if raw_noodles != null and loosened < 1.0:
+			var raw_rect := preload("res://modules/restaurant/assets/sprite_library.gd").fit(raw_noodles, Vector2.ZERO, Vector2(78, 78))
+			draw_texture_rect(raw_noodles, raw_rect, false, Color(1, 1, 1, 1.0 - loosened))
+		if loosened > 0.0: _noodles(base, loosened)
 		return
 	# Only the player's rim strikes open the egg. The same thermal record then
 	# carries the edible portion through cooking, plating and recipe snapshots.
@@ -188,10 +193,11 @@ func _draw_grip_mesh(texture: Texture2D, rect: Rect2) -> void:
 			for point in uv: vertices.append(grip_vertex(point, rect))
 			draw_polygon(vertices, PackedColorArray([Color.WHITE]), uv, texture)
 
-func _noodles(base: Color) -> void :
+func _noodles(base: Color, alpha: float = 1.0) -> void :
 	var state := CookingAppearance.surface(definition, heat,thermal,coating)
 	var noodle_color := base.lightened(softness * 0.2).lerp(Color("aa7036"), state.browned * 0.6).lerp(Color("30251c"), state.charred)
 	if state.film_amount>0.0: noodle_color=noodle_color.lerp(state.film_color,state.film_amount*(0.3+state.film_spread*0.4))
+	noodle_color.a = alpha
 	var spread: = lerpf(27.0, 67.0, softness)
 	var depth: = lerpf(18.0, 12.0, softness)
 	for strand in 13:

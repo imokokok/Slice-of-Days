@@ -1,0 +1,46 @@
+{
+  "egg": {
+    "path": "res://modules/restaurant/assets/supplementary/staples.png",
+    "region": [
+      92,
+      64,
+      440,
+      548
+    ],
+    "sha256": "c96b4dbc479f6c604f804b9bc4d30f1516ec2b950c15ee0bcdfa7759ec30c3e0",
+    "source": "image_gen generated 2026-09-25; new illustration, not team original"
+  },
+  "rice": {
+    "path": "res://modules/restaurant/assets/supplementary/staples.png",
+    "region": [
+      640,
+      169,
+      573,
+      423
+    ],
+    "sha256": "c96b4dbc479f6c604f804b9bc4d30f1516ec2b950c15ee0bcdfa7759ec30c3e0",
+    "source": "image_gen generated 2026-09-25; new illustration, not team original"
+  },
+  "noodles": {
+    "path": "res://modules/restaurant/assets/supplementary/staples.png",
+    "region": [
+      31,
+      682,
+      586,
+      510
+    ],
+    "sha256": "c96b4dbc479f6c604f804b9bc4d30f1516ec2b950c15ee0bcdfa7759ec30c3e0",
+    "source": "image_gen generated 2026-09-25; new illustration, not team original"
+  },
+  "bread": {
+    "path": "res://modules/restaurant/assets/supplementary/staples.png",
+    "region": [
+      645,
+      705,
+      567,
+      473
+    ],
+    "sha256": "c96b4dbc479f6c604f804b9bc4d30f1516ec2b950c15ee0bcdfa7759ec30c3e0",
+    "source": "image_gen generated 2026-09-25; new illustration, not team original"
+  }
+}

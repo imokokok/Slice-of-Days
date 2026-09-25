@@ -10,6 +10,7 @@ var offset: = Vector2.ZERO
 var water_ml: = 0.0
 var water_heat: = 22.0
 var overflow_water_ml: = 0.0
+var overflowing := false
 var faucet_amount: = 0.0
 var faucet_on: bool:
 	get: return faucet_amount >= 0.45
@@ -25,6 +26,8 @@ var _fall_speed: = 0.0
 var _tipping: = false
 var _carried: Array = []
 var _last_transport: = 0
+var _last_toss_msec := 0
+var _last_motion_msec := 0
 var pan_back: Node2D
 var pan_front: Node2D
 var pan_surface: Node2D
@@ -65,15 +68,23 @@ func above_sink() -> bool:
 	return absf(809 + offset.x - SINK_X) < 70 and absf(offset.y - HOME.y) < 30
 
 func _process(delta: float) -> void :
+	var was_overflowing := overflowing
+	overflowing = false
 	if world.controls_enabled:
 		if active and _tipping: set_angle(move_toward(angle, deg_to_rad(110), delta * 3.8))
 		if faucet_on and under_tap():
 			if is_empty_for_cleaning(): residue.waste_kg += residue.wipe(delta * 0.00018 * faucet_amount)
-			var incoming: = delta * 180 * faucet_amount
+			var incoming := delta * 180.0 * faucet_amount
 			var accepted: float = minf(incoming, world.pan_free_ml())
-			water_heat = (water_heat * water_ml + 22.0 * accepted) / maxf(water_ml + accepted, 0.001)
-			water_ml += accepted
-			overflow_water_ml += incoming - accepted
+			if accepted > 0.0:
+				water_heat = (water_heat * water_ml + 22.0 * accepted) / (water_ml + accepted)
+				water_ml += accepted
+			var runoff := incoming - accepted
+			if runoff > 0.0001:
+				overflowing = true
+				overflow_water_ml += runoff
+				if not was_overflowing:
+					world.interaction.emit("notice", "锅已经满了，继续流出的水正沿锅沿落进水槽。请关上水龙头。")
 		# Fixed-step CookingReactions owns heat exchange and evaporation.
 	pan_back.queue_redraw()
 	pan_front.queue_redraw()
@@ -126,7 +137,14 @@ func _input(event: InputEvent) -> void :
 				grab(p)
 				get_viewport().set_input_as_handled()
 	elif event is InputEventMouseMotion and active:
-		move_pointer(world.get_global_transform_with_canvas().affine_inverse() * event.position)
+		var pointer: Vector2 = world.get_global_transform_with_canvas().affine_inverse() * event.position
+		var travel := pointer - _pointer
+		var now := Time.get_ticks_msec()
+		var quick := now - _last_motion_msec <= 150
+		move_pointer(pointer)
+		if quick and travel.y < -28.0 and absf(travel.x) < 100.0:
+			_toss_contents(travel, now)
+		_last_motion_msec = now
 		get_viewport().set_input_as_handled()
 	elif event is InputEventKey and active and event.pressed:
 		if event.physical_keycode in [KEY_Q, KEY_ESCAPE]: release_pan()
@@ -161,6 +179,7 @@ func grab(p: Vector2) -> void :
 	_fall_speed = 0
 	_tipping = false
 	_pointer = p
+	_last_motion_msec = Time.get_ticks_msec()
 	_grab_point = local_point(p)
 	_carried.clear()
 	for body in world._foods.get_children():
@@ -170,7 +189,7 @@ func grab(p: Vector2) -> void :
 			body.set_meta("pan_rotation", body.rotation - angle)
 			body.freeze = true
 	world.held_changed.emit("平底锅")
-	world.focus_changed.emit("平底锅", "自由拖动 · 按住右键倾倒 / 滚轮调角度 · 松手落下")
+	world.focus_changed.emit("平底锅", "靠近炉灶向上轻甩可翻炒 · 右键倾倒 / 滚轮调角度 · 松手落下")
 
 func move_pointer(p: Vector2) -> void :
 	_pointer = p
@@ -219,6 +238,36 @@ func set_angle(value: float) -> void :
 			body.linear_velocity = Vector2.ZERO
 			body.set_meta("poured", true)
 		_carried.clear()
+
+func _toss_contents(travel: Vector2, now: int) -> int:
+	# A short upward pan motion releases only food actually supported by the pan.
+	# The rigid bodies then fly and land through Godot physics; no food is replaced.
+	if not active or now - _last_toss_msec < 650 or absf(angle) > 0.16:
+		return 0
+	if absf(offset.x - HOME.x) > 85.0 or absf(offset.y - HOME.y) > 110.0 or water_ml > 120.0:
+		return 0
+	var launched := 0
+	var still_carried: Array = []
+	for body in _carried:
+		if not is_instance_valid(body): continue
+		if body.has_meta("liquid_state") or body.get_meta("plated", false):
+			still_carried.append(body)
+			continue
+		body.freeze = false
+		body.sleeping = false
+		var sideways := clampf(travel.x * 5.0, -110.0, 110.0) + float((launched % 3) - 1) * 28.0
+		var upward := clampf(-travel.y * 7.0, 220.0, 390.0) + float(launched % 3) * 17.0
+		body.linear_velocity = Vector2(sideways, -upward)
+		body.angular_velocity = (1.0 if sideways >= 0.0 else -1.0) * (2.2 + float(launched % 3) * 0.5)
+		body.set_meta("stir_until", world._time + 0.9)
+		world.reactions.stir(body, travel.length(), true)
+		world.audio.play_food_stir(body, "black", travel.length())
+		launched += 1
+	_carried = still_carried
+	if launched > 0:
+		_last_toss_msec = now
+		world.interaction.emit("notice", "轻甩翻炒：%d 块食材离锅、翻面，再落回锅中。" % launched)
+	return launched
 
 func release_pan() -> void :
 	if not active: return
@@ -269,6 +318,7 @@ func suspend() -> void :
 		move_to(Vector2(offset.x, HOME.y))
 		_land()
 	faucet_on = false
+	overflowing = false
 	faucet_dragging = false
 
 func _notification(what: int) -> void :

@@ -6,6 +6,8 @@ static var _sheets: Dictionary = {}
 const WHOLE := ["shrimp","mushroom","cheese","chicken","pork","beef","fish","tofu","potato","carrot","cucumber","corn","lotus_root","bread","sausage","salmon","watermelon","durian","century_egg","blue_cheese"]
 static var _bounds: Dictionary = {}
 static var _handdrawn: Dictionary = {}
+static var _team_jpeg: Dictionary = {}
+static var _supplementary: Dictionary = {}
 static var _outlines: Dictionary = {}
 static var _authored_pixels: Dictionary = {}
 static var _hit_pixels: Dictionary = {}
@@ -33,6 +35,80 @@ static func handdrawn_food(id: String) -> Texture2D:
 	var region := pixels.get_region(Rect2i(b[0], b[1], b[2], b[3]))
 	_authored_pixels[id] = region
 	var result := ImageTexture.create_from_image(region)
+	_cache[key] = result
+	return result
+
+static func team_jpeg_manifest() -> Dictionary:
+	if _team_jpeg.is_empty():
+		_team_jpeg = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/assets/team_jpeg_manifest.json"))
+	return _team_jpeg
+
+static func team_jpeg_food(id: String) -> Texture2D:
+	var entry: Dictionary = team_jpeg_manifest().get(id, {})
+	if entry.is_empty(): return null
+	var key := "team_jpeg:" + id
+	if _cache.has(key): return _cache[key]
+	var source: Texture2D = load(entry.path) if ResourceLoader.exists(entry.path) else null
+	var pixels := source.get_image() if source != null else Image.load_from_file(entry.path)
+	if pixels == null or pixels.is_empty(): return null
+	if pixels.is_compressed(): pixels.decompress()
+	pixels.convert(Image.FORMAT_RGBA8)
+	# The supplied originals are opaque JPEGs on black. Leave source files byte-identical;
+	# derive downsampled alpha in memory for every presentation and collision path.
+	var scale := minf(1.0, 768.0 / maxf(pixels.get_width(), pixels.get_height()))
+	pixels.resize(maxi(1, roundi(pixels.get_width() * scale)), maxi(1, roundi(pixels.get_height() * scale)), Image.INTERPOLATE_LANCZOS)
+	var width := pixels.get_width()
+	var height := pixels.get_height()
+	var rows := PackedInt32Array()
+	var columns := PackedInt32Array()
+	rows.resize(height)
+	columns.resize(width)
+	for y in height:
+		for x in width:
+			var c := pixels.get_pixel(x, y)
+			if maxf(c.r, maxf(c.g, c.b)) > 0.16:
+				rows[y] += 1
+				columns[x] += 1
+	var left := width
+	var right := -1
+	var top := height
+	var bottom := -1
+	for x in width:
+		if columns[x] >= 3:
+			left = mini(left, x)
+			right = x
+	for y in height:
+		if rows[y] >= 3:
+			top = mini(top, y)
+			bottom = y
+	if right < left or bottom < top: return null
+	var box := Rect2i(maxi(0, left - 5), maxi(0, top - 5), mini(width - maxi(0, left - 5), right - left + 11), mini(height - maxi(0, top - 5), bottom - top + 11))
+	var region := pixels.get_region(box)
+	for y in region.get_height():
+		for x in region.get_width():
+			var c := region.get_pixel(x, y)
+			var brightness := maxf(c.r, maxf(c.g, c.b))
+			c.a = smoothstep(0.025, 0.125, brightness)
+			if c.a < 0.015: c.a = 0.0
+			region.set_pixel(x, y, c)
+	var result := ImageTexture.create_from_image(region)
+	_cache[key] = result
+	return result
+
+static func supplementary_food(id: String) -> Texture2D:
+	if _supplementary.is_empty():
+		_supplementary = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/assets/supplementary_manifest.json"))
+	var entry: Dictionary = _supplementary.get(id, {})
+	if entry.is_empty(): return null
+	var key := "supplementary:" + id
+	if _cache.has(key): return _cache[key]
+	var source: Texture2D = load(entry.path) if ResourceLoader.exists(entry.path) else null
+	var sheet := source.get_image() if source != null else Image.load_from_file(entry.path)
+	if sheet == null or sheet.is_empty(): return null
+	if sheet.is_compressed(): sheet.decompress()
+	var bounds: Array = entry.region
+	var pixels := sheet.get_region(Rect2i(bounds[0], bounds[1], bounds[2], bounds[3]))
+	var result := ImageTexture.create_from_image(pixels)
 	_cache[key] = result
 	return result
 
@@ -80,6 +156,10 @@ static func alpha_at(id: String, art_point: Vector2) -> float:
 static func food(id: String) -> Texture2D:
 	var authored := handdrawn_food(id)
 	if authored != null: return authored
+	var team_source := team_jpeg_food(id)
+	if team_source != null: return team_source
+	var new_art := supplementary_food(id)
+	if new_art != null: return new_art
 	if id in MYSTERY and id!="sock": return mapped_sprite("odd_objects",str(MYSTERY.find(id)))
 	if _catalog.is_empty():
 		var data = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/data/ingredients.json"))

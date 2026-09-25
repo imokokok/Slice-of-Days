@@ -32,6 +32,7 @@ func run() -> void:
 			expect(next != null, section + " has working page control")
 			if next != null: next.pressed.emit()
 		for def in game.session.active_ingredients():
+			if str(def.id) == "rice": continue # Served from its own openable cooker.
 			if (def.category == "odd" if section == "odd" else def.category in ["basic", "sweet"]):
 				expect(found.has(str(def.id)), str(def.id) + " reachable by real page buttons")
 		expect((shelf.fridge_page if section == "fridge" else shelf.odd_page) == 0, section + " pages wrap back to first shelf")

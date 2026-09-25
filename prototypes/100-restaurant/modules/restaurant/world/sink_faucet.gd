@@ -13,8 +13,19 @@ func _draw() -> void :
 	draw_line(pivot, tip, Color("344b58"), 11, true)
 	draw_line(pivot + Vector2(0,-2), tip + Vector2(0,-2), Color("8293a0"), 3, true)
 	if controller.faucet_on and controller.world.controls_enabled:
-		var end_y: = 674.0 if controller.under_tap() else 731.0
+		var catch_pan: bool = controller.under_tap()
+		var geometry = preload("res://modules/restaurant/world/pan_geometry.gd")
+		var end_y: float = controller.point(geometry.water_center(controller.world.pan_fill_ratio())).y if catch_pan else 731.0
+		end_y = maxf(580.0, end_y)
 		draw_line(Vector2(200, 562), Vector2(200, end_y), Color("b3dbd1", 0.55 + controller.faucet_amount * 0.4), 2.5 + controller.faucet_amount * 3.0)
 		for i in range(6):
 			var y: = lerpf(562, end_y, fmod(controller.world._time * 2 + i / 6.0, 1))
 			draw_line(Vector2(198, y), Vector2(202, y + 4), Color("f1f5db"), 2)
+		if controller.overflowing and catch_pan:
+			# Water leaves the low outside edges of the pan and drops into the
+			# basin below. Only the accepted volume remains in the pan.
+			for side in [-1.0, 1.0]:
+				var lip: Vector2 = controller.point(geometry.CENTER + Vector2(side * 111.0, 19.0))
+				var drain := Vector2(lip.x - side * 22.0, maxf(741.0, lip.y + 18.0))
+				draw_line(lip, drain, Color("9dd7d1", 0.82), 3.0, true)
+				draw_arc(drain, 7.0, PI * 0.1, PI * 0.9, 10, Color("b7e2d5", 0.7), 1.7, true)

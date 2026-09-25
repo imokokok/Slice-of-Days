@@ -5,7 +5,7 @@ var active := false
 var grab_offset := Vector2.ZERO
 
 func _ready() -> void:
-	position = Vector2(278, 718)
+	position = Vector2(372, 750)
 	z_index = 43
 
 func _draw() -> void:

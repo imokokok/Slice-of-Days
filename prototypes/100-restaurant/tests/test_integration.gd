@@ -30,6 +30,8 @@ func _run() -> void:
 	await process_frame
 	_expect(game is Node2D, "embeddable minigame is a 2D scene")
 	_expect(game.session.duration == 30.0, "host configured duration reaches domain")
+	# The full physics and UI fixture can now outlast a 30-second service window.
+	game.session.duration = 240.0
 	_expect(game.modal.visible and game._modal_kind == "intro", "intro appears before service")
 	_expect(not game.world.controls_enabled, "intro disables world interaction")
 	_expect(game.session.phase == "prep", "opening intro does not start service")
@@ -113,7 +115,7 @@ func _test_modals() -> void:
 	game._show_pantry()
 	await process_frame
 	await process_frame
-	_expect(game._pantry_grid.get_child_count() == game.session.active_ingredients().size(), "pantry shows every allowed ingredient and excludes fish")
+	_expect(game._pantry_grid.get_child_count() == game.session.active_ingredients().size() - 1, "pantry shows allowed ingredients except rice, which is served from its cooker")
 	_check_modal_bounds("pantry")
 	game._pantry_category = "odd"
 	game._refresh_pantry()
@@ -244,10 +246,13 @@ func _test_physics_and_service() -> void:
 	game._close_modal()
 	await game._serve()
 	await process_frame
-	_expect(game.session.served == 1 and game.session.revenue > 0.0, "physical dish can be served for revenue")
+	_expect(game.session.served == 1 and not game._letters.is_empty() and int(game._letters[-1].get("score", -1)) >= 0, "physical dish can be served and rated even when a guest dislikes it")
 	_expect(game.session.dish.is_empty(), "serving consumes domain dish")
-	_expect(game._food_by_physics.is_empty(), "serving clears physical identity registry")
-	_expect(game.modal.visible and game._modal_kind == "feedback", "serving opens customer feedback")
+	_expect(game.modal.visible and game._modal_kind == "dish_showcase", "serving presents the actual plated dish first")
+	_expect(game.modal_body.find_child("FinishedDishShowcase", true, false) != null, "showcase renders the current physical plate")
+	game._show_serve_feedback()
+	_expect(game._food_by_physics.is_empty(), "leaving the showcase clears physical identity registry")
+	_expect(game.modal.visible and game._modal_kind == "feedback", "continuing opens customer feedback")
 	_expect(not game._last_dish.is_empty(), "served dish remains available for recipe publishing")
 	await _test_recipe_collage()
 

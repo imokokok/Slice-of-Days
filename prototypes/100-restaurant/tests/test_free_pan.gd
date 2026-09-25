@@ -26,12 +26,22 @@ func run() -> void:
 	expect(game.world.pan.offset.y < -300, "pan follows pointer vertically")
 	expect(food.position.y < initial.y - 300, "contents follow vertical lift")
 	expect(not game.world.pan.on_stove(), "raised pan does not receive stove heat")
-	mouse(Vector2(850,250), MOUSE_BUTTON_LEFT, false)
+	motion(Vector2(1000,250))
+	mouse(Vector2(1000,250), MOUSE_BUTTON_LEFT, false)
 	await process_frame
 	expect(game.world.pan.falling, "released raised pan falls under gravity")
 	await create_timer(1.3).timeout
 	expect(not game.world.pan.falling and absf(game.world.pan.offset.y-game.world.pan.HOME.y) < 0.1, "pan lands on counter and stops following pointer")
 	expect(game.session.dish.size() == 1, "gravity landing preserves ingredients")
+	var toss_handle: Vector2 = game.world.pan.point(Vector2(1000,566))
+	var face_before := int(food.get_meta("thermal", {}).get("contact_face", 0))
+	mouse(toss_handle, MOUSE_BUTTON_LEFT, true)
+	motion(toss_handle + Vector2(0, -44))
+	await physics_frame
+	expect(game.world.pan._last_toss_msec > 0 and not food.freeze, "short upward pan flick releases the real food into a toss")
+	expect(int(food.get_meta("thermal", {}).get("contact_face", 0)) != face_before, "toss turns the heated food face without replacing it")
+	mouse(toss_handle + Vector2(0, -44), MOUSE_BUTTON_LEFT, false)
+	await create_timer(1.0).timeout
 	var handle: Vector2 = game.world.pan.point(Vector2(1000,566))
 	mouse(handle, MOUSE_BUTTON_LEFT, true)
 	motion(Vector2(1510,430))

@@ -27,6 +27,7 @@ func _run() -> void:
 	var first: Dictionary = await _test_new_paper_recipe()
 	if not first.is_empty():
 		await _test_edit_and_copy(first)
+		await _test_page_turn()
 	game.world.audio.muted = true
 	await create_timer(0.14).timeout
 	game.queue_free()
@@ -40,6 +41,22 @@ func _run() -> void:
 			push_error(failure)
 		print("FAIL: recipe DIY lifecycle, %d / %d checks" % [failures.size(), checks])
 		quit(1)
+
+func _test_page_turn() -> void:
+	var pages: Array = game.repository.load_recipes()
+	_expect(pages.size() >= 2, "page-turn fixture has two saved recipes")
+	if pages.size() < 2: return
+	game._view_recipe(pages[0])
+	await _layout()
+	var original_id := str(game._recipe_selected.get("id", ""))
+	game._turn_recipe(1)
+	await create_timer(0.6).timeout
+	_expect(str(game._recipe_selected.get("id", "")) == str(pages[1].id), "next-page control selects the next saved recipe")
+	_expect(game._recipe_stand.record.get("id", "") == pages[1].id, "physical stand and open page remain in sync")
+	_expect(not game._recipe_turning, "page-fold animation completes")
+	game._turn_recipe(-1)
+	await create_timer(0.6).timeout
+	_expect(str(game._recipe_selected.get("id", "")) == original_id, "previous-page control returns to the same recipe")
 
 func _test_new_paper_recipe() -> Dictionary:
 	_expect(game.session.dish.is_empty() and game._last_dish.is_empty(), "DIY entry fixture has never cooked a dish")

@@ -1,6 +1,6 @@
 extends RefCounted
 ## Generated derivative appearance only. Geometry and mass always come from the knife.
-const ROWS := {"tomato": [0,0], "onion": [0,1], "carrot": [0,2], "potato": [0,3], "mushroom": [1,0], "eggplant": [1,1], "bell_pepper": [1,2], "cucumber": [1,3]}
+const ROWS := {"tomato": [0,0], "onion": [0,1], "carrot": [0,2], "potato": [0,3], "mushroom": [1,0], "eggplant": [1,1], "bell_pepper": [1,2], "bell_pepper_yellow": [1,2], "bell_pepper_lavender": [1,2], "bell_pepper_gold": [1,2], "bell_pepper_purple": [1,2], "bell_pepper_brown": [1,2], "bell_pepper_white": [1,2], "bell_pepper_orange": [1,2], "bell_pepper_green": [1,2], "cucumber": [1,3], "zucchini": [1,3]}
 const SHEETS := ["res://modules/restaurant/assets/cut_states/roots.png", "res://modules/restaurant/assets/cut_states/vegetables.png"]
 ## Explicit alpha bounds: generated cells have uneven gutters and some cross grid lines.
 const BOUNDS := [
@@ -12,6 +12,7 @@ const BOUNDS := [
 	[[48,302,204,201],[326,331,168,158],[598,365,126,118],[846,337,132,144],[1113,359,128,126],[1375,384,98,101]],
 	[[50,530,215,205],[327,562,186,171],[589,580,149,149],[856,583,134,152],[1132,598,113,136],[1346,612,107,113]],
 	[[58,762,217,209],[337,784,186,174],[616,821,119,120],[860,819,134,139],[1130,826,127,132],[1369,845,123,113]]]
+const PEPPER_COLORS := {"bell_pepper_lavender":"b55da9", "bell_pepper_gold":"efa923", "bell_pepper_purple":"5b254e", "bell_pepper_brown":"9a642d", "bell_pepper_white":"e7e5ca", "bell_pepper_orange":"df632d", "bell_pepper_green":"629531"}
 static var _cache: Dictionary = {}
 
 static func texture(id: String, style: String, variant: int = 0) -> Texture2D:
@@ -27,6 +28,18 @@ static func texture(id: String, style: String, variant: int = 0) -> Texture2D:
 	var pixels := sheet.get_image().get_region(region)
 	# Polygon2D uses pixel UVs on its texture RID; an AtlasTexture here samples
 	# unrelated cells from the full sheet. Give every face its own runtime region.
+	if PEPPER_COLORS.has(id):
+		# Recolor the GENERATED yellow cut-face illustration only. Team whole-item
+		# JPEGs remain untouched; pale ribs stay pale while pepper walls match skin.
+		var target := Color(PEPPER_COLORS[id])
+		for y in pixels.get_height():
+			for x in pixels.get_width():
+				var c := pixels.get_pixel(x, y)
+				if c.a < 0.01 or c.s < 0.22: continue
+				c.h = target.h
+				c.s = target.s * c.s
+				c.v = clampf(c.v * target.v / 0.93, 0.0, 1.0)
+				pixels.set_pixel(x, y, c)
 	var result := ImageTexture.create_from_image(pixels)
 	_cache[key] = result
 	return result

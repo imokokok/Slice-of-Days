@@ -45,11 +45,13 @@ var _arrival_delay: float = 0.0
 var _settlement: Dictionary = {}
 var _menu_recipes: Array = []
 var _talk_turn: = 0
+var _custom_customer_profiles := false
 
 func setup() -> void :
 	payment_rng.randomize()
 	ingredients = _read_array(INGREDIENT_PATH)
 	customers = _read_array(CUSTOMER_PATH)
+	_custom_customer_profiles = false
 	_catalog.clear()
 	for ingredient in ingredients:
 		_catalog[str(ingredient.get("id", ""))] = ingredient
@@ -92,6 +94,7 @@ func set_customers(profiles: Array) -> void :
 	if phase != "prep":
 		return
 	customers = profiles.duplicate(true)
+	_custom_customer_profiles = true
 	_rebuild_queue()
 
 func active_ingredients() -> Array:
@@ -444,6 +447,10 @@ func _rebuild_queue() -> void :
 			if _poster_tags.has(tag):
 				_queue.append(customer.duplicate(true))
 				break
+	# A short shift cannot reach all twelve in fixed file order. Each new shift
+	# draws from the authored roster; externally supplied test/host order stays intact.
+	if not _custom_customer_profiles and customers.size() == 12:
+		_queue.shuffle()
 
 func _arrive() -> void :
 	if _queue.is_empty() or not current_customer.is_empty():

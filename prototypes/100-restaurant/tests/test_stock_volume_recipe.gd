@@ -56,8 +56,8 @@ func run() -> void:
 	game._take_ingredient(game._definition("rice"))
 	expect(not game._stock.has("rice"), "failed pickup never consumes inventory")
 	world._release_knife()
-	var rice: Button = game.storage_display.find_child("Ingredient_rice", true, false)
-	expect(rice.position.x < 340, "rice belongs to ordinary food storage, not condiment tray")
+	expect(game.storage_display.find_child("Ingredient_rice", true, false) == null, "rice is not stranded on a shelf")
+	expect(is_instance_valid(game.rice_cooker) and game.rice_cooker.serving_available, "rice has a finite countertop cooker source")
 	for id in ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]:
 		var slot: Button = game.storage_display.find_child("Ingredient_" + id, true, false)
 		expect(slot.position.x >= 640 and slot.position.x < 1080 and not world.get_dispense_mode(game._definition(id)).is_empty(), "back tray contains an actual seasoning container: " + id)

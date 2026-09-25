@@ -9,7 +9,7 @@ const FRIDGE: = Rect2(30, 175, 330, 360)
 const SHELVES: = Rect2(390, 421, 840, 114)
 const BASKETS: = Rect2(1260, 155, 326, 635)
 const COLD_IDS: = ["egg", "shrimp", "fish", "salmon", "squid", "mussel", "chicken", "pork", "beef", "sausage", "milk", "yogurt", "butter", "cheese", "ice_cream", "tofu"]
-const AMBIENT_IDS: = ["rice", "noodles", "bread", "seaweed", "potato", "onion", "mushroom", "corn", "pumpkin", "lotus_root", "bean_sprout", "cabbage", "broccoli", "eggplant"]
+const AMBIENT_IDS: = ["noodles", "bread", "seaweed", "potato", "onion", "mushroom", "corn", "pumpkin", "lotus_root", "bean_sprout", "cabbage", "broccoli", "eggplant"]
 
 var definitions: Array = []
 var sections: Dictionary = {"fridge": [], "shelves": [], "baskets": []}
@@ -72,14 +72,21 @@ func _turn_page(section: String, step: int) -> void:
 
 func _page_controls(section: String, location: Vector2, width: float, page: int, count: int) -> void:
 	if count <= 1: return
-	_heading("%d / %d" % [page + 1, count], location + Vector2(42, 3), Vector2(width - 84, 24), Color("fff0d5"), 16)
+	if section == "fridge":
+		# The fridge's side rail holds the page tabs. Below the cabinet is the
+		# sink; controls there would be crossed by the physical faucet stream.
+		_heading("%d/%d" % [page + 1, count], Vector2(340, 411), Vector2(48, 24), Color("554738"), 13)
+		location = Vector2(348, 378)
+		width = 30
+	else:
+		_heading("%d / %d" % [page + 1, count], location + Vector2(42, 3), Vector2(width - 84, 24), Color("fff0d5"), 16)
 	for direction in [-1, 1]:
 		var button := Button.new()
 		button.name = section.capitalize() + ("PreviousPage" if direction < 0 else "NextPage")
 		button.text = "‹" if direction < 0 else "›"
 		button.tooltip_text = "上一层" if direction < 0 else "下一层"
-		button.position = location + Vector2(0 if direction < 0 else width - 34, 0)
-		button.size = Vector2(34, 28)
+		button.position = location + (Vector2(0, 0 if direction < 0 else 67) if section == "fridge" else Vector2(0 if direction < 0 else width - 34, 0))
+		button.size = Vector2(30, 28) if section == "fridge" else Vector2(34, 28)
 		_compact_sign(button)
 		button.pressed.connect(_turn_page.bind(section, direction))
 		_content.add_child(button)
@@ -110,6 +117,7 @@ func _organize() -> void :
 	var used: Dictionary = {}
 	for item in definitions:
 		catalog[item.id] = item
+	if catalog.has("rice"): used["rice"] = true # Rice is served from the countertop cooker.
 	for id in COLD_IDS:
 		if catalog.has(id):
 			sections.fridge.append(catalog[id])
@@ -144,14 +152,19 @@ func _build_items() -> void :
 	add_child(_content)
 	var catalog: = {}
 	for item in definitions: catalog[item.id] = item
-	var cold: = ["tomato", "egg", "mushroom", "shrimp", "tofu", "cheese", "carrot", "onion", "broccoli", "lettuce", "milk", "pumpkin", "chicken", "potato", "rice"]
+	var cold: = ["tomato", "egg", "mushroom", "shrimp", "tofu", "cheese", "carrot", "onion", "broccoli", "lettuce", "milk", "pumpkin", "chicken", "potato"]
 	_cold_catalog.clear()
 	for id in cold:
 		if catalog.has(id): _cold_catalog.append(catalog[id])
 	for item in definitions:
-		if item.get("category", "") in ["basic", "sweet"] and not cold.has(str(item.id)): _cold_catalog.append(item)
-	for i in mini(15, _cold_catalog.size() - fridge_page * 15):
-		_slot(_content, _cold_catalog[fridge_page * 15 + i], Vector2(45 + (i % 3) * 96, 181 + (i / 3) * 77), Vector2(90, 70), 0.76, Color("344854"), "fridge")
+		if item.get("category", "") in ["basic", "sweet"] and not cold.has(str(item.id)) and str(item.id) != "rice": _cold_catalog.append(item)
+	var fridge_count := mini(15, _cold_catalog.size() - fridge_page * 15)
+	for i in fridge_count:
+		# A partially stocked layer rests on the lower shelves first. The image,
+		# shadow and shelf label all share the same physical shelf front.
+		var shelf_row := (4 - i / 3) if fridge_count < 15 else i / 3
+		var floor_y := 245.0 + shelf_row * 77.0
+		_slot(_content, _cold_catalog[fridge_page * 15 + i], Vector2(51 + (i % 3) * 94, floor_y - 69.0), Vector2(90, 69), 0.76, Color("344854"), "fridge")
 	for row in 5:
 		_surface_front(_content, Rect2(51, 245 + row * 77, 281, 12))
 	_page_controls("fridge", Vector2(66, 563), 244, fridge_page, ceili(_cold_catalog.size() / 15.0))
@@ -173,8 +186,11 @@ func _build_items() -> void :
 	for item in definitions:
 		if item.get("category", "") == "odd" and not odd.has(item): odd.append(item)
 	_odd_catalog = odd
-	for i in mini(odd.size() - odd_page * 12, 12):
-		_slot(_content, odd[odd_page * 12 + i], Vector2(1325 + (i % 4) * 67, 224 + (i / 4) * 105), Vector2(65, 78), 0.70, Color("fff0d5"), "odd")
+	var odd_count := mini(odd.size() - odd_page * 12, 12)
+	for i in odd_count:
+		var shelf_row := (2 - i / 4) if odd_count < 12 else i / 4
+		var floor_y := 300.0 + shelf_row * 105.0
+		_slot(_content, odd[odd_page * 12 + i], Vector2(1326 + (i % 4) * 67, floor_y - 75.0), Vector2(64, 75), 0.70, Color("fff0d5"), "odd")
 	for row in 3:
 		_surface_front(_content, Rect2(1320, 300 + row * 105, 274, 20))
 	_page_controls("odd", Vector2(1340, 518), 242, odd_page, ceili(odd.size() / 12.0))
@@ -262,14 +278,13 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 			ingredient_chosen.emit(item.duplicate(true), button.get_global_transform_with_canvas() * event.position))
 	parent.add_child(button)
 	var label_height: = 16.0
-	var icon_center: = Vector2(dimensions.x * 0.5, (dimensions.y - label_height) * 0.47)
-	if surface == "fridge": icon_center.y += 6.0
-	if surface == "rack": icon_center.y += 12.0
-	if surface == "odd":
+	var icon_center := Vector2(dimensions.x * 0.5, (dimensions.y - label_height) * 0.47)
+	if surface in ["fridge", "odd"]:
 		var library = preload("res://modules/restaurant/assets/sprite_library.gd")
 		var texture: Texture2D = library.food(str(item.id))
-		var visible_height := library.fit(texture, Vector2.ZERO, Vector2(78, 78)).size.y * icon_scale if texture != null else 78.0 * icon_scale
-		icon_center.y = 71.0 - visible_height * 0.5
+		var art_rect: Rect2 = library.fit(texture, Vector2.ZERO, Vector2(78, 78)) if texture != null else Rect2(-39, -39, 78, 78)
+		icon_center.y = dimensions.y - 4.0 - art_rect.end.y * icon_scale
+	if surface == "rack": icon_center.y += 12.0
 	if surface == "counter": icon_center = Vector2(dimensions.x * 0.5, dimensions.y - 4.0 - (dimensions.y - 9.0) * 0.5)
 	var art: = FoodArt.new()
 	art.name = "FoodArt"
@@ -281,12 +296,12 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 	var label: = Label.new()
 	label.name = "IngredientName"
 	label.text = item.name
-	label.position = Vector2(0, 79.0 if surface in ["rack", "odd"] else dimensions.y - (8.0 if surface == "fridge" else label_height))
-	label.size = Vector2(dimensions.x, 12.0 if surface == "fridge" else label_height)
+	label.position = Vector2(0, dimensions.y + (3.0 if surface == "odd" else 1.0) if surface in ["fridge", "odd"] else (79.0 if surface == "rack" else dimensions.y - label_height))
+	label.size = Vector2(dimensions.x, 13.0 if surface in ["fridge", "odd"] else label_height)
 	label.clip_text = true
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 11 if surface == "fridge" else 12)
+	label.add_theme_font_size_override("font_size", 10 if surface in ["fridge", "odd"] else 12)
 	label.add_theme_color_override("font_color", name_color)
 	if surface in ["fridge", "rack", "odd"]: label.z_index = 1
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -329,7 +344,7 @@ func _draw() -> void :
 		if surface not in ["fridge", "rack", "odd", "counter"]: continue
 		var button := slot as Button
 		var center: float = button.position.x + button.size.x * 0.5
-		var floor_y: float = button.position.y + (62.0 if surface == "fridge" else (67.0 if surface == "odd" else (button.size.y - 4.0 if surface == "counter" else 63.0)))
+		var floor_y: float = button.position.y + (button.size.y - 3.0 if surface in ["fridge", "odd", "counter"] else 63.0)
 		var radius: float = 25.0 if surface == "fridge" else (19.0 if surface == "odd" else 16.0)
 		var points := PackedVector2Array()
 		for step in 16:

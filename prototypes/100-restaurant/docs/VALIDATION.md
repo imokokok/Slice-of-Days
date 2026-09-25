@@ -1,5 +1,20 @@
 # 验证记录
 
+## 2026-09-25 电饭煲与正式居民名册
+
+- 主游戏 `data/npcs/core_residents.json` 的 12 个稳定 ID 与姓名和厨房 `data/customers.json` 逐一对齐；后者保留厨房专用口味、台词及评分字段。`test_rice_cooker_cast.gd` 22 项通过，验证名册、开盖、盛饭库存、未加工归还及成品不能回锅。
+- `test_recipe_guide.gd` 42 项通过，新增验证米饭从电饭煲、番茄酱从调料架取出。`test_stock_volume_recipe.gd` 26 项、`test_shelf_pages.gd` 284 项、`test_customer_reviews.gd` 41 项、`test_integration.gd` 126 项通过。
+- 实际 Apple M4 / OpenGL 生产场景截图检查电饭煲在干台上的位置及正式居民订单。完整录像的自动输入断言结果和最终视频见 [专项记录](RICE_COOKER_CAST_VIDEO_20260925.md)。
+- 最终完整回归按 `tools/test.ps1` 的清单逐项运行，**39/39 入口通过**；图集审计为 106 张素材、0 错误。原始逐项结果见 [回归记录](qa/20260925-full-regression.txt)。最终 MP4 为 2218 帧 / 24 FPS / 92.42 秒，带游戏原声；片尾 88 秒画面由系统解码成功。
+
+
+## 2026-09-25 团队蔬菜原画与补画接入
+
+- 13 张 JPEG 原画及 7 张 RAR 奇物逐个核对 SHA-256；19 张既有透明 PNG 未改。新补画 4 件，原件与补画来源分开登记。
+- 新增 `test_team_food_art.gd` 121 项通过。按 `tools/test.ps1` 清单在 macOS 逐项运行 38 个 Godot 入口，全部通过；全图集 106 张 alpha 审计 0 错误。执行记录 `/private/tmp/kitchen-all-tests.log`。
+- Apple M4 / OpenGL 生成并查看 [浅底对照](qa/20260925-team-food-gallery.png) 和 [真实厨房](qa/20260925-team-food-kitchen.png)。这是一轮画面对照，不等于每件食材人工全流程试玩。
+- Godot 无头启动 120 帧退出码 0；临时 Windows preset PCK 导出成功，在独立目录启动并逐张读到 13 张 JPEG + 4 张新图，未见资源加载错误。Windows EXE 导出失败，仅因本机缺少 Godot 4.7.2 Windows debug/release 模板；未将旧 EXE 标为更新版。
+
 ## 2026-09-25 优化后全流程录像
 
 - `demo/` 的四个历史 MP4 已删除，新成片仅有 `demo/100Restaurant_Optimized_Full_Cooking_20260925_CN.mp4`。使用 `tests/capture_full_cooking.gd` 在当前生产场景录得 **1295 帧 / 24 FPS / 53.96 秒**；视频显示尺寸 1440×852、H.264/AAC。
@@ -254,3 +269,18 @@ Windows 试玩版于 2026-09-11 00:42 导出，导出命令退出码 0；测试�
 - 图形模式运行 `test_tool_foreground.gd`：19 项通过。GPU 像素比较确认刀、海绵、抹布与带番茄餐盘覆盖菜谱纸张；刀的纸张区域有 1153 个采样像素改变。人工检查了四张实际渲染截图，主图保存在 `qa/20260925-held-knife-over-recipe.png`。
 - `godot --headless --path prototypes/100-restaurant --quit-after 120` 退出码 0，无脚本错误；`git diff --check` 通过。刀具的真实引擎鼠标按下、拖动、在遮挡 GUI 上松开及回板，由 `test_knife_drag.gd` 验证。
 - 本轮尚未在系统鼠标下完整试玩全部取物、下锅、切配和摆盘流程；引擎事件和 GPU 捕获不等同于长期人工游玩。
+
+## 2026-09-25 翻炒与菜谱展示回归
+
+- `--headless --path . --quit-after 120` 无脚本错误；`test_free_pan.gd` 12 项、`test_integration.gd` 126 项、`test_recipe_diy.gd` 81 项、`test_recipe_guide.gd` 40 项、`test_spatula.gd` 29 项通过。GPU 运行 `test_visual_spatial_consistency.gd` 42 项、`test_reaction_kitchen.gd` 37 项通过。
+- 实际 GPU 截图检查了菜谱纸页与成品展示页，独立 Godot 全流程曾通过切配、煎炒、装盘、展示与反馈。截图脚本的后一次重跑在刀切步骤受输入时序影响提前停止；该次不计作全流程通过。
+- 翻炒只作用于真实入锅固体，并翻转受热接触面。结果页沿用 `plating_canvas.gd` 对现有盘中物件的绘制，随后反馈与清场；没有预制成品图片或第三方参考美术。二维抛体、局部温度及液体仍是游戏近似。未进行系统鼠标长时间完整试玩或 Windows 重新导出。
+
+
+## 2026-09-25 柜格、接水与纸条空间复验
+
+- Godot 4.7.2 `--headless --path . --quit-after 120` 退出码 0。定向回归：`test_shelf_pages.gd` 287、`test_kitchen_interactions.gd` 36、`test_visual_spatial_consistency.gd` 37、`test_craft_workbench.gd` 38、`test_integration.gd` 126、`test_reference_layout.gd` 45、`test_cut_batch_stability.gd` 42、`test_seasoning.gd` 155、`test_handdrawn_assets.gd` 227、`test_material_physics.gd` 360 项通过，共 1353 项。GPU `test_shelf_pages.gd` 289 项通过。
+- 首次复验 `test_reference_layout.gd` 的四项奇物落点检查仍使用旧架子起点与中心算法，失败；改为按当前贴图可见轮廓底边、层板前沿及名称落点检查后，45 项通过。没有放宽接触容差。
+- 实际检查 `qa/20260925-cabinet-last-shelf.png`、`qa/20260925-pan-filling.png`、`qa/20260925-pan-overflow.png`：柜格物件在层板上，锅接水及持续溢流可见，原纸顶部不再露出第二条白带，海绵不再叠在锅中。截图状态由引擎脚本布置，不等于系统鼠标人工试玩。
+- 水流及溢流是二维视觉和毫升账本；没有模拟自由水面、真实水槽排水动力或三维容器。
+- 额外通过 `test_tool_foreground.gd` 11、`test_stock_volume_recipe.gd` 25、`test_comfort_release.gd` 90 项；上述定向合计 1482 项。最终改动后重跑柜格 287、厨房接水 36、布局 48 项并重拍三张 GPU 截图。

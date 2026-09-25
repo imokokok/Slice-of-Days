@@ -23,6 +23,11 @@ func run() -> void:
 		var item: Button = game.hud.find_child("Ingredient_"+id, true, false)
 		expect(item != null and Rect2(640, 500, 435, 120).encloses(item.get_rect()), "ingredient belongs in the original five-slot tray: " + id)
 		expect(item != null and item.get_rect().end.y < 590, "tray click area stays inside its groove: " + id)
+	var faucet_stream := Rect2(194, 560, 12, 175)
+	for id in ["FridgePreviousPage", "FridgeNextPage"]:
+		var tab := game.storage_display.find_child(id, true, false) as Button
+		expect(tab != null and not tab.get_rect().intersects(faucet_stream), "fridge page tab stays on the cabinet, clear of running water: " + id)
+	expect(game._order_paper.position.y <= 140 and game._order_paper.position.y + game._order_paper.size.y >= 440, "order note covers the original blank sheet rather than leaving a top strip")
 	expect(game.world.pan.point(Vector2(809, 541)).y > 639.0, "pan opening starts below the rear rack front")
 	expect(game.world.cutting_board.rect().encloses(Rect2(game.world._knife_rest_position + Vector2(-93, -24), Vector2(188, 52))), "knife art rests entirely on the cutting board")
 	expect(game.world.cutting_board.z_index > game.world.pan.pan_back.z_index and game.world.cutting_board.z_index < game.world._knife_visual.z_index, "board hides the crossing pan handle while the knife remains above the board")
@@ -32,9 +37,12 @@ func run() -> void:
 		var art := item.get_node("FoodArt") as Node2D
 		var library = preload("res://modules/restaurant/assets/sprite_library.gd")
 		var tex: Texture2D = library.food(id)
-		var visible_height: float = library.fit(tex, Vector2.ZERO, Vector2(78, 78)).size.y * art.scale.y
-		var row := roundi((item.position.y - 224.0) / 105.0)
-		expect(absf(item.position.y + art.position.y + visible_height * 0.5 - (295.0 + row * 105.0)) < 1.0, "odd ingredient rests on its shelf floor: " + id)
+		var visible_rect: Rect2 = library.fit(tex, Vector2.ZERO, Vector2(78, 78))
+		var row := roundi((item.position.y + item.size.y - 300.0) / 105.0)
+		var shelf_front := 300.0 + row * 105.0
+		var art_bottom := item.position.y + art.position.y + visible_rect.end.y * art.scale.y
+		expect(absf(art_bottom - (shelf_front - 4.0)) < 1.0, "odd ingredient rests on its shelf floor: " + id)
+		expect(item.position.y + item.get_node("IngredientName").position.y >= shelf_front, "odd name is attached to the shelf front: " + id)
 	for utensil in game.world.utensils:
 		expect(utensil.position.x >= 545 and utensil.position.x <= 630 and utensil.home_angle > 1, "utensil rests upright in the source cup")
 	var book: Button = game.hud.find_child("ReferenceRecipeBook", true, false)

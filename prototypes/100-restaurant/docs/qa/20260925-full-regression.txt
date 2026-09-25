@@ -1,0 +1,41 @@
+Running 39 Godot test entries
+01/39 PASS tests/test_thermal_reactions.gd: PASS: thermal reactions, 20 checks
+02/39 PASS tests/test_reaction_kitchen.gd: PASS: reaction kitchen, 32 checks
+03/39 PASS tests/test_visual_spatial_consistency.gd: PASS: visual spatial consistency, 37 checks
+04/39 PASS tests/test_craft_workbench.gd: PASS: immersive paper craft, 38 checks
+05/39 PASS tests/test_material_physics.gd: PASS: material physics, 360 checks
+06/39 PASS tests/test_cut_clean_share.gd: PASS: cut / cleaning / single recipe sharing, 140 checks
+07/39 PASS tests/test_handdrawn_assets.gd: PASS: hand-drawn assets, 227 checks
+08/39 PASS tests/test_team_food_art.gd: PASS: team art, generated staples, real shelf stock, 121 checks
+09/39 PASS tests/test_shelf_pages.gd: PASS: paged shelves and shared finite stock, 284 checks
+10/39 PASS tests/test_rice_cooker_cast.gd: PASS: rice cooker and canonical cast, 22 checks
+11/39 PASS tests/test_recipe_guide.gd: PASS: recipe guide, 42 checks
+12/39 PASS tests/test_recorded_audio.gd: PASS: recorded audio, 151 checks
+13/39 PASS modules/restaurant/domain/test_domain.gd: PASS: restaurant domain, 603 checks
+14/39 PASS modules/restaurant/storage/smoke_test.gd: STORAGE_AND_POSTER_TESTS_PASSED
+15/39 PASS tests/test_integration.gd: PASS: restaurant integration, 126 checks
+16/39 PASS tests/test_high_fidelity_state.gd: PASS: high-fidelity state slice, 15 checks
+17/39 PASS tests/test_knife_physics.gd: PASS: knife physics, 35 checks
+18/39 PASS tests/test_knife_drag.gd: PASS: real knife mouse drag, 23 checks
+19/39 PASS tests/test_tool_foreground.gd: PASS: tool foreground, 11 checks
+20/39 PASS tests/test_cut_batch_stability.gd: PASS: cut-batch stability, 42 checks
+21/39 PASS tests/test_slice_cooking_continuity.gd: PASS: slice cooking continuity, 37 checks
+22/39 PASS tests/test_reference_layout.gd: PASS: reference layout and sponge, 48 checks
+23/39 PASS tests/test_stock_volume_recipe.gd: PASS: stock, pan volume and shared recipe, 26 checks
+24/39 PASS modules/restaurant/ui/poster_store_test.gd: POSTER_PERSISTENCE_AND_WALL_TESTS_PASSED
+25/39 PASS modules/restaurant/ui/collage_test.gd: ADVANCED_COLLAGE_TESTS_PASSED checks=39
+26/39 PASS tests/test_collage_input.gd: PASS: real collage GUI input, 68 checks
+27/39 PASS modules/restaurant/storage/paper_recipe_test.gd: PAPER_RECIPE_TESTS_PASSED checks=30
+28/39 PASS tests/test_recipe_diy.gd: PASS: recipe DIY lifecycle, 81 checks
+29/39 PASS tests/test_tape_editing.gd: PASS: tape editing, 75 checks
+30/39 PASS tests/test_tape_tools.gd: PASS: shared tape tools, 30 checks
+31/39 PASS tests/test_seasoning.gd: PASS: seasoning input and physics, 155 checks
+32/39 PASS tests/test_spatula.gd: PASS: spatula input and physics, 29 checks
+33/39 PASS tests/test_heat_control.gd: PASS: heat controls, 23 checks
+34/39 PASS tests/test_kitchen_interactions.gd: PASS: kitchen interactions, 36 checks
+35/39 PASS tests/test_customer_reviews.gd: PASS: customer reviews, 41 checks
+36/39 PASS tests/test_free_pan.gd: PASS free pan 12 checks
+37/39 PASS tests/test_workstations.gd: PASS workstations 17 checks
+38/39 PASS tests/test_comfort_release.gd: PASS comfort release: 90 checks
+39/39 PASS tests/capture_asset_gallery.gd: Asset alpha audit: 106 sprites, 0 errors
+RESULT 39/39 passed

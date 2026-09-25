@@ -3,9 +3,10 @@
 ## 2026-09-25 电饭煲与正式居民名册
 
 - 主游戏 `data/npcs/core_residents.json` 的 12 个稳定 ID 与姓名和厨房 `data/customers.json` 逐一对齐；后者保留厨房专用口味、台词及评分字段。`test_rice_cooker_cast.gd` 22 项通过，验证名册、开盖、盛饭库存、未加工归还及成品不能回锅。
-- `test_recipe_guide.gd` 42 项通过，新增验证米饭从电饭煲、番茄酱从调料架取出。`test_stock_volume_recipe.gd` 26 项、`test_shelf_pages.gd` 284 项、`test_customer_reviews.gd` 41 项、`test_integration.gd` 126 项通过。
+- `test_recipe_guide.gd` 42 项通过，新增验证米饭从电饭煲、番茄酱从调料架取出。`test_stock_volume_recipe.gd` 26 项、`test_shelf_pages.gd` 284 项、`test_customer_reviews.gd` 41 项、`test_integration.gd` 127 项通过。
 - 实际 Apple M4 / OpenGL 生产场景截图检查电饭煲在干台上的位置及正式居民订单。完整录像的自动输入断言结果和最终视频见 [专项记录](RICE_COOKER_CAST_VIDEO_20260925.md)。
 - 最终完整回归按 `tools/test.ps1` 的清单逐项运行，**39/39 入口通过**；图集审计为 106 张素材、0 错误。原始逐项结果见 [回归记录](qa/20260925-full-regression.txt)。最终 MP4 为 2218 帧 / 24 FPS / 92.42 秒，带游戏原声；片尾 88 秒画面由系统解码成功。
+- GitHub Actions 的全新用户数据环境揭示了一处测试时序错误：留言在打开客人反馈时才写入。集成测试已改为出餐时核对待展示的评价、打开反馈后核对留言；本地连续四轮 127 项通过。
 
 
 ## 2026-09-25 团队蔬菜原画与补画接入

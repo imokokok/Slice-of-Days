@@ -457,6 +457,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not ready_done or help_open or busy or dock_open or is_instance_valid(catalog_layer):
 		return
 	var mouse := get_global_mouse_position()
+	# Fast queued press/release events can share the latest OS cursor position.
+	# Use each event's own viewport position so short drags retain their origin.
+	if event is InputEventMouse:
+		mouse=get_canvas_transform().affine_inverse()*event.position
 	if finishing.active():
 		if event is InputEventMouseMotion: finishing.mouse_move(mouse)
 		elif event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT: finishing.input(mouse,event.pressed)

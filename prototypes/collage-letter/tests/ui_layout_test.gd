@@ -13,6 +13,15 @@ func run()->void:
 		await process_frame
 		check(game.material_ids().has(game.primary),"Category tab loads its material group")
 		check(game.ui.get_node("Category_"+str(index)).tooltip_text.contains(str(game.material_ids().size())),"Tab exposes the current group count")
+	game.set_tool("tape")
+	var before: int=game.pieces_root.get_child_count()
+	for pressed in [true,false]:
+		var event:=InputEventMouseButton.new()
+		event.button_index=MOUSE_BUTTON_LEFT;event.pressed=pressed
+		event.position=Vector2(600,350) if pressed else Vector2(760,390)
+		game._unhandled_input(event)
+	check(game.pieces_root.get_child_count()==before+1,"Queued drag retains event positions")
+	check(game.selected.position.is_equal_approx(Vector2(680,370)),"Tape lands between press and release positions")
 	game.take_letter(626,Vector2(650,350))
 	for locale in ["zh","en"]:
 		if game.L.language!=locale:game.switch_language()

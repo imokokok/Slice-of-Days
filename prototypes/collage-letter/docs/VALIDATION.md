@@ -23,3 +23,5 @@ Host test from repository root (Godot 4.7.2):
 ```
 godot --path . --script res://tests/integration/test_collage_viewport.gd -- --isolated-save --fresh
 ```
+
+Material category update: type counts (25/8/12/9/6), 67 catalog entries, direct choice into the correct source slot, and legacy-category fallback all pass the host regression. The updated packaged window and catalog were opened and a material was selected through native mouse input.

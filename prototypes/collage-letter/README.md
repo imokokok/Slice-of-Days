@@ -38,3 +38,5 @@ python server/launch.py --demo
 ![原版布局与替换素材](docs/preview.png)
 
 本次还接入 Waitress 服务端、可安全重试的寄信请求与 CC0 实录音效，详见 [开源筛选与改动说明](OPEN_SOURCE_REVIEW.md)。
+
+素材按图案、纸张、文字、票据、乐谱分类并显示数量。“查看全部素材”包含 67 份缩略图，可点选拿取，也包含右侧画作与私人车票。

@@ -47,6 +47,21 @@ func run() -> void:
    root.push_input(event,true)
    await process_frame
  check(letter.stage=="WORKBENCH","Real scaled clicks advance I am listening into original workbench")
+ for type_name in {"图案":25,"纸张":8,"文字":12,"票据":9,"乐谱":6}:
+  var expected={"图案":25,"纸张":8,"文字":12,"票据":9,"乐谱":6}
+  check(letter.material_ids(type_name).size()==expected[type_name],"Material type count: "+type_name)
+ letter.open_material_catalog()
+ var cards=letter.catalog_layer.find_children("Material_*","Button",true,false)
+ check(cards.size()==67,"Catalog exposes all materials, including art and private ticket")
+ letter.select_catalog_material(5)
+ check(letter.category=="图案" and 5 in [letter.primary,letter.secondary],"Catalog selection reveals the chosen source sheet")
+ letter.select_catalog_material(66)
+ check(letter.album_source==66 and letter.sources[66].position.x==1070,"Paintings use the right album without conflicting with left sheets")
+ letter.select_catalog_material(3)
+ check(letter.sources[3].position.x==1074,"Private ticket stays in its original slot")
+ letter.category="自然";letter.update_material_slots()
+ check(letter.category=="全部","Legacy saved theme safely falls back to All")
+ letter.album_source=4;letter.material_page=0;letter.update_material_slots();letter.build_ui()
  # Check every imported source on the renderer and through the real crop action.
  var image_hashes := {}
  var atlas := Image.create(300*8,240*9,false,Image.FORMAT_RGBA8)

@@ -8,6 +8,7 @@ const Audio = preload("res://extensions/collage_letter/scripts/audio_manager.gd"
 const INK = Color("354a43")
 const RUST = Color("a85740")
 const LETTER = Rect2(455,174,530,582)
+const MATERIAL_TYPES = {"图案":"decoration","纸张":"paper","文字":"print","票据":"ticket","乐谱":"score","画作":"art"}
 var save_path := "user://letter_v1.json"
 var font: SystemFont
 var audio: Node
@@ -70,6 +71,7 @@ var bottle_request_id := ""
 var bottle_published_id := 0
 var compose_server := ""
 var title_entry: LineEdit
+var catalog_layer: CanvasLayer
 
 func _ready() -> void:
 	if DisplayServer.get_name()=="headless":
@@ -185,18 +187,21 @@ func build_ui() -> void:
 		category_picker.position=Vector2(62,118)
 		category_picker.size=Vector2(300,31)
 		category_picker.add_theme_font_override("font",font)
-		var categories: Array=["全部","日常","路途","自然","心绪","连接"]
+		var categories: Array=["全部","图案","纸张","文字","票据","乐谱"]
 		for item in categories:
-			category_picker.add_item(item+" / 素材夹")
+			category_picker.add_item(item+" · "+str(material_ids(item).size())+" 份")
+		category_picker.name="MaterialCategory"
 		category_picker.select(maxi(0,categories.find(category)))
 		category_picker.item_selected.connect(func(index): category=categories[index]; material_page=0; update_material_slots(); build_ui())
 		ui.add_child(category_picker)
 		button("← 上一组",Rect2(62,708,140,34),func(): material_page-=1; update_material_slots(); build_ui())
 		button("下一组 →",Rect2(220,708,140,34),func(): material_page+=1; update_material_slots(); build_ui())
+		button("查看全部素材 · "+str(materials.size())+" 份",Rect2(62,749,300,30),open_material_catalog)
 		button("换张图像 →",Rect2(1220,445,152,30),cycle_photo)
-		label_at("纸张 %02d / %02d · %s" % [material_page+1,maxi(1,ceili(material_ids().size()/2.0)),materials[primary].title],Rect2(62,151,340,28),15)
-		label_at("相册 / "+str(materials[album_source].title),Rect2(1070,151,325,28),16)
-		label_at("旧车票 / 私人素材",Rect2(1072,450,180,28),14)
+		label_at("%s · %02d/%02d 组 · %s" % [category,material_page+1,maxi(1,ceili(material_ids().size()/2.0)),materials[primary].title],Rect2(62,151,350,28),14)
+		label_at(str(materials[secondary].title),Rect2(70,430,300,20),13)
+		label_at("画作 · 6 份 / "+str(materials[album_source].title),Rect2(1070,151,340,28),15)
+		label_at("私人车票 · 1 份",Rect2(1072,450,180,28),14)
 		label_at("TO / "+("很久没见的朋友" if letter_mode=="npc" else ("海上的某个人" if letter_mode=="bottle" else "回复 #"+str(reply_parent.get("id",0)))),Rect2(483,184,480,30),14,Color("9a9787"))
 		if tool == "pen":
 			entry = LineEdit.new()
@@ -257,7 +262,7 @@ func build_ui() -> void:
 		panel.color = Color("f6efdb")
 		ui.add_child(panel)
 		label_at("桌边操作指南",Rect2(392,216,650,44),28)
-		label_at("① 刻刀：在纸张上拖方框，或按住划出自由轮廓。\n② 移动：把裁下的纸片摆上信纸，松手就放好。\n③ 胶带：沿纸片边缘拖出一条装饰胶带。\n④ 素材夹：按主题换页，相册也能切换图像。\n⑤ 漂流瓶：自由发信、读旧信、回复其他寄信人。\n\n滚轮缩放 · Q / E 旋转 · Delete 删除 · 右键返回移动\n发出新漂流瓶后，需要回复一封来信，才能再发新信。\n自动保存作品和回信对象；发信失败可以原样重试。",Rect2(392,287,670,340),20)
+		label_at("① 刻刀：在纸张上拖方框，或按住划出自由轮廓。\n② 移动：把裁下的纸片摆上信纸，松手就放好。\n③ 胶带：沿纸片边缘拖出一条装饰胶带。\n④ 素材按类型分类；点「查看全部素材」浏览并拿取。\n⑤ 漂流瓶：自由发信、读旧信、回复其他寄信人。\n\n滚轮缩放 · Q / E 旋转 · Delete 删除 · 右键返回移动\n发出新漂流瓶后，需要回复一封来信，才能再发新信。\n自动保存作品和回信对象；发信失败可以原样重试。",Rect2(392,287,670,340),20)
 		button("回到桌边",Rect2(804,630,230,43),func(): help_open=false; build_ui(),true)
 	queue_redraw()
 
@@ -488,7 +493,7 @@ func select(piece: Node2D) -> void:
 		selected.queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not ready_done or help_open or busy or dock_open:
+	if not ready_done or help_open or busy or dock_open or is_instance_valid(catalog_layer):
 		return
 	var mouse := get_global_mouse_position()
 	if event is InputEventKey and event.pressed and stage == "WORKBENCH":
@@ -1075,12 +1080,92 @@ func capture_test(filename: String) -> void:
 	await RenderingServer.frame_post_draw
 	get_viewport().get_texture().get_image().save_png(output.path_join(filename+".png"))
 
-func material_ids() -> Array:
+func material_ids(filter_category: String = "") -> Array:
 	var ids: Array=[]
+	var current := category if filter_category.is_empty() else filter_category
 	for i in materials.size():
-		if materials[i].category not in ["影像","私人"] and (category=="全部" or materials[i].category==category):
+		if materials[i].category not in ["影像","私人"] and (current=="全部" or materials[i].kind==MATERIAL_TYPES.get(current,"")):
 			ids.append(i)
 	return ids
+
+func close_material_catalog() -> void:
+	if is_instance_valid(catalog_layer): catalog_layer.queue_free()
+	catalog_layer=null
+
+func select_catalog_material(id: int) -> void:
+	close_material_catalog()
+	var location := "左侧素材夹"
+	if materials[id].category=="私人":
+		location="右下方私人车票"
+	elif materials[id].kind=="art":
+		album_source=id
+		location="右上方画作相册"
+	else:
+		category=MATERIAL_TYPES.find_key(materials[id].kind)
+		material_page=material_ids().find(id)/2
+	update_material_slots()
+	say("已拿出「"+str(materials[id].title)+"」· "+location+"，可用刻刀裁取。")
+	changed()
+	build_ui()
+
+func open_material_catalog() -> void:
+	if is_instance_valid(catalog_layer): return
+	dragging=false;cutting_source=-1;tape_drawing=false
+	catalog_layer=CanvasLayer.new()
+	catalog_layer.layer=20
+	add_child(catalog_layer)
+	var shade:=ColorRect.new()
+	shade.size=Vector2(1440,900);shade.color=Color(0.16,0.20,0.17,0.72)
+	catalog_layer.add_child(shade)
+	var panel:=ColorRect.new()
+	panel.position=Vector2(230,100);panel.size=Vector2(980,690);panel.color=Color("f6efdb")
+	catalog_layer.add_child(panel)
+	var heading:=Label.new()
+	heading.text="素材一览 · "+str(materials.size())+" 份　点选后回到桌边裁取"
+	heading.position=Vector2(256,119)
+	heading.add_theme_font_override("font",font);heading.add_theme_font_size_override("font_size",23)
+	heading.add_theme_color_override("font_color",INK)
+	catalog_layer.add_child(heading)
+	var close:=Button.new()
+	close.text="回到桌边";close.position=Vector2(1060,120);close.size=Vector2(120,38)
+	close.add_theme_font_override("font",font)
+	close.pressed.connect(close_material_catalog);catalog_layer.add_child(close)
+	var scroll:=ScrollContainer.new()
+	scroll.position=Vector2(256,174);scroll.size=Vector2(928,590)
+	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	catalog_layer.add_child(scroll)
+	var groups:=VBoxContainer.new()
+	groups.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	groups.add_theme_constant_override("separation",16);scroll.add_child(groups)
+	for group in ["图案","纸张","文字","票据","乐谱","画作","私人车票"]:
+		var ids: Array=[]
+		for i in materials.size():
+			if (materials[i].category=="私人" and group=="私人车票") or (materials[i].category!="私人" and materials[i].kind==MATERIAL_TYPES.get(group,"")):
+				ids.append(i)
+		var label:=Label.new()
+		label.text=group+" · "+str(ids.size())+" 份"
+		label.add_theme_font_override("font",font);label.add_theme_font_size_override("font_size",21)
+		label.add_theme_color_override("font_color",INK);groups.add_child(label)
+		var grid:=GridContainer.new()
+		grid.columns=3;grid.add_theme_constant_override("h_separation",12);grid.add_theme_constant_override("v_separation",8)
+		groups.add_child(grid)
+		for id in ids:
+			var item:=Button.new()
+			item.name="Material_"+str(id)
+			item.text=materials[id].title;item.icon=textures[id];item.expand_icon=true
+			item.add_theme_constant_override("icon_max_width",70)
+			item.add_theme_font_override("font",font);item.add_theme_font_size_override("font_size",17)
+			item.add_theme_color_override("font_color",INK)
+			item.add_theme_color_override("font_hover_color",INK)
+			for state in ["normal","hover","pressed"]:
+				var style:=StyleBoxFlat.new()
+				style.bg_color=Color("ece5d2") if state=="normal" else Color("d7c5a9")
+				style.border_color=Color("b7aa90");style.set_border_width_all(1)
+				style.set_content_margin_all(8)
+				item.add_theme_stylebox_override(state,style)
+			item.custom_minimum_size=Vector2(292,72)
+			item.alignment=HORIZONTAL_ALIGNMENT_LEFT
+			item.pressed.connect(select_catalog_material.bind(id));grid.add_child(item)
 
 func update_material_slots() -> void:
 	var ids:=material_ids()
@@ -1202,7 +1287,7 @@ func run_network_test() -> void:
 	result=await other.connect_service(url,"测试寄信人乙")
 	assert(result.ok)
 	start_bottle({})
-	category="自然"
+	category="图案"
 	material_page=0
 	update_material_slots()
 	build_ui()

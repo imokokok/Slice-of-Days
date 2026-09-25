@@ -123,7 +123,21 @@ static func paint(c: Control) -> void:
 	c.draw_rect(Rect2(28,324,1035,535),Color("b7a081"))
 	for i in 40:
 		c.draw_line(Vector2(30,330+i*13),Vector2(1061,332+i*13),Color(.28,.23,.18,.055),.7,true)
-	if c.step<2: return
+	if c.step==0:
+		var note:=Rect2(126,370,758,395)
+		shadow(c,note); c.draw_rect(note,Color("faf0d9"))
+		c.draw_rect(Rect2(387,356,210,29),Color("c6b77f",.75))
+		words(c,Vector2(170,420),"留给这段声音的话",26)
+		words(c,Vector2(1140,426),"一张唱片，慢慢做。",24)
+		words(c,Vector2(1140,476),"先写下名字与作者，",19)
+		words(c,Vector2(1140,511),"再留下声音里的一个画面。",19)
+		disc(c,Vector2(1280,700))
+		return
+	if c.step==1:
+		words(c,Vector2(604,421),"声音里，哪一刻最像今天？",24)
+		words(c,Vector2(604,468),"拖动取景条，再点左边画面。",18)
+		words(c,Vector2(604,504),"也可以翻开本地相册，选自己拍的照片。",18)
+		return
 	for i in range(2,11):
 		var x:=110.0+(i-2)*105
 		if i<10: c.draw_line(Vector2(x,277),Vector2(x+105,277),Color("cec5b4"),2)

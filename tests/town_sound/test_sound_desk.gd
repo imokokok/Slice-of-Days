@@ -71,6 +71,9 @@ func run() -> void:
 	await shot("03_small_window")
 	root.size=Vector2i(1600,900); await process_frame
 	if OS.get_cmdline_user_args().has("--manual"):
+		root.mode=Window.MODE_WINDOWED
+		root.size=Vector2i(1280,720)
+		root.position=Vector2i(90,90)
 		root.title="Town Sound - sound scrapbook check"
 		print("SOUND_DESK_UI: PASS failures=",failures,"; manual desk ready")
 		return

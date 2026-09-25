@@ -56,20 +56,20 @@ func _ready() -> void:
 	column.add_theme_constant_override("separation", 8)
 	add_child(column)
 	column.add_child(room.studio.label("SOLMERE / LOCAL PRESSING", 28))
-	instructions = room.studio.label("老板：行，这个我收。慢慢包，架子上有位置。", 18)
+	instructions = room.studio.label("01 / 给唱片写张小卡\n老板：先起个名字，再给它挑一张封面。", 18)
 	column.add_child(instructions)
 	title_input = LineEdit.new()
 	title_input.placeholder_text = LocalizationSystem.text("TITLE / 唱片标题")
 	title_input.max_length = 60
-	column.add_child(title_input)
+	title_input.position=Vector2(170,456); title_input.size=Vector2(660,48); add_child(title_input)
 	artist_input = LineEdit.new()
 	artist_input.placeholder_text = LocalizationSystem.text("ARTIST / 作者")
 	artist_input.max_length = 40
-	column.add_child(artist_input)
+	artist_input.position=Vector2(170,525); artist_input.size=Vector2(660,48); add_child(artist_input)
 	note_input = LineEdit.new()
 	note_input.placeholder_text = LocalizationSystem.text("ONE LINE NOTE / 一句话，留空也可以")
 	note_input.max_length = 160
-	column.add_child(note_input)
+	note_input.position=Vector2(170,594); note_input.size=Vector2(660,48); add_child(note_input)
 	summary_label = room.studio.label("", 17)
 	column.add_child(summary_label)
 	summary_label.hide()
@@ -84,8 +84,8 @@ func _ready() -> void:
 		next_button.text = LocalizationSystem.text("暂停并使用当前帧")))
 	cover_sources.add_child(room.studio.button("从本地相册选封面", select_photo_cover))
 	cover_sources.hide()
-	next_button = room.studio.button("完成命名", advance)
-	column.add_child(next_button)
+	next_button = room.studio.button("写好了，挑封面 →", advance)
+	next_button.position=Vector2(170,676); next_button.size=Vector2(350,46); add_child(next_button)
 	helper=room.studio.button("需要操作帮助？",func():
 		assisted=not assisted; next_button.visible=assisted; helper.text="收起辅助操作" if assisted else "需要操作帮助？")
 	helper.position=Vector2(1170,235); helper.size=Vector2(310,46); helper.hide(); add_child(helper)
@@ -154,6 +154,7 @@ func advance() -> void:
 		summary_label.text = "「%s」  /  %s  ·  LOCAL-%04d" % [title_input.text, artist_input.text, serial]
 		summary_label.show()
 		step = 1
+		next_button.position=Vector2(620,584)
 		cover_sources.show()
 		crop_overlay.queue_redraw()
 		cover_container.show()
@@ -174,6 +175,7 @@ func advance() -> void:
 		crop_overlay.hide()
 		locked = false
 		step = 2
+		next_button.position=Vector2(1170,290); next_button.size=Vector2(310,46)
 		next_button.text = LocalizationSystem.text("辅助：打印封面纸套")
 		next_button.hide(); helper.show()
 	elif step >= 2 and step <= 10:

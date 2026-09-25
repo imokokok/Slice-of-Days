@@ -50,8 +50,15 @@ def launch(profile=None):
     marker=ROOT/'.godot/open-pack-import-v3'
     if not marker.exists():
         with (STATE/'import.log').open('w',encoding='utf-8') as log:
-            subprocess.run([engine,'--headless','--editor','--path',str(ROOT),'--import','--quit'],
-                           cwd=ROOT,stdout=log,stderr=log,creationflags=FLAGS,check=True)
+            command=[engine,'--headless','--editor','--path',str(ROOT),'--import','--quit']
+            # Godot 4.5 can fail while shutting down its first parallel import.
+            # Retry the cached import once; only a successful run may launch.
+            for attempt in range(2):
+                result=subprocess.run(command,cwd=ROOT,stdout=log,stderr=log,creationflags=FLAGS)
+                if result.returncode==0:
+                    break
+                if attempt==1:
+                    raise subprocess.CalledProcessError(result.returncode,command)
         marker.write_text('Imported open-pack image and audio resources.\n',encoding='utf-8')
     command=[engine,'--path',str(ROOT)]
     if profile:

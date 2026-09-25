@@ -2,7 +2,7 @@ extends Node
 ## CC0 field recordings only. Material routing is a documented acoustic approximation.
 
 const LOOPS := {"flame": -26.0, "sizzle": -14.0, "sauce": -13.0, "boil": -12.0, "water": -15.0, "squeeze": -14.0, "pour": -14.0, "powder": -13.0}
-const EFFECT_BANKS := {"ignite": "ignite", "tap": "tap", "bell": "bell", "pan": "pan", "chop": "chop", "chop_soft": "chop_soft", "chop_hard": "chop_hard", "stir": "stir_wood", "stir_wet": "stir_wet", "stir_meat": "stir_wet", "stir_dry": "stir_dry", "stir_hard": "pan", "stir_water": "stir_water", "stir_sauce": "stir_sauce", "stir_pasta": "stir_pasta", "stir_wood": "stir_wood", "stir_metal": "stir_metal", "drop": "drop", "drop_dry": "drop_dry", "drain": "drain", "pour": "drain", "wipe": "wipe", "paper": "paper", "serve": "serve"}
+const EFFECT_BANKS := {"ignite": "ignite", "tap": "tap", "bell": "bell", "pan": "pan", "chop": "chop", "chop_soft": "chop_soft", "chop_hard": "chop_hard", "stir": "stir_wood", "stir_wet": "stir_wet", "stir_meat": "stir_wet", "stir_dry": "stir_dry", "stir_hard": "pan", "stir_water": "stir_water", "stir_sauce": "stir_sauce", "stir_pasta": "stir_pasta", "stir_wood": "stir_wood", "stir_metal": "stir_metal", "drop": "drop", "drop_dry": "drop_dry", "drain": "drain", "pour": "drain", "wipe": "wipe", "paper": "paper", "serve": "serve", "rice_open": "rice_open", "rice_close": "rice_close", "rice_scoop": "stir_wet", "toss": "toss", "hot_drop": "hot_drop"}
 const OILS := ["oil", "butter", "olive_oil", "sesame_oil"]
 const SAUCES := ["ketchup", "mayonnaise", "mustard", "chili_sauce", "soy_sauce", "soy", "cream", "milk", "honey"]
 var muted := false:
@@ -203,6 +203,11 @@ func play_food_drop(body: RigidBody2D) -> void:
 	if body.get_meta("dispensed", false):
 		bank = "drop_dry" if body.get_meta("dispense_mode", "") == "powder" else "drop"
 	play_effect(bank, clampf(sqrt(energy) * 0.8, 0.2, 1.0))
+	var world = get_parent()
+	if world.pan.on_stove() and world.pan.contains(body.position) and world.reactions.pan_c >= 115.0 and world.pan.water_ml < 80.0 and not body.get_meta("is_container", false) and not body.has_meta("liquid_state"):
+		var thermal: Dictionary = world.reactions.ensure_state(body)
+		if float(thermal.get("water_kg", 0.0)) > 0.0005:
+			play_effect("hot_drop", clampf(sqrt(energy), 0.35, 0.85))
 
 func stop_all() -> void:
 	for player in loops.values() + effects.values(): player.stop()

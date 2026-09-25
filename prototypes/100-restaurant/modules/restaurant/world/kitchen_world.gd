@@ -226,7 +226,7 @@ func _build_physics() -> void :
 	_pan_area.collision_layer = 0
 	_pan_area.collision_mask = 16 | 32
 	var shape: = RectangleShape2D.new()
-	shape.size = Vector2(174, 58)
+	shape.size = Vector2(204, 62)
 	var collision: = CollisionShape2D.new()
 	collision.shape = shape
 	_pan_area.add_child(collision)

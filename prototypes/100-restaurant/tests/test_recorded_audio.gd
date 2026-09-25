@@ -25,6 +25,16 @@ func _run() -> void:
 			_expect(stream != null and stream.get_length() > 0.1, "recording decodes to playable audio")
 	_expect(sound.banks.chop.size() >= 3, "chopping has independently recorded variants")
 	_expect(sound.banks.boil.size() >= 2, "boiling has multiple recordings")
+	_expect(sound.banks.rice_open.size() >= 2 and sound.banks.rice_close.size() >= 1, "rice cooker lid uses verified open and close recordings")
+	_expect(sound.banks.toss.size() >= 2 and sound.banks.hot_drop.size() >= 1, "pan motion and hot food entry have separate recorded layers")
+	var lid_click := InputEventMouseButton.new()
+	lid_click.button_index = MOUSE_BUTTON_LEFT
+	lid_click.pressed = true
+	lid_click.position = Vector2(60, 20)
+	game.rice_cooker._gui_input(lid_click)
+	_expect(game.rice_cooker.lid_open and sound.effects.rice_open.playing, "opening the actual rice cooker triggers its lid sound")
+	game.rice_cooker._gui_input(lid_click)
+	_expect(not game.rice_cooker.lid_open and sound.effects.rice_close.playing, "closing the actual rice cooker triggers a different lid sound")
 	world.spawn_ingredient(game._definition("tomato"))
 	var tomato: RigidBody2D = world._held
 	world.drop_into_pan()
@@ -32,6 +42,12 @@ func _run() -> void:
 	_expect(sound.cooking_profile(world) == "", "cold food makes no frying sound")
 	game.session.set_heating(true)
 	await create_timer(0.1).timeout
+	tomato.impact_speed = 90.0
+	sound.play_food_drop(tomato)
+	_expect(not sound.effects.hot_drop.playing, "a cold pan does not play a false hot-drop sizzle")
+	world.reactions.pan_c = 150.0
+	sound.play_food_drop(tomato)
+	_expect(sound.effects.hot_drop.playing, "moist food landing in a truly hot pan adds a brief real sizzle")
 	tomato.set_meta("cooking_heat", 2.0)
 	var thermal: Dictionary = world.reactions.ensure_state(tomato)
 	thermal.faces_c=[135.0,115.0]
@@ -95,6 +111,12 @@ func _run() -> void:
 	sound._last_effect.clear()
 	sound.play_food_stir(tomato, "spoon", 20.0)
 	_expect(sound.effects.stir_water.playing, "water in pan selects wet stirring even for a dry definition")
+	world.pan.water_ml = 0.0
+	sound._last_effect.clear()
+	world.pan.grab(world.pan.point(Vector2(1000, 577)))
+	var tossed: int = world.pan._toss_contents(Vector2(0, -40), Time.get_ticks_msec())
+	_expect(tossed > 0 and sound.effects.toss.playing, "a real pan toss adds cookware motion sound only when food launches")
+	world.pan.release_pan()
 	sound.muted = true
 	for player in sound.loops.values() + sound.effects.values():
 		_expect(not player.playing, "mute stops every recorded player")

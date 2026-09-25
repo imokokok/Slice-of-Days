@@ -1,8 +1,8 @@
 extends Node2D
 
 const SINK_X: = 211.0
-const HOME: = Vector2(-11, 110)
-const ART_SCALE: = Vector2(1.10, 1.14)
+const HOME: = Vector2(-25, 110)
+const ART_SCALE: = Vector2(1.30, 1.20)
 const PIVOT: = Vector2(809, 599)
 var world: Node2D
 var active: = false
@@ -265,6 +265,7 @@ func _toss_contents(travel: Vector2, now: int) -> int:
 		launched += 1
 	_carried = still_carried
 	if launched > 0:
+		world.audio.play_effect("toss", clampf(float(launched) / 3.0, 0.45, 1.0))
 		_last_toss_msec = now
 		world.interaction.emit("notice", "轻甩翻炒：%d 块食材离锅、翻面，再落回锅中。" % launched)
 	return launched

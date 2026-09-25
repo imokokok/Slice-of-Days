@@ -12,9 +12,40 @@ static var _outlines: Dictionary = {}
 static var _authored_pixels: Dictionary = {}
 static var _hit_pixels: Dictionary = {}
 const MYSTERY := ["baseball_bat","computer_mouse","slipper","sock","perfume","doll","lipstick","rubber_duck","rock"]
+# Physical silhouettes share a common 30 cm skillet reference. The body
+# polygon, held artwork and countertop artwork all use this one scale.
+static var _physical_scales: Dictionary = {}
+static var _physical_definitions: Dictionary = {}
+const CONTAINER_SCALES := {"oil":1.55, "pepper":1.13, "salt":0.48, "sugar":0.45, "soy_sauce":0.58, "ketchup":0.68, "mayonnaise":0.68, "mustard":0.68, "chili_sauce":0.68, "vinegar":0.68}
+const LONGEST_SIDE_PX := {
+	"carrot":84.0, "cucumber":99.0, "zucchini":99.0, "corn":92.0,
+	"eggplant":88.0, "banana":88.0, "noodles":78.0,
+	"cabbage":94.0, "lettuce":86.0, "pumpkin":108.0,
+	"watermelon":116.0, "durian":115.0,
+	"baseball_bat":143.0, "computer_mouse":62.0, "slipper":102.0,
+	"sock":81.0, "paper":79.0, "resignation_letter":79.0,
+	"toilet_paper":78.0, "toothpaste":69.0, "doll":85.0,
+	"rock":79.0, "alarm_clock":71.0, "tennis_ball":45.0,
+	"button":23.0, "eraser":33.0, "lipstick":43.0,
+	"confetti":28.0, "sponge":44.0
+}
 static func physical_art_scale(id: String) -> float:
-	# Match the five authored rack bottles; they must not shrink on pickup.
-	return {"oil":1.55, "pepper":1.13, "salt":0.48, "sugar":0.45, "soy_sauce":0.58, "ketchup":0.68, "mayonnaise":0.68, "mustard":0.68, "chili_sauce":0.68, "vinegar":0.68}.get(id, 0.61)
+	# The artist's ten rack bottles are calibrated against their actual slots.
+	if CONTAINER_SCALES.has(id): return float(CONTAINER_SCALES[id])
+	if _physical_scales.has(id): return float(_physical_scales[id])
+	if _physical_definitions.is_empty():
+		for row in JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/data/ingredients.json")):
+			_physical_definitions[str(row.id)] = row
+	var definition: Dictionary = _physical_definitions.get(id, {})
+	var mass_kg := maxf(0.015, float(definition.get("mass", 0.18)))
+	# Cubic-root mass scales the longest visible side like a solid volume.
+	# Long produce and irregular objects use measured silhouette overrides.
+	var target_px := float(LONGEST_SIDE_PX.get(id, clampf(64.0 * pow(mass_kg / 0.18, 1.0 / 3.0), 35.0, 112.0)))
+	var texture := food(id)
+	var fit_size := fit(texture, Vector2.ZERO, Vector2(78, 78)).size if texture != null else Vector2(78, 78)
+	var value := target_px / maxf(1.0, maxf(fit_size.x, fit_size.y))
+	_physical_scales[id] = value
+	return value
 static func handdrawn_manifest() -> Dictionary:
 	if _handdrawn.is_empty():
 		_handdrawn = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/assets/handdrawn_manifest.json"))

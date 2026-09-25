@@ -96,7 +96,7 @@ func _test_container(id: String, mode: String, stop_kind: String) -> void:
 			# no OS focus is stolen from the user's live game window.
 			game.world.notification(Node.NOTIFICATION_WM_WINDOW_FOCUS_OUT)
 		"outside":
-			_motion(Vector2(640, 550), true)
+			_motion(Vector2(580, 550), true) # Clear of the enlarged skillet rim.
 		"modal":
 			game._show_pause()
 		_:

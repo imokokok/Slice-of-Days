@@ -4,6 +4,7 @@ extends Control
 
 signal serving_requested(screen_position: Vector2)
 signal notice_requested(message: String)
+signal sound_requested(effect: String)
 
 const CLOSED = preload("res://modules/restaurant/assets/appliances/rice_cooker_closed.png")
 const OPEN = preload("res://modules/restaurant/assets/appliances/rice_cooker_open.png")
@@ -38,9 +39,11 @@ func _gui_input(event: InputEvent) -> void:
 			notice_requested.emit("电饭煲里这一份米饭已经盛走了。")
 			return
 		lid_open = true
+		sound_requested.emit("rice_open")
 		notice_requested.emit("电饭煲打开了。点击锅内米饭，用旁边的饭勺盛一份。")
 	elif LID.has_point(point):
 		lid_open = false
+		sound_requested.emit("rice_close")
 		notice_requested.emit("盖好了电饭煲。")
 	elif RICE_BOWL.has_point(point):
 		if serving_available:

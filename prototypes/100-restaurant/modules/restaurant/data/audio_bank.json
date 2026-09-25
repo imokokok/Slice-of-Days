@@ -111,5 +111,19 @@
   ],
   "drop_dry": [
     "res://modules/restaurant/assets/audio/recorded/drop_dry_01.wav"
+  ],
+  "rice_open": [
+    "res://modules/restaurant/assets/audio/recorded/rice_open_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/rice_open_02.wav"
+  ],
+  "rice_close": [
+    "res://modules/restaurant/assets/audio/recorded/rice_close_01.wav"
+  ],
+  "toss": [
+    "res://modules/restaurant/assets/audio/recorded/toss_01.wav",
+    "res://modules/restaurant/assets/audio/recorded/toss_02.wav"
+  ],
+  "hot_drop": [
+    "res://modules/restaurant/assets/audio/recorded/hot_drop_01.wav"
   ]
 }

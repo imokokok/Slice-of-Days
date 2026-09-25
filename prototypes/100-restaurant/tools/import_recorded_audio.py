@@ -57,6 +57,10 @@ SOURCES = [
     ("jopimblett", 388744, "Grapes dropped into a bowl", [("drop", 0, 0, False)]),
     ("KaleidacousticsAudio", 627655, "Pasta stirred in sauce in a saucepan", [("stir_pasta", 5, 0.8, False), ("stir_pasta", 15, 0.8, False)]),
     ("KaleidacousticsAudio", 627656, "Dry pasta dropped in ceramic bowl", [("drop_dry", 4, 0.8, False)]),
+    ("bowlingballout", 210100, "Domed metal pot lid lifted from platter", [("rice_open", 0.8, 1.8, False), ("rice_open", 5.3, 1.4, False)]),
+    ("greenlinker", 757514, "Pot lid placed on a cooking pot", [("rice_close", 0.0, 1.2, False)]),
+    ("SpliceSound", 218339, "Metal pot rattling while moved on stove", [("toss", 3.8, 1.3, False), ("toss", 7.3, 1.3, False)]),
+    ("postworkflow", 360648, "Vegetables dropped into hot oil on stovetop", [("hot_drop", 11.7, 1.8, False)]),
 ]
 
 
@@ -98,12 +102,20 @@ def fetch(entry, cache):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cache", type=Path, required=True)
+    parser.add_argument("--append-only", action="store_true", help="Process only source ids absent from the existing audited manifest")
     args = parser.parse_args()
     args.cache.mkdir(parents=True, exist_ok=True)
     DEST.mkdir(parents=True, exist_ok=True)
-    bank, sources, outputs = {}, [], []
+    manifest_path = DEST / "manifest.json"
+    bank_path = PROJECT / "modules/restaurant/data/audio_bank.json"
+    previous = json.loads(manifest_path.read_text()) if args.append_only else {}
+    bank = json.loads(bank_path.read_text()) if args.append_only else {}
+    sources = list(previous.get("sources", []))
+    outputs = list(previous.get("clips", []))
+    known_ids = {int(row["id"]) for row in sources}
+    entries = [entry for entry in SOURCES if entry[1] not in known_ids]
     with ThreadPoolExecutor(max_workers=3) as pool:
-        recordings = list(pool.map(lambda entry: fetch(entry, args.cache), SOURCES))
+        recordings = list(pool.map(lambda entry: fetch(entry, args.cache), entries))
     for entry, data, rate, provenance in recordings:
         sources.append(provenance)
         for group, start, duration, loop in entry[3]:

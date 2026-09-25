@@ -247,6 +247,7 @@ func _build_ui() -> void :
 	hud.add_child(rice_cooker)
 	rice_cooker.serving_requested.connect(_take_rice_from_cooker)
 	rice_cooker.notice_requested.connect(_notify)
+	rice_cooker.sound_requested.connect(func(effect: String) -> void: world.audio.play_effect(effect))
 	world.storage_return_handler = _return_to_storage
 	clock_label = _label(hud, "准备营业", Vector2(366, 36), 20, Color("fff0b8"))
 	money_label = _label(hud, "¥ 0.00", Vector2(1230, 34), 20, Color("f7d96f"))
@@ -688,7 +689,9 @@ func _take_ingredient(entry: Dictionary, press_position := Vector2.INF, from_ric
 		_stock[id] = false
 		storage_display.reveal_ingredient(id)
 		storage_display.set_available(id, false)
-		if id == "rice": rice_cooker.set_serving_available(false)
+		if id == "rice":
+			rice_cooker.set_serving_available(false)
+			world.audio.play_effect("rice_scoop")
 		_close_modal()
 		if press_position != Vector2.INF:
 			world.begin_food_drag(world.get_global_transform_with_canvas().affine_inverse() * press_position, true)

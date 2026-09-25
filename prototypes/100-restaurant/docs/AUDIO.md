@@ -1,6 +1,6 @@
 # 厨房实录音效库（2026-09-25）
 
-本次用 35 条外部 CC0 录音替换旧程序拟音，剪辑为 49 个 WAV 片段，组织成 32 个素材分组。旧的生成脚本及 22 个生成 WAV 已移除。没有提取商业参考游戏音轨。
+现用 39 条外部 CC0 录音替换旧程序拟音，剪辑为 55 个 WAV 片段，组织成 36 个素材分组。旧的生成脚本及 22 个生成 WAV 已移除。没有提取商业参考游戏音轨。
 
 ## 许可和交接
 
@@ -24,12 +24,15 @@
 | 切菜 | 只在几何切割成功时播放，区分柔软/普通/硬蔬菜组；普通组有三条独立刀切变体 |
 | 碰撞 / 落盘 | 实际落物碰撞区分容器、干粒料、普通食物；锅落台、盘子交付有对应录音 |
 | 其他 | 水龙头出水、炉火、点火、服务铃、翻纸与擦拭都改为录音 |
+| 电饭煲 | 真正点击开盖、合盖分别播放锅盖录音；只有实际盛到米饭才播放盛饭接触声 |
+| 翻锅 | 只有锅中食材被真实抛起时才叠加锅具移动声，锅落台仍用原锅具碰撞声 |
+| 热锅下料 | 只有锅温达到 115°C、锅里没有大量水且食材有水分时，落锅短暂叠加蔬菜遇热油的录音；冷锅不响 |
 
 同组多变体避免紧邻重复，音高变化限制在 ±1.5%。一次扫过大量切块按 180 ms 的共享接触窗口聚合，单组短音未结束不反复重启。每个播放器最多一条回放；最多八条循环通道，煎/浓酱/水煮互斥。不会一块食物就额外创建一个音源。暂停和静音保留现有界面行为；摆盘淋酱仅在实际发生时例外发声。
 
 ## 已验证与限制
 
-- 已实现并验证：源页面 CC0 检查、35 条录音下载、49 个 WAV 解码/非静音/峰值/哈希/循环接缝审计，以及实际状态到音效的定向自动测试。测试日志与实际混音捕获见 `VALIDATION.md`。
+- 已实现并验证：源页面 CC0 检查、39 条录音下载、55 个 WAV 解码/非静音/峰值/哈希/循环接缝审计，以及实际状态到音效的定向自动测试。测试日志与实际混音捕获见 `VALIDATION.md`。
 - 已实现但未逐项人耳验收：所有录音已接入播放器，已生成真实 Godot 混音试听文件；环境底噪、音色自然程度、混音舒适度及每个循环的听感仍需人工确认。不能把无削波或测试通过称作“和现实完全一致”。
 - 近似实现：食材分组与声音强度；新模型的表面/水温与含水量共同驱动反馈，参数未经实验标定。薄酱与浓酱尚未按黏度完整分档。软肉接触借用湿混合物录音，硬奇物借用锅具碰撞，擦台借用布擦玻璃，锅内金属接触借用金属厨具刮擦；保留来源真实名称，不冒充对应食材逐个实录。
 - 具体缺口：牛肉/鸡肉分别在不同含水量下的翻炒近录；木勺与金属铲在不同浓度酱汁内的独立慢/快搅拌；不同硬奇物落钢锅的近录；湿海绵擦木桌；完整刀切软肉/番茄/叶菜录音；无损原始文件与最终人耳混音验收。对应操作使用上述明确列出的录音近似，没有回退到生成声音。
@@ -37,7 +40,7 @@
 ## 维护与验证方式
 
 - 实施前读取完整规格第 19 章；只接许可明确可商用的源录音，首选 CC0，排除 NC/仅个人使用/条件相互矛盾的素材。
-- 重建：安装 numpy、soundfile，运行 `python tools/import_recorded_audio.py --cache <工程外缓存目录>`。脚本逐条检查页面 CC0，再取公开预听；缓存保留原文件及页面。`python tools/audit_recorded_audio.py` 可离线验全部打包 WAV。
+- 重建：安装 numpy、soundfile，运行 `python tools/import_recorded_audio.py --cache <工程外缓存目录>`。已有完整素材库时可加 `--append-only` 只导入 manifest 中尚无的来源。脚本逐条检查页面 CC0，再取公开预听；缓存保留原文件及页面。`python tools/audit_recorded_audio.py` 可离线验全部打包 WAV。
 - 引擎测试：`Godot --headless --path . --script tests/test_recorded_audio.gd`，已纳入 `tools/test.ps1`。还需回归 seasoning、spatula、kitchen_interactions、recipe_diy、comfort_release、integration。
 - 实际混音：不加 headless，运行 `Godot --path . --script tests/capture_recorded_audio.gd -- <输出绝对路径.wav>`。这是引擎混音输出，不是静态拼贴演示；状态由脚本设定，不冒充完整系统鼠标试玩。
 
@@ -82,3 +85,7 @@
 | [388744](https://freesound.org/people/jopimblett/sounds/388744/) | jopimblett | Grapes dropped into a bowl |
 | [627655](https://freesound.org/people/KaleidacousticsAudio/sounds/627655/) | KaleidacousticsAudio | Pasta stirred in sauce in a saucepan |
 | [627656](https://freesound.org/people/KaleidacousticsAudio/sounds/627656/) | KaleidacousticsAudio | Dry pasta dropped in ceramic bowl |
+| [210100](https://freesound.org/people/bowlingballout/sounds/210100/) | bowlingballout | Domed metal pot lid lifted from platter |
+| [757514](https://freesound.org/people/greenlinker/sounds/757514/) | greenlinker | Pot lid placed on a cooking pot |
+| [218339](https://freesound.org/people/SpliceSound/sounds/218339/) | SpliceSound | Metal pot rattling while moved on stove |
+| [360648](https://freesound.org/people/postworkflow/sounds/360648/) | postworkflow | Vegetables dropped into hot oil on stovetop |

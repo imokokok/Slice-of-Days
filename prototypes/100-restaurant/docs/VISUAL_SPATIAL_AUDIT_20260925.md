@@ -41,3 +41,9 @@ godot --path . --script tests/test_visual_spatial_consistency.gd -- <output-pref
 godot --path . --script tests/test_reaction_kitchen.gd -- <output-prefix>
 godot --headless --path . --quit-after 120
 ```
+
+## 后续比例校准（2026-09-25）
+
+- 平底锅锅口在工作台上的显示宽度从约 273 增至 322 游戏像素，锅身、前壁、水面、碰撞区、锅柄命中区域和搬运代理仍共享同一变换。锅是浅口平底锅，物理容量继续为 1.5 L，并按现有体积账本限流与溢流。
+- 非容器原料的显示最长边按质量立方根估算；胡萝卜、黄瓜、南瓜、西瓜及非食品奇物按形状单独校准。食材显示、刚体轮廓与被抓取的对象共用比例，十件已定稿调料瓶保留美术标定尺寸。
+- Godot 生产场景空间专项 headless 40 项、GPU 45 项通过；实际 GPU 截图核验锅沿与两件整食材的前后遮挡。项目 39 个回归入口全部通过。

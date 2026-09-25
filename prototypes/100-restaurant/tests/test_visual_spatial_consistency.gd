@@ -21,6 +21,13 @@ func run() -> void:
 	game._start_shift()
 	game.set_process(false)
 	var w = game.world
+	var opening_width: float = w.pan.point(Geometry.CENTER + Vector2(Geometry.RADIUS.x, 0)).distance_to(w.pan.point(Geometry.CENTER - Vector2(Geometry.RADIUS.x, 0)))
+	expect(opening_width >= 315.0 and opening_width <= 335.0, "skillet has a roughly 32 cm visual opening at the shared kitchen scale")
+	var tomato_size: Rect2 = polygon_bounds(Art.body_outline("tomato"))
+	var egg_size: Rect2 = polygon_bounds(Art.body_outline("egg"))
+	var pumpkin_size: Rect2 = polygon_bounds(Art.body_outline("pumpkin"))
+	expect(tomato_size.size.x > egg_size.size.x and pumpkin_size.size.x > tomato_size.size.x, "small egg, tomato and pumpkin follow coherent physical size ordering")
+	expect(tomato_size.size.x / opening_width > 0.13 and tomato_size.size.x / opening_width < 0.28, "whole tomato occupies a credible fraction of the skillet")
 	w.audio.muted = true
 	w.reactions.set_physics_process(false)
 	game._notify("空间检查")
@@ -158,6 +165,14 @@ func snapshot(label: String) -> void:
 	await process_frame
 	await RenderingServer.frame_post_draw
 	expect(root.get_texture().get_image().save_png(prefix+"-"+label+".png") == OK,"GPU snapshot saved: "+label)
+
+func polygon_bounds(points: PackedVector2Array) -> Rect2:
+	var minimum := Vector2(INF, INF)
+	var maximum := Vector2(-INF, -INF)
+	for point in points:
+		minimum = minimum.min(point)
+		maximum = maximum.max(point)
+	return Rect2(minimum, maximum - minimum)
 
 func expect(ok: bool,label: String) -> void:
 	checks += 1

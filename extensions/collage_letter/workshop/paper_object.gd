@@ -11,12 +11,72 @@ var paper_kind := "paper"
 var selected := false
 var ink := Color("343f39")
 var image: Image
+var flipped := false
+var attached := false
+var held := false
+var lift := 0.0
+var press_bounce := 0.0
+var flip_fold := 0.0
+var glue_marks: Array = []
+var back_texture: ImageTexture
+var back_dirty := true
+var glue_cells: Dictionary = {}
+
+func _rebuild_glue_cells() -> void:
+	glue_cells.clear()
+	for mark in glue_marks:
+		for y in range(-2,3):
+			for x in range(-2,3):
+				if x*x+y*y <= 5: glue_cells[Vector2i(int(mark[0])+x,int(mark[1])+y)]=true
+
+func _process(delta: float) -> void:
+	lift = lerpf(lift,9.0 if held else 0.0,minf(delta*16,1))
+	press_bounce = lerpf(press_bounce,0,minf(delta*20,1))
+	flip_fold=lerpf(flip_fold,0,minf(delta*14,1))
+	if lift > 0.01 or press_bounce > 0.01 or flip_fold>0.001: queue_redraw()
+
+func paint_glue(a: Vector2, b: Vector2) -> void:
+	if not flipped or attached: return
+	var count := maxi(1,ceili(a.distance_to(b)/5.0))
+	for i in range(count+1):
+		var p := a.lerp(b,float(i)/count)
+		if Rect2(Vector2.ZERO,image.get_size()).has_point(p) and image.get_pixelv(Vector2i(p)).a > 0.15:
+			var cell := [int(p.x/8),int(p.y/8)]
+			if cell not in glue_marks: glue_marks.append(cell)
+	back_dirty=true
+	_rebuild_glue_cells()
+	queue_redraw()
+
+func _glued(p: Vector2) -> bool:
+	return glue_cells.has(Vector2i(int(p.x/8),int(p.y/8)))
+
+func glue_coverage() -> float:
+	var total := 0
+	var coated := 0
+	for y in range(4,image.get_height(),8):
+		for x in range(4,image.get_width(),8):
+			if image.get_pixel(x,y).a > 0.15:
+				total+=1
+				if _glued(Vector2(x,y)): coated+=1
+	return float(coated)/maxi(total,1)
+
+func _update_back() -> void:
+	_rebuild_glue_cells()
+	var back := Image.create(image.get_width(),image.get_height(),false,Image.FORMAT_RGBA8)
+	for y in image.get_height():
+		for x in image.get_width():
+			var alpha := image.get_pixel(x,y).a
+			if alpha < 0.05: continue
+			back.set_pixel(x,y,Color(0.77,0.85,0.77,alpha) if _glued(Vector2(x,y)) else Color(0.94,0.90,0.80,alpha))
+	back_texture=ImageTexture.create_from_image(back)
+	back_dirty=false
 
 func set_image(value: Image) -> void:
 	image = value.duplicate()
 	image.convert(Image.FORMAT_RGBA8)
 	paper_mask = image
 	texture = ImageTexture.create_from_image(image)
+	back_dirty = true
 	is_cuttable = paper_kind not in ["tape","decoration"]
 	queue_redraw()
 
@@ -31,9 +91,11 @@ func contains_point(point: Vector2) -> bool:
 
 func _draw() -> void:
 	if texture:
+		draw_set_transform(Vector2.ZERO,0,Vector2(1-flip_fold,1))
 		var at := -Vector2(texture.get_size()) * 0.5
-		draw_texture(texture, at + Vector2(3, 5), Color(0.16, 0.12, 0.07, 0.18 if not hovered else 0.28))
-		draw_texture(texture, at + Vector2(0, -2 if hovered and not selected else 0))
+		draw_texture(texture, at + Vector2(3+lift*0.35, 3+lift), Color(0.16, 0.12, 0.07, 0.1 if attached else 0.20))
+		if flipped and back_dirty: _update_back()
+		draw_texture(back_texture if flipped else texture, at + Vector2(0, -lift+press_bounce))
 		if selected:
 			# Quiet corner ticks; no glowing outline or editor handles.
 			for corner in [at, at + Vector2(texture.get_width(), 0), -at]:
@@ -81,10 +143,11 @@ func split_mask(polygon: PackedVector2Array, kind: String) -> Array:
 	return [inside, outside]
 
 func record() -> Dictionary:
-	return {"id":object_id, "title":title, "kind":paper_kind, "source":source_id, "photo_id":photo_id,
+	return {"id":object_id, "title":title, "kind":paper_kind, "source":source_id,"photo_id":photo_id,
 		"position":[position.x,position.y], "rotation":rotation, "scale":[scale.x,scale.y], "z":z_index,
-		"png":Marshalls.raw_to_base64(image.save_png_to_buffer()), "cut_history":cut_history,
-		"drawing_layer":drawing_layer, "tape_layers":tape_layers,
+		"png":Marshalls.raw_to_base64(image.save_png_to_buffer()), "cut_history":cut_history.duplicate(true),
+		"drawing_layer":drawing_layer.duplicate(true), "tape_layers":tape_layers.duplicate(true),
+		"flipped":flipped,"attached":attached,"glue_marks":glue_marks.duplicate(true),
 		"foldable":is_foldable, "cuttable":is_cuttable, "movable":is_movable}
 
 func restore(data: Dictionary) -> bool:
@@ -103,6 +166,11 @@ func restore(data: Dictionary) -> bool:
 	cut_history = data.get("cut_history", [])
 	drawing_layer = data.get("drawing_layer", [])
 	tape_layers = data.get("tape_layers", [])
+	flipped = data.get("flipped",false)
+	attached = data.get("attached",false)
+	glue_marks = data.get("glue_marks",[])
+	_rebuild_glue_cells()
+	back_dirty = true
 	is_foldable = data.get("foldable", false)
 	is_cuttable = data.get("cuttable", true)
 	is_movable = data.get("movable", true)

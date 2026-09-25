@@ -3,16 +3,15 @@ extends Node2D
 const Paper = preload("paper_object.gd")
 const Tool = preload("tool_object.gd")
 const Audio = preload("../scripts/audio_manager.gd")
-const PaperArt = preload("../scripts/paper_art.gd")
+const PaperArt = preload("material_page.gd")
 const BottleClient = preload("../scripts/bottle_client.gd")
 const BottleDock = preload("../scripts/bottle_dock.gd")
 const TypeLayout = preload("typewriter_layout.gd")
 const SIZE := Vector2(1600,900)
-const INK := Color("28546b")
-const CREAM := Color("fffaf0")
-const ASSETS := "res://extensions/collage_letter/workshop/assets/"
-const HANDMADE := "res://art/ui/handmade/workshop/"
-enum Mode { DESK, MATERIAL_BROWSER, SCISSOR_CUTTING, CUTTING_MAT, KNIFE_CUTTING, TYPEWRITER, DRAWING, TAPE, FOLDING, ENVELOPE, WAX_SEALING, SENT }
+const INK := Color("443f32")
+const CREAM := Color("f6ebd5")
+const ASSETS := "res://extensions/collage_letter/workshop/open_assets/"
+enum Mode { DESK, MATERIAL_BROWSER, SCISSOR_CUTTING, CUTTING_MAT, KNIFE_CUTTING, TYPEWRITER, DRAWING, TAPE, FOLDING, ENVELOPE, WAX_SEALING, SENT, GLUE }
 
 var mode := Mode.DESK
 var stage := "WORKBENCH"
@@ -31,7 +30,7 @@ var save_path := "user://workshop_v3.json"
 var preview_path := "user://workshop_letter.png"
 var audio: Node
 var font: SystemFont
-var mono: SystemFont
+var mono: Font
 var ui: CanvasLayer
 var papers: Node2D
 var tools_root: Node2D
@@ -52,7 +51,7 @@ var ink_target: Node2D
 var pen_width := 1.3
 var pen_color := Color("34464a")
 var tool := "move"
-var hint := "从左侧素材挑一张纸，或者点一下打字机。"
+var hint := "翻开左边的纸张，或者从打字机开始。"
 var hovered_title := ""
 var elapsed := 0.0
 var save_clock := 0.0
@@ -62,6 +61,7 @@ var reference: Texture2D
 var sprites: Dictionary = {}
 var materials: Array = []
 var material_images: Array[Image] = []
+var material_textures: Array[Texture2D] = []
 var browser_category := "全部"
 var browser_index := 0
 var preview_image: Texture2D
@@ -79,6 +79,8 @@ var cut_handle := -1
 var mat_paper_id := ""
 var cutting := false
 var knife_path := PackedVector2Array()
+var knife_angle := 0.0
+var scissor_phase := 0.0
 var tape_start := Vector2.ZERO
 var tape_end := Vector2.ZERO
 var tape_pulling := false
@@ -125,77 +127,76 @@ var session_context: Dictionary = {}
 
 func _ready() -> void:
 	session_context=get_meta("solmere_context",{})
-	if not session_context.is_empty():
-		preview_path="user://letter_%s_%s.png"%[str(GameState.shared_state.get("journey_id","local")),str(session_context.current_character)]
+	if not session_context.is_empty() and has_node("/root/GameState"):
+		preview_path="user://letter_%s_%s.png"%[str(get_node("/root/GameState").shared_state.get("journey_id","local")),str(session_context.current_character)]
 	smoke = OS.get_cmdline_user_args().has("--workshop-test")
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--profile="): save_path = "user://workshop_" + arg.trim_prefix("--profile=").validate_filename() + ".json"
 	font = SystemFont.new()
 	font.font_names = ["Microsoft YaHei", "Noto Sans CJK SC", "sans-serif"]
-	mono = SystemFont.new()
-	mono.font_names = ["Courier New", "Noto Sans Mono", "monospace"]
+	mono = load(ASSETS + "fonts/specialelite/SpecialElite-Regular.ttf")
+	mono.fallbacks = [font]
 	audio = Audio.new()
 	add_child(audio)
 	bottle = BottleClient.new()
 	add_child(bottle)
-	backdrop = load(HANDMADE + "desk.png")
-	reference = backdrop
-	for id in ["typewriter", "scissors", "knife", "tape", "mat", "pen", "envelope", "wax-tray", "candle", "spoon", "stamp", "matchbox"]:
-		if ResourceLoader.exists(HANDMADE + id + ".png"):
-			var source: Texture2D = load(HANDMADE + id + ".png")
-			var atlas := AtlasTexture.new()
-			atlas.atlas = source
-			atlas.region = source.get_image().get_used_rect()
-			sprites[id] = atlas
+	reference = load(ASSETS + "desk.svg")
+	backdrop = reference
+	for id in ["typewriter", "scissors", "knife", "tape", "mat", "pen", "pencil", "marker", "glue", "envelope", "wax-tray", "candle", "spoon", "stamp", "matchbox"]:
+		var source: Texture2D = load(ASSETS + "tools/" + id + ".svg")
+		var atlas := AtlasTexture.new()
+		atlas.atlas = source
+		atlas.region = Rect2(Vector2.ZERO,source.get_size())
+		sprites[id] = atlas
 	tools_root = Node2D.new()
 	add_child(tools_root)
-	_make_tool("mat", "刻板 · 先铺好，再用刻刀", Rect2(10,582,360,210))
-	_make_tool("typewriter", "打字机 · 写一句自己的话", Rect2(1090,414,350,260))
-	_make_tool("tape", "纸胶带 · 拉出后用剪刀剪断", Rect2(405,480,110,93))
-	_make_tool("pen", "钢笔 · 写字与涂鸦", Rect2(330,612,65,172))
-	_make_tool("envelope", "信封 · 先把信折好", Rect2(1090,710,310,134))
-	_make_tool("wax-tray", "火漆工具盘 · 封存这封信", Rect2(1405,660,170,82))
-	_make_tool("knife", "刻刀 · 只能在刻板上使用", Rect2(218,625,82,170))
-	_make_tool("scissors", "剪刀 · 沿虚线剪成两片", Rect2(35,606,195,150))
+	_make_tool("mat", "刻板 · 保持原位，把纸铺上来", Rect2(400,530,720,326))
+	_make_tool("typewriter", "打字机 · 一个字一个字印在纸上", Rect2(820,280,430,265))
+	_make_tool("tape", "纸胶带 · 拉出后用剪刀剪断", Rect2(1450,595,110,87))
+	_make_tool("pen", "钢笔 · 细线墨迹", Rect2(1245,365,26,135))
+	_make_tool("pencil", "铅笔 · 柔软的石墨线", Rect2(1283,355,26,145))
+	_make_tool("marker", "马克笔 · 宽幅叠色", Rect2(1321,374,26,126))
+	_make_tool("envelope", "信封 · 折信、装封", Rect2(54,684,275,148))
+	_make_tool("wax-tray", "蜡粒盘 · 封口时用勺子舀蜡", Rect2(1150,753,430,102))
+	_make_tool("knife", "刻刀 · 在绿色刻板上划线", Rect2(1254,573,36,155))
+	_make_tool("scissors", "剪刀 · 拖到纸上剪裁", Rect2(1142,569,93,157))
+	_make_tool("glue", "胶棒 · 翻面涂胶，再压贴", Rect2(1330,591,53,120))
+	_make_tool("candle", "蜡烛 · 封口时划火柴点亮", Rect2(1155,738,68,105))
+	_make_tool("spoon", "蜡勺 · 舀蜡、加热、倾倒", Rect2(1233,804,162,43))
+	_make_tool("stamp", "印章 · 压住温热的蜡", Rect2(1430,735,54,107))
+	_make_tool("matchbox", "火柴 · 封口时划动点火", Rect2(1497,777,74,46))
 	papers = Node2D.new()
 	add_child(papers)
 	main_paper = Paper.new()
 	main_paper.object_id = "letter"
-	main_paper.title = LocalizationSystem.text("信纸")
-	main_paper.set_image(_blank_paper(Vector2i(440,390)))
-	main_paper.position = Vector2(807,605)
-	main_paper.rotation = -0.018
+	main_paper.title = _localized("信纸")
+	main_paper.set_image(_blank_paper(Vector2i(500,290)))
+	main_paper.position = Vector2(765,690)
+	main_paper.rotation = -0.012
 	main_paper.is_cuttable = false
 	main_paper.is_movable = false
 	main_paper.is_foldable = true
 	papers.add_child(main_paper)
 	ui = CanvasLayer.new()
 	add_child(ui)
-	materials = JSON.parse_string(FileAccess.get_file_as_string(ASSETS.trim_suffix("workshop/assets/") + "assets/materials.json"))
+	materials = JSON.parse_string(FileAccess.get_file_as_string(ASSETS + "materials.json"))
 	for i in materials.size():
 		var viewport := SubViewport.new()
 		viewport.size = Vector2i(300,240)
+		viewport.transparent_bg = true
 		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 		add_child(viewport)
-		if materials[i].has("decoration_asset"):
-			viewport.transparent_bg = true
-			var flower := Sprite2D.new()
-			flower.texture = load(ASSETS + materials[i].decoration_asset)
-			flower.position = Vector2(150,120)
-			var fit := minf(150.0/flower.texture.get_width(),200.0/flower.texture.get_height())
-			flower.scale = Vector2.ONE * fit
-			viewport.add_child(flower)
-		else:
-			var art := PaperArt.new()
-			art.kind = i
-			art.sheet_data = materials[i]
-			art.font = font
-			viewport.add_child(art)
+		var art := PaperArt.new()
+		art.sheet_data = materials[i]
+		art.font = mono
+		art.asset_root = ASSETS
+		viewport.add_child(art)
 		material_viewports.append(viewport)
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	for viewport in material_viewports:
 		material_images.append(viewport.get_texture().get_image())
+		material_textures.append(ImageTexture.create_from_image(material_images[-1]))
 		viewport.queue_free()
 	material_viewports.clear()
 	_append_developed_photos()
@@ -232,13 +233,16 @@ func _process(delta: float) -> void:
 	# The roll is either on the desk or at the loose strip's end, never both.
 	tape_roll.visible = not (tape_pulling or tape_pending)
 	knife_tool.visible = mode != Mode.KNIFE_CUTTING
+	for object in tools_root.get_children():
+		if object.action in ["pen","pencil","marker","glue"]:
+			object.visible = not (mode in [Mode.DRAWING,Mode.GLUE] and object.action == tool)
 	elapsed += delta
 	save_clock += delta
 	sound_clock += delta
 	key_age += delta
 	if mode == Mode.TYPEWRITER: _advance_typewriter(delta)
 	carriage = lerpf(carriage, 0, minf(delta * 8, 1))
-	var target := 0.0 if mode in [Mode.DESK,Mode.DRAWING,Mode.TAPE,Mode.SENT,Mode.CUTTING_MAT,Mode.KNIFE_CUTTING] else 1.0
+	var target := 0.0 if mode in [Mode.DESK,Mode.DRAWING,Mode.TAPE,Mode.SENT,Mode.GLUE,Mode.CUTTING_MAT,Mode.KNIFE_CUTTING] else 1.0
 	focus_amount = lerpf(focus_amount,target,minf(delta*9,1))
 	if mode == Mode.WAX_SEALING:
 		_process_wax(delta)
@@ -248,7 +252,7 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _caption(text: String, point: Vector2, size: int = 18, color: Color = INK) -> void:
-	draw_string(font, point, LocalizationSystem.text(text), HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
+	draw_string(font, point, _localized(text), HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
 
 func _sprite(id: String, rect: Rect2, tint: Color = Color.WHITE) -> void:
 	if sprites.has(id): draw_texture_rect(sprites[id],rect,false,tint)
@@ -257,10 +261,11 @@ func _draw() -> void:
 	if not reference: return
 	draw_texture_rect(backdrop,Rect2(Vector2.ZERO,SIZE),false)
 	# Discreet paper labels belong to the desk; the art remains the whole screen.
-	if mode in [Mode.DESK,Mode.DRAWING,Mode.TAPE,Mode.SENT]:
+	if mode in [Mode.DESK,Mode.DRAWING,Mode.TAPE,Mode.SENT,Mode.GLUE]:
 		draw_style_box(_paper_style(),Rect2(22,20,190,75))
 		draw_string(mono,Vector2(38,54),"Solmere",HORIZONTAL_ALIGNMENT_LEFT,-1,34,INK)
-		_caption("窗 边 的 拼 贴 工 作 坊",Vector2(37,78),12)
+		_caption("书 信 事 务 所",Vector2(37,78),14)
+		_draw_rack()
 	if focus_amount > 0.01:
 		draw_rect(Rect2(Vector2.ZERO,SIZE),Color(0.13,0.14,0.12,focus_amount*0.38))
 	if mode == Mode.MATERIAL_BROWSER: _draw_browser()
@@ -278,28 +283,42 @@ func _draw_overlay() -> void:
 
 func _paper_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = CREAM
+	style.bg_color = Color(CREAM,0.95)
 	style.set_corner_radius_all(2)
-	style.shadow_size = 0
+	style.shadow_color = Color(0.15,0.10,0.05,0.2)
+	style.shadow_size = 4
 	return style
 
 func _label(text: String, rect: Rect2, size: int = 18) -> Label:
 	var label := Label.new()
-	label.text = LocalizationSystem.text(text)
+	label.text = _localized(text)
 	label.position = rect.position
 	label.size = rect.size
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.add_theme_font_override("font",font)
 	label.add_theme_font_size_override("font_size",size)
 	label.add_theme_color_override("font_color",INK)
-	label.add_theme_stylebox_override("normal",_paper_style())
 	ui.add_child(label)
 	return label
 
 func _button(text: String, rect: Rect2, callback: Callable) -> Button:
-	var button := preload("res://scripts/ui/components/solmere_button.gd").new()
-	button.variant="paper"; button.text=LocalizationSystem.text(text); button.position=rect.position; button.size=rect.size
-	button.pressed.connect(callback); ui.add_child(button); button.add_theme_font_size_override("font_size",17)
+	var button: Button
+	if has_node("/root/LocalizationSystem") and ResourceLoader.exists("res://scripts/ui/components/solmere_button.gd"):
+		button=load("res://scripts/ui/components/solmere_button.gd").new()
+		button.variant="paper"
+	else: button=Button.new()
+	button.text = _localized(text)
+	button.position = rect.position
+	button.size = rect.size
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_font_override("font",font)
+	button.add_theme_font_size_override("font_size",17)
+	button.add_theme_color_override("font_color",INK)
+	button.add_theme_color_override("font_hover_color",Color("87533b"))
+	button.add_theme_stylebox_override("normal",_paper_style())
+	button.add_theme_stylebox_override("hover",_paper_style())
+	button.pressed.connect(callback)
+	ui.add_child(button)
 	return button
 
 func build_ui() -> void:
@@ -308,20 +327,26 @@ func build_ui() -> void:
 		ui.remove_child(child)
 		child.queue_free()
 	var ribbon := Panel.new()
-	ribbon.position = Vector2(365,854)
-	ribbon.size = Vector2(925,32)
+	ribbon.position = Vector2(385,815)
+	ribbon.size = Vector2(725,32)
 	ribbon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ribbon.add_theme_stylebox_override("panel",_paper_style())
 	ui.add_child(ribbon)
-	_label(hint,Rect2(380,858,905,28),14)
-	if mode in [Mode.DESK,Mode.DRAWING,Mode.TAPE,Mode.SENT]:
-		_button("Letters / 来信",Rect2(24,140,136,37),open_bottles)
-		_button("Materials / 素材",Rect2(24,182,136,37),func(): open_browser())
-		_button("Drafts / 草稿",Rect2(24,224,136,37),show_drafts)
+	_label(hint,Rect2(400,821,700,28),14)
+	if mode in [Mode.DESK,Mode.DRAWING,Mode.TAPE,Mode.SENT,Mode.GLUE]:
+		_button("代写信件  /  委托",Rect2(30,122,225,60),show_notes)
+		_button("自由拼贴  /  素材",Rect2(30,194,225,60),func(): open_browser())
+		_button("漂流信箱  /  回信",Rect2(30,266,225,60),open_bottles)
+		_build_material_rack()
+		_build_shelf()
+		if is_instance_valid(active) and active != main_paper:
+			_button("翻到正面" if active.flipped else "翻到背面",Rect2(450,495,125,32),flip_active)
+			_button("压贴 / 揭起",Rect2(585,495,130,32),press_active)
+			_button("涂背胶",Rect2(725,495,115,32),func(): use_tool("glue"))
 		_button("笔记",Rect2(1430,26,65,38),show_notes)
 		_button("设置",Rect2(1510,26,65,38),show_settings)
-		_button("完成 · 折信" if mode != Mode.SENT else "写下一封",Rect2(1430,846,147,40),begin_folding if mode != Mode.SENT else restart)
-		if mode in [Mode.DRAWING,Mode.TAPE]: _button("放回工具",Rect2(1400,793,175,37),return_desk)
+		_button("完成 · 折信" if mode != Mode.SENT else "写下一封",Rect2(1375,858,197,36),begin_folding if mode != Mode.SENT else restart)
+		if mode in [Mode.DRAWING,Mode.TAPE,Mode.GLUE]: _button("放回工具",Rect2(1150,532,220,33),return_desk)
 	else:
 		_button("← 回到桌边",Rect2(32,28,155,40),return_desk)
 		if mode == Mode.MATERIAL_BROWSER:
@@ -342,7 +367,7 @@ func build_ui() -> void:
 		if mode == Mode.TYPEWRITER:
 			var save_button := _button("正在逐字打完…" if type_save_requested else "SAVE · 抽出纸张",Rect2(1160,715,212,46),save_typed_paper)
 			save_button.disabled = type_save_requested
-			_label("直接敲键盘\nEnter 换行\nBackspace 退格",Rect2(1130,185,240,76),16)
+			_label("直接敲键盘 · Enter 换行 · Backspace 退格",Rect2(555,155,660,32),16)
 		if mode == Mode.WAX_SEALING and wax_step == 6:
 			_button("SEND · 寄出",Rect2(1120,750,210,52),send_letter)
 	if notes_open or settings_open: _build_note_panel()
@@ -375,7 +400,7 @@ func _update_browser() -> void:
 	if ids.is_empty(): return
 	browser_index = posmod(browser_index,ids.size())
 	var material: Dictionary = materials[ids[browser_index]]
-	preview_image = load(ASSETS+material.decoration_asset) if material.has("decoration_asset") else ImageTexture.create_from_image(material_images[ids[browser_index]])
+	preview_image = ImageTexture.create_from_image(material_images[ids[browser_index]])
 	audio.play("PAPER_MOVE",0.45)
 
 func browse(direction: int) -> void:
@@ -390,7 +415,7 @@ func _draw_browser() -> void:
 	if preview_image:
 		var ids := _material_ids()
 		var rect := Rect2(455,210,690,505)
-		if materials[ids[browser_index]].has("decoration_asset"):
+		if materials[ids[browser_index]].kind == "decoration":
 			var fit := minf(rect.size.x/preview_image.get_width(),rect.size.y/preview_image.get_height())
 			var size := preview_image.get_size()*fit
 			rect = Rect2(rect.get_center()-size*0.5,size)
@@ -400,8 +425,8 @@ func _draw_browser() -> void:
 func take_material() -> void:
 	checkpoint()
 	var id: int = _material_ids()[browser_index]
-	var decoration: bool = materials[id].has("decoration_asset")
-	var at: Vector2 = main_paper.position + Vector2(100,50) if decoration else Vector2(660,590)
+	var decoration: bool = materials[id].kind == "decoration"
+	var at: Vector2 = main_paper.position + Vector2(100,50) if decoration else Vector2(650,640)
 	var paper = create_paper(material_images[id],at,materials[id].title,"decoration" if decoration else "paper")
 	paper.source_id = id
 	paper.photo_id = str(materials[id].get("photo_id",""))
@@ -425,6 +450,7 @@ func select_paper(paper: Node2D) -> void:
 	if is_instance_valid(active): active.selected = false; active.queue_redraw()
 	active = paper
 	if is_instance_valid(active): active.selected = true; active.queue_redraw()
+	if ready_done: build_ui()
 
 func paper_at(point: Vector2) -> Node2D:
 	var found: Node2D
@@ -471,6 +497,7 @@ func return_desk() -> void:
 	cutting = false
 	knife_path.clear()
 	ink_target = null
+	if is_instance_valid(dragged): dragged.held=false
 	dragged = null
 	dragged_tool = null
 	papers.show()
@@ -488,7 +515,7 @@ func use_tool(id: String) -> void:
 			say("按下一个字母，听见一小声回应。")
 		"scissors":
 			if tape_pending: finish_tape();return
-			if is_instance_valid(active) and active.is_cuttable:
+			if is_instance_valid(active) and active.is_cuttable and not active.attached and not active.flipped:
 				checkpoint();_focus_paper(active);mode=Mode.SCISSOR_CUTTING
 				cut_start=Vector2(485,420);cut_end=Vector2(1115,465);cut_progress=0
 				say("拖动端点调整剪线，从圆点起剪。")
@@ -496,19 +523,29 @@ func use_tool(id: String) -> void:
 				tool="choose_scissors";say("先点一张桌上的纸，剪刀会跟着过去。")
 		"mat":
 			mode=Mode.CUTTING_MAT
-			say("刻板留在左下原位。把纸拖到绿色刻板上，再拿起刻刀。")
+			say("刻板保持原位。把纸拖到绿色刻板上，再拿起刻刀。")
 		"knife":
 			take_knife()
-		"pen":
-			mode=Mode.DRAWING;tool="pen";say("按住写画 · 右键切换笔尖粗细 · Esc 放回笔")
+		"pen", "pencil", "marker":
+			mode=Mode.DRAWING;tool=id
+			pen_width={"pen":1.3,"pencil":0.8,"marker":7.0}[id]
+			pen_color={"pen":Color("34464a"),"pencil":Color("807c72"),"marker":Color("c28d72")}[id]
+			say("按住写画 · 右键切换粗细 · Esc 放回笔")
+		"glue":
+			if not is_instance_valid(active) or active == main_paper:
+				say("先选一张纸片，再拿胶棒。背胶只涂在纸片背面。")
+				return
+			if active.attached: say("先点‘压贴 / 揭起’揭下纸片。") ;return
+			if not active.flipped: checkpoint();active.flipped=true;active.queue_redraw()
+			mode=Mode.GLUE;tool="glue";say("按住涂背胶；翻回正面，放在信纸上，点‘压贴’。")
 		"tape":
 			mode=Mode.TAPE;tool="tape";say("按住拉出胶带，松开后仍连着胶带卷，再点剪刀剪断。")
 		"envelope": begin_folding()
-		"wax-tray": say("先完成拼贴、折信和装封，再来点蜡烛。")
+		"wax-tray", "candle", "spoon", "stamp", "matchbox": say("先完成拼贴、折信和装封，再来点蜡烛。")
 
 func take_knife() -> void:
 	if mode not in [Mode.DESK,Mode.CUTTING_MAT]: return
-	if not is_instance_valid(active) or active == main_paper or not active.is_cuttable or not mat_tool.contains_point(active.position):
+	if not is_instance_valid(active) or active == main_paper or not active.is_cuttable or active.attached or active.flipped or not mat_tool.contains_point(active.position):
 		say("先把一张可裁切的纸拖到绿色刻板上。")
 		return
 	checkpoint()
@@ -539,12 +576,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		if mode == Mode.TYPEWRITER:
 			_type_key(event);get_viewport().set_input_as_handled();return
 		if event.keycode == KEY_ESCAPE: return_desk();return
+		if mode==Mode.GLUE and event.keycode==KEY_F: flip_active();return
 		if event.ctrl_pressed and event.keycode == KEY_Z: undo();return
 		if event.ctrl_pressed and event.keycode == KEY_Y: redo();return
 		if mode in [Mode.DESK,Mode.CUTTING_MAT] and is_instance_valid(active):
 			match event.keycode:
-				KEY_Q: checkpoint();active.rotation -= 0.055
-				KEY_E: checkpoint();active.rotation += 0.055
+				KEY_F: flip_active()
+				KEY_P: press_active()
+				KEY_Q:
+					if not active.attached: checkpoint();active.rotation -= 0.055
+				KEY_E:
+					if not active.attached: checkpoint();active.rotation += 0.055
 				KEY_BRACKETLEFT: checkpoint();active.z_index = maxi(1,active.z_index-1)
 				KEY_BRACKETRIGHT: checkpoint();active.z_index += 1
 				KEY_DELETE:
@@ -560,7 +602,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			pen_width = 2.8 if pen_width < 2 else 1.3
 			say("墨水笔 · 较粗" if pen_width > 2 else "钢笔 · 较细")
 		if event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN] and event.pressed:
-			if is_instance_valid(active) and mode in [Mode.DESK,Mode.CUTTING_MAT]:
+			if is_instance_valid(active) and not active.attached and mode in [Mode.DESK,Mode.CUTTING_MAT]:
 				checkpoint();active.scale *= 1.06 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 0.94
 				active.scale = active.scale.clamp(Vector2(0.25,0.25),Vector2(3,3))
 		if event.button_index == MOUSE_BUTTON_LEFT:
@@ -568,13 +610,20 @@ func _unhandled_input(event: InputEvent) -> void:
 			else: _release()
 
 func _motion(_event: InputEventMouseMotion) -> void:
+	if pointer.distance_to(previous_pointer)>0.5:
+		knife_angle=(pointer-previous_pointer).angle()+PI*0.5
+		if cutting: scissor_phase+=pointer.distance_to(previous_pointer)*0.09
 	if dragged_tool:
 		dragged_tool.position += pointer-previous_pointer
 	if dragged:
 		dragged.position = (pointer-grab_offset).clamp(Vector2(70,170),Vector2(1510,810))
 	if ink_target:
-		ink_target.stroke(ink_target.local_pixel(previous_pointer),ink_target.local_pixel(pointer),pen_width,pen_color)
-		_sound_tick("PEN_WRITE",0.065)
+		if mode == Mode.GLUE:
+			ink_target.paint_glue(ink_target.local_pixel(previous_pointer),ink_target.local_pixel(pointer))
+			_sound_tick("GLUE_SPREAD",0.09)
+		else:
+			ink_target.stroke(ink_target.local_pixel(previous_pointer),ink_target.local_pixel(pointer),pen_width,pen_color)
+			_sound_tick("PEN_WRITE",0.065)
 	if tape_pulling:
 		tape_end=pointer;tape_angle+=pointer.distance_to(previous_pointer)*0.05
 		_sound_tick("TAPE_PULL",0.16)
@@ -612,18 +661,20 @@ func _press() -> void:
 			if paper and paper!=main_paper:
 				select_paper(paper)
 				if tool=="choose_scissors": use_tool("scissors");return
-				checkpoint();dragged=paper;grab_offset=pointer-paper.position;paper.z_index=papers.get_child_count()+1
+				if paper.attached: say("纸片已经压贴；点‘压贴 / 揭起’才能移动。") ;return
+				checkpoint();paper.held=true;dragged=paper;grab_offset=pointer-paper.position;paper.z_index=papers.get_child_count()+1
 				audio.play("PAPER_MOVE",0.5);return
 			var objects=tools_root.get_children();objects.reverse()
 			for object in objects:
 				if object.contains_point(pointer): use_tool(object.action);return
-			# The visible Materials button opens the browser. The painted wall is
-			# decoration, not an invisible full-background interaction region.
+		Mode.GLUE:
+			if is_instance_valid(active) and active.flipped and active.contains_point(pointer):
+				checkpoint();ink_target=active;active.paint_glue(active.local_pixel(pointer),active.local_pixel(pointer))
 		Mode.DRAWING:
 			var paper=paper_at(pointer)
-			if paper: checkpoint();ink_target=paper
+			if paper and not paper.flipped: checkpoint();ink_target=paper
 		Mode.TAPE:
-			if Rect2(20,600,205,170).has_point(pointer) and tape_pending: finish_tape();return
+			if scissors_tool.contains_point(pointer) and tape_pending: finish_tape();return
 			if not tape_pending: tape_start=pointer;tape_end=pointer;tape_pulling=true
 		Mode.SCISSOR_CUTTING:
 			if pointer.distance_to(cut_start)<20 and Input.is_key_pressed(KEY_SHIFT): cut_handle=0
@@ -647,6 +698,7 @@ func _release() -> void:
 		elif not moved: use_tool("scissors")
 		return
 	if dragged:
+		dragged.held=false
 		if mat_tool.contains_point(dragged.position):
 			mat_paper_id=dragged.object_id
 			say("纸已经铺在刻板上。现在可以拿起刻刀。")
@@ -654,7 +706,7 @@ func _release() -> void:
 	ink_target=null
 	if tape_pulling:
 		tape_pulling=false;tape_pending=tape_start.distance_to(tape_end)>20
-		say("胶带仍连着卷。点左下剪刀，剪断这段胶带。")
+		say("胶带仍连着卷。点右侧剪刀，剪断这段胶带。")
 	if mode==Mode.SCISSOR_CUTTING: cutting=false;cut_handle=-1
 	if mode==Mode.KNIFE_CUTTING and cutting:
 		if knife_path.is_empty() or knife_path[-1].distance_to(pointer)>0.5: knife_path.append(pointer)
@@ -885,35 +937,25 @@ func _ensure_type_page() -> void:
 
 func _draw_typewriter() -> void:
 	var zoom:=lerpf(0.90,1.0,focus_amount)
-	# The paper is a real separate layer. Keeping its original aspect ratio
-	# makes seven lines legible instead of squeezing the ink into a photo plane.
-	var paper_at := Vector2(570,185)+Vector2(carriage,0)
-	# Align the sheet and all typed glyphs with the diagonal platen. The
-	# exported sheet keeps its original unrotated, editable pixel layout.
-	draw_set_transform(paper_at,deg_to_rad(3.0))
-	draw_style_box(_paper_style(),Rect2(Vector2.ZERO,TypeLayout.PAGE_SIZE))
-	if is_instance_valid(type_viewport):
-		draw_texture_rect(type_viewport.get_texture(),Rect2(Vector2.ZERO,TypeLayout.PAGE_SIZE),false)
-	draw_set_transform(Vector2.ZERO)
-	var machine: AtlasTexture=sprites.typewriter
-	var source := machine.region
-	source.position.y += source.size.y*.32
-	source.size.y *= .68
-	var box := Rect2(Vector2(365,465)+Vector2(carriage,0),Vector2(870,335)*zoom)
-	draw_texture_rect_region(machine.atlas,box,source)
+	var box:=Rect2(Vector2(365,198)+Vector2(carriage,0),Vector2(870,600)*zoom)
+	_sprite("typewriter",box)
 	draw_set_transform(box.position,0,Vector2.ONE*zoom)
+	if is_instance_valid(type_viewport):
+		# Ink follows the perspective of the actual paper and cannot reach the keys.
+		var paper_quad:=PackedVector2Array([Vector2(205,12),Vector2(665,12),Vector2(665,292),Vector2(205,292)])
+		draw_polygon(paper_quad,PackedColorArray([Color.WHITE]),PackedVector2Array([Vector2.ZERO,Vector2(1,0),Vector2.ONE,Vector2(0,1)]),type_viewport.get_texture())
 	var rows := ["QWERTYUIOP","ASDFGHJKL","ZXCVBNM"]
 	for row in rows.size():
 		for i in rows[row].length():
 			var key: String=rows[row][i]
-			var at:=Vector2(149+i*43-row*8,145+row*32+i*1.7)
+			var at:=Vector2(220+i*43+row*18,376+row*40)
 			var down:=key_age<0.16 and type_key.to_upper()==key
 			if down:
-				draw_circle(at+Vector2(0,2),11,Color("e6c25b"))
+				draw_circle(at+Vector2(0,5),14,Color("988566"))
 			draw_string(mono,at+Vector2(-5,5 if not down else 10),key,HORIZONTAL_ALIGNMENT_LEFT,-1,13,INK)
 	if key_age<0.12:
-			draw_line(Vector2(425,85),Vector2(440,48),INK,4,true)
-	if type_key=="Space" and key_age<0.15: draw_line(Vector2(260,275),Vector2(580,291),Color("e6c25b"),6,true)
+			draw_line(Vector2(430,325),Vector2(435,282),Color("6b6250"),4,true)
+	if type_key=="Space" and key_age<0.15: draw_line(Vector2(290,501),Vector2(570,501),Color(0.2,0.17,0.13,0.3),10,true)
 	draw_set_transform(Vector2.ZERO)
 	if eject_amount>0 and typed_preview:
 		draw_texture_rect(typed_preview,Rect2(665,265-eject_amount*175,340,220),false)
@@ -951,7 +993,9 @@ func save_typed_paper() -> void:
 	say("你的话成为了一张纸。可以剪成单词，也可以整张留下。")
 
 func begin_folding() -> void:
-	if mode not in [Mode.DESK,Mode.DRAWING,Mode.TAPE]: return
+	if mode not in [Mode.DESK,Mode.DRAWING,Mode.TAPE,Mode.GLUE]: return
+	for piece in papers.get_children():
+		if piece.flipped: say("还有纸片朝着背面，翻回正面再折信。") ;return
 	var has_content: bool=not main_paper.drawing_layer.is_empty()
 	for paper in papers.get_children():
 		if paper!=main_paper and main_paper.contains_point(paper.position): has_content=true
@@ -962,7 +1006,7 @@ func begin_folding() -> void:
 	select_paper(null)
 	# Render only the letter and the intersecting scraps, never the desk/UI.
 	var viewport:=SubViewport.new()
-	viewport.size=Vector2i(440,390)
+	viewport.size=main_paper.image.get_size()
 	viewport.transparent_bg=true
 	viewport.render_target_update_mode=SubViewport.UPDATE_ALWAYS
 	add_child(viewport)
@@ -970,7 +1014,7 @@ func begin_folding() -> void:
 	for paper in papers.get_children():
 		var copy:=Paper.new()
 		copy.restore(paper.record())
-		copy.position=main_paper.to_local(paper.position)+Vector2(220,195)
+		copy.position=main_paper.to_local(paper.position)+Vector2(main_paper.image.get_size())*0.5
 		copy.rotation=paper.rotation-main_paper.rotation
 		viewport.add_child(copy)
 		copies.append(copy)
@@ -1014,10 +1058,10 @@ func _draw_envelope() -> void:
 
 func _envelope_regions() -> Array[Rect2]:
 	var texture: AtlasTexture = sprites.envelope
-	var region := texture.region
-	# The generated open flap occupies 35% of this cutout, independent of
-	# resolution. Both folding and sealing use exactly this painted hinge.
-	var hinge := region.position.y + region.size.y * .35
+	var region := Rect2(280,20,976,960)
+	# The source artwork's horizontal fold is at y=432. Keep its painted
+	# edge, grain and alpha; split only the rendering, never paint over it.
+	var hinge := 432.0
 	return [Rect2(region.position,Vector2(region.size.x,hinge-region.position.y)),
 		Rect2(region.position.x,hinge,region.size.x,region.end.y-hinge)]
 
@@ -1028,7 +1072,7 @@ func _draw_envelope_body(body: Rect2) -> void:
 func _draw_envelope_flap(body: Rect2, closure: float) -> void:
 	var texture: AtlasTexture = sprites.envelope
 	var source := _envelope_regions()[0]
-	var height := body.size.y * .75
+	var height := source.size.y * body.size.x / source.size.x
 	var tilt := cos(clampf(closure,0,1) * PI)
 	if absf(tilt) < 0.002: return
 	draw_set_transform(body.position,0,Vector2(1,tilt))
@@ -1043,16 +1087,15 @@ func _draw_wax() -> void:
 	_draw_envelope_body(envelope_body)
 	_draw_envelope_flap(envelope_body,1.0)
 	_sprite("matchbox",Rect2(300,595,190,100))
-	# Crop away the static painted flame. Ignition comes only from gameplay.
-	var candle: AtlasTexture=sprites.candle
-	var candle_body := candle.region
-	candle_body.position.y += candle_body.size.y*.30
-	candle_body.size.y *= .70
-	draw_texture_rect_region(candle.atlas,Rect2(440,382,142,198),candle_body)
+	# Candle and animated, layered translucent flame.
+	_sprite("candle",Rect2(440,370,142,210))
 	if candle_lit:
 		_flame(Vector2(509,382),1.0)
 	# The box contains actual visible pellets; the spoon changes through 4 phases.
-	_sprite("wax-tray",Rect2(300,285,200,100))
+	draw_rect(Rect2(319,292,150,78),Color("684b33"))
+	for i in 17:
+		var at:=Vector2(331+(i%6)*23,309+(i/6)*19)
+		draw_circle(at,8,Color("a74835"));draw_circle(at+Vector2(-2,-2),3,Color("c36c45"))
 	var spoon:=pointer if wax_drag=="spoon" else Vector2(600,322)
 	if wax_step==2 and wax_drag!="spoon" and spoon_on_fire: spoon=Vector2(509,350)
 	if wax_step==3 and wax_drag!="spoon": spoon=Vector2(600,322)
@@ -1062,20 +1105,20 @@ func _draw_wax() -> void:
 	draw_set_transform(Vector2.ZERO)
 	if spoon_filled:
 		if wax_heat<2.8:
-			for i in 5: draw_circle(spoon+Vector2(-19+i*9,sin(i)*5),maxf(3,7-wax_heat),Color("dfb746"))
-		else: draw_ellipse_custom(spoon,Vector2(31,13),Color("dfb746").lerp(Color("f3d56a"),clampf((wax_heat-2.8)/3.2,0,1)))
+			for i in 5: draw_circle(spoon+Vector2(-19+i*9,sin(i)*5),maxf(3,7-wax_heat),Color("b44d36"))
+		else: draw_ellipse_custom(spoon,Vector2(31,13),Color("b6452c").lerp(Color("da6846"),clampf((wax_heat-2.8)/3.2,0,1)))
 	if wax_pour>0:
-		if wax_drag=="spoon" and wax_step==3: draw_line(spoon+Vector2(-5,5),Vector2(1000,473),Color("dfb746"),5,true)
+		if wax_drag=="spoon" and wax_step==3: draw_line(spoon+Vector2(-5,5),Vector2(1000,473),Color("be4a30"),5,true)
 		var pool:=PackedVector2Array()
 		for i in 48:
 			var angle:=i*TAU/48
 			var radius: float=(41+sin(i*2.7)*3)*minf(wax_pour,1.0)
 			pool.append(Vector2(1000,477)+Vector2(cos(angle),sin(angle))*radius)
-		draw_colored_polygon(pool,Color("f3d56a").lerp(Color("d4b150"),clampf(wax_cool/2.5,0,1)))
+		draw_colored_polygon(pool,Color("d36742").lerp(Color("944333"),clampf(wax_cool/2.5,0,1)))
 		if stamp_imprint:
-			draw_arc(Vector2(1000,477),25,0,TAU,40,INK,2,true)
-			draw_ellipse_custom(Vector2(1000,477),Vector2(14,9),INK)
-			draw_line(Vector2(1008,470),Vector2(1016,461),INK,3,true)
+			draw_arc(Vector2(1000,477),25,0,TAU,40,Color("783529"),2,true)
+			draw_ellipse_custom(Vector2(1000,477),Vector2(14,9),Color("80372b"))
+			draw_line(Vector2(1008,470),Vector2(1016,461),Color("80372b"),3,true)
 	var stamp:=pointer if wax_drag=="stamp" else Vector2(1360,468)
 	if wax_hold>0 and wax_hold<1.0: stamp=Vector2(1000,445)
 	_sprite("stamp",Rect2(stamp+Vector2(-41,-121),Vector2(82,165)))
@@ -1085,7 +1128,7 @@ func _draw_wax() -> void:
 	if match_lit and wax_drag=="match": _flame(match_at,0.55)
 	elif wax_drag=="match" and match_heat>0:
 		for i in 4: draw_circle(match_at+Vector2(sin(elapsed*30+i)*12,-7-i*3),1.7,Color("ffd189"))
-	var steps: Array=["划燃火柴，再点亮灯芯","把勺子移到蜡粒上，舀一勺","放到火焰上方，慢慢等蜡融化","把勺子拖到封口，停留倾倒","按住印章，在蜡池停留一秒","让火漆慢慢凝固","封好了。现在可以寄出。"]
+	var steps: Array=["划燃火柴，再点亮灯芯","把勺子移到红蜡粒上，舀一勺","放到火焰上方，慢慢等蜡融化","把勺子拖到封口，停留倾倒","按住印章，在蜡池停留一秒","让火漆慢慢凝固","封好了。现在可以寄出。"]
 	_caption(steps[clampi(wax_step,0,6)],Vector2(450,175),25,CREAM)
 	if wax_step==2: _caption("融蜡  %.1f / 6 秒" % wax_heat,Vector2(420,225),17,CREAM)
 
@@ -1194,7 +1237,7 @@ func restart() -> void:
 	checkpoint()
 	for paper in papers.get_children():
 		if paper!=main_paper: papers.remove_child(paper);paper.queue_free()
-	main_paper.set_image(_blank_paper(Vector2i(440,390)))
+	main_paper.set_image(_blank_paper(Vector2i(500,290)))
 	main_paper.drawing_layer.clear();main_paper.tape_layers.clear()
 	active=null;stage="WORKBENCH";letter_mode="npc";bottle_published_id=0;bottle_request_id=""
 	wax_step=0;wax_heat=0;wax_pour=0;wax_hold=0;wax_cool=0;match_lit=false;candle_lit=false;spoon_filled=false;stamp_imprint=false
@@ -1210,20 +1253,27 @@ func snapshot() -> Dictionary:
 			var s: Vector2=focused_original.scale
 			record.position=[p.x,p.y];record.scale=[s.x,s.y];record.rotation=focused_original.rotation
 		records.append(record)
-	return {"version":3,"papers":records,"stage":stage,"letter_mode":letter_mode,"parent":reply_parent,"server":compose_server,"type_draft":_pending_type_text(),
+	return {"version":3,"catalog":"open-office-1","papers":records,"stage":stage,"letter_mode":letter_mode,"parent":reply_parent,"server":compose_server,"type_draft":_pending_type_text(),"haptic_level":audio.haptic_level,"muted":audio.muted,
 		"title":letter_title,"request_id":bottle_request_id,"published_id":bottle_published_id,
 		"fold":fold,"inserted":envelope_inserted,"flap":envelope_flap,"wax_step":wax_step,"wax_heat":wax_heat,"wax_pour":wax_pour,
 		"wax_cool":wax_cool,"candle":candle_lit,"spoon":spoon_filled,"spoon_on_fire":spoon_on_fire,"imprint":stamp_imprint,
 		"preview":Marshalls.raw_to_base64(letter_preview.get_image().save_png_to_buffer()) if letter_preview else ""}
 
 func restore_snapshot(data: Dictionary) -> void:
+	audio.haptic_level=clampi(int(data.get("haptic_level",audio.haptic_level)),0,3)
+	audio.muted=bool(data.get("muted",audio.muted))
 	focused=null;focused_original={};active=null;dragged=null;ink_target=null
 	for paper in papers.get_children(): papers.remove_child(paper);paper.queue_free()
-	for record in data.get("papers",[]):
+	for original_record in data.get("papers",[]):
+		var record: Dictionary=original_record.duplicate(true)
+		# Preserve player-authored collages embedded in local saves; retired assets are never loaded.
 		var paper:=Paper.new()
 		if paper.restore(record):
 			papers.add_child(paper)
-			if paper.object_id=="letter": main_paper=paper
+			if paper.object_id=="letter":
+				main_paper=paper
+				if data.get("catalog","") != "open-office-1":
+					main_paper.position=Vector2(765,690)
 		else: paper.free()
 	stage=data.get("stage","WORKBENCH")
 	typed_text=data.get("type_draft","")
@@ -1263,11 +1313,11 @@ func redo() -> void:
 func save_game() -> void:
 	if not ready_done or smoke: return
 	if not session_context.is_empty():
-		if str(session_context.current_character)!=GameState.current_role: return
-		if not GameState.artifacts.has("minigame_drafts"): GameState.artifacts["minigame_drafts"]={}
-		GameState.artifacts.minigame_drafts["ghostwriting"]=snapshot()
-		GameState.commit_active_role_state()
-		if not SaveManager.save_game(): hint="草稿仍在桌上，但未能写入存档。请再试一次保存。"
+		if str(session_context.current_character)!=get_node("/root/GameState").current_role: return
+		if not get_node("/root/GameState").artifacts.has("minigame_drafts"): get_node("/root/GameState").artifacts["minigame_drafts"]={}
+		get_node("/root/GameState").artifacts.minigame_drafts["ghostwriting"]=snapshot()
+		get_node("/root/GameState").commit_active_role_state()
+		if not get_node("/root/SaveManager").save_game(): hint="草稿仍在桌上，但未能写入存档。请再试一次保存。"
 	else:
 		var file:=FileAccess.open(save_path+".tmp",FileAccess.WRITE)
 		if not file: return
@@ -1276,11 +1326,11 @@ func save_game() -> void:
 		if DirAccess.rename_absolute(save_path+".tmp",save_path)!=OK: return
 	if has_node("/root/FilmSystem"):
 		for paper in papers.get_children():
-			if not str(paper.photo_id).is_empty() and not bool(FilmSystem.photo(paper.photo_id).get("used_in_collage",false)): FilmSystem.mark_photo_use(paper.photo_id,"collage")
+			if not str(paper.photo_id).is_empty() and not bool(get_node("/root/FilmSystem").photo(paper.photo_id).get("used_in_collage",false)): get_node("/root/FilmSystem").mark_photo_use(paper.photo_id,"collage")
 
 func load_game() -> void:
 	if not session_context.is_empty():
-		var draft: Dictionary=GameState.artifacts.get("minigame_drafts",{}).get("ghostwriting",{})
+		var draft: Dictionary=get_node("/root/GameState").artifacts.get("minigame_drafts",{}).get("ghostwriting",{})
 		if draft.get("version",0)==3: restore_snapshot(draft)
 		return
 	if not FileAccess.file_exists(save_path): return
@@ -1289,7 +1339,7 @@ func load_game() -> void:
 
 func show_drafts() -> void:
 	save_game()
-	if not session_context.is_empty() and not SaveManager.save_or_report("草稿未能保存"): return
+	if not session_context.is_empty() and not get_node("/root/SaveManager").save_or_report("草稿未能保存"): return
 	say("当前草稿已保存。下次回到桌边，会继续这封信。")
 
 func show_notes() -> void:
@@ -1307,23 +1357,92 @@ func _build_note_panel() -> void:
 	ui.add_child(panel)
 	if notes_open:
 		_label("书信事务所的委托",Rect2(510,250,550,50),28)
-		var text:="给很久没见的朋友写一封信。\n留一张旧车票，可以加上公交站的画面。\n别直说‘我想你’，也别写成告别。\n\n拖动纸片 · Q / E 旋转 · 滚轮缩放 · [ / ] 层级\n剪刀端点：Shift + 拖动；从圆点沿线剪\n刻刀需要刻板；胶带要用剪刀剪断。\nCtrl+Z 撤销 · Ctrl+Y 重做 · Esc 放回工具"
+		var text:="给很久没见的朋友写一封信。\n留一张旧车票，可以加上公交站的画面。\n别直说‘我想你’，也别写成告别。\n\n拖动纸片 · Q / E 旋转 · 滚轮缩放 · [ / ] 层级\n剪刀端点：Shift + 拖动；从圆点沿线剪\n刻刀需要刻板；胶带要用剪刀剪断。\n胶棒：选纸→翻面涂胶→翻回→摆放→压贴。\nCtrl+Z 撤销 · Ctrl+Y 重做 · Esc 放回工具"
 		_label(text,Rect2(510,310,580,290),18)
 	else:
 		_label("桌边的声音",Rect2(515,265,520,60),28)
 		_button("声音：关" if audio.muted else "声音：开",Rect2(530,365,225,48),func(): audio.toggle();build_ui())
 		_button("保存草稿",Rect2(790,365,225,48),save_game)
+		_button("手柄反馈："+["关闭","轻","中","强"][audio.haptic_level],Rect2(530,435,300,44),func(): audio.haptic_level=(audio.haptic_level+1)%4;build_ui())
 	_button("收起",Rect2(945,568,130,43),func(): notes_open=false;settings_open=false;build_ui())
 
 func _notification(what: int) -> void:
 	if what==NOTIFICATION_WM_CLOSE_REQUEST: save_game()
 
+func flip_active() -> void:
+	if not is_instance_valid(active) or active == main_paper or active.attached: return
+	checkpoint()
+	active.flipped=not active.flipped
+	active.flip_fold=0.7
+	active.queue_redraw()
+	audio.play("PAPER_MOVE",0.45)
+	return_desk()
+	say("背面：拿胶棒按住涂抹。" if active.flipped else "正面：摆好位置，再压贴到信纸上。")
+
+func press_active() -> void:
+	if not is_instance_valid(active) or active == main_paper: return
+	if active.attached:
+		checkpoint();active.attached=false;active.glue_marks.clear();active._rebuild_glue_cells();active.back_dirty=true;active.queue_redraw()
+		audio.play("TAPE_TEAR",0.4);say("纸片揭起来了。重新粘贴前需要再涂背胶。")
+		return
+	if active.flipped: say("先翻回正面再压贴。") ;return
+	if not main_paper.contains_point(active.position): say("把纸片放到信纸上再压贴。") ;return
+	if active.glue_coverage() < 0.12: say("背胶还不够，翻到背面多涂几道。") ;return
+	checkpoint();active.attached=true;active.press_bounce=5.0;active.queue_redraw()
+	audio.play("PAPER_PRESS",0.65);return_desk();say("压贴好了。纸片会留在信上；需要调整时可以揭起。")
+
+func _build_material_rack() -> void:
+	var titles := ["报纸","纸张","艺术册","乐谱","票据"]
+	var cats := ["印刷","纸张","艺术册","乐谱","票据"]
+	for i in 5:
+		var category: String=cats[i]
+		var index := 0
+		for j in materials.size():
+			if materials[j].category == category: index=j;break
+		_button(titles[i],Rect2(33+i*149,474,137,34),func(): browser_category=category;browser_index=0;open_browser())
+		var cover := _button("",Rect2(35+i*149,350,135,120),func(): browser_category=category;browser_index=0;open_browser())
+		cover.add_theme_stylebox_override("normal",StyleBoxEmpty.new())
+		cover.add_theme_stylebox_override("hover",StyleBoxEmpty.new())
+		cover.add_theme_stylebox_override("pressed",StyleBoxEmpty.new())
+		cover.tooltip_text=titles[i]
+	_button("图案 / 花叶",Rect2(1395,352,165,34),func(): browser_category="图案";browser_index=0;open_browser())
+	_button("纸张 / 印刷",Rect2(1395,420,165,34),func(): browser_category="纸张";browser_index=0;open_browser())
+	_button("草稿",Rect2(1395,486,165,34),show_drafts)
+
+var shelf_start := 0
+func _build_shelf() -> void:
+	_button("素材",Rect2(26,857,78,37),func(): browser_category="全部";open_browser())
+	_button("〈",Rect2(279,857,44,37),func(): shelf_start=posmod(shelf_start-10,materials.size());build_ui())
+	for i in 10:
+		var id := posmod(shelf_start+i,materials.size())
+		var tile := _button("",Rect2(337+i*88,851,78,48),func(): browser_category="全部";browser_index=id;take_material())
+		var thumb: Image=material_images[id]
+		if materials[id].kind=="decoration": thumb=thumb.get_region(thumb.get_used_rect())
+		tile.icon=ImageTexture.create_from_image(thumb)
+		tile.expand_icon=true
+		tile.add_theme_constant_override("icon_max_width",38)
+		tile.tooltip_text=materials[id].title
+	_button("〉",Rect2(1230,857,44,37),func(): shelf_start=posmod(shelf_start+10,materials.size());build_ui())
+
+func _draw_rack() -> void:
+	if material_images.is_empty(): return
+	draw_rect(Rect2(27,356,753,153),Color("b58d69"))
+	var categories := ["印刷","纸张","艺术册","乐谱","票据"]
+	for i in categories.size():
+		for j in materials.size():
+			if materials[j].category == categories[i]:
+				var rect := Rect2(35+i*149,350+(i%2)*7,135,120)
+				draw_rect(Rect2(rect.position+Vector2(5,-5),rect.size),Color("e6d4b6"))
+				draw_texture_rect(material_textures[j],rect,false)
+				break
+		draw_rect(Rect2(28+i*149,462,150,49),Color("b58d69"))
+
 func _append_developed_photos() -> void:
 	if not has_node("/root/FilmSystem"): return
-	for photo in FilmSystem.developed_photos():
-		var library := PhotoLibrary.new(); library.root_path=str(photo.get("library_root","user://photos"))
+	for photo in get_node("/root/FilmSystem").developed_photos():
+		var library = load("res://scripts/town_sound/data/PhotoLibrary.gd").new(); library.root_path=str(photo.get("library_root","user://photos"))
 		var id := str(photo.get("id",photo.get("photo_id","")))
-		var image := library.load_photo(id)
+		var image: Image = library.load_photo(id)
 		if image==null: continue
 		var copy := image.duplicate() as Image
 		copy.convert(Image.FORMAT_RGBA8)
@@ -1333,3 +1452,8 @@ func _append_developed_photos() -> void:
 		print_image.blit_rect(copy,Rect2i(Vector2i.ZERO,copy.get_size()),Vector2i((300-copy.get_width())/2,12))
 		materials.append({"id":"photo_"+id,"photo_id":id,"title":str(photo.get("title","自己的照片")),"category":"影像","paper_type":"影像","kind":"photo"})
 		material_images.append(print_image)
+		material_textures.append(ImageTexture.create_from_image(print_image))
+
+func _localized(value: String) -> String:
+	var localization=get_node_or_null("/root/LocalizationSystem")
+	return localization.text(value) if localization else value

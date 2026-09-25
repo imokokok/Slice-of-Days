@@ -3,9 +3,6 @@
 - extensions/collage_letter/scripts/audio_manager.gd: 81 lines; _ready, synthesize, play, toggle, shutdown, _exit_tree
 - extensions/collage_letter/scripts/bottle_client.gd: 85 lines; _ready, select_identity, persist, connect_service, request, publish
 - extensions/collage_letter/scripts/bottle_dock.gd: 255 lines; open, add_label, add_button, apply_theme, lock, connect_now, refresh, show_letter, compose_new, clear, close
-- extensions/collage_letter/scripts/collage_piece.gd: 52 lines; _draw, bounds, hit, serialize
-- extensions/collage_letter/scripts/main.gd: 1261 lines; _ready, label_at, button, build_ui, phase_title, say, _draw, text_at, paper, draw_envelope, draw_wax_tools, draw_ellipse_custom, draw_seal, advance_dialogue, set_tool, pick, select, _unhandled_input, roughen, finish_cut, finish_tape, add_handwriting, delete_selected, _process, complete_letter, stage_input, close_envelope, wax_input, generate_seal, send_letter, restart, export_art, changed, animate_property, save_game, load_game, _notification, run_smoke_test, capture_test, material_ids, update_material_slots, cycle_photo, open_bottles, start_bottle, send_bottle, run_network_test
-- extensions/collage_letter/scripts/paper_art.gd: 136 lines; word, _draw, draw_document, draw_photo
 - extensions/elder_board/scripts/chess_rules.gd: 192 lines;
 - extensions/elder_board/scripts/elder_memory.gd: 49 lines;
 - extensions/elder_board/scripts/elder_story.gd: 100 lines; _ready, refresh, choose, advance

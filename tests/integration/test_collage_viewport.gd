@@ -17,8 +17,13 @@ func run() -> void:
 		quit(2)
 		return
 	root.get_node("GameState").begin_new_game("A")
+	# The current host enforces business hours and schedule capacity. Travel
+	# through its public API, then start the viewport fixture in the 11:30 slot.
+	check(root.get_node("TravelSystem").travel("handcraft_shop","walk").ok,"Route to the letter office should be usable")
+	root.get_node("GameState").spend_time(690-root.get_node("GameState").current_minute)
 	var gameplay = root.get_node("GameplayModuleSystem")
 	check(gameplay.begin_session("ghostwriting", "space:test:collage"), "Letter session should begin")
+	if failures>0: quit(failures);return
 	var host = load("res://scenes/extension_host.tscn").instantiate()
 	root.add_child(host)
 	var letter = host.experience
@@ -57,7 +62,7 @@ func run() -> void:
 	letter.take_material()
 	letter.active.position = letter.main_paper.position
 	await letter.begin_folding()
-	check(letter.letter_preview != null and letter.letter_preview.get_size() == Vector2(440, 390), "Capture must contain only the native letter canvas")
+	check(letter.letter_preview != null and letter.letter_preview.get_size() == Vector2(500, 290), "Capture must contain only the native letter canvas")
 	letter.return_desk()
 	await RenderingServer.frame_post_draw
 	var screenshot := OS.get_environment("COLLAGE_TEST_SCREENSHOT")

@@ -21,7 +21,7 @@ func motion(point: Vector2) -> void:
 func sheet() -> Node2D:
 	var image := Image.create(300,180,false,Image.FORMAT_RGBA8)
 	image.fill(Color.BEIGE)
-	var paper=w.create_paper(image,Vector2(205,685),"刻刀测试纸")
+	var paper=w.create_paper(image,Vector2(760,685),"刻刀测试纸")
 	w.select_paper(paper)
 	return paper
 
@@ -41,24 +41,24 @@ func run() -> void:
 	var paper=sheet()
 	w.take_knife()
 	check(w.mode==w.Mode.KNIFE_CUTTING,"Knife must accept paper on the actual desk mat")
-	check(paper.position==Vector2(205,685) and paper.scale==Vector2.ONE,"Knife must not move or zoom the paper")
+	check(paper.position==Vector2(760,685) and paper.scale==Vector2.ONE,"Knife must not move or zoom the paper")
 	var count: int=w.papers.get_child_count()
 	# A fast edge-to-edge stroke has only press and release, both outside.
-	mouse(Vector2(5,685),true)
-	mouse(Vector2(430,685),false)
+	mouse(Vector2(550,685),true)
+	mouse(Vector2(980,685),false)
 	check(w.papers.get_child_count()==count+1,"Fast outside-to-outside stroke must split the paper")
 	check(w.mode==w.Mode.DESK,"A completed cut must return both pieces to the desk")
 	paper=sheet();w.use_tool("mat");w.take_knife()
 	count=w.papers.get_child_count()
-	mouse(Vector2(105,635),true)
-	for point in [Vector2(205,635),Vector2(205,705),Vector2(105,705)]: motion(point)
-	mouse(Vector2(105,635),false)
+	mouse(Vector2(660,635),true)
+	for point in [Vector2(760,635),Vector2(760,705),Vector2(660,705)]: motion(point)
+	mouse(Vector2(660,635),false)
 	check(w.papers.get_child_count()==count+1,"Closed mouse stroke must create a cutout and remainder")
 	check(w.active.image.get_pixel(90,70).a==0,"Closed cut must leave a real hole")
 	var before: Vector2=w.scissors_tool.position
 	var from: Vector2=w.scissors_tool.bounds.get_center()+before
-	mouse(from,true);motion(from+Vector2(440,-350));mouse(from+Vector2(440,-350),false)
-	check(w.scissors_tool.position.distance_to(before+Vector2(440,-350))<1,"Scissors must follow a drag and stay where dropped")
+	mouse(from,true);motion(from+Vector2(-200,-300));mouse(from+Vector2(-200,-300),false)
+	check(w.scissors_tool.position.distance_to(before+Vector2(-200,-300))<1,"Scissors must follow a drag and stay where dropped")
 	check(w.dragged_tool==null,"Releasing scissors must end the drag")
 	w.audio.shutdown();w.queue_free();await process_frame
 	print("WORKSHOP_TOOLS_TEST: ","PASS" if failures==0 else "FAIL"," failures=",failures)

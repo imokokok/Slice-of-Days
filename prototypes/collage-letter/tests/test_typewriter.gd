@@ -18,7 +18,7 @@ func capture(name: String) -> void:
 func run() -> void:
 	if not OS.get_cmdline_user_args().has("--workshop-test") or DisplayServer.get_name()=="headless":
 		quit(2);return
-	w=load("res://workshop/Workshop.tscn").instantiate()
+	w=load("res://Main.tscn").instantiate()
 	root.add_child(w)
 	for i in 600:
 		if w.ready_done: break
@@ -70,7 +70,8 @@ func run() -> void:
 	await RenderingServer.frame_post_draw
 	var final_ink:Image=w.type_viewport.get_texture().get_image()
 	w._advance_typewriter(0.4)
-	for i in 180:
+	var deadline:=Time.get_ticks_msec()+5000
+	while Time.get_ticks_msec()<deadline:
 		if not w.busy and w.mode==w.Mode.DESK: break
 		await process_frame
 	check(w.mode==w.Mode.DESK and w.active.paper_kind=="typed","Extraction must finish with a cuttable paper")

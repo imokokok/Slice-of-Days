@@ -19,18 +19,18 @@ func run() -> void:
 	if not OS.get_cmdline_user_args().has("--workshop-test") or DisplayServer.get_name()=="headless":
 		push_error("Run with a rendering display and -- --workshop-test --fresh")
 		quit(2);return
-	w=load("res://workshop/Workshop.tscn").instantiate()
+	w=load("res://Main.tscn").instantiate()
 	root.add_child(w)
 	for frame in 600:
 		if w.ready_done: break
 		await process_frame
 	check(w.ready_done,"Workshop should load")
 	check(w.material_images.size()>=33,"Existing varied material library must remain")
-	check(w.sprites.size()==12,"All extracted tools must load")
+	check(w.sprites.size()==15,"All independent vector tools must load")
 	await capture("workshop-desk")
 	w.open_browser()
-	w.browse(1)
-	check(w.browser_index==1,"Browser should turn pages")
+	w.browse(25)
+	check(w.browser_index==25,"Browser should turn pages")
 	await capture("workshop-materials")
 	w.take_material()
 	check(w.papers.get_child_count()==2,"Taking a material creates a real paper")
@@ -42,6 +42,7 @@ func run() -> void:
 	root.push_input(release,true)
 	check(w.dragged==null,"Releasing over a GUI button must end the paper drag")
 	var original=w.active
+	original.position=Vector2(200,650)
 	w.use_tool("knife")
 	check(w.mode==w.Mode.DESK,"Knife must not work without cutting mat")
 	w.use_tool("scissors")
@@ -55,10 +56,11 @@ func run() -> void:
 	check(w.papers.get_child_count()==3,"Redo restores both halves")
 	w.select_paper(w.papers.get_child(1))
 	w.use_tool("mat")
+	w.active.position=Vector2(180,650)
 	w.take_knife()
 	check(w.mode==w.Mode.CUTTING_MAT,"Knife must wait until paper is physically placed on mat")
 	w.dragged=w.active
-	w.active.position=Vector2(190,687)
+	w.active.position=Vector2(760,687)
 	w._release()
 	w.take_knife()
 	await create_timer(0.35).timeout
@@ -76,7 +78,7 @@ func run() -> void:
 	w.finish_tape()
 	check(w.active.paper_kind=="tape","Scissors must produce a movable tape object")
 	w.use_tool("pen")
-	w.pointer=w.main_paper.position+Vector2(170,140);w._press()
+	w.pointer=w.main_paper.position+Vector2(170,90);w._press()
 	w.previous_pointer=w.pointer;w.pointer+=Vector2(30,15)
 	w._motion(InputEventMouseMotion.new());w._release()
 	check(not w.main_paper.drawing_layer.is_empty(),"Pen must draw on real letter layer")
@@ -98,7 +100,7 @@ func run() -> void:
 	await capture("workshop-collage")
 	await w.begin_folding()
 	check(w.mode==w.Mode.FOLDING,"Completed collage should start physical folding")
-	check(w.letter_preview.get_size()==Vector2(440,390),"Capture must exclude desk and UI")
+	check(w.letter_preview.get_size()==Vector2(500,290),"Capture must exclude desk and UI")
 	await capture("workshop-folding")
 	for i in 2:
 		w.fold_drag=true;w.fold_amount=0.8;w._release()

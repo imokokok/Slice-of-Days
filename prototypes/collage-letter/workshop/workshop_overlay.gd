@@ -14,23 +14,26 @@ func _draw() -> void:
 			draw_line(w.cut_start.lerp(w.cut_end,float(i)/count),w.cut_start.lerp(w.cut_end,float(i+1)/count),Color("eee1c9"),2,true)
 		draw_circle(w.cut_start,8,Color("a85f43"));draw_circle(w.cut_end,7,Color("d3ac77"))
 		if w.cut_progress>0: draw_line(w.cut_start,w.cut_start.lerp(w.cut_end,w.cut_progress),Color("985b42"),2,true)
-		if w.sprites.has("scissors"):
-			var texture: Texture2D=w.sprites.scissors
-			var pivot: Vector2=w.cut_start.lerp(w.cut_end,w.cut_progress)
-			var turn:=sin(w.elapsed*22)*0.10 if w.cutting else 0.0
-			var dimensions:=texture.get_size()
-			# Animate the two scissor halves independently around the screw.
-			for half in 2:
-				var angle: float=(w.cut_end-w.cut_start).angle()+turn*(1 if half==0 else -1)
-				draw_set_transform(pivot,angle,Vector2.ONE)
-				var region:=Rect2(0,half*dimensions.y*0.5,dimensions.x,dimensions.y*0.5)
-				draw_texture_rect_region(texture,Rect2(-105,-61+half*61,210,61),region)
-			draw_set_transform(Vector2.ZERO)
+		var pivot: Vector2=w.cut_start.lerp(w.cut_end,w.cut_progress)
+		var opening: float=0.12+absf(sin(w.scissor_phase))*0.16 if w.cutting else 0.19
+		for half in 2:
+			var side := 1 if half == 0 else -1
+			draw_set_transform(pivot,(w.cut_end-w.cut_start).angle()+opening*side,Vector2.ONE)
+			draw_colored_polygon(PackedVector2Array([Vector2(-8,0),Vector2(94,-3*side),Vector2(72,9*side),Vector2(-8,8*side)]),Color("d5d8cf"))
+			draw_line(Vector2(-8,0),Vector2(-51,16*side),Color("31658b"),9,true)
+			draw_arc(Vector2(-69,23*side),22,0,TAU,32,Color("31658b"),8,true)
+		draw_set_transform(Vector2.ZERO)
+		draw_circle(pivot,5,Color("d0a450"))
 	if w.mode==w.Mode.KNIFE_CUTTING:
 		if w.knife_path.size()>1: draw_polyline(w.knife_path,Color("a46548"),1.5,true)
-		if w.sprites.has("knife"): draw_texture_rect(w.sprites.knife,Rect2(w.pointer-Vector2(7,105),Vector2(34,115)),false)
+		if w.sprites.has("knife"):
+			draw_set_transform(w.pointer,w.knife_angle,Vector2.ONE)
+			draw_texture_rect(w.sprites.knife,Rect2(-15,0,34,135),false)
+			draw_set_transform(Vector2.ZERO)
 	if w.mode==w.Mode.DRAWING:
-		if w.sprites.has("pen"): draw_texture_rect(w.sprites.pen,Rect2(w.pointer-Vector2(5,140),Vector2(33,150)),false)
+		if w.sprites.has(w.tool): draw_texture_rect(w.sprites[w.tool],Rect2(w.pointer-Vector2(5,140),Vector2(33,150)),false)
+	if w.mode==w.Mode.GLUE:
+		draw_texture_rect(w.sprites.glue,Rect2(w.pointer-Vector2(16,15),Vector2(37,85)),false)
 	if w.tape_pending or w.tape_pulling:
 		draw_line(w.tape_start,w.tape_end,Color(0.65,0.75,0.73,0.65),26,true)
 		var direction: Vector2=w.tape_end-w.tape_start

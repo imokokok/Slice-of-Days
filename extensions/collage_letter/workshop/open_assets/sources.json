@@ -1,0 +1,571 @@
+[
+  {
+    "file": "icons/flower.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "f8aa971989ae884947ca6d20ac9465d83781826c9599e9218c4c8c62352d701c"
+  },
+  {
+    "file": "icons/leaves.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "0486c60353db6bb5bfa6330e8933d86f28d5ac77acb2c191026fb5beadf715c7"
+  },
+  {
+    "file": "icons/clover.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "4a71df0bb9a3bf567870a7ada9ffd8f8eaec13043b6ec9e677f7dc4058f27bde"
+  },
+  {
+    "file": "icons/bulrush.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "f530c7a122e3943a03db638bac48eb373fd15b08de04d1a2c9c7901d54d90614"
+  },
+  {
+    "file": "icons/sun.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "4fe4327b5feb20bc0139c3fee36049b89f2e6cc7c88fb6bf56cdbe18df5c7ab8"
+  },
+  {
+    "file": "icons/night.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "053c197df06cf1809bf727690ae76ee2cc82f7859e34db9540f91a90f183ab79"
+  },
+  {
+    "file": "icons/star.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "2f708df3ee3fd122397152e2af0be32d8588adb170f556c8f1c26737b8ecb2be"
+  },
+  {
+    "file": "icons/cloud.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "0c5bdb8913548d6d90dc58e5a50ec1995f12d4314a01bbd1cd88f7c3ff9d79b9"
+  },
+  {
+    "file": "icons/sea.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "5734ace241927fc1f0f60d027b7ae25b2783a8c4d370345204aad313a18e564d"
+  },
+  {
+    "file": "icons/fish.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "e57e3555b364d2fbb888bec47b2aedcc440a04c4162115474cfdcb94b49354f5"
+  },
+  {
+    "file": "icons/tree.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "92ebc722fb293790c4927285a282f41c5463129619c6414f9f89ed64b3b57fde"
+  },
+  {
+    "file": "icons/mountain.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "0361232cf3afcc63ae5d5e1f7d31309ba7c7295234b861eec93de2323e349983"
+  },
+  {
+    "file": "icons/rain.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "fb037c3512101291a305340aadb38d4ebaf3cf4d42592c4ae9f82140f51846dc"
+  },
+  {
+    "file": "icons/cat.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "9502678b5e29d6fefc141956926335c62fdaa2e8e81bd9e8909944554f0a3f38"
+  },
+  {
+    "file": "icons/dog.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "ca3c238613e40616a139e49eed951548e47885f2bc1d84034e99fc1846b1137f"
+  },
+  {
+    "file": "icons/paper-boat.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "758b4166088c9ddcf540b41352a14eefb5ae8c15143c001aed1fa1af70544bc8"
+  },
+  {
+    "file": "icons/key.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "8ad8043cfbcbc1960b1bf529d2bd5593b19f4a3e2306ea01153d5e33003c1ce9"
+  },
+  {
+    "file": "icons/book.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "ce3f19301426b35cdd5ed3ec5bd84cc50ce0c38c7c20a79f0046ae85cb7541b5"
+  },
+  {
+    "file": "icons/compass.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "b13992fd417e8c88e3c77fa499eabd2a9293f93ccf6f7be5803b972aa6cd8e21"
+  },
+  {
+    "file": "icons/umbrella.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "f3e0ac75fb8c7d92b07fc249be2b4acccef678b53b6b86a72b635942ddab24b5"
+  },
+  {
+    "file": "icons/paper-plane.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "e6ff596f134a0d77cfb8cdd5b1462e65e4c7de91ffc625d934c46ebd2322f251"
+  },
+  {
+    "file": "icons/music.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "541cf2e763a28621225b60f360edc6de79e6efacba479bde3ed3d6aa4b1919b7"
+  },
+  {
+    "file": "icons/camera.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "2299efeb59795f5df48b5f7381207ed9fe980d663c5cb0ad060089acf25d85ad"
+  },
+  {
+    "file": "icons/apple.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "a9d80549fad48ddd5615d1c9cd4dc739478c29cde94809beeaefcd969d07363d"
+  },
+  {
+    "file": "icons/bread.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "e71adc4b66b6204579f9b8c2c5d1d7580fadf50681b79ca429699170375e9e5e"
+  },
+  {
+    "file": "icons/scissors.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "7981ff9af1f56d179850270a0c65d645eb9d5b71b255ae3374fd321a23c67743"
+  },
+  {
+    "file": "icons/ruler.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "5a57bf63d5555b351fb6630416638d28829f1baf1ece5ee851bacbcddadb6f44"
+  },
+  {
+    "file": "icons/pencil.svg",
+    "source": "https://github.com/Nieobie/game-icon-pack/tree/b1a5fec8b68c99e7b46484db707610ab2414ad4c",
+    "license": "CC0-1.0",
+    "notes": "Palette adaptation; SVG geometry retained",
+    "sha256": "02c06566a96666e36f4b33c34e686c6ba6c568a808ce872e1c1a1d1798ac417c"
+  },
+  {
+    "file": "licenses/Nieobie-CC0.txt",
+    "source": "https://github.com/Nieobie/game-icon-pack",
+    "license": "CC0-1.0",
+    "notes": "",
+    "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+  },
+  {
+    "file": "fonts/caveat/Caveat[wght].ttf",
+    "source": "https://github.com/google/fonts/tree/main/ofl/caveat",
+    "license": "OFL-1.1",
+    "notes": "",
+    "sha256": "0bdb6b660482d31531b3945849fba5916b3ef8695da7024a9e6b9ee3c4157988"
+  },
+  {
+    "file": "fonts/caveat/OFL.txt",
+    "source": "https://github.com/google/fonts/tree/main/ofl/caveat",
+    "license": "OFL-1.1",
+    "notes": "",
+    "sha256": "163a2b400e16916ad3196296c946c526d0efce6baf22a2164269ffc62fb9f671"
+  },
+  {
+    "file": "fonts/specialelite/LICENSE.txt",
+    "source": "https://github.com/google/fonts/tree/main/apache/specialelite",
+    "license": "Apache-2.0",
+    "notes": "",
+    "sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a"
+  },
+  {
+    "file": "fonts/specialelite/SpecialElite-Regular.ttf",
+    "source": "https://github.com/google/fonts/tree/main/apache/specialelite",
+    "license": "Apache-2.0",
+    "notes": "",
+    "sha256": "a776fcb4ceb8bdf03e2967688ebdad42680de5b91a7e62c17e718ae212d14bc4"
+  },
+  {
+    "file": "fonts/librebaskerville/LibreBaskerville[wght].ttf",
+    "source": "https://github.com/google/fonts/tree/main/ofl/librebaskerville",
+    "license": "OFL-1.1",
+    "notes": "",
+    "sha256": "05a95421961341c5b2556285e8415df9db27dab4f4abe22b446b3c6a8b916c5d"
+  },
+  {
+    "file": "fonts/librebaskerville/OFL.txt",
+    "source": "https://github.com/google/fonts/tree/main/ofl/librebaskerville",
+    "license": "OFL-1.1",
+    "notes": "",
+    "sha256": "516bf7fbfdbd0f0e4f50ade6a9127ad83ac7a54370bad6cf70794554569e9c4e"
+  },
+  {
+    "file": "paper/Papier1.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "author": "Leschge",
+    "notes": "Original seamless texture; mixed lightly during rendering",
+    "sha256": "c1fa1e6e7f0684d5db0cdb5dfd498ec2b86ade62d7a846aa597bb91fda8df354"
+  },
+  {
+    "file": "paper/Papier6.png",
+    "source": "https://opengameart.org/content/paper-textures-seamless",
+    "license": "CC0-1.0",
+    "author": "Leschge",
+    "notes": "Original seamless texture; mixed lightly during rendering",
+    "sha256": "84d260637b91c6232e6ddcf98e55b00b971a675da3bfc6d9a1381f5ce47165c0"
+  },
+  {
+    "file": "paintings/met-435882.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/435882",
+    "license": "CC0-1.0",
+    "notes": "Still Life with Apples and a Pot of Primroses — Paul Cézanne",
+    "sha256": "0b9fba184d463349df09b8c6e7ecfcff89bc1c1db31e526551250fcadf884f0e"
+  },
+  {
+    "file": "paintings/met-436528.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/436528",
+    "license": "CC0-1.0",
+    "notes": "Irises — Vincent van Gogh",
+    "sha256": "2df23777df020586fddefd46891b24ae5eda2094b6b2e5d03a12c236eed4f248"
+  },
+  {
+    "file": "paintings/met-436532.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/436532",
+    "license": "CC0-1.0",
+    "notes": "Self-Portrait with a Straw Hat (obverse: The Potato Peeler) — Vincent van Gogh",
+    "sha256": "03e6bb58feb2e091dbd56adb601b3fccba17386402d5676c994b806058a797da"
+  },
+  {
+    "file": "paintings/met-436534.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/436534",
+    "license": "CC0-1.0",
+    "notes": "Roses — Vincent van Gogh",
+    "sha256": "76e8b89371d4c4cc29abd13cde101bb3c786391cb9ea95ccea9390029f6c2413"
+  },
+  {
+    "file": "paintings/met-436535.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/436535",
+    "license": "CC0-1.0",
+    "notes": "Wheat Field with Cypresses — Vincent van Gogh",
+    "sha256": "af0e3486621c210b54932d055294051b5601aa3362af4b84ab97e2831f8163bc"
+  },
+  {
+    "file": "paintings/met-437984.jpg",
+    "source": "https://www.metmuseum.org/art/collection/search/437984",
+    "license": "CC0-1.0",
+    "notes": "La Berceuse (Woman Rocking a Cradle; Augustine-Alix Pellicot Roulin, 1851–1930) — Vincent van Gogh",
+    "sha256": "2a1759a51ff16d86c32053301802ad7ab6ac11149f934756cce626f3daee60c9"
+  },
+  {
+    "file": "audio/click1.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "59175ac17cd49a68dd736285738441287636112a84a6f7ce0d89921bda5a5360"
+  },
+  {
+    "file": "audio/click2.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "c394b46bc6737f7f7edfbfa3031ce621b7a43d498d456d6198364eee9cd3e306"
+  },
+  {
+    "file": "audio/click3.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "e3e7fc7ccd9c5cfdf77bffa05aee10d4973812076c76dc889ba2b16ea434127f"
+  },
+  {
+    "file": "audio/click4.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "9c02bbfc872b50eb8750adf4b7c343120f19f5d2f04ab06a7a8948368a77b872"
+  },
+  {
+    "file": "audio/click5.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "52d41e0bb012731bf2a391d53ffb52265ef21589c7701e66b391d5e36a65b293"
+  },
+  {
+    "file": "audio/switch3.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "75d87dc60b7d29df838530af8c9e28205102234e07b5f1e849aa3d95c3922bd0"
+  },
+  {
+    "file": "audio/switch8.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "c7bf07f8d58ac62faac2427868619631b1a89b0ab08e87c7c01621a086fa1873"
+  },
+  {
+    "file": "audio/switch10.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "bf61b3f3af39b2c680e70ee2f791786edd2bca2016ea683947059f079849bbf3"
+  },
+  {
+    "file": "audio/rollover1.ogg",
+    "source": "https://kenney.nl/assets/ui-audio",
+    "license": "CC0-1.0",
+    "author": "Kenney",
+    "sha256": "4eb47e2e1540c44847b47a89825e21335c820a4e54cacf8c4c1eb5100e36af42"
+  },
+  {
+    "file": "audio/typewriter1.wav",
+    "source": "https://opengameart.org/content/typewriter-sounds",
+    "license": "CC0-1.0",
+    "notes": "Original recording",
+    "sha256": "f860766aa7922afbf1523ea1a41504c64f3f6362fa03a60b6497c75c1d0d0344"
+  },
+  {
+    "file": "audio/typewriter2.wav",
+    "source": "https://opengameart.org/content/typewriter-sounds",
+    "license": "CC0-1.0",
+    "notes": "Original recording",
+    "sha256": "b40c17fe45c9e3a6ad8a617f7831da5ccb3c8baab1fa0eb368f8ba3ade52c8a4"
+  },
+  {
+    "file": "audio/typewriter3.wav",
+    "source": "https://opengameart.org/content/typewriter-sounds",
+    "license": "CC0-1.0",
+    "notes": "Original recording",
+    "sha256": "c9bb2c6245bdd60b996fe39f2fb74c810309ee03bbe2d8ae1ee6715888df9c69"
+  },
+  {
+    "file": "audio/typewriter4.wav",
+    "source": "https://opengameart.org/content/typewriter-sounds",
+    "license": "CC0-1.0",
+    "notes": "Original recording",
+    "sha256": "28d4c07732fbd6f324f257c27a92d8a3c14ea5c26517972295b288bb75d5a2c3"
+  },
+  {
+    "file": "audio/rustle.mp3",
+    "source": "https://freesound.org/people/sokworks/sounds/860359/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "b02dc406b4486be7956c77156bb351f7ddc410819281e686abe6cf1e72f72c78"
+  },
+  {
+    "file": "audio/tear.mp3",
+    "source": "https://freesound.org/people/colorsCrimsonTears/sounds/566199/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "4a0868d64edf8fcaf3da78ad0bc89278c366c347646c5375b80a818532cbd169"
+  },
+  {
+    "file": "audio/scissors.mp3",
+    "source": "https://freesound.org/people/aldenroth2/sounds/272035/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "f958dcc79f54031f88240a7cc6d31e5764891c32c062edb5bfd1b10605a38f4b"
+  },
+  {
+    "file": "audio/stamp.mp3",
+    "source": "https://freesound.org/people/kermite607/sounds/362624/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "daaad886f71a57dca4b097550c1ecb4cc99d4fe3d7dd383841091c000cd6ab26"
+  },
+  {
+    "file": "audio/strokes.mp3",
+    "source": "https://freesound.org/people/ani_music/sounds/632477/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "9a02cf35de24cf47baa11e12670951da5ce7eeb156d7871ebb3c4637b4379713"
+  },
+  {
+    "file": "audio/paper.mp3",
+    "source": "https://freesound.org/people/DaleT92/sounds/244100/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "b4a5d61f9303fcc8c44bddef6f3fe2aa77ad13defa9e52fb913b035b8463def6"
+  },
+  {
+    "file": "audio/match.mp3",
+    "source": "https://freesound.org/people/Bertsz/sounds/524306/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "582ff29ef9e0d2031599ed119b3fccebe48710f4064fa58aaa110c79f73aa4b4"
+  },
+  {
+    "file": "audio/pencil.mp3",
+    "source": "https://freesound.org/people/Thomas%20Radio/sounds/370789/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "b7f1d9f2426dc1eb1ba60c558c1b3594d49f939e991e8ed71420cefe349ebbb7"
+  },
+  {
+    "file": "audio/match-full.mp3",
+    "source": "https://freesound.org/people/Techienanna/sounds/673815/",
+    "license": "CC0-1.0",
+    "notes": "Public author-provided preview",
+    "sha256": "0ef00b06b9de2e08cc208ecdebaaa189a5dbda8225cee858c6fa918db39f68b0"
+  },
+  {
+    "file": "desk.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "222d160b91851c31bf78ec68de55cba84e6afa8e37a60fd0bfb7bac271b936f3"
+  },
+  {
+    "file": "tools/candle.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "1cc9116c73a0ffd5e9b2d47b499c9c4d294e808bb11223a55eced52d04181614"
+  },
+  {
+    "file": "tools/envelope.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "016038f27c8e25c78396ad77cd06c77311b2b0927e0a29deb2a5185200b30bf8"
+  },
+  {
+    "file": "tools/glue.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "52d000d456834ca0da428e0f2e6f126165ae2606c9a61947d4c4bf522ba327eb"
+  },
+  {
+    "file": "tools/knife.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "2bc6e923b141264dd91d5e3fbee074c173dd4607f1be58ec8f0792128c66ffda"
+  },
+  {
+    "file": "tools/marker.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "cca64b6f9e5e6600fb57bddaad8a76296122584cf03ecbbf4971f8f5ab5c5631"
+  },
+  {
+    "file": "tools/mat.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "7d29ea4d15925928f5cc691ca5e074d1b98a65b1eaa74eaa9da5ea30dce27d87"
+  },
+  {
+    "file": "tools/matchbox.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "78c5d25c72dccbc13f4fab92389cad0ab5f229a3694dbd92953c884b49637e55"
+  },
+  {
+    "file": "tools/pen.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "4a96ad9e6939b06b9ae92dfa5a9c32b3d9f926360162ac19ad88820ba00c145d"
+  },
+  {
+    "file": "tools/pencil.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "e24cb7200054d5cdc142591819e81d7aa7f1fdaf2db015a5eaaa7e7cc14f57b0"
+  },
+  {
+    "file": "tools/scissors.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "fbe2249be6476e1626d2aaad3543847491628a0e626ff098ca700ca7ec7e770d"
+  },
+  {
+    "file": "tools/spoon.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "df621d587ecc4459fd5ac3d46cbb267123219f482a9f436c5ff544fc34a57072"
+  },
+  {
+    "file": "tools/stamp.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "81f1099b7bd8759cafc4dd4d3a3e9766b4b931a0d369440ae752c74b57594976"
+  },
+  {
+    "file": "tools/tape.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "8c0228f720c15b2633ee4379dc076e74336d454a9517d5fc8cf0a7cd3d42d411"
+  },
+  {
+    "file": "tools/typewriter.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "c298172cda15754eb513e897e50c9082b575278d2e8122c02a3537ede11ee07a"
+  },
+  {
+    "file": "tools/wax-tray.svg",
+    "source": "Project-authored editable SVG geometry",
+    "license": "MIT",
+    "notes": "New vector construction based on the user-provided composition reference; no previous raster art",
+    "sha256": "e08a6a9851e47b5c0d0b19fba3f58bfd61aadaa4eddd031e27f62ae03215df01"
+  }
+]

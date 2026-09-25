@@ -1,93 +1,71 @@
 extends Node
 
-const EVENTS = ["KNIFE_SLICE","PAPER_MOVE","PAPER_CUT","PAPER_PRESS","TAPE_PULL","TAPE_TEAR","TAPE_STICK","PHOTO_PICKUP","PHOTO_DROP","PAPER_FOLD","ENVELOPE_INSERT","ENVELOPE_CLOSE","MATCH_STRIKE","FIRE_LOOP","WAX_POUR","STAMP_PRESS","STAMP_RELEASE","MAIL_DROP","DIALOGUE_ADVANCE","SCISSOR_CUT","PEN_WRITE","TYPE_KEY","TYPE_SPACE","TYPE_BACKSPACE","TYPE_RETURN","TYPE_ROLLER","WAX_PELLETS"]
-var bank: Dictionary = {}
+const ROOT := "res://extensions/collage_letter/workshop/open_assets/audio/"
 var muted := false
+var haptic_level := 0
+var bank: Dictionary = {}
+var pool: Array[AudioStreamPlayer] = []
+var cooldown: Dictionary = {}
+var ages: Dictionary = {}
+var durations: Dictionary = {}
+var cursor := 0
 var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	rng.randomize()
-	for event in EVENTS:
-		bank[event] = []
-		for variant in 4:
-			bank[event].append(synthesize(event,variant))
-	var ambience := AudioStreamPlayer.new()
-	ambience.bus = "Music"
-	var stream := synthesize("AMBIENCE",0)
-	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	stream.loop_end = stream.data.size()/2
-	ambience.stream = stream
-	ambience.volume_db = -31
-	ambience.name = "Ambience"
-	add_child(ambience)
-	ambience.play()
+	for i in 10:
+		var voice := AudioStreamPlayer.new()
+		voice.bus="SoundEffects" if AudioServer.get_bus_index("SoundEffects") >= 0 else "Master"
+		add_child(voice);pool.append(voice)
+	for name in ["paper","pencil","strokes","rustle","scissors","stamp","tear","match"]:
+		bank[name]=load(ROOT+name+".mp3")
+	for i in range(1,5): bank["typewriter"+str(i)]=load(ROOT+"typewriter"+str(i)+".wav")
+	for i in range(1,6): bank["click"+str(i)]=load(ROOT+"click"+str(i)+".ogg")
 
-func synthesize(event: String, variant: int) -> AudioStreamWAV:
-	var length := 0.16
-	if event in ["TAPE_PULL","PAPER_FOLD","ENVELOPE_INSERT","WAX_POUR"]:
-		length = 0.5
-	if event == "AMBIENCE":
-		length = 4.0
-	var data := PackedByteArray()
-	var count := int(22050*length)
-	data.resize(count*2)
-	var filtered := 0.0
-	for i in count:
-		var t := float(i)/22050.0
-		var envelope := pow(1.0-float(i)/count,2.0)*minf(t*140,1.0)
-		filtered = lerpf(filtered,rng.randf_range(-1,1),0.18)
-		var value := filtered*0.7
-		if event == "KNIFE_SLICE":
-			value = filtered*0.55 + rng.randf_range(-1,1)*0.045
-		elif event in ["PAPER_CUT","TAPE_TEAR","MATCH_STRIKE"]:
-			value = rng.randf_range(-1,1)*0.4*(0.3+0.7*absf(sin(t*90)))
-		elif event in ["STAMP_PRESS","MAIL_DROP","PAPER_PRESS"]:
-			value = sin(t*(140+variant*15)*TAU)*0.4+filtered*0.2
-		elif event == "WAX_POUR":
-			value = filtered*0.2+sin(t*330*TAU)*0.08*pow(absf(sin(t*24)),12)
-		elif event in ["TYPE_KEY","TYPE_SPACE","TYPE_BACKSPACE"]:
-			value = sin(t*(230+variant*19)*TAU)*exp(-t*70)*0.5+filtered*exp(-t*25)*0.4
-		elif event == "TYPE_RETURN":
-			value = sin(t*1740*TAU)*exp(-t*18)*0.20+filtered*0.26
-		elif event == "SCISSOR_CUT":
-			value = filtered*0.7+sin(t*460*TAU)*exp(-t*90)*0.2
-		elif event == "PEN_WRITE":
-			value = filtered*0.2+rng.randf_range(-1,1)*0.015
-		elif event == "WAX_PELLETS":
-			value = sin(t*760*TAU)*pow(maxf(0,sin(t*95)),15)*0.32
-		elif event == "TYPE_ROLLER":
-			value = filtered*(0.15+0.6*pow(absf(sin(t*110)),4))
-		elif event == "AMBIENCE":
-			envelope = 0.6+0.3*sin(t*TAU/4)
-			value = filtered*0.45
-		data.encode_s16(i*2,int(clampf(value*envelope,-1,1)*28000))
-	var stream := AudioStreamWAV.new()
-	stream.format = AudioStreamWAV.FORMAT_16_BITS
-	stream.mix_rate = 22050
-	stream.data = data
-	return stream
+func _process(delta: float) -> void:
+	for voice in pool:
+		if voice.playing:
+			ages[voice] = ages.get(voice,0.0)+delta
+			if ages[voice] > durations.get(voice,0.3): voice.stop()
 
 func play(event: String, strength: float = 1.0) -> void:
-	if muted or not bank.has(event):
-		return
-	var player := AudioStreamPlayer.new()
-	player.bus = "SoundEffects"
-	player.stream = bank[event][rng.randi_range(0,3)]
-	player.pitch_scale = rng.randf_range(0.94,1.06)
-	player.volume_db = -14+linear_to_db(clampf(strength,0.15,1.5))
-	add_child(player)
-	player.finished.connect(player.queue_free)
-	player.play()
+	if muted: return
+	var now := Time.get_ticks_msec()
+	if now-int(cooldown.get(event,-10000)) < 48: return
+	cooldown[event]=now
+	var clip := "paper"
+	var duration := 0.27
+	var offset := 0.0
+	match event:
+		"TYPE_KEY", "TYPE_SPACE", "TYPE_BACKSPACE", "TYPE_RETURN", "TYPE_ROLLER":
+			clip="typewriter"+str(rng.randi_range(1,4));duration=0.32
+		"KNIFE_SLICE", "PEN_WRITE", "GLUE_SPREAD":
+			clip="strokes" if event=="KNIFE_SLICE" else "pencil";offset=rng.randf_range(0.2,2);duration=0.18
+		"SCISSOR_CUT", "PAPER_CUT": clip="scissors";duration=0.21;offset=0.2
+		"TAPE_TEAR": clip="tear";duration=0.36
+		"STAMP_PRESS", "STAMP_RELEASE", "PAPER_PRESS", "TAPE_STICK": clip="stamp";duration=0.22
+		"MATCH_STRIKE": clip="match";duration=0.48
+		"FIRE_LOOP": return # No synthetic hiss pretending to be a licensed candle recording.
+		"WAX_PELLETS", "DIALOGUE_ADVANCE", "MAIL_DROP": clip="click"+str(rng.randi_range(1,5));duration=0.3
+		"WAX_POUR", "TAPE_PULL": clip="rustle";duration=0.24
+		_: offset=rng.randf_range(0.1,2.0)
+	var voice := pool[cursor]
+	cursor=(cursor+1)%pool.size()
+	voice.stop();voice.stream=bank[clip]
+	voice.pitch_scale=rng.randf_range(0.96,1.04)
+	voice.volume_db=-16+linear_to_db(clampf(strength,0.1,1.4))
+	ages[voice]=0.0;durations[voice]=duration
+	voice.play(offset)
+	if haptic_level>0 and event in ["SCISSOR_CUT","STAMP_PRESS","TYPE_RETURN","PAPER_PRESS"]:
+		for device in Input.get_connected_joypads(): Input.start_joy_vibration(device,0.08*haptic_level,0.03*haptic_level,0.05)
 
 func toggle() -> void:
-	muted = not muted
-	get_node("Ambience").volume_db = -80 if muted else -31
+	muted=not muted
+	if muted:
+		for voice in pool: voice.stop()
 
 func shutdown() -> void:
-	for child in get_children():
-		if child is AudioStreamPlayer:
-			child.stop()
-			child.stream=null
+	for voice in pool: voice.stop();voice.stream=null
 	bank.clear()
 
 func _exit_tree() -> void:

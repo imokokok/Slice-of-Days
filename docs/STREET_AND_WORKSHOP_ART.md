@@ -1,3 +1,5 @@
+> 2026-09-25: The workshop raster assets described below have been retired at the user's request. The temporary walking frames remain unchanged. Current desk and asset provenance: `extensions/collage_letter/workshop/open_assets/README.md`. This document retains the historical generation record only.
+
 # Street motion and the illustrated writing desk
 
 This update keeps the authored town panoramas/buildings, route widths, save coordinates, dialogue branches, and letter-making mechanics. Frontages have individually offset centers; their doors and residents derive from those same centers. Residents stand 16–24 px behind the player's paving line with asymmetrical generic poses, mild anchored breathing, and near-player facing with a dead zone. The original supplied character designs remain the standing portraits.

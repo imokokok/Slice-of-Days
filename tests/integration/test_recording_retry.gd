@@ -27,7 +27,7 @@ func run() -> void:
 	check(str(gs.artifacts.samples[-1].id)==id,"Saved recording references the original audio file")
 	check(saves.load_game() and gs.artifacts.get("samples",[]).size()==before+1,"Recording survives reload")
 	recorder.finish_for_exit(); await process_frame; await process_frame
-	shell.open_paper("notebook"); var paper=shell.overlay
+	shell.open_paper("dossier"); var paper=shell.overlay
 	saves.set_script(failing); paper.close()
 	check(not paper.is_queued_for_deletion(),"Unsaved paper remains open after storage failure")
 	saves.set_script(original); paper.close()

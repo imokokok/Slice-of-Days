@@ -86,11 +86,12 @@ func refresh() -> void:
 	if not store.last_error.is_empty(): status.text=store.last_error
 	if selected.is_empty() and not items.is_empty(): show_item(items[0])
 	if items.is_empty():
+		selected={}; player.stop(); player.stream=null; picture.hide(); scrub.value=0
 		name_input.text=""; detail.text="还没有收藏。收好面板，听听身边的风、脚步或翻页声。"
 		play.disabled=true; remove.disabled=true; rename.disabled=true
 
 func show_item(item:Dictionary) -> void:
-	player.stop(); selected=item; listened=false; play.text="▶ 听一听"
+	player.stop(); player.stream_paused=false; selected=item; listened=false; play.text="▶ 听一听"
 	name_input.text=str(item.name); rename.disabled=false; remove.disabled=false
 	player.stream=store.load_audio(item); play.disabled=player.stream==null
 	var places:Array=item.get("locations",[item.get("location","")]); var names:PackedStringArray=[]
@@ -105,7 +106,7 @@ func _play() -> void:
 	if player.stream==null: return
 	if player.playing and not player.stream_paused: player.stream_paused=true; play.text="▶ 接着听"
 	elif player.stream_paused: player.stream_paused=false; play.text="Ⅱ 暂停"
-	else: player.play(scrub.value); play.text="Ⅱ 暂停"
+	else: player.play(0.0 if scrub.value>=scrub.max_value-.1 else scrub.value); play.text="Ⅱ 暂停"
 
 func _process(_delta:float) -> void:
 	if player!=null and player.playing and not player.stream_paused:

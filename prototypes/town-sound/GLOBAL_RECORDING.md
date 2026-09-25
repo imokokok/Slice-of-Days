@@ -1,6 +1,6 @@
 # 全局声音采集 · 2026-09-26
 
-本系统已经接入根目录的 Solmere 主游戏，源码只有一份。右侧口袋录音机贯穿街区、室内、原生小游戏和扩展小游戏。主菜单、结局、过场不显示采集入口。
+本系统已经接入根目录的 Solmere 主游戏，源码只有一份。右侧口袋录音机贯穿街区、室内、原生小游戏和扩展小游戏。A、B 都可使用录音，B 仍保留自己的手账与日程；各自录音按角色隔离。主菜单、结局、过场不显示采集入口。
 
 ## 玩家操作
 
@@ -25,7 +25,7 @@ Windows 数据目录：`%APPDATA%/Solmere_Playable_Meta`。录音、照片与个
 |---|---|---|
 | [SEASON 官方](https://www.play-season.com/) | 将拍摄、录音和记忆收集留在探索路线上，采集后回收藏整理 | 玩法参考，不复制商业美术 |
 | [TOEM 官方商品页](https://store.steampowered.com/app/1307580/TOEM/) | 随身工具、明确任务和地点收藏的连续操作 | 玩法参考，不导入其角色、画面或音轨 |
-| [Lucide](https://github.com/lucide-icons/lucide) | 实际接入磁带、声音、麦克风、剪刀、地点和播放六个 2D 线描图标 | ISC / Feather MIT；完整许可在 third_party/licenses/lucide/LICENSE。固定提交 66d8f9fc394b8530377e5f6112f0b8908ba01280；运行时统一棕墨色 |
+| [Lucide](https://github.com/lucide-icons/lucide) | 实际接入磁带、声音、麦克风、剪刀、地点和播放六个 2D 线描图标 | ISC / Feather MIT；完整许可在 third_party/licenses/lucide/LICENSE。固定提交 66d8f9fc394b8530377e5f6112f0b8908ba01280；仅将 currentColor 改为统一棕墨色 |
 | [Godot Sound Manager / Nathan Hoad](https://github.com/nathanhoad/godot_sound_manager) | 实际改编播放器的获取、回收和复用，加入 12 路上限、尾部淡出与世界音频路由 | MIT；完整许可在 third_party/licenses/godot_sound_manager/LICENSE。固定提交 1c041582db806a0d0edad77111d1fb7a009346ef |
 | [Kenney RPG Audio](https://kenney.nl/assets/rpg-audio)、[Impact Sounds](https://kenney.nl/assets/impact-sounds) | 复用仓库已有 CC0 翻纸、锅和木击音，挂接到真实互动；火焰等来源见 art/town_sound_cc0/SOURCES.md | CC0，保留逐文件来源与摘要；未重复下载同一资源 |
 | [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds) | 评估后保留现有轻提示音，避免叠加另一套按钮声音 | 候选，未安装 |

@@ -327,6 +327,9 @@ func open_paper(mode: String) -> void:
 		paper.tab = "packet"
 		paper.show_dossier_reference = false
 	paper.tool_requested.connect(func(request: String) -> void:
+		# The paper saves and queues its close after emitting this signal.
+		# Wait for retirement, so the single-tool guard doesn't reject the request.
+		await get_tree().process_frame
 		call_deferred("open_tool",request))
 	overlay = paper
 	add_child(paper)

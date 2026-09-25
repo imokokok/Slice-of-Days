@@ -45,8 +45,8 @@ func run() -> void:
 	root.get_node("ChapterSystem").start_new_game(); gs.current_location="residence"
 	router.town_day(.01); await settle()
 	var shell=current_scene.get_node("GameplayShell")
-	check(shell.get_node("Pocket_recorder").visible and not shell.get_node("Pocket_notebook").visible,"A carries only recorder, not notebook")
-	check(shell.pocket_objects.filter(func(item: Button): return item.visible).size()==5,"A has five contiguous pocket icons")
+	check(root.get_node("GlobalRecorder").pocket.visible and not shell.get_node("Pocket_notebook").visible,"A global recorder is visible; notebook remains B-owned")
+	check(shell.pocket_objects.filter(func(item: Button): return item.visible).size()==4,"A has four contiguous icons plus the global recorder")
 	key(shell,"open_notebook"); check(not is_instance_valid(shell.overlay),"A notebook shortcut cannot bypass ownership")
 	router.journal(); check(not is_instance_valid(shell.overlay),"legacy journal route cannot open notebook for A")
 	await capture("a-pocket")
@@ -63,19 +63,25 @@ func run() -> void:
 	router.town_day(.01); await settle(); shell=current_scene.get_node("GameplayShell")
 	check(shell.get_node("Pocket_notebook").visible and not shell.get_node("Pocket_recorder").visible,"B carries notebook, not recorder")
 	await capture("b-pocket")
-	key(shell,"open_recorder"); check(not is_instance_valid(shell.tool),"B recorder hotkey cannot bypass ownership")
-	shell.open_tool("recorder"); check(not is_instance_valid(shell.tool),"direct tool request cannot give recorder to B")
+	key(shell,"open_recorder"); await process_frame
+	check(is_instance_valid(shell.tool),"B recorder hotkey opens the global recorder")
+	shell.tool.put_away(); await process_frame
+	shell.open_tool("recorder"); await process_frame
+	check(is_instance_valid(shell.tool),"Direct request reuses global recording for B")
+	shell.tool.put_away(); await process_frame
 	shell.open_paper("sound_library"); await process_frame
-	check(not has_text(shell.overlay,"新录音"),"B sound collection contains no recorder action")
+	check(has_text(shell.overlay,"新录音"),"B sound collection offers the same recording action")
 	shell.overlay._home_action("recorder"); await process_frame
-	check(not is_instance_valid(shell.tool) and is_instance_valid(shell.overlay),"secondary recorder action also respects ownership")
+	await process_frame
+	check(is_instance_valid(shell.tool),"Collection routes B to shared recording")
+	if is_instance_valid(shell.tool): shell.tool.put_away(); await process_frame
 	await close_paper(shell)
 	gs.current_location="record_store"
 	var shop=load("res://scripts/town_sound/record_shop/RecordShop.gd").new(); current_scene.add_child(shop)
 	check(not has_text(shop,"随身录音 / 素材库"),"B record shop has no personal recorder entrance")
 	shop.open_shelf(); await process_frame
 	check(is_instance_valid(shop.modal) and not shop.modal.page_scroll.visible,"B can listen to records without exposing recorder")
-	shop.modal._start_recording(); check(not shop.modal.recorder.capturing,"B cannot record through shop wrapper")
+	check(shop.modal.recorder==root.get_node("RecordingSession").recorder,"Shop wrapper uses the same global device")
 	shop.queue_free(); await process_frame; gs.current_location="residence"
 	key(shell,"open_notebook"); await process_frame
 	check(shell.overlay.notebook_section=="schedule" and shell.overlay.find_child("NotebookAgenda",true,false)!=null,"B notebook opens directly on today's agenda")
@@ -150,7 +156,7 @@ func run() -> void:
 	if return_to_a!=null: return_to_a.pressed.emit()
 	await process_frame; await process_frame
 	await close_paper(shell); await process_frame
-	check(shell.get_node("Pocket_recorder").visible and not shell.get_node("Pocket_notebook").visible,"same HUD updates ownership after role switch")
+	check(root.get_node("GlobalRecorder").pocket.visible and not shell.get_node("Pocket_notebook").visible,"same HUD updates ownership after role switch")
 	# Leave a readable B agenda available for a native-window inspection.
 	root.get_node("ChapterSystem").start_new_game()
 	gs.switch_to_role("B",2,true); gs.current_minute=480; gs.current_location="residence"; router.town_day(.01); await settle()

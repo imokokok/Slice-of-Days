@@ -57,10 +57,11 @@ func run() -> void:
 	var roll_id:String=str(film.active_roll().id)
 	game.current_location="cafe"
 	check(film.dropoff(roll_id,"rush").ok,"Send physical film for processing")
-	game.use_free_time(int(film.config.processing.rush.minutes)); film.update_processing()
+	game.spend_time(int(film.config.processing.rush.minutes)); film.update_processing()
 	var pickup:Dictionary=await film.pickup(roll_id)
-	check(pickup.ok,"Pick up developed pictures")
+	check(pickup.ok,"Pick up developed pictures: "+str(pickup.get("message","")))
 	check(photo_library.list_photos().size()==2,"Developed photos enter the local album once")
+	if photo_library.list_photos().is_empty(): quit(1); return
 	var stored:=photo_library.list_photos()[0]
 	var original:=photo_library.load_photo(str(stored.photo_id))
 	check(original!=null and original.get_width()>0,"Photo survives reload")

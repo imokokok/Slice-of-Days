@@ -8,6 +8,9 @@ var step := 0
 var locked := false
 var dragging := false
 var drag_position := Vector2.ZERO
+var drag_offset := Vector2.ZERO
+var action_origin := Vector2.ZERO
+var dropped := false
 var cover: Image
 var texture: ImageTexture
 var title_input: LineEdit
@@ -36,8 +39,8 @@ var pending_photo: Image
 var photo_preview: TextureRect
 var cover_source := "visual"
 var source_photo_id := ""
-const STEPS := ["01 / 签下唱片信息", "02 / 留下封面画面", "03 / 打印纸质封套", "04 / 对齐中心标签", "05 / 压制与冷却", "06 / 收进防尘内袋", "07 / 装入封面外套", "08 / 封住袋口", "09 / 盖下收录印章", "10 / 插入编号卡", "11 / 交给唱片店老板", "LOCAL RECORDINGS"]
-const HINTS := ["给作品写下标题、作者和一句话。", "拖动滑条取景，暂停后留下这一帧。", "点击打印机的绿色按钮，看封套从出纸口慢慢出来。", "拿起右侧圆形标签，对准唱片中心孔后松手。", "按住机器右侧红色把手 1 秒，等待压盘下降、刻纹与冷却。", "握住唱片边缘，拖向右侧内袋开口。", "拿起装好唱片的内袋，滑进右侧印好封面的外套。", "把小圆封签移到外套上沿，不要贴在封面正中。", "先点右侧木柄印章拿起，再点封套右下角落章。", "将右侧编号纸卡插进左侧封套下沿的卡槽。", "把完整唱片递到柜台托盘，老板会接过并上架。", "这段声音已经在店里有了一个位置。"]
+const STEPS := ["01 / 签下唱片信息", "02 / 留下封面画面", "03 / 印刷纸板封套", "04 / 装载中心标签", "05 / 压制、冷却与修边", "06 / 唱片装入纸内袋", "07 / 内袋装入纸板封套", "08 / 封套装入透明保护袋", "09 / 合上外袋翻盖", "10 / 贴上作品编号", "11 / 交给唱片店老板", "LOCAL RECORDINGS"]
+const HINTS := ["给作品写下标题、作者和一句话。", "拖动滑条取景，暂停后留下这一帧。", "点打印机绿色按钮，印好的封面按出纸进度露出。", "拿起 A 面纸标签，对齐左侧 PVC 料饼的中心；B 面标签已在下方。", "按住机器右侧红色把手 1 秒。标签与 PVC 一起压制，冷却后修边。", "握住左侧唱片边缘，移到右侧纸袋的上方开口，松手后垂直滑入。", "拿起右侧装好的纸内袋，对准左侧封套的右边开口，水平滑入。", "拿起左侧纸板封套，对准右侧透明保护袋上方开口，向下装入。", "从右侧袋口拿起透明翻盖，向下折合；胶条只贴保护袋，不贴封面。", "将左侧编号标签贴到透明袋右下角。编号不覆盖封面主体。", "把包装好的唱片递到左侧柜台托盘，等待老板收录。", "这段声音已经在店里有了一个位置。"]
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -177,11 +180,14 @@ func advance() -> void:
 func complete_action() -> void:
 	if locked: return
 	locked = true
+	action_origin=drag_position if dropped else source_rect().get_center()
+	dropped=false
+	instructions.text=STEPS[step]+"\n"+HINTS[step]
 	progress = 0.0
 	play_feedback()
 	next_button.disabled = true
 	if step < 10:
-		var duration := 3.5 if step == 4 else (1.6 if step == 2 else 0.8)
+		var duration := 4.5 if step == 4 else (2.2 if step in [2,5,6,7] else 1.2)
 		var motion := create_tween()
 		motion.tween_property(self, "progress", 1.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 		await motion.finished
@@ -202,6 +208,7 @@ func complete_action() -> void:
 			saved_record = library.save_record({"title": title_input.text, "artist": artist_input.text,
 				"one_line_note": note_input.text, "duration": audio.get_length(), "visual_prompt": model.prompt,
 				"visual_profile": profile, "mv_clips": model.clips.duplicate(true), "mv_muted":model.muted.duplicate(), "mv_gains":model.gains.duplicate(), "sound_kinds":preload("res://scripts/town_sound/data/SoundAtlas.gd").audible_kinds(model), "visual_seed": seed_value, "visual_version": int(profile.get("visual_version", 2)), "source_sample_count": samples.size(),
+				"packaging_version":2, "record_format":"12-inch 33⅓ RPM / 180 g", "packaging_layers":["paper_inner","printed_jacket","resealable_pp_outer"],
 				"cover_source": cover_source, "source_photo_id": source_photo_id,
 				"payment": payment, "project_path": model.project_path, "created_by": role,
 				"game_day": day, "location": "record_store"}, audio, cover)
@@ -230,7 +237,7 @@ func complete_action() -> void:
 	next_button.disabled = false
 	progress = 0
 	stamp_picked = false
-	var buttons := {3: "辅助操作：对齐标签", 4: "辅助操作：压下把手", 5: "辅助操作：滑入内袋", 6: "辅助操作：装进外套", 7: "辅助操作：贴下封签", 8: "辅助操作：拿起并盖章", 9: "辅助操作：插入编号卡", 10: "辅助操作：交给老板", 11: "返回 Studio"}
+	var buttons := {3: "辅助操作：对齐标签", 4: "辅助操作：压下把手", 5: "辅助操作：滑入内袋", 6: "辅助操作：装进外套", 7: "辅助操作：装入透明外袋", 8: "辅助操作：折合翻盖", 9: "辅助操作：贴上编号", 10: "辅助操作：交给老板", 11: "返回 Studio"}
 	next_button.text = LocalizationSystem.text(buttons.get(step, "继续"))
 	if step == 11:
 		var balance := GameState.money if has_node("/root/GameState") else library.money()
@@ -272,6 +279,10 @@ func _process(delta: float) -> void:
 	if locked: queue_redraw()
 
 func play_feedback() -> void:
+	if step in [2,3,5,6,7,8,9]:
+		sound.stream=preload("res://scripts/town_sound/data/SoundAtlas.gd").stream("wood" if step==3 else "paper")
+		sound.volume_db=-18; sound.play(); return
+	sound.volume_db=-19
 	var wav := AudioStreamWAV.new()
 	wav.format = AudioStreamWAV.FORMAT_16_BITS
 	wav.mix_rate = 22050
@@ -297,173 +308,57 @@ func play_feedback() -> void:
 	sound.play()
 
 func source_rect() -> Rect2:
+	var r:=_source_rect()
+	return Rect2(r.position+Vector2(0,125),r.size)
+
+func _source_rect() -> Rect2:
 	match step:
-		3: return Rect2(760, 430, 90, 90)
-		7: return Rect2(760, 440, 70, 70)
-		8: return Rect2(750, 390, 100, 140)
-		9: return Rect2(730, 460, 140, 50)
-	return Rect2(190, 365, 250, 270)
+		3: return Rect2(724,469,72,72)
+		7: return Rect2(189,374,262,262)
+		6,10: return Rect2(627,370,266,270)
+		8: return Rect2(625,321,270,34)
+		9: return Rect2(261,490,118,30)
+	return Rect2(207,392,226,226)
 
 func target_rect() -> Rect2:
+	var r:=_target_rect()
+	return Rect2(r.position+Vector2(0,125),r.size)
+
+func _target_rect() -> Rect2:
 	match step:
-		3: return Rect2(270, 440, 95, 95)
-		7: return Rect2(380, 370, 85, 70)
-		8: return Rect2(340, 530, 115, 90)
-		9: return Rect2(325, 570, 150, 60)
-	return Rect2(620, 365, 285, 275)
+		3: return Rect2(296,481,48,48)
+		5,7: return Rect2(714,334,92,86)
+		6: return Rect2(409,463,86,84)
+		8: return Rect2(625,366,270,42)
+		9: return Rect2(796,597,48,30)
+		10: return Rect2(185,550,290,105)
+	return Rect2(620,365,285,275)
 
 func _gui_input(event: InputEvent) -> void:
-	if locked or step < 2 or step > 10: return
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if step == 2 and event.pressed and Rect2(530, 385, 100, 70).has_point(event.position):
-			complete_action()
-			return
-		if step == 4:
-			holding = event.pressed and Rect2(765, 355, 95, 240).has_point(event.position)
-			hold_seconds = 0
-			queue_redraw()
-			return
-		if step == 8 and event.pressed:
-			if stamp_picked and target_rect().has_point(event.position): complete_action()
-			elif source_rect().has_point(event.position): stamp_picked = true
-			queue_redraw()
-			return
+	if locked or step<2 or step>10: return
+	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT:
+		if step==2 and event.pressed and Rect2(550,515,52,52).has_point(event.position):
+			complete_action(); accept_event(); return
+		if step==4:
+			holding=event.pressed and Rect2(765,480,95,240).has_point(event.position)
+			hold_seconds=0; queue_redraw(); accept_event(); return
 		if event.pressed and source_rect().has_point(event.position):
-			dragging = true
-			drag_position = event.position
+			# Keep the exact grab offset; grabbing the rim never snaps the disc center to the cursor.
+			if step==5:
+				var radius: float=event.position.distance_to(source_rect().get_center())
+				if radius>113 or (radius>37 and radius<94):
+					instructions.text="请握住唱片最外缘或中心标签，避免碰到音槽。"; return
+			dragging=true; drag_offset=event.position-source_rect().get_center()
+			drag_position=source_rect().get_center(); accept_event()
 		elif not event.pressed and dragging:
-			dragging = false
-			if target_rect().has_point(event.position): complete_action()
-			queue_redraw()
-	elif event is InputEventMouseMotion and (dragging or stamp_picked):
-		drag_position = event.position
-		queue_redraw()
-
-func caption(at: Vector2, text: String, font_size: int = 16, color: Color = Color("5a4c39")) -> void:
-	draw_string(get_theme_default_font(), at, LocalizationSystem.text(text), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
-
-func vinyl(at: Vector2, labeled: bool = true, scale_value: float = 1.0) -> void:
-	draw_circle(at + Vector2(6, 9), 112 * scale_value, Color(0, 0, 0, 0.12))
-	draw_circle(at, 110 * scale_value, Color("262a28"))
-	for radius in range(39, 107, 5): draw_arc(at, radius * scale_value, 0, TAU, 70, Color("454943"), 1, true)
-	draw_arc(at, 90 * scale_value, -1.1, 0.1, 30, Color("65675a"), 2, true)
-	if labeled: label_disc(at, 31 * scale_value)
-	draw_circle(at, 4 * scale_value, Color("d7c8aa"))
-
-func label_disc(at: Vector2, radius: float = 36) -> void:
-	draw_circle(at, radius, Color("d7b970"))
-	draw_arc(at, radius - 5, 0, TAU, 40, Color("9a793a"), 1, true)
-	caption(at + Vector2(-19, -7), "SIDE A", 10)
-	caption(at + Vector2(-23, 19), "SOLMERE", 9)
-	draw_circle(at, 3, Color("ddd3bb"))
-
-func inner_sleeve(at: Vector2, filled: bool) -> void:
-	var rect := Rect2(at - Vector2(118, 120), Vector2(236, 240))
-	draw_rect(Rect2(rect.position + Vector2(6, 8), rect.size), Color(0, 0, 0, 0.10))
-	draw_rect(rect, Color("f1e7cf"))
-	draw_line(rect.position, rect.position + Vector2(236, 0), Color("ad9d7b"), 3)
-	if filled:
-		draw_circle(at, 56, Color("292d28"))
-		label_disc(at, 30)
-	else:
-		draw_circle(at, 56, Color("cdbb97"))
-	draw_line(rect.position + Vector2(10, 20), rect.position + Vector2(10, 230), Color("d4c5a5"), 1)
-	caption(at + Vector2(-76, 99), "ACID-FREE INNER SLEEVE", 10)
-
-func outer_sleeve(at: Vector2, decorated: int = 0, scale_value: float = 1.0) -> void:
-	var rect := Rect2(at - Vector2(125, 125) * scale_value, Vector2(250, 250) * scale_value)
-	draw_rect(Rect2(rect.position + Vector2(6, 9), rect.size), Color(0, 0, 0, 0.14))
-	draw_rect(rect, Color("f5ecda"))
-	if texture != null: draw_texture_rect(texture, rect.grow(-10 * scale_value), false)
-	draw_line(rect.position, rect.position + Vector2(rect.size.x, 0), Color("a6916b"), 3)
-	if decorated >= 1:
-		draw_circle(at + Vector2(83, -113) * scale_value, 22 * scale_value, Color("a05d43"))
-	if decorated >= 2:
-		caption(at + Vector2(12, 83) * scale_value, "ARCHIVE COPY", int(11 * scale_value), Color("843f2d"))
-		caption(at + Vector2(20, 96) * scale_value, Time.get_date_string_from_system(), int(9 * scale_value), Color("843f2d"))
-	if decorated >= 3:
-		draw_rect(Rect2(at + Vector2(19, 105) * scale_value, Vector2(116, 27) * scale_value), Color("efe0bd"))
-		caption(at + Vector2(24, 124) * scale_value, "LOCAL-%04d" % serial, int(12 * scale_value))
+			drag_position=(event.position-drag_offset).clamp(Vector2(28,324)+source_rect().size/2,Vector2(1063,850)-source_rect().size/2)
+			dragging=false
+			if target_rect().has_point(drag_position):
+				dropped=true; complete_action()
+			else: instructions.text="还没有对齐开口，物件已放回原处。\n"+HINTS[step]
+			queue_redraw(); accept_event()
+	elif event is InputEventMouseMotion and dragging:
+		drag_position=(event.position-drag_offset).clamp(Vector2(28,324)+source_rect().size/2,Vector2(1063,850)-source_rect().size/2); queue_redraw(); accept_event()
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, size), Color("e9dec8"))
-	draw_rect(Rect2(28, 324, 1035, 390), Color("c5ad87"))
-	for line in 15:
-		draw_line(Vector2(32, 334 + line * 26), Vector2(1060, 331 + line * 26), Color(0.3, 0.22, 0.12, 0.07), 1)
-	if step < 2: return
-	for index in range(2, 11):
-		var x := 110.0 + (index - 2) * 105
-		if index < 10: draw_line(Vector2(x, 277), Vector2(x + 105, 277), Color("c6b79a"), 2)
-		draw_circle(Vector2(x, 277), 15, Color("8b9a70") if index < step else (Color("aa6546") if index == step else Color("d8cbb3")))
-		caption(Vector2(x - 4, 282), str(index - 1), 12, Color("faf2df"))
-		caption(Vector2(x - 24, 311), ["打印", "标签", "压制", "内袋", "封套", "封签", "盖章", "编号", "上架"][index - 2], 12)
-	var left := Vector2(320, 490)
-	var right := Vector2(760, 490)
-	var moving := drag_position if dragging else source_rect().get_center()
-	if locked: moving = source_rect().get_center().lerp(target_rect().get_center(), progress)
-	caption(Vector2(50, 700), STEPS[step], 15)
-	match step:
-		2:
-			draw_rect(Rect2(185, 355, 450, 125), Color("697567"))
-			draw_rect(Rect2(210, 458, 395, 12), Color("293b30"))
-			draw_circle(Vector2(576, 416), 22, Color("b5cc86"))
-			caption(Vector2(230, 405), "SOLMERE / PAPER PRESS", 20, Color("ede4d0"))
-			if locked:
-				var rect := Rect2(250, 471, 250, 190 * progress)
-				draw_rect(rect, Color("f4eddf"))
-				if texture != null and progress > 0.02: draw_texture_rect(texture, rect.grow(-3), false)
-			caption(Vector2(700, 445), "封面纸  /  240 gsm", 18)
-			for i in 5: draw_rect(Rect2(700 + i * 2, 480 + i * 3, 180, 100), Color("eee4ca"))
-		3:
-			vinyl(left, false)
-			label_disc(moving)
-			caption(Vector2(250, 635), "中心孔 · 松手吸附对齐", 15)
-			caption(Vector2(724, 585), "已印好的纸标签", 15)
-		4:
-			draw_rect(Rect2(310, 357, 450, 280), Color("717c70"))
-			draw_rect(Rect2(350, 600, 390, 36), Color("465343"))
-			vinyl(Vector2(535, 515), true, 0.75)
-			var press_y := 385.0 + (sin(progress * PI) * 106 if locked else 0.0)
-			draw_rect(Rect2(405, press_y, 270, 26), Color("bbc0a9"))
-			draw_line(Vector2(537, 355), Vector2(537, press_y), Color("b5b9a3"), 20)
-			var handle_y := 393.0 + minf(hold_seconds, 1) * 85
-			draw_line(Vector2(760, 440), Vector2(812, handle_y), Color("514d3b"), 9)
-			draw_circle(Vector2(812, handle_y), 22, Color("a3533b"))
-			caption(Vector2(360, 675), "压盘下降 → 压制刻纹 → 冷却 → 抬起", 16)
-		5:
-			vinyl(moving if dragging or locked else left)
-			inner_sleeve(right, locked and progress > 0.8)
-			caption(Vector2(650, 345), "从袋口滑入，保护唱片表面", 16)
-		6:
-			inner_sleeve(moving if dragging or locked else left, true)
-			outer_sleeve(right)
-			caption(Vector2(650, 345), "印好封面的外纸套", 16)
-		7:
-			outer_sleeve(left)
-			draw_circle(moving, 24, Color("a05d43"))
-			caption(moving + Vector2(-17, 4), "LOCAL", 10, Color("f1e6c9"))
-			caption(Vector2(645, 600), "沿上沿贴下，轻轻压平", 16)
-		8:
-			outer_sleeve(left, 2 if locked and progress > 0.65 else 1)
-			var at := drag_position if stamp_picked else Vector2(800, 460)
-			if locked: at = Vector2(390, 560) + Vector2(0, -sin(progress * PI) * 25)
-			draw_rect(Rect2(at - Vector2(43, 10), Vector2(86, 25)), Color("665943"))
-			draw_rect(Rect2(at - Vector2(18, 72), Vector2(36, 70)), Color("906643"))
-			draw_circle(at - Vector2(0, 75), 25, Color("a47b4d"))
-			caption(Vector2(665, 620), "拿起木柄 → 移到纸面 → 落章", 15)
-		9:
-			outer_sleeve(left, 2)
-			draw_rect(Rect2(moving - Vector2(65, 20), Vector2(130, 40)), Color("f1e2be"))
-			caption(moving + Vector2(-55, 5), "LOCAL-%04d" % serial, 14)
-			caption(Vector2(640, 625), "编号纸卡 → 下沿卡槽", 16)
-		10, 11:
-			draw_rect(Rect2(610, 370, 360, 300), Color("806c50"))
-			for i in 9: draw_rect(Rect2(625 + i * 36, 380, 22, 115), [Color("b2bb96"), Color("c3926f"), Color("d4c397")][i % 3])
-			draw_line(Vector2(615, 500), Vector2(967, 500), Color("4b4735"), 8)
-			caption(Vector2(650, 535), "LOCAL RECORDINGS", 20, Color("f1e6cd"))
-			draw_rect(Rect2(645, 565, 250, 65), Color("bda783"))
-			if locked:
-				outer_sleeve(left.lerp(Vector2(850, 434), progress), 3, lerpf(1, 0.32, progress))
-			elif step == 11: outer_sleeve(Vector2(850, 434), 3, 0.32)
-			else: outer_sleeve(moving if dragging else left, 3)
-			caption(Vector2(175, 670), "老板：我给它留好位置了。", 18)
+	preload("res://scripts/town_sound/record_shop/PackagingArtwork.gd").paint(self)

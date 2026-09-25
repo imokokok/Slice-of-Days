@@ -90,6 +90,8 @@ func run() -> void:
 		await table.complete_action()
 	check(table.step == 11, "Packaging did not finish: step=%d %s" % [table.step,table.instructions.text])
 	check(not table.saved_record.is_empty(), "Final record not saved")
+	check(int(table.saved_record.get("packaging_version",0))==2,"Physical packaging version persisted")
+	check(table.saved_record.get("packaging_layers",[]).size()==3,"Inner sleeve, jacket and plastic outer sleeve are separate saved layers")
 	var restored := LocalRecordLibrary.new()
 	restored.root_path = table.library.root_path
 	check(restored.list_records().size() == 1, "Saved record not reloaded")

@@ -1,0 +1,88 @@
+{
+  "duration_seconds": 34.763,
+  "peak": 0.137847900390625,
+  "clipped_samples": 0,
+  "human_audition": false,
+  "stages": [
+    {
+      "stage": "煎炒：番茄",
+      "rms_dbfs": -41.84,
+      "peak": 0.12589
+    },
+    {
+      "stage": "煎炒：鸡蛋",
+      "rms_dbfs": -47.14,
+      "peak": 0.1098
+    },
+    {
+      "stage": "煎炒：牛肉",
+      "rms_dbfs": -40.29,
+      "peak": 0.11325
+    },
+    {
+      "stage": "浓酱加热冒泡",
+      "rms_dbfs": -38.47,
+      "peak": 0.10458
+    },
+    {
+      "stage": "清水煮沸",
+      "rms_dbfs": -35.25,
+      "peak": 0.09979
+    },
+    {
+      "stage": "出料：橄榄油",
+      "rms_dbfs": -34.98,
+      "peak": 0.13785
+    },
+    {
+      "stage": "出料：番茄酱",
+      "rms_dbfs": -45.52,
+      "peak": 0.05991
+    },
+    {
+      "stage": "出料：海盐",
+      "rms_dbfs": -36.72,
+      "peak": 0.09921
+    },
+    {
+      "stage": "出料：黑胡椒",
+      "rms_dbfs": -45.04,
+      "peak": 0.11734
+    },
+    {
+      "stage": "实际播放器：stir_wood",
+      "rms_dbfs": -49.28,
+      "peak": 0.0412
+    },
+    {
+      "stage": "实际播放器：stir_metal",
+      "rms_dbfs": -58.83,
+      "peak": 0.02753
+    },
+    {
+      "stage": "实际播放器：stir_water",
+      "rms_dbfs": -44.17,
+      "peak": 0.03757
+    },
+    {
+      "stage": "实际播放器：stir_pasta",
+      "rms_dbfs": -54.03,
+      "peak": 0.02591
+    },
+    {
+      "stage": "实际播放器：chop",
+      "rms_dbfs": -66.55,
+      "peak": 0.01105
+    },
+    {
+      "stage": "实际播放器：bell",
+      "rms_dbfs": -36.27,
+      "peak": 0.12643
+    },
+    {
+      "stage": "静音检验",
+      "rms_dbfs": -240.0,
+      "peak": 0.0
+    }
+  ]
+}

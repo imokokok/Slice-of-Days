@@ -16,14 +16,15 @@ func _draw() -> void :
 	var water: float = controller.water_ml
 	if water > 0:
 		var fill: float = controller.world.pan_fill_ratio()
-		_ellipse(Vector2(810, 597 - fill * 18), Vector2(78 + fill * 32, 13 + fill * 21), Color("75b9bd", 0.72))
+		_ellipse(Vector2(810, 597 - fill * 18), Vector2(78 + fill * 32, 13 + fill * 21), Color("a1b9ae", 0.3))
 		if fill >= 0.999 and controller.faucet_on and controller.under_tap():
 			for x in [774.0, 810.0, 846.0]:
 				draw_line(Vector2(x, 604), Vector2(x + sin(controller.world._time * 4.0 + x) * 3.0, 628), Color("91d3d0", 0.8), 3.0, true)
-		if controller.water_heat >= 99:
+		var boiling: float = controller.world.reactions.water_activity()
+		if boiling>0.08:
 			for i in range(8):
 				var phase: float = fmod(controller.world._time * 1.8 + i * 0.173, 1)
-				draw_arc(Vector2(750 + i * 17, 581 + sin(i * 3) * 8), 2 + phase * 4, 0, TAU, 12, Color("d5e1c5"), 1)
+				draw_arc(Vector2(750 + i * 17, 581 + sin(i * 3) * 8), (1.5 + phase * 4)*boiling, 0, TAU, 12, Color("d5e1c5",(1.0-phase)*0.85), 1)
 
 func _draw_burner_flame() -> void :
 

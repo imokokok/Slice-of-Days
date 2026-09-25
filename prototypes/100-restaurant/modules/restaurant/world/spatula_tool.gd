@@ -160,6 +160,7 @@ func stir_sweep(from: Vector2, to: Vector2) -> int:
 		count += 1
 		world.audio.play_food_stir(body, kind, from.distance_to(to))
 		_exchange_liquid(body, from.distance_to(to))
+		world.reactions.stir(body,from.distance_to(to),from.y-to.y>12.0)
 	return count
 
 func _exchange_liquid(body: RigidBody2D, speed: float) -> void :
@@ -172,15 +173,19 @@ func _exchange_liquid(body: RigidBody2D, speed: float) -> void :
 		return
 	var coating: Dictionary = body.get_meta("surface_sauce", {"volume_ml": 0.0, "composition_ml": {}, "mixedness": 0.0, "layered": false})
 	if kind == "spoon" and float(_residue.get("volume_ml", 0.0)) > 0.01:
-		SauceState.transfer(_residue, coating, minf(0.24, float(_residue.volume_ml)))
+		world.reactions.ensure_state(body)
+		var density := float(_residue.get("mass_kg",0.0))/float(_residue.volume_ml)
+		var moved := SauceState.transfer(_residue, coating, minf(0.24, float(_residue.volume_ml)))
+		var mass_moved := moved*density
+		_residue.mass_kg=maxf(0.0,float(_residue.get("mass_kg",0.0))-mass_moved)
+		body.mass += mass_moved
+		coating.mass_kg=float(coating.get("mass_kg",0.0))+mass_moved
+	body.set_meta("surface_sauce",coating)
 	for candidate in world._foods.get_children():
-		if candidate == body or not candidate is RigidBody2D or not candidate.has_meta("liquid_state"): continue
+		if candidate == body or not candidate is RigidBody2D or candidate.is_queued_for_deletion() or candidate.get_meta("plated",false) or candidate.get_meta("overflow",false): continue
 		if candidate.global_position.distance_to(body.global_position) > 42.0: continue
-		var liquid: Dictionary = candidate.get_meta("liquid_state")
-		SauceState.transfer(liquid, coating, minf(0.18 if kind == "spoon" else 0.09, float(liquid.get("volume_ml", 0.0))))
-		candidate.set_meta("liquid_state", liquid)
-		candidate.set_meta("volume_ml", liquid.get("volume_ml", 0.0))
-	body.set_meta("surface_sauce", coating)
+		if candidate.has_meta("liquid_state"): world.reactions.coat(candidate,body,clampf(speed/70.0,0.15,1.2))
+		elif candidate.has_meta("thermal"): world.reactions.coat_phase(candidate,body,clampf(speed/70.0,0.15,1.2))
 	queue_redraw()
 
 func liquid_inventory() -> Dictionary:
@@ -212,7 +217,11 @@ func _physics_process(_delta: float) -> void :
 			body.set_meta("container_location", "spoon")
 			if first_capture and body.has_meta("liquid_state"):
 				var liquid: Dictionary = body.get_meta("liquid_state")
-				SauceState.transfer(liquid, _residue, minf(0.8, float(liquid.get("volume_ml", 0.0))))
+				var density: float = body.mass/maxf(0.000001,float(liquid.get("volume_ml",0.0)))
+				var moved := SauceState.transfer(liquid, _residue, minf(0.8, float(liquid.get("volume_ml", 0.0))))
+				var mass_moved := moved*density
+				_residue.mass_kg=float(_residue.get("mass_kg",0.0))+mass_moved
+				body.mass=maxf(0.000001,body.mass-mass_moved)
 				body.set_meta("liquid_state", liquid)
 				body.set_meta("volume_ml", liquid.get("volume_ml", 0.0))
 				queue_redraw()

@@ -36,6 +36,9 @@ func _run() -> void:
 	await create_timer(0.1).timeout
 	game.set_process(false)
 	food.set_meta("cooking_heat", 3.0)
+	world.reactions.set_physics_process(false)
+	var thermal: Dictionary=world.reactions.ensure_state(food)
+	thermal.faces_c=[140.0,120.0]
 	sound.focused = true
 	recorder.set_recording_active(true)
 	started = Time.get_ticks_msec()

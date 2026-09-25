@@ -20,6 +20,18 @@ func deposit(body: RigidBody2D) -> float:
 	components[id].mass_kg += amount
 	var ratio := amount / body.mass
 	body.mass -= amount
+	var film: Dictionary = body.get_meta("surface_sauce",{})
+	var film_mass := float(film.get("mass_kg",0.0))
+	if not film.is_empty():
+		film["volume_ml"]=float(film.get("volume_ml",0.0))*(1.0-ratio)
+		film["mass_kg"]=film_mass*(1.0-ratio)
+		for key in film.get("composition_ml",{}): film.composition_ml[key]*=1.0-ratio
+		body.set_meta("surface_sauce",film)
+	if body.has_meta("thermal"):
+		var state: Dictionary=body.get_meta("thermal")
+		state["residue_exported_kg"]=float(state.get("residue_exported_kg",0.0))+maxf(0.0,amount-film_mass*ratio)
+		state.water_kg*=1.0-ratio
+		state.liquid_kg*=1.0-ratio
 	if body.has_meta("liquid_state"):
 		var liquid: Dictionary = body.get_meta("liquid_state")
 		liquid.volume_ml *= 1.0 - ratio

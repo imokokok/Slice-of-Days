@@ -28,6 +28,8 @@ func _visual() -> Node2D:
 		node.definition = payload.definition
 		node.cut = payload.definition.get("cut",false)
 		node.heat = float(payload.definition.get("heat",0))
+		node.thermal = payload.definition.get("thermal",{}).duplicate(true)
+		node.coating = payload.definition.get("surface_sauce",{}).duplicate(true)
 		node.shadows = false
 	elif payload.get("type","") == "sticker":
 		node = preload("res://modules/restaurant/ui/poster_canvas.gd").DecorativeLayer.new()

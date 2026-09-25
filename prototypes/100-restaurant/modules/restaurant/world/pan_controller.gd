@@ -8,7 +8,7 @@ var world: Node2D
 var active: = false
 var offset: = Vector2.ZERO
 var water_ml: = 0.0
-var water_heat: = 0.0
+var water_heat: = 22.0
 var overflow_water_ml: = 0.0
 var faucet_amount: = 0.0
 var faucet_on: bool:
@@ -66,13 +66,10 @@ func _process(delta: float) -> void :
 			if is_empty_for_cleaning(): residue.waste_kg += residue.wipe(delta * 0.00018 * faucet_amount)
 			var incoming: = delta * 180 * faucet_amount
 			var accepted: float = minf(incoming, world.pan_free_ml())
-			water_heat *= water_ml / maxf(water_ml + accepted, 1)
+			water_heat = (water_heat * water_ml + 22.0 * accepted) / maxf(water_ml + accepted, 0.001)
 			water_ml += accepted
 			overflow_water_ml += incoming - accepted
-		if world.cooking and on_stove() and water_ml > 0:
-			water_heat = minf(100, water_heat + delta * 7)
-			if water_heat >= 99: water_ml = maxf(0, water_ml - delta * 8)
-		else: water_heat = maxf(0, water_heat - delta * 2)
+		# Fixed-step CookingReactions owns heat exchange and evaporation.
 	pan_back.queue_redraw()
 	pan_front.queue_redraw()
 	faucet_art.queue_redraw()

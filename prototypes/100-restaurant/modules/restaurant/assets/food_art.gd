@@ -18,6 +18,14 @@ var softness: = 0.0:
 		softness = clampf(value, 0.0, 1.0)
 		queue_redraw()
 var shadows: = true
+var thermal: Dictionary = {}:
+	set(value):
+		thermal=value
+		queue_redraw()
+var coating: Dictionary = {}:
+	set(value):
+		coating=value
+		queue_redraw()
 var compression := 0.0:
 	set(value):
 		compression = value
@@ -48,11 +56,23 @@ func _draw() -> void :
 		if _cooking_material == null:
 			_cooking_material = ShaderMaterial.new()
 			_cooking_material.shader = CookingSurface
-		var appearance := CookingAppearance.state(definition, heat)
+		var appearance := CookingAppearance.surface(definition, heat,thermal,coating)
 		for key in appearance:
 			_cooking_material.set_shader_parameter(key, appearance[key])
 		material = _cooking_material
 		var rect := preload("res://modules/restaurant/assets/sprite_library.gd").fit(painted, Vector2.ZERO, Vector2(78, 78))
+		if not thermal.is_empty() and float(thermal.get("liquid_kg",0.0))>0.000001:
+			var initial := maxf(0.000001,float(thermal.initial_kg))
+			var liquid := clampf(float(thermal.liquid_kg)/initial,0.0,1.0)
+			var solid := clampf(1.0-(float(thermal.converted_kg)+float(thermal.evaporated_kg))/initial,0.0,1.0)
+			var pool := PackedVector2Array()
+			for i in 32:
+				var angle := i*TAU/32.0
+				pool.append(Vector2(cos(angle)*(22.0+liquid*19.0),sin(angle)*(9.0+liquid*12.0)+13.0))
+			draw_colored_polygon(pool,base.lightened(0.06))
+			draw_arc(Vector2(2,11),12.0+liquid*12.0,0.3,2.3,18,base.lightened(0.24),1.8,true)
+			if solid<0.025: return
+			rect=Rect2(rect.position*sqrt(solid),rect.size*sqrt(solid))
 		if definition.get("dispense_mode", "") == "squeeze" and compression > 0.0001:
 			_draw_grip_mesh(painted, rect)
 		else: draw_texture_rect(painted, rect, false)
@@ -122,8 +142,9 @@ func _draw_grip_mesh(texture: Texture2D, rect: Rect2) -> void:
 			draw_polygon(vertices, PackedColorArray([Color.WHITE]), uv, texture)
 
 func _noodles(base: Color) -> void :
-	var state := CookingAppearance.state(definition, heat)
+	var state := CookingAppearance.surface(definition, heat,thermal,coating)
 	var noodle_color := base.lightened(softness * 0.2).lerp(Color("aa7036"), state.browned * 0.6).lerp(Color("30251c"), state.charred)
+	if state.film_amount>0.0: noodle_color=noodle_color.lerp(state.film_color,state.film_amount*(0.3+state.film_spread*0.4))
 	var spread: = lerpf(27.0, 67.0, softness)
 	var depth: = lerpf(18.0, 12.0, softness)
 	for strand in 13:

@@ -1,5 +1,20 @@
 # 验证记录
 
+## 2026-09-25 锅内热变化与质量连续性
+
+实现、问题清单及近似边界见 `THERMAL_REACTIONS_20260925.md`；证据目录 `qa/20260925-thermal-reactions/`。
+
+- 最终 `tools/test.ps1` **35 个入口全部通过**，退出 0，`regression-final.txt` 无 SCRIPT ERROR / ERROR。包括新热模型 19、生产厨房 31、材质 333、录音 151、手绘 227、集成 124、跟做 40、刀物理 35、切片连续性 37、厨房交互 35、DIY 76、纸面存档 30 等；全目录 alpha 审计 97 张、0 错误。新 runner 同时检查错误文本和成功标记，不以退出 0 掩盖脚本报错。
+- 回归过程中修复：旧夹具直接加秒数绕过锅温；旧已熟实体迁移丢失焦色；无水油膜错误发滋响；木勺统一密度；DIY 丢失热/酱色；StringName 键及 JSON 浮点整数导致保存/重开拒绝。测试仍验证物理结果，没有删除原熟度/焦化要求。旧加热测试现推进真实锅温与水浴；冷锅和空水没有偷偷预热。
+- 最终实际 GPU 运行厨房专项 **37 项通过**，RTX 4050 / OpenGL，`gpu-final-errors.txt` 为空。查看 `kitchen-sauce.png`、`kitchen-plated.png`、`kitchen-butter.png`；覆盖真实锅内附着、装盘同色、黄油融化与面包润湿，截图来自独立 QA 菜谱库。修正了截图夹具在 drop 后立即重定位被 deferred transform 覆盖的问题，额外验证截帧时食物仍在锅中；没有为截图移动系统鼠标。
+- 完整回归后，交付检查额外修复“吸附完的空酱汁仍占配方条目”和“表面褐变抬高生心品质分”。最终复验热模型 **20**、厨房 **32**、domain **552**、集成 **124**、录音 **151**、调料 **155**、锅铲 **29**，全部通过（`thermal-final.txt` / `final-affected.txt`）；最后 GPU 37 项及源码 smoke 也重新执行。
+- 五类热变化排列图 `progression.png` 使用生产状态模型和 FoodArt，5 组前后图像差异通过，并实际查看；画面已知黄油包装随固体部分一起消失的素材缺口没有隐瞒。该图不是人工操作录像。
+- 外部录音审计 **35 来源 / 49 WAV / 32 分组 PASS**（`audio-audit.json`）。实际 Godot 音频总线捕获 34.763 秒，峰值 0.137848、0 削波样本，末段静音采样为 0；分段测量见 `mixer-analysis.json`，状态时间线 `mixer-timeline.json`。各可听阶段非零，不等于已完成人耳混音验收；完整 WAV 留在本机 `work/reaction-qa/actual-mixer.wav`，不重复纳入源码仓库。
+- 最终源码及 Windows 导出包分别 headless 120 帧启动退出 0，无脚本错误（`smoke-source.txt` / `export-smoke.txt`，`export-smoke-errors.txt` 为空）。Windows Release 导出退出 0，包含 thermal/snapshot/reactions 脚本及既有 MIT/OFL 许可；导出明确排除 QA 截图与测试资源。EXE SHA-256：`2354a4a6da21b74b38c9d33b1d6e94778d07912cd02256ddeab38c648700dd26`。
+- 重新打开最终 EXE，PID **36548**，窗口标题 **100饭店**、MainWindowHandle 非零、Responding=True；实际查看该进程生成的生产 viewport 图 `work/reaction-qa/live-final.png`，欢迎页与厨房正常，窗口留给用户试玩。图中含本机已有玩家纸页，只留本地；没有上传它。
+
+已验证范围是自动回归、引擎输入事件、受控 GPU 场景与实际混音输出；尚未人工长时间试玩或人耳逐条试听。不声称不存在其他 bug，不声称完整流体/柔体或绝对现实。
+
 ## 2026-09-25 手写订单与纸面创作
 
 报告 `PAPER_CRAFT_20260925.md`，证据目录 `qa/20260925-paper-craft/`。

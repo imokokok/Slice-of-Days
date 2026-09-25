@@ -124,6 +124,7 @@ func tick(delta: float) -> void :
 		step = minf(delta, maxf(0.0, duration - elapsed))
 	if heating and heat_contact:
 		for item in dish:
+			if item.has("thermal"): continue # Physical world owns continuous thermal state.
 			if item.get("off_heat", false): continue
 			var heat_gain: = step * float(HEAT_RATES[heat_level])
 
@@ -140,6 +141,7 @@ func tick(delta: float) -> void :
 	if water_ml >= 80.0 and water_heat >= 85.0:
 		var boil_factor: = inverse_lerp(85.0, 100.0, minf(water_heat, 100.0))
 		for item in dish:
+			if item.has("thermal"): continue # Hydration debits actual pan water in the world.
 			if str(item.get("id", "")) != "noodles" or item.get("off_heat", false): continue
 			var hydration: = clampf(float(item.get("hydration", 0.0)) + step * 0.11 * boil_factor, 0.0, 1.0)
 			item["hydration"] = hydration
@@ -242,15 +244,19 @@ func plate() -> Dictionary:
 		var needs_cook: bool = bool(data.get("needs_cook", false))
 		var cut: bool = bool(item.get("cut", false))
 		var ingredient_quality: float = 0.86
+		var thermal: Dictionary = item.get("thermal",{})
+		var underdone := heat < COOKED_AT if thermal.is_empty() else float(thermal.get("cooked",0.0)) < 0.99
+		var scorched := heat > BURNT_AFTER if thermal.is_empty() else maxf(float(thermal.get("char",[0,0])[0]),float(thermal.get("char",[0,0])[1])) > 0.15
 		if needs_cook:
-			if heat < COOKED_AT:
-				ingredient_quality = 0.22 + (heat / COOKED_AT) * 0.35
+			if underdone:
+				var internal_done := heat / COOKED_AT if thermal.is_empty() else float(thermal.get("cooked",0.0))
+				ingredient_quality = 0.22 + clampf(internal_done,0.0,1.0) * 0.35
 				raw_count += 1
 			elif heat <= 11.0:
 				ingredient_quality = 1.0
 			else:
 				ingredient_quality = 0.84
-		if heat > BURNT_AFTER:
+		if scorched:
 			ingredient_quality = 0.18
 			burnt = true
 		if cut:

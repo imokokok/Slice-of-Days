@@ -23,6 +23,13 @@ static func effective(body: RigidBody2D) -> Dictionary:
 	p.compliance = clampf(float(p.compliance) + soft * 0.1, 0.0, 0.25)
 	p.angular_damp = float(p.angular_damp) * (1.5 if cut else 1.0) * (1.0 + soft)
 	p.linear_damp = float(p.linear_damp) * (1.0 + soft * 0.5)
+	if body.has_meta("thermal"):
+		var state: Dictionary=body.get_meta("thermal")
+		var melted := clampf(float(state.get("liquid_kg",0.0))/maxf(body.mass,0.000001),0.0,1.0)
+		p.bounce*=1.0-melted
+		p.linear_damp=lerpf(float(p.linear_damp),14.0,melted)
+		p.angular_damp=lerpf(float(p.angular_damp),18.0,melted)
+		# A spreading phase creeps and damps rotation; it cannot bounce like its block.
 	return p
 
 static func container_mass(definition: Dictionary, remaining_ml: float) -> float:

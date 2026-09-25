@@ -25,6 +25,7 @@ var sponge: Node2D
 var cloth: Node2D
 var plate_presentation: Dictionary = {}
 var audio: Node
+var reactions: Node2D
 var _customer: Dictionary = {}
 var _backdrop: Node2D
 var _font: Font
@@ -159,6 +160,10 @@ func _ready() -> void :
 	pan.world = self
 	add_child(pan)
 	pan.move_to(pan.HOME)
+	reactions = preload("res://modules/restaurant/world/cooking_reactions.gd").new()
+	reactions.world = self
+	reactions.z_index = 8
+	add_child(reactions)
 	plate = preload("res://modules/restaurant/world/plate_controller.gd").new()
 	plate.world = self
 	add_child(plate)
@@ -738,6 +743,9 @@ func set_dish(entries: Array, _ingredient_defs: Array) -> void :
 		if physics_id > 0 and is_instance_id_valid(physics_id):
 			var body = instance_from_id(physics_id)
 			if is_instance_valid(body):
+				if body.has_meta("thermal"):
+					entry["heat"] = preload("res://modules/restaurant/domain/food_thermal.gd").legacy_heat(body.get_meta("thermal"))
+					entry["softness"] = float(body.get_meta("softness",0.0))
 				body.set_meta("cooking_heat", float(entry.get("heat", 0.0)))
 				var art = body.get_node_or_null("FoodArt")
 				if art:
@@ -761,6 +769,7 @@ func describe_body(body: RigidBody2D) -> Dictionary:
 		"surface_sauce": body.get_meta("surface_sauce", {}).duplicate(true)
 	}
 	state["pan_carryover"] = body.get_meta("pan_carryover", {}).duplicate(true)
+	if body.has_meta("thermal"): state["thermal"] = body.get_meta("thermal").duplicate(true)
 	state["cut_style"] = str(body.get_meta("cut_style", "whole"))
 	state["source_fraction"] = float(body.get_meta("source_fraction", 1.0))
 	var polygon: PackedVector2Array = body.get_meta("fragment_polygon", PackedVector2Array())
@@ -783,6 +792,10 @@ func synchronize_body_state(body: RigidBody2D, entry: Dictionary) -> void :
 	entry.merge(describe_body(body), true)
 	entry["cut"] = bool(body.get_meta("cut", false))
 	entry["heat"] = float(entry.get("heat", body.get_meta("saved_heat", 0.0)))
+	if body.has_meta("thermal"):
+		entry["heat"] = preload("res://modules/restaurant/domain/food_thermal.gd").legacy_heat(body.get_meta("thermal"))
+		hydration = float(body.get_meta("hydration",0.0))
+		softness = float(body.get_meta("softness",0.0))
 	entry["hydration"] = hydration
 	entry["softness"] = softness
 	body.set_meta("hydration", hydration)
@@ -1009,7 +1022,7 @@ func _sync_held_foreground() -> void :
 
 			for property in source.get_property_list():
 				var property_name: = str(property.name)
-				if property_name in ["definition", "cut", "heat", "softness", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
+				if property_name in ["definition", "cut", "heat", "softness", "thermal", "coating", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
 					_held_proxy.set(property_name, source.get(property_name))
 			_held_proxy.z_index = 1
 			_held_foreground.add_child(_held_proxy)
@@ -1017,7 +1030,7 @@ func _sync_held_foreground() -> void :
 		source.visible = false
 		_held_proxy.transform = source.get_global_transform_with_canvas() * _container_art_transform()
 
-		for property_name in ["cut", "heat", "softness", "compression"]:
+		for property_name in ["cut", "heat", "softness", "compression", "thermal", "coating"]:
 			if property_name in source:
 				_held_proxy.set(property_name, source.get(property_name))
 	_held_foreground.visible = controls_enabled and is_instance_valid(source)
@@ -1147,6 +1160,9 @@ func _dispense_seasoning(requested_ml: float = -1.0) -> RigidBody2D:
 	if matching.size() >= 6:
 		matching.sort_custom(func(a, b): return absf(a.position.x - _nozzle_world_position().x) < absf(b.position.x - _nozzle_world_position().x))
 		var target: RigidBody2D = matching[0]
+		target.visible=true
+		target.collision_layer=32
+		target.collision_mask=1
 		var state: Dictionary = target.get_meta("liquid_state")
 		SauceState.merge_into(state, liquid_state, 0.0)
 		target.set_meta("volume_ml", state.volume_ml)
@@ -1438,6 +1454,9 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 		coating["volume_ml"] = float(coating.get("volume_ml", 0.0)) * ratio
 		for key in coating.get("composition_ml", {}): coating.composition_ml[key] *= ratio
 		fragment.set_meta("surface_sauce", coating)
+		if coating.has("mass_kg"): coating.mass_kg *= ratio
+		if body.has_meta("thermal"):
+			fragment.set_meta("thermal", preload("res://modules/restaurant/domain/food_thermal.gd").split_state(body.get_meta("thermal"),ratio))
 		var carryover: Dictionary = body.get_meta("pan_carryover", {}).duplicate(true)
 		for key in carryover: carryover[key].mass_kg *= ratio
 		fragment.set_meta("pan_carryover", carryover)
@@ -1459,6 +1478,8 @@ func split_food(body: RigidBody2D, normal: = Vector2.RIGHT, world_cut: = Vector2
 		visual.cut_variant = int(fragment.get_meta("cut_variant"))
 		visual.source_fraction = float(fragment.get_meta("source_fraction"))
 		visual.heat = float(body.get_meta("saved_heat", 0.0))
+		visual.thermal = fragment.get_meta("thermal",{}).duplicate(true)
+		visual.coating = coating.duplicate(true)
 		fragment.add_child(visual)
 		_foods.add_child(fragment)
 		var separation: = normal.normalized() * (3.5 if index == 0 else -3.5)
@@ -1524,3 +1545,4 @@ func has_active_utensil() -> bool:
 func leave_pan_residue(body: RigidBody2D) -> void:
 	if body.get_meta("container_location", "") == "pan" and not body.get_meta("plated", false):
 		pan.residue.deposit(body)
+		if body.has_meta("thermal"): reactions._apply(body,body.get_meta("thermal"))

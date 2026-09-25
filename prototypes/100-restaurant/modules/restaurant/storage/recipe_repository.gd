@@ -273,6 +273,8 @@ func _validate_dish(dish: Variant, allow_empty: bool) -> Dictionary:
 		var ingredient_id = ingredient
 		if ingredient is Dictionary:
 			ingredient_id = ingredient.get("id", ingredient.get("ingredient_id", ""))
+			if not preload("res://modules/restaurant/domain/food_snapshot.gd").valid(ingredient):
+				return _failure("菜谱的食材温度、形态或酱汁记录格式无效。")
 		if not ingredient_id is String or not _ingredient_ids.has(ingredient_id):
 			return _failure("菜谱包含未知食材。")
 	return {"ok": true, "dish": dish.duplicate(true), "error": ""}
@@ -318,7 +320,8 @@ func _safe_json(value: Variant, depth: int) -> bool:
 		if value.size() > 40:
 			return false
 		for key in value:
-			if not key is String or key.length() > 64 or key.to_lower() in ["path", "url", "script", "resource", "resource_path"]:
+			# GDScript dot assignment creates StringName keys; JSON writes them as strings.
+			if not (key is String or key is StringName) or str(key).length() > 64 or str(key).to_lower() in ["path", "url", "script", "resource", "resource_path"]:
 				return false
 			if not _safe_json(value[key], depth + 1):
 				return false

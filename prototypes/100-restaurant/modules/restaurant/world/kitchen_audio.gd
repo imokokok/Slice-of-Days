@@ -3,7 +3,7 @@ extends Node
 
 const LOOPS := {"flame": -26.0, "sizzle": -14.0, "sauce": -13.0, "boil": -12.0, "water": -15.0, "squeeze": -14.0, "pour": -14.0, "powder": -13.0}
 const EFFECT_BANKS := {"ignite": "ignite", "tap": "tap", "bell": "bell", "pan": "pan", "chop": "chop", "chop_soft": "chop_soft", "chop_hard": "chop_hard", "stir": "stir_wood", "stir_wet": "stir_wet", "stir_meat": "stir_wet", "stir_dry": "stir_dry", "stir_hard": "pan", "stir_water": "stir_water", "stir_sauce": "stir_sauce", "stir_pasta": "stir_pasta", "stir_wood": "stir_wood", "stir_metal": "stir_metal", "drop": "drop", "drop_dry": "drop_dry", "drain": "drain", "pour": "drain", "wipe": "wipe", "paper": "paper", "serve": "serve"}
-const OILS := ["oil", "butter", "olive_oil"]
+const OILS := ["oil", "butter", "olive_oil", "sesame_oil"]
 const SAUCES := ["ketchup", "mayonnaise", "mustard", "chili_sauce", "soy_sauce", "soy", "cream", "milk", "honey"]
 var muted := false:
 	set(value):
@@ -62,13 +62,13 @@ func _composition_amount(state: Dictionary, ids: Array) -> float:
 	return amount
 
 func cooking_profile(world: Node2D) -> String:
-	if not world.cooking or not world.pan.on_stove(): return ""
 	# The same 80 ml boundary as the cooking model, not a separate audio rule.
 	if world.pan.water_ml >= 80.0:
-		return "boil" if world.pan.water_heat >= 99.0 else ""
+		return "boil" if world.reactions.water_activity()>0.08 else ""
 	var oil := 0.0
 	var sauce := 0.0
-	var heat := 0.0
+	var frying := 0.0
+	var simmer := 0.0
 	var wet_mass := 0.0
 	var egg_mass := 0.0
 	var meat_mass := 0.0
@@ -76,7 +76,9 @@ func cooking_profile(world: Node2D) -> String:
 	for body in world._foods.get_children():
 		if body.is_queued_for_deletion() or not body.get_meta("enrolled", false) or body.get_meta("plated", false) or body.get_meta("is_container", false): continue
 		if not world.pan.contains(body.position): continue
-		heat = maxf(heat, float(body.get_meta("cooking_heat", 0.0)))
+		var reaction: Dictionary = world.reactions.activity(body)
+		frying=maxf(frying,float(reaction.fry))
+		simmer=maxf(simmer,float(reaction.sauce))
 		var definition: Dictionary = body.get_meta("definition", {})
 		var id := str(definition.get("id", ""))
 		for state in [body.get_meta("liquid_state", {}), body.get_meta("surface_sauce", {})]:
@@ -88,9 +90,10 @@ func cooking_profile(world: Node2D) -> String:
 		if id == "egg": egg_mass += body.mass
 		elif stir_profile(definition) == "meat": meat_mass += body.mass
 		elif stir_profile(definition) == "wet": wet_mass += body.mass
-	# Heat is the existing cooking dose, not measured degrees Celsius.
-	if heat < 0.25: return ""
-	if sauce >= 5.0: return "simmer_sauce"
+	# One thermal state drives both the visible bubbles and these CC0 recordings.
+	# Residual heat continues after switching the burner off or moving the pan.
+	if simmer>0.08: return "simmer_sauce"
+	if frying<0.08: return ""
 	if food_mass <= 0.001: return "" # Clean oil alone is not an automatic loud sizzle.
 	if egg_mass > 0 and egg_mass >= maxf(meat_mass, wet_mass): return "fry_egg"
 	if meat_mass > 0 and meat_mass >= wet_mass: return "fry_meat"
@@ -125,7 +128,15 @@ func update_kitchen(world: Node2D) -> void:
 			player.volume_db = LOOPS[id] + lerpf(-9.0, 0.0, pressure)
 		elif id == "water": player.volume_db = LOOPS[id] + lerpf(-8.0, 0.0, world.pan.faucet_amount)
 		elif id in ["sizzle", "sauce", "boil", "flame"]:
-			player.volume_db = LOOPS[id] + {"low": -4.0, "medium": -1.0, "high": 1.0}.get(world.heat_level, -1.0)
+			if id=="flame": player.volume_db=LOOPS[id]
+			elif id=="boil": player.volume_db=LOOPS[id]+lerpf(-14.0,0.0,world.reactions.water_activity())
+			else:
+				var strength := 0.0
+				for food in world._foods.get_children():
+					if food is RigidBody2D and not food.is_queued_for_deletion():
+						var activity: Dictionary=world.reactions.activity(food)
+						strength=maxf(strength,float(activity.sauce if id=="sauce" else activity.fry))
+				player.volume_db=LOOPS[id]+lerpf(-12.0,0.0,strength)
 		if not player.playing or loop_banks.get(id, "") != group:
 			player.stream = _stream(group, true)
 			loop_banks[id] = group

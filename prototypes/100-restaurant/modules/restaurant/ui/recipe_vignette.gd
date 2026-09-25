@@ -16,6 +16,9 @@ func _ready() -> void:
 		art.shadows = false
 		art.heat = float(item.get("heat", 0)) if stage in ["cook", "plate"] else 0.0
 		art.softness = float(item.get("softness", 0)) if stage in ["cook", "plate"] else 0.0
+		if stage in ["cook","plate"]:
+			art.thermal=item.get("thermal",{}).duplicate(true)
+			art.coating=item.get("surface_sauce",{}).duplicate(true)
 		var anchor := Node2D.new()
 		anchor.position = Vector2(48 + (i % 3) * 52, 47 + (i / 3) * 24)
 		if entries.size() == 1: anchor.position.x = 82
@@ -35,6 +38,8 @@ func _ready() -> void:
 				piece.shadows = false
 				piece.heat = art.heat
 				piece.softness = art.softness
+				piece.thermal = art.thermal.duplicate(true)
+				piece.coating = art.coating.duplicate(true)
 				piece.cut = true
 				piece.scale = art.scale
 				mask.add_child(piece)

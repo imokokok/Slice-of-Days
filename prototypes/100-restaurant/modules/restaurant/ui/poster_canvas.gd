@@ -125,9 +125,11 @@ func add_ingredient(definition: Dictionary) -> void :
 	var heat_value = definition.get("heat", 0.0)
 	if not is_cut is bool or not _finite_number(heat_value):
 		return
+	if not preload("res://modules/restaurant/domain/food_snapshot.gd").valid(definition): return
 	_remember()
 	var offset: = float(stickers.size() % 5) * 0.055
 	stickers.append({"kind": "ingredient", "id": id, "cut": is_cut, "heat": clampf(float(heat_value), 0, 60), "position": [0.37 + offset, 0.38 + offset], "scale": 0.115})
+	preload("res://modules/restaurant/domain/food_snapshot.gd").copy(definition,stickers.back())
 	selected_index = stickers.size() - 1
 	mode = "select"
 	_rebuild_layers()
@@ -651,6 +653,8 @@ func _rebuild_layers() -> void :
 			visual.set("definition", _ingredient_catalog.get(layer.id, {}).duplicate(true))
 			visual.set("cut", layer.get("cut", false))
 			visual.set("heat", float(layer.get("heat", 0.0)))
+			visual.set("thermal",layer.get("thermal",{}).duplicate(true))
+			visual.set("coating",layer.get("surface_sauce",{}).duplicate(true))
 			visual.set("shadows", false)
 		elif layer.kind == "text":
 			visual = TextLayer.new()
@@ -736,7 +740,8 @@ static func validate_sticker(value: Variant) -> bool:
 			return false
 		if scale_value < 0.04 or scale_value > 0.28:
 			return false
-		allowed.append_array(["id", "cut", "heat"])
+		if not preload("res://modules/restaurant/domain/food_snapshot.gd").valid(value): return false
+		allowed.append_array(["id", "cut", "heat", "thermal", "surface_sauce"])
 	elif value.kind == "text":
 		if not value.get("text") is String or value.text.strip_edges().is_empty() or value.text.length() > 120:
 			return false

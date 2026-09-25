@@ -55,13 +55,16 @@ func run() -> void:
 	game.session.set_heating(true)
 	game._update_recipe_guide()
 	check(game.recipe_guide.sequence[game.recipe_guide.index].kind == "cook", "actual water and admitted food unlock heating")
-	game.session.tick(1)
+	preload("res://tests/thermal_fixture.gd").cook(game,1.0)
 	game._update_recipe_guide()
 	check(game.recipe_guide.sequence[game.recipe_guide.index].kind == "cook", "one second cannot complete raw cooking")
-	game.session.tick(20)
+	game.world.pan.water_ml=800.0
+	game.world.pan.water_heat=100.0
+	game.world.reactions.pan_c=120.0
+	preload("res://tests/thermal_fixture.gd").cook(game,70.0)
 	game.world.set_dish(game.session.dish, game.session.ingredients)
 	game._update_recipe_guide()
-	check(game.recipe_guide.sequence[game.recipe_guide.index].kind == "plate", "domain heat and noodle hydration complete cooking")
+	check(game.recipe_guide.sequence[game.recipe_guide.index].kind == "plate", "physical heat and finite noodle hydration complete cooking")
 	var ids_before := []
 	for food in game.world._foods.get_children(): ids_before.append(food.get_instance_id())
 	game._interact("plate")

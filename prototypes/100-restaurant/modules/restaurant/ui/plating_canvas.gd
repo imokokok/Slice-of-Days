@@ -45,7 +45,7 @@ func refresh_foods() -> void :
 			var art: = Node2D.new()
 			art.set_script(source.get_script())
 			for property in source.get_property_list():
-				if str(property.name) in ["definition", "cut", "heat", "softness", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
+				if str(property.name) in ["definition", "cut", "heat", "softness", "thermal", "coating", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
 					art.set(property.name, source.get(property.name))
 			art.scale = source.scale * 2.8
 			art.z_index = 1

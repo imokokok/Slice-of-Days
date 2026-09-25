@@ -89,6 +89,9 @@ func _run() -> void:
 	await create_timer(0.2).timeout
 	_expect(game.world.pan.on_stove() and game.world.pan.water_heat > 0, "returning a cold water-filled pan heats the water first")
 	game.world.pan.water_heat = 100
+	game.world.pan.water_ml=600.0
+	game.world.reactions.pan_c=130.0
+	preload("res://tests/thermal_fixture.gd").cook(game,35.0)
 	await create_timer(0.2).timeout
 	_expect(game.session.dish[0].heat > heat, "hot water resumes actual food cooking")
 	await process_frame

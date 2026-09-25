@@ -117,7 +117,7 @@ func run() -> void:
 		await create_timer(1.0).timeout
 		expect(game.session.dish.size() == 2, "all mushroom pieces enter pan together")
 		game.session.set_heating(true)
-		game.session.tick(8)
+		preload("res://tests/thermal_fixture.gd").cook(game,45.0)
 		world.set_dish(game.session.dish, game.session.ingredients)
 		for part in parts:
 			expect(part.get_node("FoodArt").heat >= 6 and part.get_meta("fragment_polygon") == saved[part.get_instance_id()], "cooked mushroom retains authored slices and heat")

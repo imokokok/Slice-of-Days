@@ -33,15 +33,20 @@ func _run() -> void:
 	game.session.set_heating(true)
 	await create_timer(0.1).timeout
 	tomato.set_meta("cooking_heat", 2.0)
+	var thermal: Dictionary = world.reactions.ensure_state(tomato)
+	thermal.faces_c=[135.0,115.0]
 	_expect(sound.cooking_profile(world) == "fry_vegetable", "hot moist vegetable selects vegetable frying recording")
 	tomato.set_meta("definition", game._definition("egg"))
 	_expect(sound.cooking_profile(world) == "fry_egg", "egg selects actual frying egg recording")
 	tomato.set_meta("definition", game._definition("beef"))
 	_expect(sound.cooking_profile(world) == "fry_meat", "meat selects separate frying recording")
 	tomato.set_meta("definition", game._definition("rice"))
+	thermal.water_kg=0.0
 	_expect(sound.cooking_profile(world) == "", "dry rice alone does not invent wet sizzling")
 	tomato.set_meta("surface_sauce", {"volume_ml": 8.0, "composition_ml": {"oil": 8.0}})
-	_expect(sound.cooking_profile(world) == "fry_vegetable", "oil-coated food can fry")
+	_expect(sound.cooking_profile(world) == "", "oil cannot create water bubbles in completely dry food")
+	thermal.water_kg=0.012
+	_expect(sound.cooking_profile(world) == "fry_vegetable", "oil-coated food with residual moisture can fry")
 	tomato.set_meta("surface_sauce", {"volume_ml": 12.0, "composition_ml": {"ketchup": 12.0}})
 	_expect(sound.cooking_profile(world) == "simmer_sauce", "sauce composition selects thick sauce bubbling")
 	world.pan.water_ml = 400.0
@@ -72,6 +77,7 @@ func _run() -> void:
 	world._stop_squeezing()
 	world.discard_held()
 	sound.stop_all()
+	world.reactions.set_physics_process(false)
 	tomato.set_meta("definition", game._definition("tomato"))
 	tomato.set_meta("surface_sauce", {})
 	sound._last_effect.clear()

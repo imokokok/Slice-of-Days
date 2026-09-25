@@ -6,7 +6,8 @@ var liquid_state: Dictionary = {}
 
 func _draw() -> void :
 	var color: = Color.from_string(str(definition.get("color", "d96143")), Color("d96143"))
-	var volume: = maxf(0.2, float(liquid_state.get("volume_ml", 3.0)))
+	var volume: = maxf(0.0, float(liquid_state.get("volume_ml", 3.0)))
+	if volume<=0.00001: return
 	var fullness: = clampf(sqrt(volume / 3.0), 0.55, 2.25)
 	var mixedness: = clampf(float(liquid_state.get("mixedness", 0.0)), 0.0, 1.0)
 	var layered: = bool(liquid_state.get("layered", false))
@@ -32,4 +33,13 @@ func _draw() -> void :
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _polygon(points: Array, color: Color) -> void :
-	draw_colored_polygon(PackedVector2Array(points), color)
+	# Closed quadratic smoothing keeps thick pools from looking like rigid shards.
+	var outline:=PackedVector2Array()
+	for i in points.size():
+		var a: Vector2=(points[(i-1+points.size())%points.size()]+points[i])*0.5
+		var b: Vector2=points[i]
+		var c: Vector2=(points[i]+points[(i+1)%points.size()])*0.5
+		for j in 5:
+			var t:=j/5.0
+			outline.append(a*(1-t)*(1-t)+b*2*t*(1-t)+c*t*t)
+	draw_colored_polygon(outline,color)

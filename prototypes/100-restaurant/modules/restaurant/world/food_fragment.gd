@@ -19,6 +19,14 @@ var _art: Node2D
 var cut_style := "slice"
 var cut_variant := 0
 var source_fraction := 0.5
+var thermal: Dictionary = {}:
+	set(value):
+		thermal=value
+		if is_instance_valid(_art): _art.thermal=value
+var coating: Dictionary = {}:
+	set(value):
+		coating=value
+		if is_instance_valid(_art): _art.coating=value
 var _face: Polygon2D
 
 func _ready() -> void :
@@ -32,6 +40,8 @@ func _ready() -> void :
 	_art.set("cut", false)
 	_art.set("heat", heat)
 	_art.set("softness", softness)
+	_art.set("thermal",thermal)
+	_art.set("coating",coating)
 	_art.set("shadows", false)
 	_art.position = art_offset
 	_art.scale = Vector2.ONE * 0.61
@@ -59,7 +69,7 @@ func _process(_delta: float) -> void:
 
 func _update_face() -> void:
 	if not is_instance_valid(_face): return
-	var appearance := preload("res://modules/restaurant/assets/cooking_appearance.gd").state(definition, heat)
+	var appearance := preload("res://modules/restaurant/assets/cooking_appearance.gd").surface(definition, heat,thermal,coating)
 	for key in appearance: _face.material.set_shader_parameter(key, appearance[key])
 
 func _draw() -> void :

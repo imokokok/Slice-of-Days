@@ -1,5 +1,7 @@
 # 100饭店工程约束
 
+2026-09-25 锅内反应由 `cooking_reactions.gd` 在固定物理步唯一更新，实际有 thermal 的食材不能再用 session 秒数加热。修改前读 `docs/THERMAL_REACTIONS_20260925.md`。酱汁/木勺/锅残留/切割必须转移质量及组成，不增加无限覆盖层；两面温度、核心、含水量和相变历史需传到摆盘、菜谱与 DIY。跑 thermal/reaction kitchen、存档、录音及完整回归；旧测试推进真实锅温，不直接补 heat 数。JSON 数字导入会变 float，StringName 键序列化为 string，验证按实际 JSON 值而非内部 Variant 类型。自动化不能冒称人耳听感、CFD 或完整三维仿真。
+
 2026-09-25 订单与 DIY 使用真实纸纹及 OFL WenKai 手写字体；编辑/静态文字共用原生 TextEdit 排版，不能退回独立表单或按钮堆。改动前读 `docs/PAPER_CRAFT_20260925.md`，运行 `tests/test_craft_workbench.gd` 及相关存档/GUI 回归。草稿按作品 ID 隔离、仅当次进程保留；永久保存保留可编辑图层；仅写做法也能存 DIY，不伪造烹饪记录。IME 候选窗属于系统，合成输入测试不能冒充真实 IME 验收。字体许可随源码和 Windows 包保留，生成纸纹的完整提示词与哈希不得遗失。
 
 2026-09-25 材质物理：97 个定义显式映射到 `data/material_response.json`，由 Godot 原生刚体 + MIT GodotSpringDamper 响应，不再使用统一回弹截断。改动前读 `docs/MATERIAL_PHYSICS_20260925.md`，跑 `tests/test_material_physics.gd` 及受影响回归。保留第三方 LICENSE/NOTICE 与固定来源提交；不能将弹簧称作流体引擎。瓶重必须等于包装自重加实际余量，出料、极小剂量、空瓶及溢出守恒；软瓶局部形变和喷口变换同源。所有参数为游戏近似，不宣称实验常数或绝对仿真。

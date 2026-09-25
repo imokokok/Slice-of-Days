@@ -97,10 +97,11 @@ func build(owner_game, paper, record: Dictionary, dish: Dictionary, is_recipe :=
 		var value: Dictionary = {"id":entry} if entry is String else entry
 		var definition: Dictionary = game._definition(str(value.get("id",value.get("ingredient_id","")))).duplicate(true)
 		if definition.is_empty(): continue
-		var identity := str(definition.id)+str(value.get("cut",false))+str(int(float(value.get("heat",0))/6))
+		var identity := str(definition.id)+str(value.get("cut",false))+str(int(float(value.get("heat",0))/6))+JSON.stringify(value.get("surface_sauce",{}))
 		if seen.has(identity): continue
 		seen[identity]=true
 		definition.cut=bool(value.get("cut",false)); definition.heat=float(value.get("heat",0))
+		preload("res://modules/restaurant/domain/food_snapshot.gd").copy(value,definition)
 		var token := Token.new()
 		token.name="UsedIngredient_"+str(definition.id)
 		token.set_meta("ingredient_id",definition.id)

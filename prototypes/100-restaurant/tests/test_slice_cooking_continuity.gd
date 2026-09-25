@@ -81,12 +81,13 @@ func run() -> void:
 	await create_timer(1.4).timeout
 	expect(game.session.dish.size() == pieces.size(), "one drag transfers all seven slices into the pan")
 	game.session.set_heating(true)
-	game.session.tick(8.0)
+	preload("res://tests/thermal_fixture.gd").cook(game,45.0)
 	world.set_dish(game.session.dish, game.session.ingredients)
 	for piece in pieces:
 		expect(piece.get_meta("fragment_polygon") == geometry[piece.get_instance_id()], "cooking retains each slice's exact geometry")
 		expect(float(piece.get_node("FoodArt").heat) >= 6.0, "cooked dose reaches the actual fragment renderer")
-	game.session.tick(20.0)
+	game.session.set_heat_level("high")
+	preload("res://tests/thermal_fixture.gd").cook(game,80.0)
 	world.set_dish(game.session.dish, game.session.ingredients)
 	expect(game.session.plate().burnt, "unattended dry heat produces evaluated burnt food")
 	game._show_plating()

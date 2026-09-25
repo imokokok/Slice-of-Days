@@ -26,14 +26,14 @@ static func transfer(source: Dictionary, destination: Dictionary, requested_ml: 
 	var ratio: = moved / available
 	var source_mix: Dictionary = source.get("composition_ml", {})
 	var destination_mix: Dictionary = destination.get("composition_ml", {})
-	for id in source_mix.keys().slice(0, MAX_MIX_COMPONENTS):
+	for id in source_mix:
 		var component: = float(source_mix[id]) * ratio
 		source_mix[id] = maxf(0.0, float(source_mix[id]) - component)
 		destination_mix[id] = float(destination_mix.get(id, 0.0)) + component
 	source["composition_ml"] = source_mix
 	destination["composition_ml"] = destination_mix
-	source["volume_ml"] = snappedf(available - moved, 0.001)
-	destination["volume_ml"] = snappedf(float(destination.get("volume_ml", 0.0)) + moved, 0.001)
+	source["volume_ml"] = available - moved
+	destination["volume_ml"] = float(destination.get("volume_ml", 0.0)) + moved
 	return moved
 
 static func agitate(state: Dictionary, energy: float) -> void :
@@ -46,11 +46,12 @@ static func agitate(state: Dictionary, energy: float) -> void :
 	state["layered"] = float(state.mixedness) < 0.32
 
 static func merge_into(target: Dictionary, incoming: Dictionary, agitation: float = 0.0) -> float:
+	var before := float(target.get("volume_ml", 0.0))
 	var moved: = transfer(incoming, target, float(incoming.get("volume_ml", 0.0)))
 	if moved > 0.0:
 		var v0: = float(target.get("viscosity", 0.5))
 		var v1: = float(incoming.get("viscosity", v0))
-		target["viscosity"] = clampf((v0 + v1) * 0.5, 0.05, 1.0)
+		target["viscosity"] = clampf((v0 * before + v1 * moved) / (before + moved), 0.05, 1.0)
 		target["layered"] = target.get("composition_ml", {}).size() > 1 and (absf(v0 - v1) > 0.22 or agitation < 0.12)
 		agitate(target, agitation)
 	return moved

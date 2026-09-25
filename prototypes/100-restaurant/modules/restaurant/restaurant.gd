@@ -528,11 +528,16 @@ func _update_hud() -> void :
 		var heat: float = float(item.get("heat", 0))
 		max_heat = maxf(max_heat, heat)
 		var state: = "已焦" if heat > 14 else ("已熟" if heat >= 6 else ("未熟" if def.get("needs_cook", false) else "可直接食用"))
+		var thermal: Dictionary=item.get("thermal",{})
+		if not thermal.is_empty():
+			if def.get("needs_cook",false) and float(thermal.cooked)<0.99: state="内部未熟"
+			if float(thermal.get("liquid_kg",0.0))>float(thermal.get("initial_kg",1.0))*0.12:
+				state="逐渐化开" if str(thermal.get("phase",""))!="puree" else "软烂出汁"
 		if str(item.get("id", "")) == "noodles" and float(item.get("softness", 0.0)) > 0.02:
 			state += "·变软%d%%" % roundi(float(item.get("softness", 0.0)) * 100.0)
 		names.append("%s%s · %s" % [def.get("name", item["id"]), "·切" if item.get("cut", false) else "", state])
 	var fire_name: String = {"low": "小火", "medium": "中火", "high": "大火"}[session.heat_level]
-	dish_label.text = "%s · %s" % [fire_name + "加热" if session.heating else "已关火", " / ".join(names) if not names.is_empty() else "把食材拖进锅中，拿刀在菜板切配，点击盘子摆盘"]
+	dish_label.text = "%s · %s" % [fire_name + "加热" if session.heating else ("已关火 · 锅有余热" if world.reactions.pan_c>65.0 else "已关火"), " / ".join(names) if not names.is_empty() else "把食材拖进锅中，拿刀在菜板切配，点击盘子摆盘"]
 	for level in _fire_buttons:
 		_fire_buttons[level].set_pressed_no_signal(level == (session.heat_level if session.heating else "off"))
 		_fire_buttons[level].disabled = session.phase == "closed"

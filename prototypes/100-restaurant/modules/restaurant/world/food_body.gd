@@ -97,7 +97,9 @@ func advance_feedback(dt: float, velocity: Vector2, pressure: float) -> void:
 		if is_bottle:
 			art.set("compression", compression)
 		else:
-			art.scale = _base_art_scale * Vector2(1.0 + compression * 0.45, 1.0 - compression)
+			var deform := Vector2.ONE
+			if has_meta("thermal"): deform = preload("res://modules/restaurant/domain/food_thermal.gd").shape(get_meta("thermal"),definition)
+			art.scale = _base_art_scale * deform * Vector2(1.0 + compression * 0.45, 1.0 - compression)
 
 func _physics_process(delta: float) -> void:
 	var world = get_parent().get_parent() if get_parent() else null

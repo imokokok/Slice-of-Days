@@ -241,3 +241,10 @@ Windows 试玩版于 2026-09-11 00:42 导出，导出命令退出码 0；测试�
 - 混音审计 `qa/20260925-audio-mix-audit.json`：15 段声音非静音，最大绝对幅度 0.158844（未削波），最后静音段 RMS=0。数值审计不代表人耳认可音色；逐素材人工听感与系统鼠标完整试玩尚未完成。
 - 已知近似与素材缺口详见 AUDIO.md：采集到的是公开压缩版本；部分工具/肉类材质借用相近的真实录音；没有声称完成逐食材声学仿真。
 - 最终源码 headless 120 帧启动无脚本错误；Windows release 导出退出码 0，导出的 EXE 再以 headless 120 帧启动退出码 0、无缺失素材错误。随后已打开最新可玩窗口“100饭店”。这证明打包和启动，不代替系统鼠标及人耳完整验收。
+
+## 2026-09-25 手持工具前景修复回归
+
+- `tools/test.ps1` 列出的 **37 个脚本全部通过**，包括新增 `test_tool_foreground.gd` 的 11 项无头断言、`test_knife_drag.gd` 的 23 项引擎鼠标事件、`test_visual_spatial_consistency.gd` 的 37 项、`test_integration.gd` 的 124 项，以及 `capture_asset_gallery.gd` 的 97 张图集 alpha 审计（0 错误）。逐项输出在 `qa/20260925-tool-foreground-tests.txt`。本机无 PowerShell，按该入口的顺序与错误判定逐脚本运行 Godot；不是声称执行了 `pwsh`。
+- 图形模式运行 `test_tool_foreground.gd`：19 项通过。GPU 像素比较确认刀、海绵、抹布与带番茄餐盘覆盖菜谱纸张；刀的纸张区域有 1153 个采样像素改变。人工检查了四张实际渲染截图，主图保存在 `qa/20260925-held-knife-over-recipe.png`。
+- `godot --headless --path prototypes/100-restaurant --quit-after 120` 退出码 0，无脚本错误；`git diff --check` 通过。刀具的真实引擎鼠标按下、拖动、在遮挡 GUI 上松开及回板，由 `test_knife_drag.gd` 验证。
+- 本轮尚未在系统鼠标下完整试玩全部取物、下锅、切配和摆盘流程；引擎事件和 GPU 捕获不等同于长期人工游玩。

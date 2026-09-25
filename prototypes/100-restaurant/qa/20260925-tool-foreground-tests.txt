@@ -1,0 +1,186 @@
+## 1/37 tests/test_thermal_reactions.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: thermal reactions, 20 checks
+
+## 2/37 tests/test_reaction_kitchen.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: reaction kitchen, 32 checks
+
+## 3/37 tests/test_visual_spatial_consistency.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+MEASURED film displacement error ml: 0.000003750
+PASS: visual spatial consistency, 37 checks
+
+## 4/37 tests/test_craft_workbench.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: immersive paper craft, 38 checks
+
+## 5/37 tests/test_material_physics.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+MEASURED native rebound pixels: stone=1.014 tennis=39.011
+PASS: material physics, 333 checks
+
+## 6/37 tests/test_cut_clean_share.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: cut / cleaning / single recipe sharing, 86 checks
+
+## 7/37 tests/test_handdrawn_assets.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: hand-drawn assets, 227 checks
+
+## 8/37 tests/test_shelf_pages.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: paged shelves and shared finite stock, 260 checks
+
+## 9/37 tests/test_recipe_guide.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recipe guide, 40 checks
+
+## 10/37 tests/test_recorded_audio.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recorded audio, 151 checks
+
+## 11/37 modules/restaurant/domain/test_domain.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: restaurant domain, 552 checks
+
+## 12/37 modules/restaurant/storage/smoke_test.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+STORAGE_AND_POSTER_TESTS_PASSED
+
+## 13/37 tests/test_integration.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: restaurant integration, 124 checks
+
+## 14/37 tests/test_high_fidelity_state.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: high-fidelity state slice, 15 checks
+
+## 15/37 tests/test_knife_physics.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: knife physics, 35 checks
+
+## 16/37 tests/test_knife_drag.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: real knife mouse drag, 23 checks
+
+## 17/37 tests/test_tool_foreground.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: tool foreground, 11 checks
+
+## 18/37 tests/test_cut_batch_stability.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: cut-batch stability, 42 checks
+
+## 19/37 tests/test_slice_cooking_continuity.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: slice cooking continuity, 37 checks
+
+## 20/37 tests/test_reference_layout.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: reference layout and sponge, 41 checks
+
+## 21/37 tests/test_stock_volume_recipe.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: stock, pan volume and shared recipe, 25 checks
+
+## 22/37 modules/restaurant/ui/poster_store_test.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+POSTER_PERSISTENCE_AND_WALL_TESTS_PASSED
+
+## 23/37 modules/restaurant/ui/collage_test.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ADVANCED_COLLAGE_TESTS_PASSED checks=39
+
+## 24/37 tests/test_collage_input.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: real collage GUI input, 68 checks
+
+## 25/37 modules/restaurant/storage/paper_recipe_test.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PAPER_RECIPE_TESTS_PASSED checks=30
+
+## 26/37 tests/test_recipe_diy.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recipe DIY lifecycle, 76 checks
+
+## 27/37 tests/test_tape_editing.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: tape editing, 75 checks
+
+## 28/37 tests/test_tape_tools.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: shared tape tools, 30 checks
+
+## 29/37 tests/test_seasoning.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: seasoning input and physics, 155 checks
+
+## 30/37 tests/test_spatula.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: spatula input and physics, 29 checks
+
+## 31/37 tests/test_heat_control.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: heat controls, 23 checks
+
+## 32/37 tests/test_kitchen_interactions.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: kitchen interactions, 36 checks
+
+## 33/37 tests/test_customer_reviews.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: customer reviews, 35 checks
+
+## 34/37 tests/test_free_pan.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS free pan 10 checks
+
+## 35/37 tests/test_workstations.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS workstations 17 checks
+
+## 36/37 tests/test_comfort_release.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS comfort release: 90 checks
+
+## 37/37 tests/capture_asset_gallery.gd (exit 0)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+Asset alpha audit: 97 sprites, 0 errors

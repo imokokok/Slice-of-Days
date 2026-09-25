@@ -9,9 +9,12 @@ func _ready() -> void:
 	z_index = 43
 
 func _draw() -> void:
-	draw_rect(Rect2(-28,-9,56,23), Color("e1b454"))
-	draw_rect(Rect2(-28,-16,56,7), Color("486f61"))
-	for i in range(7): draw_circle(Vector2(-21+i*6, 2+(i%2)*5), 1.1, Color("c49542"))
+	paint(self)
+
+func paint(target: Node2D) -> void:
+	target.draw_rect(Rect2(-28,-9,56,23), Color("e1b454"))
+	target.draw_rect(Rect2(-28,-16,56,7), Color("486f61"))
+	for i in range(7): target.draw_circle(Vector2(-21+i*6, 2+(i%2)*5), 1.1, Color("c49542"))
 
 func _input(event: InputEvent) -> void:
 	if not world.controls_enabled: return

@@ -87,6 +87,9 @@ var _previous_blade_tip: = Vector2.ZERO
 const KNIFE_BLADE_MID := Vector2(-50, -22)
 var _knife_stroke_origin := Vector2.ZERO
 const KNIFE_HOME := Vector2(1252, 731)
+# The art itself is rotated 0.22 radians inside knife_tool.gd. Rest positions
+# must contain that painted outline, not just the knife node's origin.
+const KNIFE_REST_ART_BOUNDS := Rect2(-98, -44, 196, 92)
 var _knife_rest_position: = KNIFE_HOME
 var _knife_last_valid_rest: = KNIFE_HOME
 var _knife_drag_offset: = Vector2.ZERO
@@ -1557,8 +1560,12 @@ func _move_knife(pointer: Vector2) -> void :
 		else:
 			_knife_stroke_origin = blade_tip
 	_previous_blade_tip = blade_tip
-	if _stations.chop.grow(22.0).has_point(_knife_visual.global_position):
+	if _knife_rest_center_bounds().has_point(_knife_visual.global_position):
 		_knife_last_valid_rest = _knife_visual.global_position
+
+func _knife_rest_center_bounds() -> Rect2:
+	var board: Rect2 = cutting_board.rect()
+	return Rect2(board.position - KNIFE_REST_ART_BOUNDS.position, board.size - KNIFE_REST_ART_BOUNDS.size)
 
 func _knife_handle_rect() -> Rect2:
 	return Rect2(_knife_visual.global_position + Vector2(5, 8), Vector2(91, 51))

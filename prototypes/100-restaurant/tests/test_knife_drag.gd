@@ -26,7 +26,10 @@ func _run() -> void:
 	var initial: Vector2 = world._knife_visual.global_position
 	_press(world._knife_handle_rect().get_center())
 	await process_frame
+	await process_frame
 	_expect(world._knife_held and world._knife_cutting, "actual handle press starts held drag and cutting")
+	var foreground = world.get_node("FloatingTools")
+	_expect(foreground.copies.has(world._knife_visual.get_instance_id()) and not world._knife_visual.visible, "held knife is drawn in the foreground layer above kitchen paper")
 	_expect(world._knife_visual.global_position.is_equal_approx(initial), "pickup preserves the grabbed offset and never jumps")
 	_motion(initial+Vector2(83,17), true)
 	await process_frame
@@ -34,8 +37,11 @@ func _run() -> void:
 	_expect(dragged.is_equal_approx(initial+Vector2(32.5,-16.5)), "held motion preserves exact cursor-to-handle offset")
 	_release(Vector2(210, 330))
 	await process_frame
+	await process_frame
 	_expect(not world._knife_held and not world._knife_cutting, "mouse release over blocking GUI always ends tool drag")
 	_expect(world._knife_visual.global_position.is_equal_approx(dragged), "release puts knife at its last valid board location")
+	_expect(world.cutting_board.rect().encloses(Rect2(dragged + world.KNIFE_REST_ART_BOUNDS.position, world.KNIFE_REST_ART_BOUNDS.size)), "released knife artwork stays entirely on the cutting board")
+	_expect(not foreground.copies.has(world._knife_visual.get_instance_id()) and world._knife_visual.visible, "resting knife returns to the world layer after release")
 	_motion(Vector2(970, 280), false)
 	await process_frame
 	_expect(world._knife_visual.global_position.is_equal_approx(dragged), "mouse movement after release cannot move the knife")

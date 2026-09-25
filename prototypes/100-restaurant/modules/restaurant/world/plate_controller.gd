@@ -19,8 +19,11 @@ func _ready() -> void :
 	world.add_child(platform)
 	_sync()
 func _draw() -> void :
+	paint(self)
+
+func paint(target: Node2D) -> void:
 	var tex: = preload("res://modules/restaurant/assets/sprite_library.gd").gear(1)
-	if tex: draw_texture_rect(tex, Rect2(center - Vector2(123, 39), Vector2(246, 86)), false)
+	if tex: target.draw_texture_rect(tex, Rect2(center - Vector2(123, 39), Vector2(246, 86)), false)
 func _input(event: InputEvent) -> void :
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		var pointer: Vector2 = world.get_global_transform_with_canvas().affine_inverse() * event.position

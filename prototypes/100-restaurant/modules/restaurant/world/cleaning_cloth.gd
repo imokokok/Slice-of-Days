@@ -13,13 +13,16 @@ func _ready() -> void:
 	z_index = 42
 
 func _draw() -> void:
+	paint(self)
+
+func paint(target: Node2D) -> void:
 	var paper := Color("efdfbf").darkened(wetness * 0.14)
 	var shape := PackedVector2Array([Vector2(-48,-19),Vector2(40,-22),Vector2(48,19),Vector2(-42,24)])
-	draw_colored_polygon(shape, paper)
-	for x in [-24, 4, 28]: draw_line(Vector2(x,-18),Vector2(x+5,19),Color("bb705f"),5,true)
-	draw_line(Vector2(-40,16),Vector2(42,13),Color("c6b493"),2,true)
+	target.draw_colored_polygon(shape, paper)
+	for x in [-24, 4, 28]: target.draw_line(Vector2(x,-18),Vector2(x+5,19),Color("bb705f"),5,true)
+	target.draw_line(Vector2(-40,16),Vector2(42,13),Color("c6b493"),2,true)
 	if absorbed_kg > 0.000001:
-		for i in range(4): draw_circle(Vector2(-18+i*12, sin(i*2.0)*8), 5, Color("735038",clampf(absorbed_kg*300,0.12,0.6)))
+		for i in range(4): target.draw_circle(Vector2(-18+i*12, sin(i*2.0)*8), 5, Color("735038",clampf(absorbed_kg*300,0.12,0.6)))
 
 func _process(delta: float) -> void:
 	if not world.controls_enabled: return

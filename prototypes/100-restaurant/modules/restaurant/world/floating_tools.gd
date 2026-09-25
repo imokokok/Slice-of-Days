@@ -27,6 +27,16 @@ func _process(_delta: float) -> void :
 						var art: Node2D = body.get_node_or_null("FoodArt")
 						if art: wanted.append(art)
 					if is_instance_valid(tool._rim_visual): wanted.append(tool._rim_visual)
+		if world._knife_held: wanted.append(world._knife_visual)
+		if world.sponge.active: wanted.append(world.sponge)
+		if world.cloth.active: wanted.append(world.cloth)
+		if world.plate.active:
+			wanted.append(world.plate)
+			for body in world._foods.get_children():
+				if body.is_queued_for_deletion() or not body.get_meta("plated", false): continue
+				var art: Node2D = body.get_node_or_null("FoodArt")
+				if art == null: art = body.get_node_or_null("SauceBlob")
+				if art: wanted.append(art)
 	for id in copies.keys():
 		var entry: Dictionary = copies[id]
 		if not is_instance_valid(entry.source) or not wanted.has(entry.source):
@@ -43,18 +53,28 @@ func _process(_delta: float) -> void :
 			else:
 				proxy.set_script(source.get_script())
 				for property in source.get_property_list():
-					if str(property.name) in ["controller", "definition", "cut", "heat", "softness", "thermal", "coating", "compression", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction"]:
+					if str(property.name) in ["controller", "definition", "cut", "heat", "softness", "thermal", "coating", "compression", "shadows", "polygon", "art_offset", "dispense_mode", "liquid_state", "cut_style", "cut_variant", "source_fraction", "crack_progress"]:
 						proxy.set(property.name, source.get(property.name))
 			add_child(proxy)
 			copies[id] = {"source": source, "proxy": proxy}
 		var visual: Node2D = copies[id].proxy
 		visual.transform = source.get_global_transform_with_canvas()
 		# Proxies remain views of the live food, including while it keeps cooking.
-		for property_name in ["cut", "heat", "softness", "thermal", "coating", "compression", "liquid_state"]:
+		for property_name in ["cut", "heat", "softness", "thermal", "coating", "compression", "liquid_state", "crack_progress"]:
 			if property_name in source and property_name in visual: visual.set(property_name, source.get(property_name))
 		var spoon_rim: = source.name == "SpoonFrontRim"
 		var spoon_food: = source.get_parent() is RigidBody2D and _spoon_holds(source.get_parent())
-		visual.z_index = 0 if source == world.pan.pan_back else (7 if spoon_rim else (6 if spoon_food else (5 if world.utensils.has(source) else (4 if source == world.pan.pan_front else (3 if source == world.pan.pan_surface else (1 if source.name == "SauceBlob" else 2))))))
+		var plate_food: bool = source.get_parent() is RigidBody2D and bool(source.get_parent().get_meta("plated", false))
+		if source == world.pan.pan_back: visual.z_index = 0
+		elif source == world.plate: visual.z_index = 1
+		elif plate_food: visual.z_index = 2 if source.name == "SauceBlob" else 3
+		elif source in [world._knife_visual, world.sponge, world.cloth]: visual.z_index = 8
+		elif spoon_rim: visual.z_index = 7
+		elif spoon_food: visual.z_index = 6
+		elif world.utensils.has(source): visual.z_index = 5
+		elif source == world.pan.pan_front: visual.z_index = 4
+		elif source == world.pan.pan_surface: visual.z_index = 3
+		else: visual.z_index = 1 if source.name == "SauceBlob" else 2
 	# Keep overlapping carried pieces in the same depth order as the kitchen.
 	var ordered := copies.values()
 	ordered.sort_custom(func(a, b): return a.source.get_global_transform_with_canvas().origin.y < b.source.get_global_transform_with_canvas().origin.y)

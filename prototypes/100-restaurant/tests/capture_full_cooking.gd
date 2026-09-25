@@ -30,7 +30,17 @@ func _run() -> void:
 	await _frames(6)
 	var drag_offset: Vector2 = game.world._knife_drag_offset
 	var blade_offset := Vector2(-50, -22)
-	_mouse(tomato_center + Vector2(0, -55) - drag_offset - blade_offset, "move")
+	var book_pointer: Vector2 = Vector2(1220, 600) - drag_offset
+	for i in 16:
+		_mouse(knife_start.lerp(book_pointer, (i + 1) / 16.0), "move")
+		await process_frame
+	await _frames(18)
+	var floating: Node = game.world.get_node("FloatingTools")
+	if not _require(floating.copies.has(game.world._knife_visual.get_instance_id()), "held knife is visible above the recipe paper"): return
+	var cut_start: Vector2 = tomato_center + Vector2(0, -55) - drag_offset - blade_offset
+	for i in 12:
+		_mouse(book_pointer.lerp(cut_start, (i + 1) / 12.0), "move")
+		await process_frame
 	await _frames(12)
 	_mouse(tomato_center + Vector2(0, 55) - drag_offset - blade_offset, "move")
 	await _frames(6)

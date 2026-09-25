@@ -17,7 +17,7 @@ func _run() -> void:
 		return
 	var packed = load("res://modules/restaurant/restaurant.tscn")
 	game = packed.instantiate()
-	game.configure({"shift_seconds": 240.0, "display_name": "预览主厨", "repository_path": "user://preview_qa/cookbook.json"})
+	game.configure({"shift_seconds": 720.0, "display_name": "预览主厨", "repository_path": "user://preview_qa/cookbook.json"})
 	root.add_child(game)
 	await process_frame
 	game._start_shift()

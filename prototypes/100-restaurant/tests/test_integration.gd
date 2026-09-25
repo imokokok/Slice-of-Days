@@ -96,7 +96,7 @@ func _test_visible_storage() -> void:
 		unique[str(button.get_meta("ingredient_id", ""))] = true
 		if button.is_visible_in_tree():
 			visible_count += 1
-	_expect(unique.size() == 37 and visible_count == 37, "reference layout exposes 15 fridge, 5 prep tray, 5 condiment rack and 12 special shelf items")
+	_expect(unique.size() == 37 and visible_count == 37, "reference layout exposes 15 visible fridge, 5 prep tray, 5 condiment rack and 12 special shelf items")
 	_expect(storage.definitions.size()==game.session.active_ingredients().size(),"storage exposes every allowed ingredient definition")
 	var tomato_button = storage.find_child("Ingredient_tomato", true, false)
 	if tomato_button == null:

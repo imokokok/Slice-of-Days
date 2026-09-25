@@ -83,8 +83,11 @@ func _process(delta: float) -> void :
 			if runoff > 0.0001:
 				overflowing = true
 				overflow_water_ml += runoff
+				world.receive_faucet_runoff(runoff)
 				if not was_overflowing:
 					world.interaction.emit("notice", "锅已经满了，继续流出的水正沿锅沿落进水槽。请关上水龙头。")
+		elif faucet_on:
+			world.receive_faucet_runoff(delta * 180.0 * faucet_amount)
 		# Fixed-step CookingReactions owns heat exchange and evaporation.
 	pan_back.queue_redraw()
 	pan_front.queue_redraw()

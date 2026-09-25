@@ -1,0 +1,208 @@
+01/41 PASS tests/test_thermal_reactions.gd 0.3s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: thermal reactions, 20 checks
+
+02/41 PASS tests/test_reaction_kitchen.gd 3.9s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: reaction kitchen, 32 checks
+
+03/41 PASS tests/test_visual_spatial_consistency.gd 5.8s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+MEASURED film displacement error ml: 0.000003750
+PASS: visual spatial consistency, 40 checks
+
+04/41 PASS tests/test_kitchen_flood.gd 2.3s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: kitchen flood, 8 checks
+
+05/41 PASS tests/test_craft_workbench.gd 3.8s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: immersive paper craft, 38 checks
+
+06/41 PASS tests/test_material_physics.gd 7.5s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+MEASURED native rebound pixels: stone=1.014 tennis=39.011
+PASS: material physics, 357 checks
+
+07/41 PASS tests/test_cut_clean_share.gd 6.1s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: cut / cleaning / single recipe sharing, 140 checks
+
+08/41 PASS tests/test_handdrawn_assets.gd 5.3s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: hand-drawn assets, 227 checks
+
+09/41 PASS tests/test_team_food_art.gd 2.9s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: team art, generated staples, real shelf stock, 119 checks
+
+10/41 PASS tests/test_shelf_pages.gd 4.2s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: paged shelves and shared finite stock, 314 checks
+
+11/41 PASS tests/test_removed_counter_items_cast.gd 2.6s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: removed countertop items and canonical cast, 21 checks
+
+12/41 PASS tests/test_recipe_guide.gd 4.9s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recipe guide, 44 checks
+
+13/41 PASS tests/test_serving_continuity.gd 3.1s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: serving continuity, 16 checks
+
+14/41 PASS tests/test_recorded_audio.gd 3.0s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recorded audio, 164 checks
+
+15/41 PASS modules/restaurant/domain/test_domain.gd 0.2s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: restaurant domain, 598 checks
+
+16/41 PASS modules/restaurant/storage/smoke_test.gd 0.3s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+STORAGE_AND_POSTER_TESTS_PASSED
+
+17/41 PASS tests/test_integration.gd 7.9s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: restaurant integration, 127 checks
+
+18/41 PASS tests/test_high_fidelity_state.gd 0.2s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: high-fidelity state slice, 15 checks
+
+19/41 PASS tests/test_knife_physics.gd 3.1s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: knife physics, 35 checks
+
+20/41 PASS tests/test_knife_drag.gd 1.0s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: real knife mouse drag, 23 checks
+
+21/41 PASS tests/test_tool_foreground.gd 2.4s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: tool foreground, 11 checks
+
+22/41 PASS tests/test_cut_batch_stability.gd 4.0s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: cut-batch stability, 42 checks
+
+23/41 PASS tests/test_slice_cooking_continuity.gd 4.9s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: slice cooking continuity, 37 checks
+
+24/41 PASS tests/test_reference_layout.gd 2.3s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: reference layout and sponge, 53 checks
+
+25/41 PASS tests/test_stock_volume_recipe.gd 2.7s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: stock, pan volume and shared recipe, 26 checks
+
+26/41 PASS modules/restaurant/ui/poster_store_test.gd 0.7s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+POSTER_PERSISTENCE_AND_WALL_TESTS_PASSED
+
+27/41 PASS modules/restaurant/ui/collage_test.gd 0.4s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ADVANCED_COLLAGE_TESTS_PASSED checks=39
+
+28/41 PASS tests/test_collage_input.gd 3.6s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: real collage GUI input, 68 checks
+
+29/41 PASS modules/restaurant/storage/paper_recipe_test.gd 0.2s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PAPER_RECIPE_TESTS_PASSED checks=33
+
+30/41 PASS tests/test_recipe_diy.gd 4.6s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: recipe DIY lifecycle, 81 checks
+
+31/41 PASS tests/test_tape_editing.gd 0.4s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: tape editing, 75 checks
+
+32/41 PASS tests/test_tape_tools.gd 3.2s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: shared tape tools, 30 checks
+
+33/41 PASS tests/test_seasoning.gd 30.1s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: seasoning input and physics, 155 checks
+
+34/41 PASS tests/test_spatula.gd 4.5s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: spatula input and physics, 29 checks
+
+35/41 PASS tests/test_heat_control.gd 2.3s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: heat controls, 23 checks
+
+36/41 PASS tests/test_kitchen_interactions.gd 5.6s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: kitchen interactions, 36 checks
+
+37/41 PASS tests/test_customer_reviews.gd 0.3s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: customer reviews, 41 checks
+
+38/41 PASS tests/test_free_pan.gd 7.3s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS free pan 12 checks
+
+39/41 PASS tests/test_workstations.gd 3.8s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS workstations 18 checks
+
+40/41 PASS tests/test_comfort_release.gd 9.8s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS comfort release: 65 checks
+
+41/41 PASS tests/capture_asset_gallery.gd 3.9s
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+Asset alpha audit: 105 sprites, 0 errors
+
+SUMMARY 41/41 passed

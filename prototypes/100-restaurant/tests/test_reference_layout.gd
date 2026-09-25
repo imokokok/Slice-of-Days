@@ -23,6 +23,14 @@ func run() -> void:
 		var item: Button = game.hud.find_child("Ingredient_"+id, true, false)
 		expect(item != null and Rect2(640, 500, 435, 120).encloses(item.get_rect()), "ingredient belongs in the original five-slot tray: " + id)
 		expect(item != null and item.get_rect().end.y < 590, "tray click area stays inside its groove: " + id)
+	var art_library = preload("res://modules/restaurant/assets/sprite_library.gd")
+	var atlas_bounds: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/assets/food_bounds.json"))
+	for specimen in [["mayonnaise", "3:6"], ["chili_sauce", "3:0"], ["vinegar", "3:2"]]:
+		var key: String = specimen[1]
+		var bounds: Array = atlas_bounds[key]
+		var expected: Texture2D = art_library.prepared_region("res://modules/restaurant/assets/food_atlas_3.png", Rect2i(bounds[0], bounds[1], bounds[2], bounds[3]))
+		expect(art_library.food(specimen[0]) == expected, specimen[0] + " displays its authored bottle rather than a shifted catalog sprite")
+	expect(art_library.physical_art_scale("mayonnaise") > art_library.physical_art_scale("chili_sauce"), "larger mayonnaise bottle keeps a larger physical scale than narrow chili sauce")
 	var faucet_stream := Rect2(194, 560, 12, 175)
 	for id in ["FridgePreviousPage", "FridgeNextPage"]:
 		var tab := game.storage_display.find_child(id, true, false) as Button

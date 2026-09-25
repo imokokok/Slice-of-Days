@@ -1,7 +1,6 @@
 extends Control
 
 signal ingredient_chosen(definition: Dictionary, press_position: Vector2)
-signal mystery_requested
 
 const FoodArt = preload("res://modules/restaurant/assets/food_art.gd")
 const ROOM = preload("res://modules/restaurant/assets/kitchen_reference_playable.png")
@@ -10,6 +9,8 @@ const SHELVES: = Rect2(390, 421, 840, 114)
 const BASKETS: = Rect2(1260, 155, 326, 635)
 const COLD_IDS: = ["egg", "shrimp", "fish", "salmon", "squid", "mussel", "chicken", "pork", "beef", "sausage", "milk", "yogurt", "butter", "cheese", "ice_cream", "tofu"]
 const AMBIENT_IDS: = ["noodles", "bread", "seaweed", "potato", "onion", "mushroom", "corn", "pumpkin", "lotus_root", "bean_sprout", "cabbage", "broccoli", "eggplant"]
+const FRIDGE_PAGE_SIZE := 15
+const FEATURED_FOODS_FIRST := ["tomato", "potato", "carrot", "onion", "eggplant", "bell_pepper_yellow", "zucchini", "bell_pepper_lavender", "bell_pepper_gold", "bell_pepper_purple", "bell_pepper_brown", "bell_pepper_white", "bell_pepper_orange", "bell_pepper_green", "mushroom", "egg", "noodles", "bread"]
 
 var definitions: Array = []
 var sections: Dictionary = {"fridge": [], "shelves": [], "baskets": []}
@@ -28,6 +29,7 @@ var _fridge_toggle: Button
 var _content: Control
 var stock: Dictionary = {}
 var fridge_page := 0
+var fridge_scroll_row := 0
 var odd_page := 0
 var _cold_catalog: Array = []
 var _odd_catalog: Array = []
@@ -50,14 +52,16 @@ func reveal_ingredient(id: String) -> void:
 	# Opening the full cupboard also reveals the item's physical return slot.
 	for section in ["fridge", "odd"]:
 		var items: Array = _cold_catalog if section == "fridge" else _odd_catalog
-		var page_size := 15 if section == "fridge" else 12
 		for index in items.size():
 			if str(items[index].id) != id: continue
-			var page := index / page_size
 			if section == "fridge":
-				if fridge_page == page: return
+				var page := 0 if index < FEATURED_FOODS_FIRST.size() else 1 + (index - FEATURED_FOODS_FIRST.size()) / FRIDGE_PAGE_SIZE
+				var scroll_row := 1 if page == 0 and index >= FRIDGE_PAGE_SIZE else 0
+				if fridge_page == page and (page != 0 or index >= fridge_scroll_row * 3 and index < fridge_scroll_row * 3 + FRIDGE_PAGE_SIZE): return
 				fridge_page = page
+				fridge_scroll_row = scroll_row
 			else:
+				var page := index / 12
 				if odd_page == page: return
 				odd_page = page
 			_build_items()
@@ -65,10 +69,39 @@ func reveal_ingredient(id: String) -> void:
 
 func _turn_page(section: String, step: int) -> void:
 	if section == "fridge":
-		fridge_page = posmod(fridge_page + step, maxi(1, ceili(_cold_catalog.size() / 15.0)))
+		fridge_page = posmod(fridge_page + step, _fridge_page_count())
+		fridge_scroll_row = 0
 	else:
 		odd_page = posmod(odd_page + step, maxi(1, ceili(_odd_catalog.size() / 12.0)))
 	_build_items()
+
+func _fridge_page_count() -> int:
+	return 1 + ceili(float(maxi(0, _cold_catalog.size() - FEATURED_FOODS_FIRST.size())) / FRIDGE_PAGE_SIZE)
+
+func _fridge_page_start() -> int:
+	if fridge_page == 0: return fridge_scroll_row * 3
+	return FEATURED_FOODS_FIRST.size() + (fridge_page - 1) * FRIDGE_PAGE_SIZE
+
+func _scroll_fridge(step: int) -> void:
+	if fridge_page != 0: return
+	var max_row := maxi(0, ceili(float(FEATURED_FOODS_FIRST.size() - FRIDGE_PAGE_SIZE) / 3.0))
+	fridge_scroll_row = clampi(fridge_scroll_row + step, 0, max_row)
+	_build_items()
+
+func _fridge_scroll_controls() -> void:
+	if fridge_page != 0 or FEATURED_FOODS_FIRST.size() <= FRIDGE_PAGE_SIZE: return
+	_heading("原画", Vector2(345, 289), Vector2(38, 19), Color("554738"), 12)
+	for direction in [-1, 1]:
+		var button := Button.new()
+		button.name = "FridgeScrollUp" if direction < 0 else "FridgeScrollDown"
+		button.text = "⌃" if direction < 0 else "⌄"
+		button.tooltip_text = "冰箱第一页向上滚动" if direction < 0 else "冰箱第一页向下滚动"
+		button.position = Vector2(348, 310 if direction < 0 else 342)
+		button.size = Vector2(30, 27)
+		button.disabled = fridge_scroll_row == 0 if direction < 0 else fridge_scroll_row >= ceili(float(FEATURED_FOODS_FIRST.size() - FRIDGE_PAGE_SIZE) / 3.0)
+		_compact_sign(button)
+		button.pressed.connect(_scroll_fridge.bind(direction))
+		_content.add_child(button)
 
 func _page_controls(section: String, location: Vector2, width: float, page: int, count: int) -> void:
 	if count <= 1: return
@@ -151,22 +184,23 @@ func _build_items() -> void :
 	add_child(_content)
 	var catalog: = {}
 	for item in definitions: catalog[item.id] = item
-	var cold: = ["tomato", "egg", "mushroom", "shrimp", "tofu", "cheese", "carrot", "onion", "broccoli", "lettuce", "milk", "pumpkin", "chicken", "potato"]
+	var cold: = FEATURED_FOODS_FIRST + ["shrimp", "tofu", "cheese", "broccoli", "lettuce", "milk", "pumpkin", "chicken"]
 	_cold_catalog.clear()
 	for id in cold:
 		if catalog.has(id): _cold_catalog.append(catalog[id])
 	for item in definitions:
 		if item.get("category", "") in ["basic", "sweet"] and not cold.has(str(item.id)): _cold_catalog.append(item)
-	var fridge_count := mini(15, _cold_catalog.size() - fridge_page * 15)
+	var fridge_start := _fridge_page_start()
+	var fridge_end := mini(FEATURED_FOODS_FIRST.size(), _cold_catalog.size()) if fridge_page == 0 else _cold_catalog.size()
+	var fridge_count := maxi(0, mini(FRIDGE_PAGE_SIZE, fridge_end - fridge_start))
 	for i in fridge_count:
-		# A partially stocked layer rests on the lower shelves first. The image,
-		# shadow and shelf label all share the same physical shelf front.
-		var shelf_row := (4 - i / 3) if fridge_count < 15 else i / 3
+		var shelf_row := i / 3
 		var floor_y := 245.0 + shelf_row * 77.0
-		_slot(_content, _cold_catalog[fridge_page * 15 + i], Vector2(51 + (i % 3) * 94, floor_y - 69.0), Vector2(90, 69), 0.76, Color("344854"), "fridge")
+		_slot(_content, _cold_catalog[fridge_start + i], Vector2(51 + (i % 3) * 94, floor_y - 69.0), Vector2(90, 69), 0.76, Color("344854"), "fridge")
 	for row in 5:
 		_surface_front(_content, Rect2(51, 245 + row * 77, 281, 12))
-	_page_controls("fridge", Vector2(66, 563), 244, fridge_page, ceili(_cold_catalog.size() / 15.0))
+	_fridge_scroll_controls()
+	_page_controls("fridge", Vector2(66, 563), 244, fridge_page, _fridge_page_count())
 	var counter: = ["ketchup", "mayonnaise", "mustard", "chili_sauce", "vinegar"]
 	for i in counter.size():
 		if catalog.has(counter[i]): _slot(_content, catalog[counter[i]], Vector2(688 + i * 77, 520), Vector2(75, 64), preload("res://modules/restaurant/assets/sprite_library.gd").physical_art_scale(counter[i]), Color("fff0d5"), "rack")
@@ -202,15 +236,6 @@ func _build_items() -> void :
 	_transparent_button(browse)
 	browse.pressed.connect( func(): browse_requested.emit())
 	_content.add_child(browse)
-	var mystery: = Button.new()
-	mystery.name = "MysteryStock"
-	mystery.text = "?  奇物箱 · 拿一件"
-	mystery.position = Vector2(1340, 550)
-	mystery.size = Vector2(242, 33)
-	_compact_sign(mystery)
-	mystery.add_theme_font_size_override("font_size", 16)
-	mystery.pressed.connect( func(): mystery_requested.emit())
-	_content.add_child(mystery)
 	for id in stock: set_available(id, bool(stock[id]))
 	queue_redraw()
 

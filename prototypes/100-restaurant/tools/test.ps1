@@ -15,6 +15,8 @@ Invoke-GodotTest tests/test_reaction_kitchen.gd
 if ($LASTEXITCODE -ne 0) { throw 'Thermal kitchen integration tests failed' }
 Invoke-GodotTest tests/test_visual_spatial_consistency.gd
 if ($LASTEXITCODE -ne 0) { throw 'Visual spatial consistency tests failed' }
+Invoke-GodotTest tests/test_kitchen_flood.gd
+if ($LASTEXITCODE -ne 0) { throw 'Kitchen flood tests failed' }
 Invoke-GodotTest tests/test_craft_workbench.gd
 if ($LASTEXITCODE -ne 0) { throw 'Paper craft workbench tests failed' }
 Invoke-GodotTest tests/test_material_physics.gd

@@ -1,6 +1,7 @@
 extends RefCounted
 ## Shared raster art adapter. Only presentation; ingredient IDs and physics stay unchanged.
 static var _catalog: Array = []
+static var _legacy_atlas_ids: Array = []
 static var _cache: Dictionary = {}
 static var _sheets: Dictionary = {}
 const WHOLE := ["shrimp","mushroom","cheese","chicken","pork","beef","fish","tofu","potato","carrot","cucumber","corn","lotus_root","bread","sausage","salmon","watermelon","durian","century_egg","blue_cheese"]
@@ -16,7 +17,8 @@ const MYSTERY := ["baseball_bat","computer_mouse","slipper","sock","perfume","do
 # polygon, held artwork and countertop artwork all use this one scale.
 static var _physical_scales: Dictionary = {}
 static var _physical_definitions: Dictionary = {}
-const CONTAINER_SCALES := {"oil":1.55, "pepper":1.13, "salt":0.48, "sugar":0.45, "soy_sauce":0.58, "ketchup":0.68, "mayonnaise":0.68, "mustard":0.68, "chili_sauce":0.68, "vinegar":0.68}
+const CONTAINER_SCALES := {"oil":1.55, "pepper":1.13, "salt":0.48, "sugar":0.45, "soy_sauce":0.58,
+	"ketchup":0.66, "mayonnaise":0.78, "mustard":0.59, "chili_sauce":0.60, "vinegar":0.76}
 const LONGEST_SIDE_PX := {
 	"carrot":84.0, "cucumber":99.0, "zucchini":99.0, "corn":92.0,
 	"eggplant":88.0, "banana":88.0, "noodles":78.0,
@@ -192,10 +194,11 @@ static func food(id: String) -> Texture2D:
 	var new_art := supplementary_food(id)
 	if new_art != null: return new_art
 	if id in MYSTERY and id!="sock": return mapped_sprite("odd_objects",str(MYSTERY.find(id)))
-	if _catalog.is_empty():
-		var data = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/data/ingredients.json"))
-		for row in data: _catalog.append(str(row.id))
-	var index := _catalog.find(id)
+	# The original atlas has a fixed authored order. Catalog additions and
+	# removals must never shift another ingredient onto the wrong painting.
+	if _legacy_atlas_ids.is_empty():
+		_legacy_atlas_ids = JSON.parse_string(FileAccess.get_file_as_string("res://modules/restaurant/assets/legacy_food_atlas_ids.json"))
+	var index := _legacy_atlas_ids.find(id)
 	if index < 0: return null
 	var sheet := index/20+1
 	var item := index%20

@@ -16,7 +16,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"shift_seconds": 240.0, "repository_path": "user://full_cooking_capture_%s/book.json" % Time.get_ticks_usec()})
+	game.configure({"shift_seconds": 720.0, "repository_path": "user://full_cooking_capture_%s/book.json" % Time.get_ticks_usec()})
 	root.add_child(game)
 	await process_frame
 	original_pointer = root.get_mouse_position()
@@ -207,11 +207,13 @@ func _record_cabinets_and_water() -> bool:
 	game._close_modal()
 	# The last refrigerator layer and second strange shelf are genuine paged
 	# storage displays. Return to layer one before picking up the tomato and egg.
-	for index in 3:
+	game.storage_display._scroll_fridge(1)
+	await _frames(35)
+	game.storage_display._scroll_fridge(-1)
+	for index in game.storage_display._fridge_page_count():
 		game.storage_display._turn_page("fridge", 1)
 		await _frames(10)
 	await _frames(25)
-	game.storage_display._turn_page("fridge", 1)
 	game.storage_display._turn_page("odd", 1)
 	await _frames(30)
 	game.storage_display._turn_page("odd", -1)
@@ -244,12 +246,22 @@ func _record_cabinets_and_water() -> bool:
 		fill_frames += 1
 	print("CAPTURE: water fill frames=", fill_frames, " amount=", game.world.pan.water_ml, " tap=", game.world.pan.faucet_amount)
 	if not _require(game.world.pan.overflowing and game.world.pan.overflow_water_ml > 0.0, "continuous water fills the pan to capacity then runs over into the sink"): return false
-	await _frames(25)
+	var flood_frames := 0
+	while flood_frames < 1500 and game.world.flood_ratio() < 0.99:
+		await _capture_frame()
+		flood_frames += 1
+	if not _require(game.world.flood_ratio() >= 0.99, "leaving the faucet running floods the full kitchen"): return false
+	await _frames(36)
 	_mouse(Vector2(175, 632), "down")
 	_mouse(Vector2(175, 570), "move")
 	_mouse(Vector2(175, 570), "up")
 	await _frames(8)
 	if not _require(not game.world.pan.faucet_on, "turning the handle back stops the water"): return false
+	# The next shot cuts past the real drainage wait; the world advances that
+	# drainage with its normal rate and preserves the accumulated water total.
+	game.world._process(95.0)
+	await _frames(22)
+	if not _require(game.world.flood_ratio() < 0.001, "the kitchen drains after the tap is closed"): return false
 	_mouse(Vector2(200, 761), "down")
 	_mouse(Vector2(200, 761), "up")
 	await _frames(8)
@@ -293,6 +305,7 @@ func _record_recipe_turn() -> bool:
 	return _require(game._recipe_page_index == 0, "recipe book can turn back to the previous page")
 
 func _drag_slot(id: String, destination: Vector2, steps: int) -> bool:
+	game.storage_display.reveal_ingredient(id)
 	var slot := game.storage_display.find_child("Ingredient_" + id, true, false) as Button
 	if not _require(slot != null, id + " has a visible storage slot"): return false
 	var origin: Vector2 = slot.get_global_rect().get_center()
@@ -307,6 +320,7 @@ func _drag_slot(id: String, destination: Vector2, steps: int) -> bool:
 	return _require(not is_instance_valid(game.world._held), id + " is put down")
 
 func _crack_egg_from_shelf() -> bool:
+	game.storage_display.reveal_ingredient("egg")
 	var slot := game.storage_display.find_child("Ingredient_egg", true, false) as Button
 	if not _require(slot != null, "egg has a visible storage slot"): return false
 	var origin: Vector2 = slot.get_global_rect().get_center()

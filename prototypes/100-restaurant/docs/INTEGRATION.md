@@ -16,7 +16,7 @@ func enter_restaurant() -> void:
     restaurant.configure({
         "player_id": "player_01",
         "display_name": "今日主厨",
-        "shift_seconds": 240.0,
+        "shift_seconds": 720.0,
     }) # configure 必须在 add_child 之前
     restaurant.shift_completed.connect(on_shift_completed)
     restaurant.exit_requested.connect(leave_restaurant)

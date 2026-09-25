@@ -14,6 +14,7 @@ func _run() -> void:
 	game._start_shift()
 	await process_frame
 	# Grab food directly from a shelf on mouse-down, and release above a GUI panel.
+	game.storage_display.reveal_ingredient("egg")
 	var button = game.find_child("Ingredient_egg", true, false)
 	if button == null:
 		for node in game.find_children("*", "Button", true, false):

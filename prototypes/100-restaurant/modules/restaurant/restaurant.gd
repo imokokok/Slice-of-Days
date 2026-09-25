@@ -78,8 +78,6 @@ var _recipe_selected: Dictionary = {}
 var _letters: Array = []
 const LETTER_PATH := "user://100_restaurant_letters.json"
 var _food_by_physics: Dictionary = {}
-var _mystery_bag: Array = []
-var _last_mystery: = ""
 var storage_display
 var _stock: Dictionary = {}
 var _stock_bodies: Dictionary = {}
@@ -97,7 +95,7 @@ func _ready() -> void :
 	_saved_mouse_mode = Input.mouse_mode
 	session_id = "%s-%s" % [Time.get_ticks_usec(), randi()]
 	session.setup()
-	session.duration = clampf(float(context.get("shift_seconds", 240.0)), 30.0, 3600.0)
+	session.duration = clampf(float(context.get("shift_seconds", 720.0)), 30.0, 3600.0)
 	if context.has("npc_profiles"):
 		session.set_customers(context["npc_profiles"])
 	repository = Repository.new(str(context.get("repository_path", "user://after_hours_kitchen/cookbook.json")))
@@ -241,7 +239,6 @@ func _build_ui() -> void :
 	storage_display.setup(session.active_ingredients())
 	storage_display.ingredient_chosen.connect(_take_ingredient)
 	storage_display.browse_requested.connect(_show_pantry)
-	storage_display.mystery_requested.connect(_draw_mystery)
 	world.storage_return_handler = _return_to_storage
 	clock_label = _label(hud, "准备营业", Vector2(366, 36), 20, Color("fff0b8"))
 	money_label = _label(hud, "¥ 0.00", Vector2(1230, 34), 20, Color("f7d96f"))
@@ -436,6 +433,7 @@ func _show_intro() -> void :
 	_text("100 RESTAURANT  /  自由烹饪", 14, ACCENT)
 	_text("老板把今天的厨房交给你。\n给客人做一顿正常的午餐，或者一场意想不到的味觉实验。", 23, CREAM)
 	_text("客人会说出想吃的味道。直接从冰箱、架子和篮子取材，在砧板用刀切开，放入锅里控制火候，再装盘出餐。收班获得营业收入的 30%。")
+	_text("营业时间显示为 10:00—14:00；默认约 12 分钟的实际游玩对应这 4 小时。准备期不限时。", 16)
 	_text("%d 种可用材料  ·  拿取 / 切配 / 下锅  ·  自由组合\n原创菜谱留存  ·  手绘海报  ·  各有偏好的街坊" % session.active_ingredients().size())
 	var row: = _row(modal_body)
 	_button(row, "开始今天的营业", _start_shift, 270)
@@ -546,8 +544,8 @@ func _food_removed(body: RigidBody2D) -> void :
 func _update_hud() -> void :
 	if not is_instance_valid(clock_label):
 		return
-	var remaining: int = maxi(0, ceili(session.duration - session.elapsed))
-	clock_label.text = "准备营业  /  不限时" if session.phase == "prep" else "日班  %02d:%02d" % [remaining / 60, remaining % 60]
+	var shift_minute := 10 * 60 + roundi(240.0 * clampf(session.elapsed / maxf(session.duration, 1.0), 0.0, 1.0))
+	clock_label.text = "准备营业  /  不限时" if session.phase == "prep" else "日班  %02d:%02d—14:00" % [shift_minute / 60, shift_minute % 60]
 	money_label.text = "¥ %.2f" % session.revenue
 	var npc: Dictionary = session.current_customer
 	_order_paper.update_order(npc,session.customer_wait,_preference_text(npc) + "\n" + str(npc.get("habit","")))
@@ -1579,23 +1577,3 @@ func _dock_button(parent: Node, text: String, callback: Callable, width: float) 
 	button.add_theme_color_override("font_hover_color", Color("fff0ce"))
 	button.add_theme_color_override("font_pressed_color", Color("fff0ce"))
 	return button
-
-func _draw_mystery() -> void :
-	if is_instance_valid(world._held) or world._knife_held or world.has_active_utensil() or world.pan.active:
-		_notify("先放下手里的东西，再从奇物箱取一件。")
-		return
-	if _mystery_bag.is_empty():
-		_mystery_bag = preload("res://modules/restaurant/assets/sprite_library.gd").MYSTERY.duplicate()
-		_mystery_bag.shuffle()
-		if _mystery_bag[0] == _last_mystery: _mystery_bag.reverse()
-	_mystery_bag = _mystery_bag.filter(func(id): return bool(_stock.get(str(id), true)))
-	if _mystery_bag.is_empty():
-		_notify("本班奇物箱已空，已拿出的奇物仍可在台面使用。")
-		return
-	var id: String = str(_mystery_bag[0])
-	var definition: = _definition(id)
-	_take_ingredient(definition)
-	if is_instance_valid(world._held) and world._held.get_meta("id", "") == id:
-		_mystery_bag.pop_front()
-		_last_mystery = id
-		_notify("奇物箱里是%s！这一轮还剩%d件不同的东西。" % [definition.name, _mystery_bag.size()])

@@ -33,20 +33,11 @@ func run() -> void:
 	for i in range(24): tips[s.payment_for_score(95,{"base_payment":50,"tip_min":0.1,"tip_max":0.3}).tip]=true
 	expect(tips.size()>1,"excellent service receives varying tips")
 	var w=game.world
-	var mystery_seen: Array=[]
-	for i in range(9):
-		game._draw_mystery()
-		expect(is_instance_valid(w._held),"mystery box creates usable physical object")
-		var found: String=w._held.get_meta("id")
-		expect(not mystery_seen.has(found),"mystery round does not repeat")
-		mystery_seen.append(found)
-		var remaining: int=game._mystery_bag.size()
-		game._draw_mystery()
-		expect(game._mystery_bag.size()==remaining,"occupied hand does not consume mystery stock")
-		w.discard_held()
-		await process_frame
-	game._draw_mystery()
-	expect(not is_instance_valid(w._held),"empty mystery box cannot create an infinite second stock round")
+	expect(game.storage_display.find_child("MysteryStock", true, false) == null, "removed mystery box has no visible hotspot")
+	var odd_slot = game.storage_display.find_child("Ingredient_sock", true, false)
+	expect(odd_slot != null, "strange items remain available on their physical shelf")
+	game._take_ingredient(game._definition("sock"))
+	expect(is_instance_valid(w._held) and w._held.get_meta("id", "") == "sock", "the shelf still supplies the finite physical strange item")
 	w.discard_held()
 	await process_frame
 	# A real drag from the visible stock to the board, then a real knife gesture.

@@ -16,9 +16,17 @@ func run() -> void:
 	game._close_modal()
 	game.world.audio.muted = true
 	var shelf = game.storage_display
+	for id in shelf.FEATURED_FOODS_FIRST:
+		var first_index := -1
+		for index in shelf._cold_catalog.size():
+			if str(shelf._cold_catalog[index].id) == id: first_index = index
+		expect(first_index >= 0 and first_index < shelf.FEATURED_FOODS_FIRST.size(), id + " supplied food art is on the first fridge page")
+		if first_index < shelf.FRIDGE_PAGE_SIZE:
+			expect(shelf.find_child("Ingredient_" + id, true, false) != null, id + " is visible on opening the fridge")
+	expect(shelf.find_child("MysteryStock", true, false) == null, "strange box button is absent")
 	for section in ["fridge", "odd"]:
 		var found: Array[String] = []
-		var pages := ceili((shelf._cold_catalog.size() if section == "fridge" else shelf._odd_catalog.size()) / (15.0 if section == "fridge" else 12.0))
+		var pages: int = shelf._fridge_page_count() if section == "fridge" else ceili(shelf._odd_catalog.size() / 12.0)
 		for page in pages:
 			for slot in shelf.find_children("Ingredient_*", "Button", true, false):
 				var def: Dictionary = slot.get_meta("definition")
@@ -28,6 +36,14 @@ func run() -> void:
 				found.append(str(def.id))
 				if section == "odd": expect(slot.position.x > 1300, str(def.id) + " stays on the odd shelf")
 				else: expect(slot.position.x < 340, str(def.id) + " stays in ordinary storage")
+			if section == "fridge" and page == 0:
+				var scroll := shelf.find_child("FridgeScrollDown", true, false) as Button
+				expect(scroll != null and not scroll.disabled, "first fridge page scrolls within the supplied artwork")
+				if scroll != null: scroll.pressed.emit()
+				for id in shelf.FEATURED_FOODS_FIRST:
+					if not found.has(id) and shelf.find_child("Ingredient_" + id, true, false) != null: found.append(id)
+				expect(shelf.fridge_page == 0 and found.has("bread"), "last supplied artwork stays on page one after scrolling")
+				shelf.find_child("FridgeScrollUp", true, false).pressed.emit()
 			var next := shelf.find_child(section.capitalize() + "NextPage", true, false) as Button
 			expect(next != null, section + " has working page control")
 			if next != null: next.pressed.emit()

@@ -21,7 +21,7 @@ func _capture_live_preview(path: String) -> void:
 
 func _enter_restaurant() -> void :
 	module = Restaurant.instantiate()
-	module.configure({"player_id": "local_demo", "display_name": "100饭店主厨", "shift_seconds": 600.0 if "--live-preview" in OS.get_cmdline_user_args() else 240.0})
+	module.configure({"player_id": "local_demo", "display_name": "100饭店主厨", "shift_seconds": 720.0})
 	module.shift_completed.connect(_on_settlement)
 	module.exit_requested.connect(_on_exit)
 	add_child(module)

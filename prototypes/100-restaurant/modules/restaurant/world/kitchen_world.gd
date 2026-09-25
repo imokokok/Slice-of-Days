@@ -36,6 +36,12 @@ var _focus: = ""
 var _dragging: = false
 var storage_return_handler: Callable
 const PAN_CAPACITY_ML := 1500.0
+const SINK_HOLD_ML := 1200.0
+const KITCHEN_FLOOD_ML := 7800.0
+var sink_water_ml := 0.0
+var flood_water_ml := 0.0
+var drained_flood_ml := 0.0
+var flood_art: Node2D
 var _overflow_until := 0.0
 var _overflow_color := Color("c68b57")
 
@@ -59,6 +65,22 @@ func pan_free_ml() -> float:
 
 func pan_fill_ratio() -> float:
 	return clampf(pan_contents_ml() / PAN_CAPACITY_ML, 0.0, 1.0)
+
+func flood_ratio() -> float:
+	return clampf(flood_water_ml / KITCHEN_FLOOD_ML, 0.0, 1.0)
+
+func receive_faucet_runoff(amount_ml: float) -> void:
+	if amount_ml <= 0.0: return
+	var before := flood_water_ml
+	var sink_add := minf(amount_ml, maxf(0.0, SINK_HOLD_ML - sink_water_ml))
+	sink_water_ml += sink_add
+	var to_floor := amount_ml - sink_add
+	var floor_add := minf(to_floor, maxf(0.0, KITCHEN_FLOOD_ML - flood_water_ml))
+	flood_water_ml += floor_add
+	drained_flood_ml += to_floor - floor_add
+	if before <= 0.0 and flood_water_ml > 0.0:
+		interaction.emit("notice", "水槽已经满了！快关水龙头，厨房地面的水正在上涨。")
+	if is_instance_valid(flood_art): flood_art.queue_redraw()
 var _food_drag_offset: = Vector2.ZERO
 var _food_drag_origin: = Vector2.ZERO
 var _food_drag_moved: = false
@@ -138,6 +160,10 @@ func _ready() -> void :
 	stream.world = self
 	stream.z_index = 8
 	add_child(stream)
+	flood_art = preload("res://modules/restaurant/world/kitchen_flood.gd").new()
+	flood_art.world = self
+	flood_art.z_index = 60
+	add_child(flood_art)
 	var surfaces: = preload("res://modules/restaurant/world/worktop_art.gd").new()
 	surfaces.z_index = -1
 	add_child(surfaces)
@@ -273,6 +299,15 @@ func _process(delta: float) -> void :
 	_backdrop.set("knife_held", _knife_held)
 	_backdrop.queue_redraw()
 	_time += delta
+	if controls_enabled and is_instance_valid(pan) and not pan.faucet_on:
+		var drained := minf(flood_water_ml, delta * 100.0)
+		flood_water_ml -= drained
+		drained_flood_ml += drained
+		if flood_water_ml <= 0.0:
+			var sink_drained := minf(sink_water_ml, delta * 80.0)
+			sink_water_ml -= sink_drained
+			drained_flood_ml += sink_drained
+		if drained > 0.0 and is_instance_valid(flood_art): flood_art.queue_redraw()
 	_chop_flash = maxf(0, _chop_flash - delta)
 	var mouse: = get_global_mouse_position()
 	_mouse_velocity = (mouse - _last_mouse) / maxf(delta, 0.001)

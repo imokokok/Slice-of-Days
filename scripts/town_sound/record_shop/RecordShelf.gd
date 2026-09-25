@@ -40,8 +40,10 @@ func _ready() -> void:
 			if image != null:
 				var cover := TextureRect.new()
 				cover.texture = ImageTexture.create_from_image(image)
-				cover.custom_minimum_size = Vector2(68, 68)
+				cover.custom_minimum_size = Vector2(160, 160)
 				cover.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				cover.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				cover.tooltip_text=str(record.title)+" / "+str(record.artist)
 				row.add_child(cover)
 		var creator := str(record.get("created_by", ""))
 		var origin := " · %s视角制作" % creator if not creator.is_empty() and CharacterSystem.switch_unlocked() else ""

@@ -54,10 +54,11 @@ func run() -> void:
 	table.audio = wav
 	table.profile = room.canvas.profile
 	table.library.root_path = "user://tests/records_" + Crypto.new().generate_random_bytes(8).hex_encode()
-	room.add_child(table)
+	room.page.add_child(table)
+	room.column.hide()
 	await process_frame
-	table.title_input.text = "Integration Test"
-	table.artist_input.text = "Test Runner"
+	table.title_input.text = "潮汐来信"
+	table.artist_input.text = "Solmere"
 	table.advance()
 	if OS.get_cmdline_user_args().has("--photo-cover"):
 		var photo_library := PhotoLibrary.new()
@@ -69,6 +70,17 @@ func run() -> void:
 	await create_timer(0.25).timeout
 	await table.advance()
 	check(table.cover != null and table.cover.get_width() == 512, "Cover capture failed")
+	var album_art=load("res://scripts/town_sound/record_shop/AlbumCover.gd")
+	var blank:=Image.create(512,512,false,Image.FORMAT_RGB8); blank.fill(Color("1d7682"))
+	var named: Image=await album_art.bake(table,blank,"午后的风 / Afternoon Wind","Solmere",1)
+	var unnamed: Image=await album_art.bake(table,blank,"","Solmere",1)
+	check(named.get_region(Rect2i(32,45,448,107)).get_data()!=unnamed.get_region(Rect2i(32,45,448,107)).get_data(),"Player title must be printed into the saved image pixels")
+	var long_title: Image=await album_art.bake(table,blank,"给今天听见的风和街道写一封很长很长的信".repeat(3).left(60),"一位走过街道收集声音的旅人".repeat(3).left(40),1)
+	check(long_title.get_pixel(256,256).is_equal_approx(Color("1d7682")),"Long names preserve the artwork panel")
+	DirAccess.make_dir_recursive_absolute("user://tests/screenshots")
+	named.save_png("user://tests/screenshots/sleeve-latin.png")
+	long_title.save_png("user://tests/screenshots/sleeve-long-title.png")
+	table.cover.save_png("user://tests/screenshots/sleeve-chinese.png")
 	for stage in range(2, 11):
 		check(table.step == stage, "Unexpected packaging stage")
 		if OS.get_cmdline_user_args().has("--screenshots"):
@@ -87,22 +99,59 @@ func run() -> void:
 			check(table.step == 10 and not table.locked and not table.next_button.disabled, "Failed record save cannot be retried")
 			table.library.root_path = good_path
 			DirAccess.remove_absolute(blocked_path)
-		await table.complete_action()
+		if stage==10:
+			var down:=InputEventMouseButton.new(); down.button_index=MOUSE_BUTTON_LEFT; down.pressed=true; down.position=table.source_rect().get_center()
+			table._gui_input(down)
+			var drop:=InputEventMouseButton.new(); drop.button_index=MOUSE_BUTTON_LEFT; drop.position=table.target_rect().get_center()
+			table._gui_input(drop)
+			check(table.locked,"Dropping the packed sleeve onto the tray starts the handover")
+			await create_timer(1.75).timeout
+			if OS.get_cmdline_user_args().has("--screenshots"):
+				await RenderingServer.frame_post_draw
+				root.get_texture().get_image().save_png("user://tests/screenshots/pressing-turn.png")
+			await create_timer(2.0).timeout
+		else: await table.complete_action()
 	check(table.step == 11, "Packaging did not finish: step=%d %s" % [table.step,table.instructions.text])
 	check(not table.saved_record.is_empty(), "Final record not saved")
 	check(int(table.saved_record.get("packaging_version",0))==2,"Physical packaging version persisted")
 	check(table.saved_record.get("packaging_layers",[]).size()==3,"Inner sleeve, jacket and plastic outer sleeve are separate saved layers")
+	check(table.saved_record.get("spine_title","")=="潮汐来信" and table.saved_record.get("spine_artist","")=="Solmere","Title and artist survive the handover")
+	check(table.saved_record.get("shelf_orientation","")=="upright_spine","Record is stored upright with its spine facing out")
+	var artwork=load("res://scripts/town_sound/record_shop/PackagingArtwork.gd")
+	var resting: Dictionary=artwork.shelf_pose(1,Vector2(330,602))
+	var stored_rect: Rect2=resting.spine
+	check(is_equal_approx(stored_rect.size.y,121) and is_equal_approx(stored_rect.end.y,501),"Player record matches the neighboring sleeves' height and shelf baseline")
+	check(resting.face_scale.x<.001 and stored_rect.size.x<stored_rect.size.y*.2,"Final pose shows a narrow upright spine instead of a shrunken front cover")
+	check(table.next_button.visible and not table.next_button.disabled,"Player can leave after shelving")
 	var restored := LocalRecordLibrary.new()
 	restored.root_path = table.library.root_path
 	check(restored.list_records().size() == 1, "Saved record not reloaded")
 	check(restored.money() >= 60 and restored.money() <= 180, "Payment outside bounds")
 	check(FileAccess.file_exists(table.saved_record.final_audio_path), "Final WAV missing")
 	check(FileAccess.file_exists(table.saved_record.cover_path), "Cover PNG missing")
+	var saved_cover:=Image.load_from_file(table.saved_record.cover_path)
+	check(saved_cover.get_data()==table.cover.get_data(),"Reloaded cover retains the printed title and photograph")
 	if OS.get_cmdline_user_args().has("--photo-cover"):
 		check(table.saved_record.cover_source == "photo", "Photo cover source not saved")
 		var cover_image := Image.load_from_file(table.saved_record.cover_path)
 		check(cover_image.get_pixel(256, 256).is_equal_approx(Color("1d7682")), "Photo cover pixels differ from selected photo")
 	var online := OnlineRecordLibrary.new()
 	check(not online.can_upload(), "Unconfigured backend allowed upload")
+	if OS.get_cmdline_user_args().has("--screenshots"):
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("user://tests/screenshots/pressing-11.png")
+	var look:=InputEventMouseButton.new(); look.button_index=MOUSE_BUTTON_LEFT; look.pressed=true; look.position=artwork.shelf_hit_rect().get_center()
+	table._gui_input(look)
+	check(table.inspecting_record,"Clicking the player's spine reveals its actual cover")
+	if OS.get_cmdline_user_args().has("--screenshots"):
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("user://tests/screenshots/pressing-inspect.png")
+	table._gui_input(look)
+	check(not table.inspecting_record and table.library.list_records().size()==1,"Closing inspection does not duplicate the saved record")
 	print("FULL_LOCAL_FLOW: ", "PASS" if failures == 0 else "FAIL", " failures=", failures)
+	if OS.get_cmdline_user_args().has("--manual-sleeve") and failures==0:
+		root.mode=Window.MODE_WINDOWED
+		root.size=Vector2i(1280,720); root.position=Vector2i(90,90)
+		root.title="Town Sound named sleeve - main check"
+		return
 	quit(failures)

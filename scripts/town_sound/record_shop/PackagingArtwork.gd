@@ -2,6 +2,49 @@ extends RefCounted
 ## Separate back/content/front passes, all in the same table coordinate system.
 const PAPER=Color("eee8d8")
 const INK=Color("343a39")
+const SHELF_SPINE:=Rect2(446,380,14,121)
+
+static func fitted(c: CanvasItem, text: String, point: int, width: float) -> String:
+	var font: Font=c.get_theme_default_font()
+	if font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,point).x<=width: return text
+	while not text.is_empty():
+		text=text.left(text.length()-1)
+		if font.get_string_size(text+"…",HORIZONTAL_ALIGNMENT_LEFT,-1,point).x<=width: return text+"…"
+	return ""
+
+static func shelf_hit_rect() -> Rect2:
+	return Rect2(SHELF_SPINE.position+Vector2(0,125),SHELF_SPINE.size).grow(12)
+
+static func shelf_pose(progress: float, origin: Vector2) -> Dictionary:
+	var t:=clampf(progress,0,1)
+	var turn:=smoothstep(.08,.78,t)*PI*.5
+	var height:=lerpf(282,121,smoothstep(0,.8,t))
+	var center:=origin.lerp(SHELF_SPINE.get_center(),smoothstep(0,1,t))-Vector2(0,48*sin(t*PI))
+	var face_width:=278*height/282*maxf(0,cos(turn))
+	var spine_width:=14*sin(turn)*height/121
+	var spine_rect:=Rect2(center-Vector2((face_width+spine_width)*.5,height*.5),Vector2(spine_width,height))
+	return {"face_scale":Vector2(face_width/278,height/282),"face_center":center+Vector2(spine_width*.5,0),"spine":spine_rect}
+
+static func spine(c: CanvasItem, rect: Rect2, title: String, number: int, tint: Color) -> void:
+	c.draw_rect(rect,tint)
+	c.draw_line(rect.position,Vector2(rect.position.x,rect.end.y),Color(0,0,0,.23),1)
+	c.draw_line(Vector2(rect.end.x-1,rect.position.y),rect.end-Vector2(1,0),Color(1,1,1,.52),1)
+	if rect.size.x<7: return
+	var point:=mini(9,int(rect.size.x-5))
+	c.draw_set_transform(rect.position+Vector2((rect.size.x-point)*.5,133),PI*.5)
+	words(c,Vector2.ZERO,fitted(c,title,point,rect.size.y-33),point)
+	c.draw_set_transform(Vector2(0,125))
+	words(c,Vector2(rect.position.x+2,rect.end.y-6),"%02d"%number,7)
+
+static func shelve(c: Control, progress: float, origin: Vector2) -> void:
+	var pose:=shelf_pose(progress,origin)
+	var face_scale: Vector2=pose.face_scale
+	if face_scale.x>.001:
+		c.draw_set_transform(pose.face_center+Vector2(0,125),0,face_scale)
+		packed(c,Vector2.ZERO,c.texture,c.serial,true)
+	c.draw_set_transform(Vector2(0,125))
+	var record: Dictionary=c.get_meta("album_record",{})
+	spine(c,pose.spine,str(record.get("title","今天听见的东西")),c.serial,Color("f6f0df"))
 
 static func words(c: CanvasItem, at: Vector2, value: String, font_size:=16, color:=INK) -> void:
 	c.draw_string(c.get_theme_default_font(),at,value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
@@ -13,9 +56,13 @@ static func shadow(c: CanvasItem, rect: Rect2, depth:=6.0) -> void:
 static func label(c: CanvasItem, center: Vector2, radius:=36.0) -> void:
 	c.draw_circle(center,radius,Color("ba7356"))
 	c.draw_arc(center,radius-3,0,TAU,96,Color("ebc7ac"),.8,true)
-	words(c,center+Vector2(-24,-13),"SOLMERE",9,Color("fff3dd"))
+	var record: Dictionary=c.get_meta("album_record",{})
+	var title:=fitted(c,str(record.get("title","SOLMERE")),9,58)
+	var by:=fitted(c,str(record.get("artist","FIELD RECORDINGS")),7,52)
+	var font: Font=c.get_theme_default_font()
+	words(c,center+Vector2(-font.get_string_size(title,HORIZONTAL_ALIGNMENT_LEFT,-1,9).x*.5,-13),title,9,Color("fff3dd"))
 	words(c,center+Vector2(-18,21),"SIDE A",9,Color("fff3dd"))
-	words(c,center+Vector2(-24,10),"33⅓   RPM",8,Color("f1d8c3"))
+	words(c,center+Vector2(-font.get_string_size(by,HORIZONTAL_ALIGNMENT_LEFT,-1,7).x*.5,10),by,7,Color("f1d8c3"))
 	c.draw_circle(center,2.6,Color("c2ad91"))
 
 static func disc(c: CanvasItem, center: Vector2, shade:=true) -> void:
@@ -217,17 +264,31 @@ static func paint(c: Control) -> void:
 			words(c,Vector2(173,650),"编号贴在保护袋外侧 · 封面保持完整",16)
 		10,11:
 			c.draw_rect(Rect2(163,363,330,294),Color("695c4c"))
-			for i in 8: c.draw_rect(Rect2(180+i*36,380,24,121),Color("9c9e81") if i%2 else Color("b89a7e"))
+			c.draw_rect(Rect2(173,373,310,131),Color("443f35"))
+			var titles: Array[String]=["海风经过","午后电台","小巷里的雨","旧车站","纸上的夏天","晚饭以前","灯还亮着","日落之后"]
+			for i in 8:
+				spine(c,Rect2(180+i*32,380,24,121),titles[i],i+1,Color("9c9e81") if i%2 else Color("b89a7e"))
 			c.draw_rect(Rect2(171,540,314,109),Color("8f7a5e"))
-			words(c,Vector2(195,528),"LOCAL RECORDINGS",20,Color("f4ecda"))
+			c.draw_line(Vector2(173,504),Vector2(483,504),Color("ae9778"),4)
+			words(c,Vector2(191,528),"LOCAL RECORDINGS",20,Color("f4ecda"))
 			if c.step==11 or c.locked:
 				var t: float=1 if c.step==11 else c.progress
-				var center:=right.lerp(Vector2(412,451),t)
-				var scale_value:=lerpf(1,.4,t)
-				c.draw_set_transform(center+Vector2(0,125),0,Vector2.ONE*scale_value)
-				packed(c,Vector2.ZERO,c.texture,c.serial,true)
-				c.draw_set_transform(Vector2.ZERO)
+				shelve(c,t,origin)
 			else: packed(c,moving,c.texture,c.serial,true)
+			if c.step==11:
+				words(c,Vector2(190,579),"已收好 · 点右边的米白色书脊",17,Color("fff4df"))
+				words(c,Vector2(190,611),"拿近看看你的唱片",17,Color("fff4df"))
+				c.draw_line(Vector2(453,558),Vector2(453,509),Color("fff4df"),1)
+				if c.inspecting_record:
+					words(c,Vector2(628,342),"封面近看 / YOUR RECORD",19)
+					c.draw_set_transform(Vector2(790,633),0,Vector2.ONE*1.12)
+					packed(c,Vector2.ZERO,c.texture,c.serial,true)
+					c.draw_set_transform(Vector2(0,125))
+					words(c,Vector2(628,702),"标题、署名和画面一起留在唱片里。",16)
+				else:
+					words(c,Vector2(637,442),"留给今天的声音，",25)
+					words(c,Vector2(637,484),"在这里有了自己的位置。",25)
+					words(c,Vector2(637,554),"点书脊查看封面，或回店里继续听。",17)
 	c.draw_set_transform(Vector2.ZERO)
 	# The sidebar explains construction while keeping the work surface unobstructed.
 	var notes: Array = ["","","先制作印刷封套。\n唱片与包装分别加工。","标签不是贴纸。\n纸标签随 PVC 一起压制。","母版刻录、电铸制成的\n压模已经装入机器。\n冷却后修边，检查唱片。","只握边缘与标签区。\n唱片音槽面不接触手指。","纸内袋保护音槽；\n硬纸封套保护整体。","外袋有独立的透明前片、\n背片、焊缝与翻盖。\n封面在塑料膜下面。","本店使用可重复封口外袋。\n收好翻盖，轻轻抹平。","作品编号与封面分离，\n贴在透明保护袋上。","音频、封面和包装信息\n一起保存在本地唱片架。","唱片已入库。"]
@@ -237,4 +298,4 @@ static func paint(c: Control) -> void:
 		var y:=475
 		for line in str(notes[c.step]).split("\n"):
 			words(c,Vector2(1135,y),line,18); y+=33
-		words(c,Vector2(1135,681),"拿起 → 对齐开口 → 松手",17)
+		words(c,Vector2(1135,681),"点书脊 → 看封面" if c.step==11 else "拿起 → 对齐开口 → 松手",17)

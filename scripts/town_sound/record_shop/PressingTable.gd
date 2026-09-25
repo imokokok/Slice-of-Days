@@ -43,6 +43,8 @@ var pending_photo: Image
 var photo_preview: TextureRect
 var cover_source := "visual"
 var source_photo_id := ""
+var inspecting_record := false
+const Artwork=preload("res://scripts/town_sound/record_shop/PackagingArtwork.gd")
 const STEPS := ["01 / 签下唱片信息", "02 / 留下封面画面", "03 / 印刷纸板封套", "04 / 装载中心标签", "05 / 压制、冷却与修边", "06 / 唱片装入纸内袋", "07 / 内袋装入纸板封套", "08 / 封套装入透明保护袋", "09 / 合上外袋翻盖", "10 / 贴上作品编号", "11 / 交给唱片店老板", "LOCAL RECORDINGS"]
 const HINTS := ["给作品写下标题、作者和一句话。", "拖动滑条取景，点画面定格封面；也能选自己拍的照片。", "点打印机绿色按钮，印好的封面按出纸进度露出。", "拿起 A 面纸标签，对齐左侧 PVC 料饼的中心；B 面标签已在下方。", "抓住右侧红把手向下拉，再保持半秒。标签与 PVC 一起压制，冷却后修边。", "握住左侧唱片边缘，移到右侧纸袋的上方开口，松手后垂直滑入。", "拿起右侧装好的纸内袋，对准左侧封套的右边开口，水平滑入。", "拿起左侧纸板封套，对准右侧透明保护袋上方开口，向下装入。", "从右侧袋口拿起透明翻盖，向下折合；胶条只贴保护袋，不贴封面。", "将左侧编号标签贴到透明袋右下角。编号不覆盖封面主体。", "把包装好的唱片递到左侧柜台托盘，等待老板收录。", "这段声音已经在店里有了一个位置。"]
 
@@ -145,6 +147,7 @@ func advance() -> void:
 		artist_input.text = artist_input.text.strip_edges()
 		if title_input.text.is_empty(): title_input.text = LocalizationSystem.text("今天听见的东西")
 		if artist_input.text.is_empty(): artist_input.text = "Anonymous"
+		set_meta("album_record",{"title":title_input.text,"artist":artist_input.text,"serial":serial})
 		title_input.editable = false
 		artist_input.editable = false
 		note_input.editable = false
@@ -167,6 +170,7 @@ func advance() -> void:
 		var edge := mini(frame.get_width(), frame.get_height())
 		cover = frame.get_region(Rect2i(int((frame.get_width() - edge) * crop_slider.value), 0, edge, edge))
 		cover.resize(512, 512)
+		cover = await preload("res://scripts/town_sound/record_shop/AlbumCover.gd").bake(self,cover,title_input.text,artist_input.text,serial)
 		texture = ImageTexture.create_from_image(cover)
 		cover_container.hide()
 		photo_preview.hide()
@@ -219,6 +223,7 @@ func complete_action() -> void:
 				"one_line_note": note_input.text, "duration": audio.get_length(), "visual_prompt": model.prompt,
 				"visual_profile": profile, "mv_clips": model.clips.duplicate(true), "mv_muted":model.muted.duplicate(), "mv_gains":model.gains.duplicate(), "sound_kinds":preload("res://scripts/town_sound/data/SoundAtlas.gd").audible_kinds(model), "visual_seed": seed_value, "visual_version": int(profile.get("visual_version", 2)), "source_sample_count": samples.size(),
 				"packaging_version":2, "record_format":"12-inch 33⅓ RPM / 180 g", "packaging_layers":["paper_inner","printed_jacket","resealable_pp_outer"],
+				"cover_layout_version":1,"spine_title":title_input.text,"spine_artist":artist_input.text,"shelf_orientation":"upright_spine",
 				"cover_source": cover_source, "source_photo_id": source_photo_id,
 				"payment": payment, "project_path": model.project_path, "created_by": role,
 				"game_day": day, "location": "record_store"}, audio, cover)
@@ -252,7 +257,7 @@ func complete_action() -> void:
 	if step == 11:
 		next_button.show(); helper.hide()
 		var balance := GameState.money if has_node("/root/GameState") else library.money()
-		instructions.text = LocalizationSystem.text("「%s」已上架  +%d / LOCAL RECORDING LICENSE\n游戏内余额：%d · 唱片已本地保存。公共库尚未配置，保持 Local Mode。" % [saved_record.title, saved_record.payment, balance])
+		instructions.text = LocalizationSystem.text("「%s」已上架 · 唱片店支付了 %d\n已保存在本地唱片库 · 余额 %d · 点米白色书脊，可以拿近看看封面。" % [saved_record.title, saved_record.payment, balance])
 	else:
 		instructions.text = LocalizationSystem.text(STEPS[step]) + "\n" + LocalizationSystem.text(HINTS[step])
 	queue_redraw()
@@ -346,6 +351,8 @@ func _target_rect() -> Rect2:
 	return Rect2(620,365,285,275)
 
 func _gui_input(event: InputEvent) -> void:
+	if step==11 and event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT and Artwork.shelf_hit_rect().has_point(event.position):
+		inspecting_record=not inspecting_record; queue_redraw(); accept_event(); return
 	if step==1 and not locked and event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT and Rect2(50,350,480,270).has_point(event.position):
 		advance(); accept_event(); return
 	if locked or step<2 or step>10: return

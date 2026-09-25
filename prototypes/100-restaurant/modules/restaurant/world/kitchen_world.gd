@@ -835,6 +835,7 @@ func chop_held() -> void :
 	interaction.emit("notice", "食材已完整放在菜板上，请拿刀切开。")
 
 func _on_pan_entered(body: Node2D) -> void :
+	if body.is_queued_for_deletion(): return
 	if body.get_meta("overflow", false): return
 	if body is RigidBody2D and body != _held and bool(body.get_meta("is_container", false)):
 		if not body.get_meta("container_notice", false):

@@ -1,4 +1,5 @@
 extends Node2D
+const AssetTexture=preload("res://extensions/collage_letter/scripts/asset_texture.gd")
 static var font_bank: Dictionary={}
 var kind: int = 0
 var sheet_data: Dictionary
@@ -14,8 +15,8 @@ func _ready() -> void:
 	var image_path: String=str(sheet_data.get("image_path",""))
 	if not image_path.is_empty() and FileAccess.file_exists(image_path):
 		var photo:=Image.load_from_file(image_path)
-		if photo!=null and not photo.is_empty(): art=ImageTexture.create_from_image(photo)
-	if art==null: art=load(asset_root+sheet_data.asset)
+		if photo!=null and not photo.is_empty(): art=AssetTexture.from_image(photo,2048)
+	if art==null: art=AssetTexture.get_texture(asset_root+sheet_data.asset,0 if sheet_data.kind=="letter" else (2048 if sheet_data.kind=="photo" else 1024))
 	if sheet_data.kind=="photo":
 		photo_region=Rect2(art.get_image().get_used_rect())
 		if photo_region.size.x/photo_region.size.y>3:photo_region=Rect2(Vector2(photo_region.size.x*0.25,0),Vector2(photo_region.size.y*1.5,photo_region.size.y))
@@ -34,8 +35,8 @@ func _ready() -> void:
 			face.font_names=PackedStringArray(["KaiTi" if variant=="handwritten" else ("FangSong" if variant=="typewriter" else "SimSun"),"Microsoft YaHei"])
 			font=face
 		font_bank[font_key]=font
-	if sheet_data.has("illustration"): illustration=load(asset_root+sheet_data.illustration)
-	if sheet_data.kind in ["score","photo","art"]: backing=load(asset_root+"paper/Papier6.png")
+	if sheet_data.has("illustration"): illustration=AssetTexture.get_texture(asset_root+sheet_data.illustration)
+	if sheet_data.kind in ["score","photo","art"]: backing=AssetTexture.get_texture(asset_root+"paper/Papier6.png")
 	queue_redraw()
 func text(value: String, at: Vector2, size: int = 18, width: float = 246, color: Color = Color("344c50")) -> void:
 	var fitted:=size

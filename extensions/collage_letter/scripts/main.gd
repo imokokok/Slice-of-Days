@@ -16,6 +16,7 @@ const OfficeScene=preload("res://extensions/collage_letter/scripts/office_scene.
 const Journal = preload("res://extensions/collage_letter/scripts/journal_style.gd")
 const ToolButton = preload("res://extensions/collage_letter/scripts/journal_tool.gd")
 const INK = Color("465951")
+const LETTER_INKS = [Color("465951"),Color("344d70"),Color("343b3c"),Color("795544"),Color("783f4a")]
 const RUST = Color("ab6759")
 const LETTER = Rect2(522,174,396,560) # A4, 210:297 (rounded to canvas pixels).
 const MATERIAL_TYPES = {"图案":"decoration","纸张":"paper","文字":"print","票据":"ticket","乐谱":"score","画作":"art","广告":"advert","照片":"photo","字母":"letter"}
@@ -34,6 +35,7 @@ var commission_steps: Dictionary={}
 var history_open:=false
 var blinds_open: float=0.75
 var letter_text: String=""
+var letter_ink_color: Color=INK
 var letter_text_node: Label
 var glue_drawing:=false
 var glue_last:=Vector2.ZERO
@@ -152,7 +154,7 @@ func _ready() -> void:
 	add_child(audio)
 	letter_text_node=Label.new();letter_text_node.position=LETTER.position+Vector2(28,35);letter_text_node.size=LETTER.size-Vector2(56,70)
 	letter_text_node.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;letter_text_node.clip_text=true;letter_text_node.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	letter_text_node.add_theme_font_override("font",font);letter_text_node.add_theme_font_size_override("font_size",19);letter_text_node.add_theme_constant_override("line_spacing",5);letter_text_node.add_theme_color_override("font_color",INK);add_child(letter_text_node)
+	letter_text_node.add_theme_font_override("font",font);letter_text_node.add_theme_font_size_override("font_size",19);letter_text_node.add_theme_constant_override("line_spacing",5);letter_text_node.add_theme_color_override("font_color",letter_ink_color);add_child(letter_text_node)
 	pieces_root = Node2D.new()
 	add_child(pieces_root)
 	overlay=load("res://extensions/collage_letter/scripts/work_overlay.gd").new()
@@ -240,6 +242,7 @@ func button(text: String, rect: Rect2, action: Callable, active: bool = false) -
 func build_ui() -> void:
 	pieces_root.visible=stage=="WORKBENCH" and not conversation_open
 	letter_text_node.text=letter_text;letter_text_node.visible=stage=="WORKBENCH" and not conversation_open and tool!="write"
+	letter_text_node.add_theme_color_override("font_color",letter_ink_color)
 	for child in ui.get_children():
 		ui.remove_child(child)
 		child.queue_free()
@@ -427,7 +430,7 @@ func set_tool(value: String) -> void:
 	if paint and paint.active:paint.end()
 	tool = value
 	if tool=="write":
-		select(null);say("点击信纸写下称呼、正文和落款。照片可以稍后添上。" if L.language=="zh" else "Click the paper to write a greeting, your message and a signature. Add photos whenever you like.");build_ui();return
+		select(null);say("点击信纸慢慢写。文具盒里可以换墨色，照片可以稍后添上。" if L.language=="zh" else "Write at your own pace. Change ink in the tool box; add photos whenever you like.");build_ui();return
 	dragging = false
 	cutting_source = -1
 	tape_drawing = false
@@ -857,7 +860,7 @@ func save_game(force: bool = false) -> void:
 	data.merge(_host_save_data(),true)
 	var file := FileAccess.open(save_path+".tmp",FileAccess.WRITE)
 	data["commission_history"]=commission_history;data["commission_steps"]=commission_steps
-	data["letter_text"]=letter_text;data["blinds_open"]=blinds_open
+	data["letter_text"]=letter_text;data["letter_ink_color"]=letter_ink_color.to_html(false);data["blinds_open"]=blinds_open
 	data["bottle_finishing"]=bottle_finish.serialize()
 	if file:
 		file.store_string(JSON.stringify(data))
@@ -883,6 +886,10 @@ func load_game(force: bool = false) -> void:
 	accepted_commission=int(data.get("accepted_commission",-1))
 	commission_history=data.get("commission_history",{});commission_steps=data.get("commission_steps",{})
 	letter_text=str(data.get("letter_text",""));letter_text_node.text=letter_text
+	letter_ink_color=INK
+	for color in LETTER_INKS:
+		if color.to_html(false)==str(data.get("letter_ink_color",INK.to_html(false))):letter_ink_color=color;break
+	letter_text_node.add_theme_color_override("font_color",letter_ink_color)
 	blinds_open=clampf(float(data.get("blinds_open",0.75)),0,1)
 	source_overrides.clear()
 	for key in data.get("source_overrides",{}):
@@ -1341,6 +1348,12 @@ func painted_polygon(points: PackedVector2Array, color: Color, grain: float = 0.
 		var uv:=PackedVector2Array()
 		for p in points: uv.append((p-bounds.position)/bounds.size)
 		draw_polygon(points,PackedColorArray([Color(color,grain)]),uv,paper_grain)
+
+func choose_letter_ink(index: int) -> void:
+	letter_ink_color=LETTER_INKS[clampi(index,0,LETTER_INKS.size()-1)]
+	letter_text_node.add_theme_color_override("font_color",letter_ink_color)
+	if is_instance_valid(desk):desk.refresh_writing_ink()
+	save_game()
 
 func choose_letter_paper(index: int) -> void:
 	letter_paper_style=clampi(index,0,LetterPaper.NAMES.size()-1)

@@ -3,6 +3,7 @@ const PanelArt=preload("res://scripts/folio_panel.gd")
 const Item=preload("res://scripts/folio_item.gd")
 const DeskObject=preload("res://scripts/desk_object.gd")
 const Tool=preload("res://scripts/journal_tool.gd")
+const WritingPen=preload("res://scripts/writing_pen.gd")
 var g
 var shelf: Control
 var kit: Control
@@ -20,10 +21,12 @@ var blind_drag:=false
 var blind_start:=0.0
 var blind_origin:=0.0
 var writing: TextEdit
+var writing_pen: Control
+var ink_swatches: Array[Button]=[]
 func _ready() -> void:
 	mouse_filter=Control.MOUSE_FILTER_IGNORE;size=Vector2(1440,900)
 	shelf=PanelArt.new();shelf.size=Vector2(366,626);shelf.position=Vector2(38 if g.shelf_open else -380,142);add_child(shelf)
-	shelf.g=g;shelf.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	shelf.g=g;shelf.material_book=true;shelf.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	kit=PanelArt.new();kit.size=Vector2(360,626);kit.position=Vector2(1039 if g.tools_open else 1454,142);add_child(kit)
 	build_shelf();build_kit()
 	# Real objects occupy the sides; all remain clear of the A4 writing area.
@@ -37,15 +40,15 @@ func _ready() -> void:
 	if g.tool=="write":build_writing()
 	for side in ["shelf","tools"]:
 		var h:=Item.new();h.name="Handle_"+side;h.desk=self;h.handle=side;h.position=Vector2(391 if side=="shelf" else 997,270);h.size=Vector2(50,58);h.text="▤" if side=="shelf" else "✎";h.tooltip_text=t("拉出素材夹" if side=="shelf" else "拉出工具盒");style(h);add_child(h)
-	var cord:=Control.new();cord.name="BlindCord";cord.position=Vector2(1009,12);cord.size=Vector2(34,131);cord.mouse_default_cursor_shape=Control.CURSOR_VSIZE;cord.tooltip_text="向下拉绳升起百叶窗，向上推绳放下" if g.L.language=="zh" else "Pull down to raise the blind; move up to lower it";add_child(cord)
+	var cord:=Control.new();cord.name="BlindCord";cord.position=Vector2(1068,5);cord.size=Vector2(24,130);cord.mouse_default_cursor_shape=Control.CURSOR_VSIZE;cord.tooltip_text="向下拉绳升起百叶窗，向上推绳放下" if g.L.language=="zh" else "Pull down to raise the blind; move up to lower it";add_child(cord)
 	cord.gui_input.connect(func(event):
 		if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed:
 			blind_drag=true;blind_start=g.blinds_open;blind_origin=get_global_mouse_position().y;accept_event())
 	button("English" if g.L.language=="zh" else "Chinese",Rect2(1218,35,150,32),g.switch_language)
 	button("声音" if not g.audio.muted else "静音",Rect2(1095,35,100,32),func():g.audio.toggle();g.build_ui())
 	g.status_label=label(g.hint,Rect2(449,826,565,44),14);g.status_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	label("海盐书信事务所",Rect2(51,33,358,44),25)
-	label("给某个人的一封信" if g.L.language=="zh" else "A letter for someone",Rect2(53,79,358,28),14)
+	var sign_title:=label("海盐书信事务所",Rect2(51,33,340,44),25);sign_title.add_theme_color_override("font_color",Color("f3e2c1"))
+	var sign_note:=label("给某个人的一封信" if g.L.language=="zh" else "A letter for someone",Rect2(53,79,336,28),14);sign_note.add_theme_color_override("font_color",Color("d8c5a3"))
 	# Objects sit beneath the opened drawers, without invisible click areas above them.
 	move_child(shelf,get_child_count()-1);move_child(kit,get_child_count()-1)
 func object(kind: String, title: String, rect: Rect2, action: Callable) -> Button:
@@ -54,14 +57,36 @@ func object(kind: String, title: String, rect: Rect2, action: Callable) -> Butto
 func build_writing() -> void:
 	writing=TextEdit.new();writing.name="LetterWriting";writing.position=g.LETTER.position+Vector2(28,35);writing.size=g.LETTER.size-Vector2(56,70)
 	writing.text=g.letter_text;writing.wrap_mode=TextEdit.LINE_WRAPPING_BOUNDARY;writing.add_theme_font_override("font",g.font);writing.add_theme_font_size_override("font_size",19);writing.add_theme_constant_override("line_spacing",5)
-	writing.add_theme_color_override("font_color",Color("465951"));writing.add_theme_color_override("caret_color",Color("465951"))
+	writing.add_theme_color_override("font_color",g.letter_ink_color);writing.add_theme_color_override("caret_color",g.letter_ink_color)
 	writing.placeholder_text="亲爱的＿＿：\n\n想对你说的话，慢慢写在这里。\n\n\n你的＿＿" if g.L.language=="zh" else "Dear …,\n\nTake your time. What would you like to tell them?\n\n\nWith love, …"
 	for state in ["normal","focus","read_only"]:writing.add_theme_stylebox_override(state,StyleBoxEmpty.new())
 	writing.caret_blink=true;writing.caret_blink_interval=0.65
 	add_child(writing)
+	writing_pen=WritingPen.new();writing_pen.name="WritingPen";writing_pen.editor=writing;writing_pen.resting_object=get_node("Object_pen");writing_pen.paper_bounds=g.LETTER;writing_pen.ink=g.letter_ink_color;add_child(writing_pen)
 	if not g.conversation_open:writing.grab_focus()
 	writing.focus_exited.connect(func():g.save_game())
-	writing.text_changed.connect(func():g.letter_text=writing.text;g.letter_text_node.text=writing.text;g.audio.play("TYPE_KEY",0.28);g.queue_redraw())
+	writing.text_changed.connect(on_letter_text_changed)
+func on_letter_text_changed() -> void:
+	var previous: String=g.letter_text
+	var current: String=writing.text
+	if previous==current:return
+	# TextEdit owns IME composition, selection, undo and insertion; only committed text is saved.
+	g.letter_text=current;g.letter_text_node.text=current;g.queue_redraw()
+	var common_start:=0
+	while common_start<mini(previous.length(),current.length()) and previous[common_start]==current[common_start]:common_start+=1
+	var common_end:=0
+	while common_end<mini(previous.length()-common_start,current.length()-common_start) and previous[previous.length()-common_end-1]==current[current.length()-common_end-1]:common_end+=1
+	var inserted:=current.substr(common_start,current.length()-common_start-common_end)
+	if not inserted.strip_edges().is_empty() and not writing.has_ime_text():
+		writing_pen.committed(inserted.length());g.audio.play("WRITE_INK",0.38)
+func refresh_writing_ink() -> void:
+	if is_instance_valid(writing):
+		writing.add_theme_color_override("font_color",g.letter_ink_color);writing.add_theme_color_override("caret_color",g.letter_ink_color)
+		writing_pen.ink=g.letter_ink_color;writing_pen.queue_redraw();writing.grab_focus()
+	for swatch in ink_swatches:
+		var ink: Color=g.LETTER_INKS[int(swatch.get_meta("ink_index"))]
+		style(swatch,g.letter_ink_color==ink)
+		for state in ["font_color","font_hover_color","font_pressed_color"]:swatch.add_theme_color_override(state,ink)
 func t(text: String) -> String:return g.L.t(text)
 func style(b: Button, active: bool=false) -> void:
 	b.add_theme_font_override("font",g.font);b.add_theme_font_size_override("font_size",14);b.add_theme_color_override("font_color",Color("46685d"));b.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
@@ -113,6 +138,7 @@ func group_material_ids() -> Array:
 		elif g.materials[i].kind==g.MATERIAL_TYPES.get(g.drawer_group,""):ids.append(i)
 	return ids
 func turn_preview(direction: int) -> void:
+	if shelf.has_node("TurningLeaf"):return
 	var ids: Array=group_material_ids()
 	if ids.size()<2:return
 	var old_leaf:=capture_leaf()
@@ -124,17 +150,19 @@ func capture_leaf() -> ImageTexture:
 	var image:=get_viewport().get_texture().get_image()
 	# The captured viewport may be scaled by window size; normalize to game coordinates.
 	if image.get_size()!=Vector2i(1440,900):image.resize(1440,900,Image.INTERPOLATE_BILINEAR)
-	return ImageTexture.create_from_image(image.get_region(Rect2i(shelf.global_position+Vector2(25,140),Vector2i(317,441))))
+	return ImageTexture.create_from_image(image.get_region(Rect2i(shelf.global_position+Vector2(25,12),Vector2i(317,598))))
 func finish_book_turn(old_leaf: ImageTexture, direction: int) -> void:
 	var game=g
 	game.audio.play("PAGE_TURN",0.65);game.build_ui()
-	var leaf=preload("res://scripts/book_turn.gd").new();leaf.name="TurningLeaf";leaf.leaf=old_leaf;leaf.direction=direction;leaf.position=Vector2(25,140);leaf.size=Vector2(317,441)
+	var leaf=preload("res://scripts/book_turn.gd").new();leaf.name="TurningLeaf";leaf.leaf=old_leaf;leaf.direction=direction;leaf.position=Vector2(25,12);leaf.size=Vector2(317,598)
 	game.desk.shelf.add_child(leaf)
 func turn_book_page(direction: int) -> void:
+	if shelf.has_node("TurningLeaf"):return
 	var old_leaf:=capture_leaf()
 	g.drawer_page+=direction
 	finish_book_turn(old_leaf,direction)
 func change_book_group(group: String) -> void:
+	if shelf.has_node("TurningLeaf"):return
 	if g.drawer_group==group:return
 	var old_leaf:=capture_leaf()
 	g.drawer_group=group;g.drawer_page=0;g.source_preview_id=-1
@@ -149,7 +177,19 @@ func build_kit() -> void:
 		var b:=button(names[i],Rect2(23+i%4*81,64+i/4*70,74,63),func():g.set_tool(id),g.tool==id,kit);b.tool_id=id;b.add_theme_font_size_override("font_size",11)
 		for state in ["normal","hover","pressed","focus"]:b.get_theme_stylebox(state).content_margin_top=34
 		b.size=Vector2(74,63)
-	if g.tool=="pen":
+	if g.tool=="write":
+		label("正文墨色" if g.L.language=="zh" else "Letter ink",Rect2(26,224,300,29),18,kit)
+		var ink_names: Array=["墨绿","墨蓝","炭黑","棕褐","酒红"] if g.L.language=="zh" else ["Forest","Blue","Black","Sepia","Wine"]
+		for i in g.LETTER_INKS.size():
+			var index: int=i;var ink: Color=g.LETTER_INKS[i]
+			var swatch:=button("●",Rect2(26+i*63,273,55,45),func():g.choose_letter_ink(index),g.letter_ink_color==ink,kit)
+			swatch.name="LetterInk_"+str(i);swatch.set_meta("ink_index",i);swatch.tooltip_text=ink_names[i];ink_swatches.append(swatch)
+			for state in ["font_color","font_hover_color","font_pressed_color"]:swatch.add_theme_color_override(state,ink)
+			var ink_name:=label(ink_names[i],Rect2(22+i*63,324,63,23),12,kit);ink_name.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+		var instruction: String="墨色用于这封信的正文。\n笔尖会跟着输入的位置落笔。\n\n涂鸦笔可以另选颜色。" if g.L.language=="zh" else "Choose an ink for this letter.\nThe nib follows the words as you type.\n\nDoodles have their own ink colors."
+		var note:=label(instruction,Rect2(28,373,303,144),15,kit);note.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+		button("挑选信纸" if g.L.language=="zh" else "Choose letter paper",Rect2(25,553,307,39),func():g.set_tool("move"),false,kit)
+	elif g.tool=="pen":
 		label("涂鸦笔",Rect2(26,224,300,29),18,kit)
 		for i in 4:
 			var ink: Color=[Color("40566b"),Color("915942"),Color("4b6354"),Color("443a32")][i]

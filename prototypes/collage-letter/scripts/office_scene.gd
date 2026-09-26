@@ -1,6 +1,28 @@
 extends RefCounted
-## Original 2D room: a shallow window above a generous, uninterrupted writing desk.
+## Illustrated room under an independently operated blind and daylight.
+const AssetTexture=preload("res://scripts/asset_texture.gd")
+const ROOM_PATH="res://assets/illustrated_office/desk-room-v2.png"
+static var room_art: Texture2D
 static func paint(g) -> void:
+	if room_art==null and ResourceLoader.exists(ROOM_PATH):room_art=AssetTexture.get_texture(ROOM_PATH,2048)
+	if room_art!=null:
+		# Keep the writing plane under every movable object, with only a narrow
+		# front edge. The source illustration and its alpha stay unchanged.
+		var unit:=room_art.get_size()/Vector2(1584,992)
+		g.draw_texture_rect_region(room_art,Rect2(0,0,1440,154),Rect2(Vector2(0,65)*unit,Vector2(1584,191)*unit))
+		g.draw_texture_rect_region(room_art,Rect2(0,154,1440,725),Rect2(Vector2(0,256)*unit,Vector2(1584,572)*unit))
+		g.draw_texture_rect_region(room_art,Rect2(0,879,1440,21),Rect2(Vector2(0,828)*unit,Vector2(1584,80)*unit))
+	else:paint_fallback(g)
+	paint_blind(g)
+	# A small wooden office sign keeps its lettering readable on the wall art.
+	g.draw_colored_polygon(PackedVector2Array([Vector2(32,22),Vector2(399,19),Vector2(396,118),Vector2(34,122)]),Color("594d3e"))
+	g.draw_line(Vector2(38,27),Vector2(390,24),Color("a98762"),2,true)
+	g.draw_line(Vector2(38,115),Vector2(390,112),Color("3d3c34"),2,true)
+	# Slatted daylight falls beside the letter, never reducing text contrast.
+	for i in 4:
+		var x:=40+i*95.0
+		g.draw_colored_polygon(PackedVector2Array([Vector2(x,157),Vector2(x+37,157),Vector2(x+107,480),Vector2(x+70,480)]),Color(1,0.91,0.66,0.045*g.blinds_open))
+static func paint_fallback(g) -> void:
 	g.draw_rect(Rect2(0,0,1440,150),Color("b49176"))
 	g.draw_rect(Rect2(0,140,1440,14),Color("936f53"))
 	g.draw_line(Vector2(0,153),Vector2(1440,153),Color("ecd1a6"),3,true)
@@ -23,22 +45,22 @@ static func paint(g) -> void:
 		for p in [Vector2(-7,-4),Vector2(5,-8),Vector2(12,3)]:g.draw_circle(Vector2(x-2,106)+p,12,Color("7f8e6a"))
 	g.draw_rect(Rect2(442,0,9,140),Color("775c47"));g.draw_rect(Rect2(991,0,10,140),Color("775c47"))
 	g.draw_rect(Rect2(716,0,7,134),Color("c3a079"));g.draw_rect(Rect2(433,133,578,10),Color("d6b48b"))
-	var down:float=1.0-g.blinds_open
-	for i in 11:
-		var y:=i*10.7*down
-		g.draw_rect(Rect2(451,y,540,10),Color("c5ad87"))
-		g.draw_line(Vector2(452,y+8),Vector2(991,y+8),Color("9f8668"),1,true)
-		g.draw_line(Vector2(454,y+1),Vector2(989,y+1),Color("e1c8a0"),1,true)
-	for x in [504,935]:g.draw_line(Vector2(x,0),Vector2(x,10+107*down),Color("e7d2ae"),1.5,true)
-	var cord_y:float=50+g.blinds_open*77
-	g.draw_line(Vector2(1025,7),Vector2(1025,cord_y),Color("f2dfbc"),2,true)
-	g.draw_circle(Vector2(1025,cord_y+5),6,Color("98734e"))
-	g.draw_line(Vector2(1023,cord_y+2),Vector2(1023,cord_y+7),Color("d8b782"),2,true)
-	# Slatted daylight falls beside the letter, never reducing text contrast.
-	for i in 4:
-		var x:=40+i*95.0
-		g.draw_colored_polygon(PackedVector2Array([Vector2(x,157),Vector2(x+37,157),Vector2(x+107,480),Vector2(x+70,480)]),Color(1,0.91,0.66,0.055*g.blinds_open))
 	# Fore-edge and joinery make this one physical desk rather than a wooden wallpaper.
 	g.draw_rect(Rect2(0,879,1440,21),Color("966e50"))
 	g.draw_line(Vector2(0,879),Vector2(1440,879),Color("e2bd8e"),3,true)
 	g.draw_line(Vector2(20,893),Vector2(1420,893),Color("7e5a44"),1,true)
+
+static func paint_blind(g) -> void:
+	var down:float=1.0-g.blinds_open
+	var area:=Rect2(405,0,666,73) if room_art!=null else Rect2(451,0,540,134)
+	var slat_h:=ceilf(area.size.y/11)+1
+	for i in 11:
+		var y:=i*(area.size.y-slat_h)/10.0*down
+		g.draw_rect(Rect2(area.position.x,y,area.size.x,slat_h),Color("c5ad87"))
+		g.draw_line(Vector2(area.position.x+1,y+slat_h-2),Vector2(area.end.x,y+slat_h-2),Color("9f8668"),1,true)
+		g.draw_line(Vector2(area.position.x+3,y+1),Vector2(area.end.x-2,y+1),Color("e1c8a0"),1,true)
+	for x in [area.position.x+53,area.end.x-56]:g.draw_line(Vector2(x,0),Vector2(x,slat_h+(area.size.y-slat_h)*down),Color("e7d2ae"),1.5,true)
+	var cord_y:float=50+g.blinds_open*77
+	g.draw_line(Vector2(1080,7),Vector2(1080,cord_y),Color("f2dfbc"),2,true)
+	g.draw_circle(Vector2(1080,cord_y+5),6,Color("98734e"))
+	g.draw_line(Vector2(1078,cord_y+2),Vector2(1078,cord_y+7),Color("d8b782"),2,true)

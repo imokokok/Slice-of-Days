@@ -26,10 +26,10 @@ func run()->void:
 	game.drawer_group="票据";game.build_ui()
 	var tickets: Array=game.desk.group_material_ids()
 	game.source_preview_id=tickets[0];game.build_ui();await process_frame
-	game.desk.shelf.get_node("PreviewNext").pressed.emit();await process_frame
+	game.desk.shelf.get_node("PreviewNext").pressed.emit();await create_timer(0.8).timeout
 	check(game.source_preview_id==tickets[1],"Preview next arrow turns directly to the next ticket")
-	game.desk.shelf.get_node("PreviewPrevious").pressed.emit();await process_frame
-	game.desk.shelf.get_node("PreviewPrevious").pressed.emit();await process_frame
+	game.desk.shelf.get_node("PreviewPrevious").pressed.emit();await create_timer(0.8).timeout
+	game.desk.shelf.get_node("PreviewPrevious").pressed.emit();await create_timer(0.8).timeout
 	check(game.source_preview_id==tickets[-1] and game.drawer_page==(tickets.size()-1)/12,"Preview wraps within its category and keeps list page aligned")
 	check(game.pieces_root.get_child_count()==1,"Preview paging preserves the collage")
 	for locale in ["zh","en"]:

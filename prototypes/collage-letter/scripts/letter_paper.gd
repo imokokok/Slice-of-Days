@@ -3,11 +3,10 @@ extends RefCounted
 const NAMES=["手工纤维纸", "暖白棉纸", "牛皮纸", "旧信笺", "细方格纸", "横线信纸", "半透明描图纸", "叶脉压纹纸", "咖啡渍信纸", "海雾晕染纸", "玫瑰晕染纸", "晨光水彩纸", "丁香云纹纸", "落日流纹纸", "彩色流纹纸", "炭灰水墨纸", "靛蓝刷纹纸", "朱红刷纹纸", "大理石纹纸", "盐花水彩纸", "浅色流纹纸", "细帘纹纸", "航空信纸", "毛边旧纸"]
 const FILES=["fibre-kraft.png", "Papier13.png", "Papier9.png", "old-scan.jpg", "Papier11.png", "Papier12.png", "Papier4.png", "Papier13.png", "old-scan.jpg", "watercolor_1_0.jpg", "watercolor_2_0.jpg", "watercolor_3_0.jpg", "watercolor_4_0.jpg", "watercolor_5_0.jpg", "watercolor_6_0.jpg", "watercolor_7_0.jpg", "watercolor_8_0.jpg", "watercolor_9_0.jpg", "watercolor_10_0.jpg", "watercolor_11_0.jpg", "watercolor_12_0.jpg", "Papier5.png", "Papier4.png", "old-scan.jpg"]
 const DEPTH=[3.4,1.8,1.1,2.8,0.25,0.45,0.15,1.3,3.1,2.5,1.8,2.1,3.0,2.2,1.5,3.8,0.7,2.8,0.8,4.2,1.2,0.4,0.5,5.2]
-static var textures: Dictionary={}
+const AssetTexture=preload("res://scripts/asset_texture.gd")
 static func texture(index: int) -> Texture2D:
 	index=posmod(index,NAMES.size())
-	if not textures.has(index):textures[index]=load("res://assets/open_pack/paper/"+FILES[index])
-	return textures[index]
+	return AssetTexture.get_texture("res://assets/open_pack/paper/"+FILES[index])
 
 static func outline(rect: Rect2, style: int) -> PackedVector2Array:
 	var points:=PackedVector2Array()
@@ -50,7 +49,7 @@ static func paint(node: CanvasItem, rect: Rect2, style: int, shadow: bool=true) 
 
 static func decoration(node: CanvasItem, rect: Rect2, style: int) -> void:
 	if style==7:
-		var leaf: Texture2D=load("res://assets/open_pack/icons/leaves.svg")
+		var leaf: Texture2D=AssetTexture.get_texture("res://assets/open_pack/icons/leaves.svg")
 		for i in 4:
 			var at:=rect.position+rect.size*Vector2(0.08+(i%2)*0.50,0.10+(i/2)*0.47)
 			var box:=Rect2(at,rect.size*Vector2(0.31,0.27))

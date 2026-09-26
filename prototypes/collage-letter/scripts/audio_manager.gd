@@ -52,6 +52,7 @@ func play(event: String, strength: float = 1.0) -> void:
 		"TAPE_PULL": clip="tape";offset=0.25;duration=0.8
 		"BRUSH_DRAW": clip="strokes";offset=rng.randf_range(0.1,0.5);duration=0.32
 		"PENCIL_DRAW": clip="pencil";offset=rng.randf_range(0.1,0.7);duration=0.3
+		"WRITE_INK": clip="pencil";offset=rng.randf_range(0.12,0.72);duration=0.24
 		"STAMP_PRESS", "STAMP_RELEASE", "PAPER_PRESS", "TAPE_STICK": clip="stamp";duration=0.22
 		"MATCH_STRIKE": clip="match";duration=0.48
 		"FIRE_LOOP": return # This pack contains no candle loop recording.

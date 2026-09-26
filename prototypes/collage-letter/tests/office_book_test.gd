@@ -29,13 +29,13 @@ func run()->void:
 	check(game.drawer_page==1,"Next leaf changes page")
 	check(game.desk.shelf.has_node("TurningLeaf"),"Page leaf animation exists")
 	check(game.audio.last_clip=="paper","Page turn uses paper recording")
-	await create_timer(0.20).timeout
+	await create_timer(0.32).timeout
 	var leaf=game.desk.shelf.get_node("TurningLeaf")
 	check(leaf.progress>0.1 and leaf.progress<0.95,"Leaf is animated, not a static page swap")
 	await capture("material-book-turn")
-	await create_timer(0.40).timeout
+	await create_timer(0.60).timeout
 	check(not game.desk.shelf.has_node("TurningLeaf"),"Leaf retires so the new material can be taken")
-	game.desk.shelf.get_node("BookPrevious").pressed.emit();await create_timer(0.6).timeout
+	game.desk.shelf.get_node("BookPrevious").pressed.emit();await create_timer(0.8).timeout
 	check(game.drawer_page==0,"Previous leaf returns to the preceding materials")
 	game.set_tool("write");await process_frame
 	check(game.desk.writing.has_focus(),"Writing starts on the letter, with a live caret")

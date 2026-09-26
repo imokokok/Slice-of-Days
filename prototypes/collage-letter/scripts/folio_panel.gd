@@ -1,10 +1,31 @@
 extends Control
+const AssetTexture=preload("res://scripts/asset_texture.gd")
+const BOOK_PATH="res://assets/illustrated_office/open-book-v2.png"
 var g
+var material_book:=false
+var book_art: Texture2D
 var preview_id: int=-1
 var paper_color:=Color("f8e1b5")
 var edge_color:=Color("85baa7")
 var postal_trim:=false
 func _draw() -> void:
+	if material_book and book_art==null and ResourceLoader.exists(BOOK_PATH):book_art=AssetTexture.get_texture(BOOK_PATH)
+	if material_book and book_art!=null:
+		# Match the painted blank page to the controls, preserving the book's aspect.
+		var image_size:=book_art.get_size()
+		var source_page:=Rect2(image_size*Vector2(0.152,0.076),image_size*Vector2(0.780,0.817))
+		var page:=Rect2(25,12,size.x-49,size.y-28)
+		var ratio:=maxf(page.size.x/source_page.size.x,page.size.y/source_page.size.y)
+		draw_texture_rect(book_art,Rect2(page.position-source_page.position*ratio,image_size*ratio),false)
+	else:draw_fallback()
+	if preview_id>=0 and g:
+		draw_texture_rect(g.get_material_texture(preview_id),Rect2(33,181,300,240),false)
+		if g.cutting_source==preview_id and g.path.size()>1:
+			var cut:=PackedVector2Array()
+			for point in g.path:cut.append(point-global_position)
+			if g.tool=="rect":draw_rect(Rect2(g.start-global_position,g.get_global_mouse_position()-g.start).abs(),Color("fff1d0"),false,1)
+			else:draw_polyline(cut,Color("fff1d0"),1.5,true)
+func draw_fallback() -> void:
 	# A bound material book: cloth cover, stacked leaves and a shaded stitched gutter.
 	var paper=preload("res://scripts/letter_paper.gd")
 	var cover:=StyleBoxFlat.new();cover.bg_color=Color("858e78");cover.set_corner_radius_all(8);cover.shadow_color=Color(0.23,0.18,0.12,0.18);cover.shadow_size=5;cover.shadow_offset=Vector2(4,6)
@@ -19,10 +40,3 @@ func _draw() -> void:
 	for y in [108,282,459]:
 		draw_arc(Vector2(14,y),8,0.0,PI,16,Color("e7d6ad"),2,true)
 		draw_circle(Vector2(6,y),1.5,Color("6e6858"));draw_circle(Vector2(22,y),1.5,Color("8d8267"))
-	if preview_id>=0 and g:
-		draw_texture_rect(g.get_material_texture(preview_id),Rect2(33,181,300,240),false)
-		if g.cutting_source==preview_id and g.path.size()>1:
-			var cut:=PackedVector2Array()
-			for point in g.path:cut.append(point-global_position)
-			if g.tool=="rect":draw_rect(Rect2(g.start-global_position,g.get_global_mouse_position()-g.start).abs(),Color("fff1d0"),false,1)
-			else:draw_polyline(cut,Color("fff1d0"),1.5,true)

@@ -307,6 +307,9 @@ func _build_ui() -> void :
 	world.flood_art.z_index = 0
 	modal = Control.new()
 	modal.theme = theme
+	# Fridge name labels use a positive canvas Z to clear their shelf art.
+	# Keep every open paper page above those labels, including its left edge.
+	modal.z_index = 10
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	layer.add_child(modal)
 	var shade: = ColorRect.new()

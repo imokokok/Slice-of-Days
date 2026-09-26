@@ -11,5 +11,9 @@
   "mode": "RGB",
   "matte": "white",
   "category": "basic",
-  "status": "Original preserved. Not yet active. Built-in imagegen extraction candidate changed brushwork and was rejected. Awaiting transparent original or explicit permission for deterministic pixel-preserving matte removal."
+  "status": "Active in the game after the user explicitly approved deterministic white-matte removal on 2026-09-26. Original JPEG preserved; the rejected imagegen candidate remains unused.",
+  "derivative_path": "modules/restaurant/assets/derived/tomato.png",
+  "derivative_sha256": "a272899150076014d879f3c58068e848f4e1675690237d8cdc113965ea5e663e",
+  "derivative_crop": [417, 472, 198, 176],
+  "processing": "tools/prepare_tomato_art.gd adds alpha from distance to white; retained RGB pixels are unchanged; Godot import disables fix_alpha_border"
 }

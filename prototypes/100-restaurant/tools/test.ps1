@@ -25,6 +25,7 @@ Invoke-GodotTest tests/test_cut_clean_share.gd
 if ($LASTEXITCODE -ne 0) { throw 'Cut, cleaning and sharing tests failed' }
 Invoke-GodotTest tests/test_handdrawn_assets.gd
 Invoke-GodotTest tests/test_team_food_art.gd
+Invoke-GodotTest tests/test_tomato_art.gd
 if ($LASTEXITCODE -ne 0) { throw 'Hand-drawn asset tests failed' }
 Invoke-GodotTest tests/test_shelf_pages.gd
 Invoke-GodotTest tests/test_removed_counter_items_cast.gd

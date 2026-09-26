@@ -1,0 +1,48 @@
+Godot 4.7.2 headless regression, 2026-09-26
+Commands from tools/test.ps1
+Entries: 42
+
+01/42 tests/test_thermal_reactions.gd exit=0 pass=True error=False seconds=0.3
+02/42 tests/test_reaction_kitchen.gd exit=0 pass=True error=False seconds=3.6
+03/42 tests/test_visual_spatial_consistency.gd exit=0 pass=True error=False seconds=5.8
+04/42 tests/test_kitchen_flood.gd exit=0 pass=True error=False seconds=2.1
+05/42 tests/test_craft_workbench.gd exit=0 pass=True error=False seconds=3.5
+06/42 tests/test_material_physics.gd exit=0 pass=True error=False seconds=7.2
+07/42 tests/test_cut_clean_share.gd exit=0 pass=True error=False seconds=6.3
+08/42 tests/test_handdrawn_assets.gd exit=0 pass=True error=False seconds=5.4
+09/42 tests/test_team_food_art.gd exit=0 pass=True error=False seconds=2.7
+10/42 tests/test_tomato_art.gd exit=0 pass=True error=False seconds=2.4
+11/42 tests/test_shelf_pages.gd exit=0 pass=True error=False seconds=4.1
+12/42 tests/test_removed_counter_items_cast.gd exit=0 pass=True error=False seconds=2.6
+13/42 tests/test_recipe_guide.gd exit=0 pass=True error=False seconds=4.9
+14/42 tests/test_serving_continuity.gd exit=0 pass=True error=False seconds=3.1
+15/42 tests/test_recorded_audio.gd exit=0 pass=True error=False seconds=3.0
+16/42 modules/restaurant/domain/test_domain.gd exit=0 pass=True error=False seconds=0.2
+17/42 modules/restaurant/storage/smoke_test.gd exit=0 pass=True error=False seconds=0.3
+18/42 tests/test_integration.gd exit=0 pass=True error=False seconds=8.3
+19/42 tests/test_high_fidelity_state.gd exit=0 pass=True error=False seconds=0.2
+20/42 tests/test_knife_physics.gd exit=0 pass=True error=False seconds=3.3
+21/42 tests/test_knife_drag.gd exit=0 pass=True error=False seconds=1.0
+22/42 tests/test_tool_foreground.gd exit=0 pass=True error=False seconds=2.4
+23/42 tests/test_cut_batch_stability.gd exit=0 pass=True error=False seconds=3.9
+24/42 tests/test_slice_cooking_continuity.gd exit=0 pass=True error=False seconds=5.1
+25/42 tests/test_reference_layout.gd exit=0 pass=True error=False seconds=2.3
+26/42 tests/test_stock_volume_recipe.gd exit=0 pass=True error=False seconds=2.7
+27/42 modules/restaurant/ui/poster_store_test.gd exit=0 pass=True error=False seconds=0.7
+28/42 modules/restaurant/ui/collage_test.gd exit=0 pass=True error=False seconds=0.4
+29/42 tests/test_collage_input.gd exit=0 pass=True error=False seconds=3.5
+30/42 modules/restaurant/storage/paper_recipe_test.gd exit=0 pass=True error=False seconds=0.3
+31/42 tests/test_recipe_diy.gd exit=0 pass=True error=False seconds=4.6
+32/42 tests/test_tape_editing.gd exit=0 pass=True error=False seconds=0.4
+33/42 tests/test_tape_tools.gd exit=0 pass=True error=False seconds=3.6
+34/42 tests/test_seasoning.gd exit=0 pass=True error=False seconds=30.2
+35/42 tests/test_spatula.gd exit=0 pass=True error=False seconds=4.5
+36/42 tests/test_heat_control.gd exit=0 pass=True error=False seconds=2.5
+37/42 tests/test_kitchen_interactions.gd exit=0 pass=True error=False seconds=5.7
+38/42 tests/test_customer_reviews.gd exit=0 pass=True error=False seconds=0.3
+39/42 tests/test_free_pan.gd exit=0 pass=True error=False seconds=7.5
+40/42 tests/test_workstations.gd exit=0 pass=True error=False seconds=4.2
+41/42 tests/test_comfort_release.gd exit=0 pass=True error=False seconds=10.1
+42/42 tests/capture_asset_gallery.gd exit=0 pass=True error=False seconds=3.9
+
+PASS: all 42 test entrypoints

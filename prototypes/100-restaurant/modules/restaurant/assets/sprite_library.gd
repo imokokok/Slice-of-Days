@@ -145,6 +145,17 @@ static func supplementary_food(id: String) -> Texture2D:
 	_cache[key] = result
 	return result
 
+static func supplied_tomato_food() -> Texture2D:
+	const path := "res://modules/restaurant/assets/derived/tomato.png"
+	if _cache.has("supplied:tomato"): return _cache["supplied:tomato"]
+	var source: Texture2D = load(path) if ResourceLoader.exists(path) else null
+	if source == null:
+		var pixels := Image.load_from_file(path)
+		if pixels == null or pixels.is_empty(): return null
+		source = ImageTexture.create_from_image(pixels)
+	_cache["supplied:tomato"] = source
+	return source
+
 static func body_outline(id: String) -> PackedVector2Array:
 	if _outlines.has(id): return _outlines[id]
 	var texture := food(id)
@@ -187,6 +198,9 @@ static func alpha_at(id: String, art_point: Vector2) -> float:
 	return (_hit_pixels[id] as Image).get_pixelv(Vector2i(uv * texture.get_size())).a
 
 static func food(id: String) -> Texture2D:
+	# User-supplied tomato, cropped and given alpha without repainting its RGB.
+	# This shared source reaches storage, bodies, plating, photographs and pages.
+	if id == "tomato": return supplied_tomato_food()
 	var authored := handdrawn_food(id)
 	if authored != null: return authored
 	var team_source := team_jpeg_food(id)

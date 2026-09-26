@@ -21,10 +21,10 @@ func run() -> void:
 			errors+=1
 			continue
 		var image:=texture.get_image()
-		# New team JPEGs have an in-memory alpha matte; supplementary paintings
-		# retain their soft alpha brush edges. The legacy atlas matte audit below
-		# applies only to older generated atlas sprites.
-		var has_source_alpha := art.handdrawn_manifest().has(str(rows[i].id)) or art.team_jpeg_manifest().has(str(rows[i].id)) or str(rows[i].id) in ["egg", "noodles", "bread"]
+		# New team JPEGs and the supplied tomato have an alpha matte;
+		# supplementary paintings retain their soft alpha brush edges. The legacy
+		# atlas matte audit below applies only to older generated atlas sprites.
+		var has_source_alpha := art.handdrawn_manifest().has(str(rows[i].id)) or art.team_jpeg_manifest().has(str(rows[i].id)) or str(rows[i].id) in ["egg", "noodles", "bread", "tomato"]
 		for y in image.get_height():
 			for x in image.get_width():
 				var c:=image.get_pixel(x,y)

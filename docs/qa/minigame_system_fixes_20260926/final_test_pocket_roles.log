@@ -1,0 +1,57 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS A global recorder is visible; notebook remains B-owned
+PASS A has four contiguous icons plus the global recorder
+PASS A notebook shortcut cannot bypass ownership
+PASS legacy journal route cannot open notebook for A
+PASS A recorder shortcut opens real field recorder
+PASS recorder retains live scene screen
+PASS A archive contains no notebook tab or label
+PASS A can still track heard clues without a notebook
+PASS B carries notebook, not recorder
+PASS B has no recorder view or global shortcut
+PASS Direct UI and recording-service calls both respect B ownership
+PASS B sound collection offers no personal recording action
+PASS Collection cannot bypass B ownership
+PASS B record shop has no personal recorder entrance
+PASS B shop instructions match the available source-material workflow
+PASS B's visible collection station opens real library without a recorder
+PASS B can listen to records without exposing recorder
+PASS Shop wrapper uses the same global device
+PASS B notebook opens directly on today's agenda
+PASS agenda shows actual shift time and workplace
+PASS agenda explicitly shows home deadline and midnight
+PASS reading agenda has no time or completion side effects
+PASS B can reserve a real morning home activity
+PASS new plans cannot overlap accepted appointments
+PASS next activity follows chronology, not fixed-job priority
+PASS today agenda excludes other days
+PASS available windows subtract both plan and appointment
+PASS added plan is immediately visible in B notebook
+PASS raw appointment status is never displayed
+PASS agenda location button selects real destination on map
+PASS plan cancellation uses real persistence
+PASS cancelled intent remains marked cancelled, not complete
+PASS cancelled intent releases its free window
+PASS reserve immediate home activity
+PASS actual timed home activity executes
+PASS agenda completion reflects actual activity
+PASS missed real appointment is not called complete
+PASS cancelled to-do stays crossed out without a completion tick
+PASS missed to-do remains distinct from completion
+PASS actual activity completion appears as a checked to-do
+PASS notebook uses the bundled Chinese handwriting font without system fallback
+PASS role-specific plans persist through save reload
+PASS B plans do not leak into A
+PASS can swap an actual future shift
+PASS agenda derives swapped 09:00 shift from live calendar
+PASS B schedule exposes unlocked fifth-day role switch
+PASS switching B to A immediately retires B's notebook
+PASS A planner has no notebook label after switching
+PASS switching back to B restores B's own state
+PASS same HUD updates ownership after role switch
+POCKET_ROLES: 50 checks / 0 failures
+WARNING: 10 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 4 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)

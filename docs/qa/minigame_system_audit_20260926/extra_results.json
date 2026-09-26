@@ -1,0 +1,22 @@
+[
+  {
+    "test": "native_current",
+    "exit": 0,
+    "log": "native_current.log"
+  },
+  {
+    "test": "chess_layout",
+    "exit": 1,
+    "log": "chess_layout.log"
+  },
+  {
+    "test": "tarot_smoke",
+    "exit": 0,
+    "log": "tarot_smoke.log"
+  },
+  {
+    "test": "nebula",
+    "exit": "timeout",
+    "log": "nebula.log"
+  }
+]

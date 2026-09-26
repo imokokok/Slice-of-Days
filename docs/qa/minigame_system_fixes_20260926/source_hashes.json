@@ -1,0 +1,14 @@
+{
+  "remote_base": "35823e27d58a29032d97d9cbd210948a651a2b08",
+  "integration_base": "d7b08818301e3e20320d12b0f55b4b77ffc51bb0",
+  "sha256": {
+    "scripts/core/dialogue_system.gd": "a76eb5ea65a718338000578789f2e23b3a05771f9fd94ff582c9e26423374906",
+    "scripts/core/gameplay_module_system.gd": "9d744201aefa71fec4b8c67a6e58c898746a57d41339c4d3e9156e9bb2d4ffc7",
+    "scripts/core/life_system.gd": "9c82187cb957c7d87d4195a39d9b427d6d2249991765a7ddd25c99ca525f597f",
+    "scripts/core/people_puzzle_system.gd": "11cf4c035a792f1095e80b907aa890345d9946e02f346f3f9ab4729ff8fe227d",
+    "scripts/ui/clock_repair.gd": "5f779d395db63613bba69d59198673e185ba4c10e23ed6027c395f15e8fce0a8",
+    "data/gameplay/module_prototypes.json": "fce6b0ff363472864b2a8e03029716f20c787a777f5c6169dc73ad06919a4cca",
+    "data/world/interactive_spaces.json": "f7d99b4b3265c02703736d14ae85a5042c0dd00e750b8f86985c1464b2935c51",
+    "tests/integration/test_minigame_system_fixes.gd": "a59cab8a4598a7adeda0ac97d1756b398e0f0998ec4814375142657bde74cbe0"
+  }
+}

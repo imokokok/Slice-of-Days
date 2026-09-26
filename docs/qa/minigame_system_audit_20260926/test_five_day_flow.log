@@ -1,0 +1,81 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+PASS five chapters, one role per day
+PASS empty day cannot be skipped
+PASS retired translation cannot launch
+PASS no character switching or reveal on Day 1
+PASS travel to record_store
+PASS wait for record shop opening consumes actual free time
+PASS music fits the actual shop hours and character schedule
+PASS capture actual game audio, no microphone
+PASS game recording auto-saves real audio
+PASS capture actual game audio, no microphone
+PASS game recording auto-saves real audio
+PASS only this character's recordings appear
+PASS production Studio reads current character
+PASS actual visual sound room opened
+PASS boss listens to actual mixed recording
+PASS eleven production pressing steps deliver real WAV and cover
+PASS retrying delivery cannot duplicate rewards
+PASS Day 1 genuine music completion
+PASS conversation partner has a real scene placement
+PASS reach the actual door before speaking to an indoor resident
+PASS partner exists once in the active scene
+PASS real conversation opens for xanni
+PASS conversation completes without debug flags
+PASS next real time block remains available
+PASS confirmed wait consumes shared world time
+PASS travel to residence
+PASS EndDay accepts actual completed activity and narrative
+PASS one overnight advances exactly one day
+PASS overnight save and reload preserves day and role
+PASS Day 2 loads B's private money
+PASS A money survives overnight
+PASS NPC actual encounters are separate from perceived identity
+PASS first encounter starts the explicit identity progression
+PASS B does not inherit A's audio library
+PASS ordinary home shelf opens through the actual room object
+PASS other role's real record is present in shared world
+PASS clicking actual trace records discovery
+PASS shared cabinet loads actual Day 1 record audio
+PASS B can listen to A's public recording
+PASS Day 2 trace does not prematurely start search
+PASS travel to night_market
+PASS real restaurant order accepted
+PASS travel to produce_stall
+PASS purchase real ingredient tomato
+PASS purchase real ingredient herbs
+PASS purchase real ingredient sea_beans
+PASS travel to night_market
+PASS procurement delivered with receipts
+PASS start production module cooking
+PASS production scene resolves active context
+PASS actual mechanic ready cooking
+PASS real result saved cooking
+PASS conversation partner has a real scene placement
+PASS reach the actual door before speaking to an indoor resident
+PASS partner exists once in the active scene
+PASS real conversation opens for shi_yongqi
+PASS conversation completes without debug flags
+PASS travel to residence
+PASS EndDay accepts actual completed activity and narrative
+PASS one overnight advances exactly one day
+PASS overnight save and reload preserves day and role
+PASS Day 3 returns to A
+PASS Day 3 does not seed noticing flags
+PASS travel to handcraft_shop
+PASS wait for handcraft_shop opening consumes actual free time
+PASS real letter host starts
+PASS letter receives current character
+SCRIPT ERROR: Invalid call. Nonexistent function 'open_browser' in base 'Node2D (host_adapter.gd)'.
+          at: letter (res://tests/integration/test_five_day_flow.gd:217)
+          GDScript backtrace (most recent call first):
+              [0] letter (res://tests/integration/test_five_day_flow.gd:217)
+ERROR: Day 3 actual letter completes main task
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_five_day_flow.gd:13)
+       [1] run (res://tests/integration/test_five_day_flow.gd:333)
+       [2] letter (res://tests/integration/test_five_day_flow.gd:217)
+PASS travel to residence

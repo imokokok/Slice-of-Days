@@ -1,0 +1,78 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+PASS four verbal states, no exposed numerical HUD
+PASS undiscovered activity cannot be planned
+PASS writing a plan does not execute it
+PASS planning costs no activity time
+PASS overlapping plans rejected
+PASS long action cannot cross a private commitment
+PASS rest cannot be executed remotely outside home
+PASS actual home rest executes
+PASS home rest settles once with real thirty minutes
+PASS rest changes body state
+PASS meal requires actual food
+PASS meal consumes one inventory item
+PASS short activity fits remaining gap
+PASS plan cancellation records crossed out history
+PASS repeat cancellation cannot charge state again
+PASS natural clock crosses a schedule boundary without jumping to next gap
+PASS A can move private commitment to join two gaps
+PASS joining preserves total free minutes and permits real long activity
+PASS frequent replanning has a cumulative consequence
+PASS fatigue actually increases walking journey minutes
+PASS fatigue also affects street locomotion
+PASS low engagement changes internal response
+PASS low security produces a spending concern
+PASS income summary derives from actual ledger
+PASS sleep cannot be applied twice
+PASS other role has independent body state
+PASS severe previous fatigue delays next playable morning
+PASS dawn delay applies once
+PASS real save reload restores life state
+PASS state and dawn marker survive reload without duplicate delay
+PASS work swap requires actual prior cooperation
+PASS leave before shift is allowed
+PASS leave yields no wage and frees actual reserved time
+PASS leave cannot be claimed twice
+PASS prior collaborator can agree a shift swap
+PASS swap retains next afternoon shift and adds morning work
+PASS swapped future shift consumes future freedom
+PASS cancelling swapped morning preserves the separate afternoon job
+PASS cancelling one shift does not free another shift's time
+PASS start actual kitchen for early shift
+PASS starting work gives no instant wage
+PASS early shift quotes actual ninety minute service
+PASS cancelling kitchen restores time and shift availability
+PASS cancelled work can be started again
+PASS actual chop, heat and cooking interactions complete
+PASS cooking has a valid recipe choice
+PASS real kitchen commits completed meal
+PASS ninety minute early shift pays floor of 195 times 90 over 240
+PASS shift cannot pay twice
+PASS finished early shift is resolved for this day
+PASS full shift starts a separate actual kitchen session
+PASS complete four hour shift pays exactly one full wage after actual cooking
+PASS missed shift pays nothing and affects work relationship
+PASS facet event requires physically present NPC
+PASS specific observation produces first sourced facet
+PASS repeating same observation cannot farm facets
+PASS repeated conversation neither reveals hidden sides nor grants signature
+PASS low clarity requires looking again before complex choice
+PASS extra observation restores access to exact known detail
+PASS uninformed choice earns no facet
+PASS specific informed action unlocks second side
+PASS enough information does not auto grant signature
+PASS later in-person review grants signature
+PASS shared knowledge does not copy another role's relationship
+PASS Day 5 exchange shares source-stamped facets
+PASS album distinguishes exchanged provenance
+PASS known home activity can be planned from town
+PASS saved transport preference resolves an actual route
+PASS planned departure cannot teleport out of an interior
+PASS time passing expires missed plan without completing it
+PASS planner has visible in-game entrance before reveal
+PASS new notebook loads inside production paper overlay
+PASS real planner button adds intent only
+PASS other role stays hidden before reveal
+DAILY_LIFE: 74 checks / 0 failures

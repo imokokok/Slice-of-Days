@@ -1,0 +1,74 @@
+[
+  {
+    "test": "100-restaurant-test_integration",
+    "exit": 0,
+    "seconds": 9.0,
+    "log": "100-restaurant-test_integration.log"
+  },
+  {
+    "test": "100-restaurant-test_customer_reviews",
+    "exit": 0,
+    "seconds": 0.7,
+    "log": "100-restaurant-test_customer_reviews.log"
+  },
+  {
+    "test": "100-restaurant-test_visual_spatial_consistency",
+    "exit": 0,
+    "seconds": 67.5,
+    "log": "100-restaurant-test_visual_spatial_consistency.log"
+  },
+  {
+    "test": "100-restaurant-test_thermal_reactions",
+    "exit": 0,
+    "seconds": 0.7,
+    "log": "100-restaurant-test_thermal_reactions.log"
+  },
+  {
+    "test": "100-restaurant-test_recipe_diy",
+    "exit": 1,
+    "seconds": 5.4,
+    "log": "100-restaurant-test_recipe_diy.log"
+  },
+  {
+    "test": "elder-board-game-rules_test",
+    "exit": 0,
+    "seconds": 0.7,
+    "log": "elder-board-game-rules_test.log"
+  },
+  {
+    "test": "elder-board-game-scene_test",
+    "exit": 0,
+    "seconds": 6.3,
+    "log": "elder-board-game-scene_test.log"
+  },
+  {
+    "test": "elder-board-game-story_test",
+    "exit": 0,
+    "seconds": 0.8,
+    "log": "elder-board-game-story_test.log"
+  },
+  {
+    "test": "elder-board-game-teaching_test",
+    "exit": 0,
+    "seconds": 1.4,
+    "log": "elder-board-game-teaching_test.log"
+  },
+  {
+    "test": "collage-letter-ui_layout_test",
+    "exit": 0,
+    "seconds": 2.2,
+    "log": "collage-letter-ui_layout_test.log"
+  },
+  {
+    "test": "hear-you-qa",
+    "exit": 0,
+    "seconds": 0.7,
+    "log": "hear-you-qa.log"
+  },
+  {
+    "test": "observatory-audit_integration",
+    "exit": 0,
+    "seconds": 12.4,
+    "log": "observatory-audit_integration.log"
+  }
+]

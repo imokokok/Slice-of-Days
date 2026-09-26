@@ -1,0 +1,15 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+ERROR: Ordinary sound entry opens
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_music_source_route.gd:7)
+       [1] run (res://tests/integration/test_music_source_route.gd:14)
+       [2] settle (res://tests/integration/test_music_source_route.gd:8)
+ERROR: Entry creates one real recorder workspace
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_music_source_route.gd:7)
+       [1] run (res://tests/integration/test_music_source_route.gd:17)
+       [2] settle (res://tests/integration/test_music_source_route.gd:8)

@@ -1,0 +1,123 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+ERROR: photography should begin
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_native_modules.gd:9)
+       [1] _exercise (res://tests/integration/test_native_modules.gd:54)
+       [2] run (res://tests/integration/test_native_modules.gd:34)
+       [3] _exercise (res://tests/integration/test_native_modules.gd:109)
+ERROR: Native gameplay scene received unsupported module:
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://scripts/ui/native_module_game.gd:942)
+ERROR: photography scene should resolve its pending module
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_native_modules.gd:9)
+       [1] _exercise (res://tests/integration/test_native_modules.gd:63)
+SCRIPT ERROR: Invalid assignment of property or key 'text' with value of type 'String' on a base object of type 'Nil'.
+          at: _update_state (res://scripts/ui/native_module_game.gd:672)
+          GDScript backtrace (most recent call first):
+              [0] _update_state (res://scripts/ui/native_module_game.gd:672)
+              [1] _toggle_token (res://scripts/ui/native_module_game.gd:406)
+              [2] _exercise (res://tests/integration/test_native_modules.gd:65)
+SCRIPT ERROR: Invalid assignment of property or key 'text' with value of type 'String' on a base object of type 'Nil'.
+          at: _toggle_token (res://scripts/ui/native_module_game.gd:402)
+          GDScript backtrace (most recent call first):
+              [0] _toggle_token (res://scripts/ui/native_module_game.gd:402)
+              [1] _exercise (res://tests/integration/test_native_modules.gd:65)
+SCRIPT ERROR: Invalid assignment of property or key 'value' with value of type 'float' on a base object of type 'Nil'.
+          at: _exercise (res://tests/integration/test_native_modules.gd:90)
+          GDScript backtrace (most recent call first):
+              [0] _exercise (res://tests/integration/test_native_modules.gd:90)
+ERROR: optical_illusion should begin
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_native_modules.gd:9)
+       [1] _exercise (res://tests/integration/test_native_modules.gd:54)
+       [2] run (res://tests/integration/test_native_modules.gd:35)
+       [3] _exercise (res://tests/integration/test_native_modules.gd:90)
+ERROR: Native gameplay scene received unsupported module:
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://scripts/ui/native_module_game.gd:942)
+ERROR: optical_illusion scene should resolve its pending module
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_native_modules.gd:9)
+       [1] _exercise (res://tests/integration/test_native_modules.gd:63)
+SCRIPT ERROR: Invalid assignment of property or key 'text' with value of type 'String' on a base object of type 'Nil'.
+          at: _update_state (res://scripts/ui/native_module_game.gd:672)
+          GDScript backtrace (most recent call first):
+              [0] _update_state (res://scripts/ui/native_module_game.gd:672)
+              [1] _toggle_token (res://scripts/ui/native_module_game.gd:406)
+              [2] _exercise (res://tests/integration/test_native_modules.gd:65)
+SCRIPT ERROR: Invalid assignment of property or key 'text' with value of type 'String' on a base object of type 'Nil'.
+          at: _toggle_token (res://scripts/ui/native_module_game.gd:402)
+          GDScript backtrace (most recent call first):
+              [0] _toggle_token (res://scripts/ui/native_module_game.gd:402)
+              [1] _exercise (res://tests/integration/test_native_modules.gd:65)
+SCRIPT ERROR: Invalid assignment of property or key 'value' with value of type 'float' on a base object of type 'Nil'.
+          at: _exercise (res://tests/integration/test_native_modules.gd:90)
+          GDScript backtrace (most recent call first):
+              [0] _exercise (res://tests/integration/test_native_modules.gd:90)
+ERROR: archives should begin
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_native_modules.gd:9)
+       [1] _exercise (res://tests/integration/test_native_modules.gd:54)
+       [2] run (res://tests/integration/test_native_modules.gd:36)
+       [3] _exercise (res://tests/integration/test_native_modules.gd:90)
+ERROR: Native gameplay scene received unsupported module:
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://scripts/ui/native_module_game.gd:942)
+ERROR: archives scene should resolve its pending module
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_native_modules.gd:9)
+       [1] _exercise (res://tests/integration/test_native_modules.gd:63)
+SCRIPT ERROR: Invalid assignment of property or key 'text' with value of type 'String' on a base object of type 'Nil'.
+          at: _update_state (res://scripts/ui/native_module_game.gd:672)
+          GDScript backtrace (most recent call first):
+              [0] _update_state (res://scripts/ui/native_module_game.gd:672)
+              [1] _toggle_token (res://scripts/ui/native_module_game.gd:406)
+              [2] _exercise (res://tests/integration/test_native_modules.gd:65)
+SCRIPT ERROR: Invalid assignment of property or key 'text' with value of type 'String' on a base object of type 'Nil'.
+          at: _toggle_token (res://scripts/ui/native_module_game.gd:402)
+          GDScript backtrace (most recent call first):
+              [0] _toggle_token (res://scripts/ui/native_module_game.gd:402)
+              [1] _exercise (res://tests/integration/test_native_modules.gd:65)
+SCRIPT ERROR: Invalid assignment of property or key 'text' with value of type 'String' on a base object of type 'Nil'.
+          at: _toggle_token (res://scripts/ui/native_module_game.gd:402)
+          GDScript backtrace (most recent call first):
+              [0] _toggle_token (res://scripts/ui/native_module_game.gd:402)
+              [1] _exercise (res://tests/integration/test_native_modules.gd:65)
+SCRIPT ERROR: Invalid assignment of property or key 'text' with value of type 'String' on a base object of type 'Nil'.
+          at: _update_state (res://scripts/ui/native_module_game.gd:672)
+          GDScript backtrace (most recent call first):
+              [0] _update_state (res://scripts/ui/native_module_game.gd:672)
+              [1] _perform_primary_action (res://scripts/ui/native_module_game.gd:451)
+              [2] _exercise (res://tests/integration/test_native_modules.gd:91)
+ERROR: archives mechanic should reach its completion gate
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_native_modules.gd:9)
+       [1] _exercise (res://tests/integration/test_native_modules.gd:94)
+ERROR: archives should complete through the gameplay result contract
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_native_modules.gd:9)
+       [1] _exercise (res://tests/integration/test_native_modules.gd:105)
+ERROR: archives result should persist in role state
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_native_modules.gd:9)
+       [1] _exercise (res://tests/integration/test_native_modules.gd:107)
+NATIVE_MODULE_TEST: FAIL failures=9
+WARNING: 16 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 2 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)

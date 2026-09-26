@@ -1,0 +1,46 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+PASS empty folder displays placeholder
+PASS PNG and JPG scan
+PASS filename ordering
+PASS crossfade advances index
+PASS telescope enters standalone 3D scene
+PASS 1000 batched stars
+PASS drag and wheel ignored
+PASS horizontal button advances exactly one step
+PASS vertical button advances exactly one step
+PASS layout stays still between clicks
+PASS camera never moves
+PASS background never moves
+PASS authored coordinates unchanged
+PASS adjustment limits enforced
+PASS adjustment controls fit viewport
+PASS whale locked before bird
+PASS wrong angle rejected: bird
+PROJECTION bird wrong=0.11075490005314 exact=0.00000042071534
+PASS reference projection matches: bird
+PASS hold duration required: bird
+PASS discovery persisted: bird
+PASS capture available: bird
+PASS connected glow after discovery: bird
+PASS unlocked constellation navigation
+PASS solving preserves camera and FOV
+PASS misalignment removes glow and capture
+PASS display layout is independent of resource
+PASS wrong angle rejected: whale
+PROJECTION whale wrong=0.09800652031683 exact=0.00000036874448
+PASS reference projection matches: whale
+PASS hold duration required: whale
+PASS discovery persisted: whale
+PASS capture available: whale
+PASS connected glow after discovery: whale
+PASS unlocked constellation navigation
+PASS solving preserves camera and FOV
+PASS misalignment removes glow and capture
+PASS display layout is independent of resource
+PASS return restores 2D deck
+PASS slideshow continues through 3D
+PASS discovered patterns available on reentry
+PASS both discoveries survive scene recreation
+TEST_RESULT failures=0

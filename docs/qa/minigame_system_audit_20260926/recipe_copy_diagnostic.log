@@ -1,0 +1,12 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+2026-09-26 15:29:35.794 godot[16975:44200110] error messaging the mach port for IMKCFRunLoopWakeUpReliable
+COPY_DIAGNOSTIC after click pubs=2 records=2 modal=recipe_editor
+COPY_DIAGNOSTIC status=双击字迹可改写 · 拖动边角调整大小与方向
+COPY_DIAGNOSTIC after direct save pubs=3 records=3
+ERROR: paper writing gesture opens an in-place editable text layer
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _run (res://audit_recipe_copy.gd:41)
+FAIL: recipe DIY lifecycle, 1 / 81 checks

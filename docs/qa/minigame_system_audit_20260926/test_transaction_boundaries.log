@@ -1,0 +1,9 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+ERROR: Failed purchases change neither inventory, time nor accounts
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_transaction_boundaries.gd:15)
+       [1] run (res://tests/integration/test_transaction_boundaries.gd:37)
+TRANSACTION BOUNDARIES 18 checks / 1 failures

@@ -1,0 +1,402 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+ERROR: Untranslated English UI in res://scenes/town_day.tscn — /root/TownDay/GameplayShell/@Label@57.text: DAY 01   08:00\n零钱  12000 元
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_day.tscn — /root/TownDay/GameplayShell/@Button@66.text: 今天的计划
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@Label@166.text: 路上的Sound collection
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@Label@167.text: 每一段都带着地点、时间和同步Tableau。
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@Button@168.text: 收好
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@LineEdit@169.placeholder_text: 找名字、地点或声音类型
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:121)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@OptionButton@180.text: 全部收藏
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@OptionButton@180.item[0]: 全部收藏
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:124)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@OptionButton@180.item[1]: 今天录的
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:124)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@OptionButton@180.item[2]: 在这里录的
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:124)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@Button@185.text: ＋ 录下新的Audio
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@LineEdit@186.placeholder_text: 选择左边的一段声音
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:121)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@Button@187.text: 记下名字
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@Label@188.text: 还没有收藏。收好面板，听听身边的风、脚步或翻页声。
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@Button@192.text: ▶ 听一听
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@Button@193.text: 放入回收袋
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@Button@194.text: 唱片店在哪里？
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scenes/town_sound/Recorder.tscn — /root/TownSound/@Control@163/@Control@165/@Label@195.text: 0 段可见 / 0 段收藏 · 标题可搜索；声音与画面都保存在本机。
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:69)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@Label@371.text: 今天，听见了Something？
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@Label@372.text: Pocket Recorder  /  Walk toWhere，就把Where的Audio留下来
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@Button@373.text: 收进口袋
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@Label@374.text: 公交站 · 风 / 流线
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@Label@376.text: SceneAudio → 实时Tableau  ·  No need挑选或播放Source material
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@OptionButton@387.text: 游戏声音 · 环境与互动
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@OptionButton@387.item[0]: 游戏声音 · 环境与互动
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:124)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@OptionButton@387.item[1]: 人声补录 · 麦克风
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:124)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@Label@388.text: 按圆键开始，再按一次Preserve。\nClose来，可以Continue走动和做事。\n剪辑与制作，回Record Shop再Continue。
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@Button@390.text: ▶ 听听刚才
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@Button@391.text: 收进口袋
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@Button@392.text: 我的Sound collection
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@Label@393.text: 按圆键，留下此刻的游戏声音。收进口袋后也能继续录。
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@LineEdit@394.placeholder_text: 给刚才的声音起个名字
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:121)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/residency/recorder_lite.gd — /root/@Control@368/@Control@369/@Button@395.text: 记下
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+2026-09-26 15:20:48.335 godot[15500:44181046] error messaging the mach port for IMKCFRunLoopWakeUpReliable
+ERROR: Untranslated English UI in res://scripts/ui/components/receipt_view.gd — /root/PaymentReceipt/@Control@442/@Label@453.text: 实付 15 yuan
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/ui/fish_journal.gd — /root/@Control@457/@ScrollContainer@469/@VBoxContainer@470/@Label@476.text: 常见长度约 15–20 厘米，Details记载可达 25 厘米。23.1 厘米Belong to较大的个体，并No常见Size。
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/ui/fish_journal.gd — /root/@Control@457/@ScrollContainer@469/@VBoxContainer@470/@Label@477.text: 生活在近岸海域，常聚成大群，也见于地中海。\n主要摄食浮游甲壳动物等浮游生物。
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/ui/fish_journal.gd — /root/@Control@457/@ScrollContainer@469/@VBoxContainer@470/@Label@478.text: 我们把许多近缘小鱼都叫作沙丁鱼；这份海边NotesTake notes的是European Pilchard。它们的鱼群会随环境与季节迁移。
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/ui/fish_journal.gd — /root/@Control@457/@ScrollContainer@469/@VBoxContainer@470/@Label@479.text: 尺寸Details: FAO。出现比例Belong to游戏设计.
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/ui/fish_journal.gd — /root/@Control@457/@ScrollContainer@469/@VBoxContainer@470/@LinkButton@480.text: 阅读鱼种Details
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [6] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/ui/shop_panel.gd — /root/@Control@512/@Control@521/ShelfCheckout.tooltip_text: 先选一件货品
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:117)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/ui/shop_panel.gd — /root/@Control@512/@Control@521/ShelfCheckout.text: ¥结账 · 0 件 / 0
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [5] run (res://tests/integration/test_localization_runtime_coverage.gd:94)
+ERROR: Untranslated English UI in res://scripts/ui/shop_panel.gd — /root/@Control@512/@Label@522.text: 点击货品看价签，选好后直接点「结账」。
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://tests/integration/test_localization_runtime_coverage.gd:146)
+       [1] _check_value (res://tests/integration/test_localization_runtime_coverage.gd:141)
+       [2] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:119)
+       [3] _scan_node (res://tests/integration/test_localization_runtime_coverage.gd:132)
+       [4] run (res://tests/integration/test_localization_runtime_coverage.gd:94)

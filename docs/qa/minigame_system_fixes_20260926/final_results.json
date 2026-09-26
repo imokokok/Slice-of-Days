@@ -1,0 +1,88 @@
+[
+  {
+    "test": "test_minigame_system_fixes",
+    "exit": 0,
+    "seconds": 9.24,
+    "mode": "headless",
+    "errors": [
+      "ERROR: 8 resources still in use at exit (run with --verbose for details)."
+    ],
+    "summary": [
+      "MINIGAME_SYSTEM_FIXES: 123 checks / 0 failures"
+    ]
+  },
+  {
+    "test": "test_daily_life",
+    "exit": 0,
+    "seconds": 6.52,
+    "mode": "headless",
+    "errors": [],
+    "summary": [
+      "DAILY_LIFE: 74 checks / 0 failures"
+    ]
+  },
+  {
+    "test": "test_cooking_rhythm",
+    "exit": 0,
+    "seconds": 2.53,
+    "mode": "headless",
+    "errors": [
+      "ERROR: 4 resources still in use at exit (run with --verbose for details)."
+    ],
+    "summary": [
+      "COOKING_RHYTHM_TEST: PASS failures=0"
+    ]
+  },
+  {
+    "test": "test_transaction_boundaries",
+    "exit": 0,
+    "seconds": 1.07,
+    "mode": "headless",
+    "errors": [],
+    "summary": [
+      "TRANSACTION BOUNDARIES 18 checks / 0 failures"
+    ]
+  },
+  {
+    "test": "test_pocket_roles",
+    "exit": 0,
+    "seconds": 3.91,
+    "mode": "headless",
+    "errors": [
+      "ERROR: 4 resources still in use at exit (run with --verbose for details)."
+    ],
+    "summary": [
+      "POCKET_ROLES: 50 checks / 0 failures"
+    ]
+  },
+  {
+    "test": "test_global_recording",
+    "exit": 0,
+    "seconds": 14.67,
+    "mode": "GUI",
+    "errors": [],
+    "summary": [
+      "GLOBAL_SOUND: 38 checks / 0 failures"
+    ]
+  },
+  {
+    "test": "test_five_day_flow",
+    "exit": 0,
+    "seconds": 156.0,
+    "mode": "GUI",
+    "errors": [],
+    "summary": [
+      "FIVE_DAY_FLOW: PASS checks=223 failures=0"
+    ]
+  },
+  {
+    "test": "test_five_day_flow_reload",
+    "exit": 0,
+    "seconds": 1.44,
+    "mode": "GUI",
+    "errors": [],
+    "summary": [
+      "FIVE_DAY_RELOAD: PASS checks=13"
+    ]
+  }
+]

@@ -1,0 +1,14 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+AUDIT {"accepted":true,"id":"known_activity_missing","in_planner":false,"known_lead":true,"unlocked":false}
+AUDIT {"card_minutes":60,"delivery_gate":{"minutes":60,"ok":true,"reason":""},"id":"music_duration","plan":{"message":"写进日程了。出门前还要留好路上的时间。","ok":true},"standard_gate":{"minutes":60,"ok":true,"reason":""}}
+AUDIT {"id":"legacy_photo_business_hours","mapped_location":"","module_gate":{"minutes":30,"ok":true,"reason":""},"shop":{"closes":1260,"hours":"08:00—21:00","open":false,"opens":480,"reason":"社区中心 · 08:00—21:00 营业，现在休息。"}}
+AUDIT {"began":true,"completed":true,"confirmed":["shi_yongqi"],"facets":0,"id":"cooking_signature_bypass","minute":690}
+AUDIT {"after":600,"before":600,"body_change":0.0,"engagement_change":0.0,"id":"clock_no_time","money_change":20}
+AUDIT {"body_change":-0.180000000000007,"cast_ok":true,"engagement_change":0.0,"id":"fishing_state","in_planner":false,"minute":610}
+AUDIT {"id":"clock_save_failure","money_change":20,"paid_flag":true,"visible_feedback":"指针与校时单完全一致。工钱 +20 元，已经放进钱包。"}
+AUDIT {"argument_pending":false,"begin":false,"id":"translation_disabled","module_available":false}
+AUDIT PROBE COMPLETE
+WARNING: 6 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)

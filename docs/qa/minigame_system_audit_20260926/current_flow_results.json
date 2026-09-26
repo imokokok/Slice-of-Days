@@ -1,0 +1,22 @@
+[
+  {
+    "test": "letter_host",
+    "exit": 0,
+    "log": "letter_host.log"
+  },
+  {
+    "test": "tarot_current",
+    "exit": 1,
+    "log": "tarot_current.log"
+  },
+  {
+    "test": "nebula_current",
+    "exit": "timeout",
+    "log": "nebula_current.log"
+  },
+  {
+    "test": "recipe_copy_diagnostic",
+    "exit": 1,
+    "log": "recipe_copy_diagnostic.log"
+  }
+]

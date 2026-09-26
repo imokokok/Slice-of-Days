@@ -1,0 +1,13 @@
+{
+  "base_commit": "941bf48fc847e39ca47f6c5a7bd0a3b844197ba9",
+  "source_sha256": {
+    "scripts/core/life_system.gd": "9bf09f1cc1f7b7049acd29dc3d7813902e8240dec61fc26df83c2e7800898515",
+    "scripts/core/gameplay_module_system.gd": "e6d5873e310572f97b682f2a6aae14aff127c2dbb6f3368da5d939a3295d2bc8",
+    "scripts/core/dialogue_system.gd": "754c7c70b82c8ff958c59ad388fc319e8d0a213ba5692371e0a4b970a869be79",
+    "scripts/ui/clock_repair.gd": "2d6b1176cd34b8032eae20cb04e813895ae88b3b8ae30f1bb057f9f1c51176ce",
+    "data/gameplay/module_prototypes.json": "16c2047ff2b6808621bf90d3fdc88403de24bffddacf0a646ca840ab2b40a950",
+    "scripts/ui/extension_host.gd": "aa33fd4ad4965fb7f3785ba246225498846779e258353e5ec92caa2d17254b07",
+    "extensions/collage_letter/scripts/main.gd": "22cabe0b7bc66fc50781daf1467a8e96dd875b6fdbf02d812b88d1f7378bdc46",
+    "prototypes/100-restaurant/modules/restaurant/restaurant.gd": "4ae83f37967286ab2e7f9240a7dd60a2bf40c26b1e5b4f0dd032d4052bb198ee"
+  }
+}

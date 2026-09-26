@@ -1,0 +1,11 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+ERROR: Start button opens a playable board
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/integration/test_chess_presentation.gd:8)
+       [1] run (res://tests/integration/test_chess_presentation.gd:60)
+       [2] click (res://tests/integration/test_chess_presentation.gd:20)
+       [3] click_at (res://tests/integration/test_chess_presentation.gd:18)
+       [4] settle (res://tests/integration/test_chess_presentation.gd:12)

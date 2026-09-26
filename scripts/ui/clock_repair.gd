@@ -219,7 +219,7 @@ func _draw() -> void:
 	for number in range(1, 13):
 		var angle := float(number) / 12.0 * TAU - PI / 2.0
 		var at := FACE_CENTER + Vector2(cos(angle), sin(angle)) * 151.0
-		draw_string(ThemeDB.fallback_font, at + Vector2(-13, 9), str(number), HORIZONTAL_ALIGNMENT_CENTER, 26, 24, INK)
+		draw_string(ThemeDB.fallback_font, at + Vector2(-20, 9), str(number), HORIZONTAL_ALIGNMENT_CENTER, 40, 24, INK)
 
 	var minute_angle := float(minute_value) / 60.0 * TAU - PI / 2.0
 	var hour_angle := (float(hour_value % 12) + float(minute_value) / 60.0) / 12.0 * TAU - PI / 2.0

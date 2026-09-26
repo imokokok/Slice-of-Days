@@ -84,6 +84,14 @@ func cooking(role: String, choice: String) -> void:
 	gs.current_minute=770
 	check(people.act("shi_yongqi","signature").ok and gs.confirmed_residents.has("shi_yongqi"),"Later in-person review grants the signature")
 	check(save.save_game() and save.load_game() and gs.confirmed_residents.has("shi_yongqi"),"Earned signatures survive reload")
+	if role=="B":
+		check(router.gameplay_module("cooking","repeat-regression"),"Signed character can cook another real meal")
+		await settle(); kitchen=current_scene
+		for ingredient in ["bread","cheese","lemon"]: kitchen._toggle_token(ingredient)
+		preload("res://tests/integration/cooking_walkthrough.gd").prepare_and_cook(kitchen)
+		kitchen._complete_choice(choice)
+		check(kitchen.completed and people.page("shi_yongqi").facets.size()==2 and gs.confirmed_residents.has("shi_yongqi"),"Another meal neither farms facets nor revokes an earned signature")
+		kitchen.return_button.pressed.emit(); await settle()
 
 func run() -> void:
 	# --isolated-save alone does not isolate extension saves. Require a separate
@@ -126,15 +134,23 @@ func run() -> void:
 	check(not has_card("translation") and not life.add_plan("unknown",610,"walk").ok,"Unavailable and unknown modules stay unplannable")
 	for role in ["A","B"]:
 		for choice in ["improvise","careful_menu"]: await cooking(role,choice)
+	fresh("B",2,610); gs.current_location="night_market"; router.active_space_id="restaurant"
+	check(modules.begin_session("cooking","external-regression"),"External cooking result has an actual owned session")
+	check(modules.complete_external("cooking",{"interaction":{"context":modules.session_context()}},{"confirmations":{"shi_yongqi":"granted"}}) and gs.confirmed_residents.is_empty(),"External cooking result cannot inject legacy signatures either")
 	# Existing signed saves are never revoked by the new rule.
 	fresh("B",2,600); root.get_node("RelationshipSystem").set_confirmation("shi_yongqi","granted")
 	check(save.save_game() and save.load_game() and gs.confirmed_residents.has("shi_yongqi") and people.page("shi_yongqi").facets.is_empty(),"Legacy signatures remain intact without retroactive facets")
 	fresh(); gs.current_location="print_shop"; router.active_space_id="print_studio"
 	var clock=load("res://scripts/ui/clock_repair.gd").new(); root.add_child(clock); await process_frame
+	check(clock.submit_button.get_minimum_size().x<=clock.submit_button.size.x and clock.submit_button.get_rect().end.x<1340,"Clock duration and payment text fit beside the close button")
 	var before: Dictionary=gs.to_save_data().duplicate(true)
 	clock.submit_button.pressed.emit()
 	check(gs.to_save_data()==before,"Wrong clock setting earns nothing and spends no time")
 	clock.hour_value=clock.target_hour; clock.minute_value=clock.target_minute
+	gs.shared_state.pending_module={"module_id":"sound_sampling","role":"A","day":1}
+	before=gs.to_save_data().duplicate(true); clock.submit_button.pressed.emit()
+	check(gs.to_save_data()==before,"Clock cannot settle while another activity owns the session")
+	gs.shared_state.erase("pending_module")
 	gs.current_minute=658; before=gs.to_save_data().duplicate(true)
 	clock.submit_button.pressed.emit()
 	check(gs.to_save_data()==before and clock.status_label.text.contains("空档"),"Clock rejects crossing a private commitment")

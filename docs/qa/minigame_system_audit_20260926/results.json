@@ -1,0 +1,80 @@
+[
+  {
+    "test": "test_daily_life",
+    "exit": 0,
+    "seconds": 7.3,
+    "log": "test_daily_life.log"
+  },
+  {
+    "test": "test_native_modules",
+    "exit": 9,
+    "seconds": 2.2,
+    "log": "test_native_modules.log"
+  },
+  {
+    "test": "test_minigame_invitations",
+    "exit": "timeout",
+    "seconds": 90.0,
+    "log": "test_minigame_invitations.log"
+  },
+  {
+    "test": "test_chess_presentation",
+    "exit": 1,
+    "seconds": 2.6,
+    "log": "test_chess_presentation.log"
+  },
+  {
+    "test": "test_myriorama_entry",
+    "exit": 1,
+    "seconds": 2.5,
+    "log": "test_myriorama_entry.log"
+  },
+  {
+    "test": "test_localization_runtime_coverage",
+    "exit": 42,
+    "seconds": 5.0,
+    "log": "test_localization_runtime_coverage.log"
+  },
+  {
+    "test": "test_shop_work_routes",
+    "exit": "timeout",
+    "seconds": 90.0,
+    "log": "test_shop_work_routes.log"
+  },
+  {
+    "test": "test_fish_field_notes",
+    "exit": "timeout",
+    "seconds": 90.0,
+    "log": "test_fish_field_notes.log"
+  },
+  {
+    "test": "test_transaction_boundaries",
+    "exit": 1,
+    "seconds": 1.6,
+    "log": "test_transaction_boundaries.log"
+  },
+  {
+    "test": "test_global_recording",
+    "exit": 0,
+    "seconds": 14.8,
+    "log": "test_global_recording.log"
+  },
+  {
+    "test": "test_music_source_route",
+    "exit": 1,
+    "seconds": 2.7,
+    "log": "test_music_source_route.log"
+  },
+  {
+    "test": "test_pocket_roles",
+    "exit": 0,
+    "seconds": 5.0,
+    "log": "test_pocket_roles.log"
+  },
+  {
+    "test": "test_five_day_flow",
+    "exit": 1,
+    "seconds": 88.2,
+    "log": "test_five_day_flow.log"
+  }
+]

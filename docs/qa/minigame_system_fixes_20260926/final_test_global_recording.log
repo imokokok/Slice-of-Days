@@ -1,0 +1,42 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+PASS Recorder exists in main town
+PASS Gameplay capture is default; microphone is explicit
+PASS Actual game audio drives live MV
+PASS Pocketed recorder keeps a visible live picture
+PASS Real door route enters home
+PASS Capture and device survive an actual scene transition
+PASS Overlapping physical sounds do not cut each other off
+PASS Audio pool recycles finished players
+PASS Stop auto-saves non-silent real PCM
+PASS Saved MV retains actual physical sound events
+PASS Rename commits through shared collection service
+PASS Global collection reads the same saved audio and title
+PASS Library plays audio and synchronized pixel MV
+PASS Music preview and recorder UI are excluded from world capture
+PASS Storage failure fixture compiles
+PASS Save failure preserves both PCM and stable identity
+PASS Restart recovery loads a real disk checkpoint
+PASS Recovered recording retries successfully
+PASS Recovery reuses the original file, never duplicates
+PASS Recovered audio has exactly one collection entry
+PASS Rename reports a failed state write
+PASS Failed rename restores metadata
+PASS Failed delete restores original audio
+PASS Collection supports more than twenty samples
+PASS Integrated script compiles: native_module_game.gd
+PASS Integrated script compiles: cooking_board.gd
+PASS Integrated script compiles: audio_manager.gd
+PASS Integrated script compiles: audio_manager.gd
+PASS Integrated script compiles: sound.gd
+PASS A reserves a long enough real free window for cooking
+PASS Enter a real cooking session
+PASS Global recording pocket is present inside cooking
+PASS A keeps the real recorder during a Day 5 cooking session
+PASS Working pan produces real recordable fire sound
+PASS Kitchen recording contains timed fire imagery
+PASS Real audible event types qualify for record-shop commissions
+PASS Leaving an unfinished activity preserves independent field recordings
+PASS World sound polyphony stays bounded
+GLOBAL_SOUND: 38 checks / 0 failures

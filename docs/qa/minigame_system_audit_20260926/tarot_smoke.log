@@ -1,0 +1,6 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+PASS: local questions; synonyms, negation, ambiguity, unknown topics, compound and temporal guards
+PASS: question bank assertions=919; authored statistics={"cards":18,"fact_phrasings":214,"response_phrasings":96,"visual_phrasings":72}
+PASS: 200 deals; one-card reveal + host dialogue x15; 78-card fan; 36 textures; 8 audio categories; upright; arc; NO retains; card affinity; scope clarification; truth completeness + contradiction + unknown + causal safeguards; two-stage ending

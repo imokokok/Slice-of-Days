@@ -1,0 +1,130 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS Undiscovered first activity is hidden: sound_sampling
+PASS Real invitation accepted: sound_sampling
+PASS First invitation permits planning before play: sound_sampling
+PASS Discovery creates no play, income or time charge: sound_sampling
+PASS A joins a real continuous slot
+PASS First activity can be written into the planner: sound_sampling
+PASS Discovery preserves overlapping-plan rejection
+PASS Discovery and first plan survive real reload
+PASS Undiscovered first activity is hidden: ghostwriting
+PASS Real invitation accepted: ghostwriting
+PASS First invitation permits planning before play: ghostwriting
+PASS Discovery creates no play, income or time charge: ghostwriting
+PASS A joins a real continuous slot
+PASS First activity can be written into the planner: ghostwriting
+PASS Discovery preserves overlapping-plan rejection
+PASS Discovery and first plan survive real reload
+PASS Undiscovered first activity is hidden: chess
+PASS Real invitation accepted: chess
+PASS First invitation permits planning before play: chess
+PASS Discovery creates no play, income or time charge: chess
+PASS First activity can be written into the planner: chess
+PASS Discovery preserves overlapping-plan rejection
+PASS Discovery and first plan survive real reload
+PASS Hearing an invitation is enough without accepting
+PASS Legacy heard-invitation facts remain discoverable
+PASS A sourced network lead permits first planning
+PASS Another role's discovery cannot bypass chapter ownership
+PASS Reveal does not copy A's private discovery
+PASS Discovered leads remain known across days
+PASS Legacy accepted invitations need no new discovery flag
+PASS Unavailable and unknown modules stay unplannable
+PASS A joins time for the real cooking session
+PASS Real kitchen opens for A / improvise
+PASS Preparation, heat, stirring, tasting and plating finish
+PASS Cooking save-failure fixture compiles
+PASS Failed cooking save rolls back time, resources, recipe and people facet
+PASS Retry completes real ninety-minute cooking
+PASS Cooking grants no automatic signatures for A / improvise
+PASS Actual cooking records one sourced Shi experience
+PASS Cooking facet keeps actor, time and actual service response
+PASS Absent diners receive no invented facets
+PASS Cooking experience survives real save reload
+PASS Repeated submission cannot duplicate rewards or people sides
+PASS Cooking still requires a distinct later observation
+PASS One cooking side cannot sign the album
+PASS Later physical observation adds a second personal side
+PASS Two sides do not bypass the later-review wait
+PASS Later in-person review grants the signature
+PASS Earned signatures survive reload
+PASS A joins time for the real cooking session
+PASS Real kitchen opens for A / careful_menu
+PASS Preparation, heat, stirring, tasting and plating finish
+PASS Cooking save-failure fixture compiles
+PASS Failed cooking save rolls back time, resources, recipe and people facet
+PASS Retry completes real ninety-minute cooking
+PASS Cooking grants no automatic signatures for A / careful_menu
+PASS Actual cooking records one sourced Shi experience
+PASS Cooking facet keeps actor, time and actual service response
+PASS Absent diners receive no invented facets
+PASS Cooking experience survives real save reload
+PASS Repeated submission cannot duplicate rewards or people sides
+PASS Cooking still requires a distinct later observation
+PASS One cooking side cannot sign the album
+PASS Later physical observation adds a second personal side
+PASS Two sides do not bypass the later-review wait
+PASS Later in-person review grants the signature
+PASS Earned signatures survive reload
+PASS Real kitchen opens for B / improvise
+PASS Preparation, heat, stirring, tasting and plating finish
+PASS Cooking save-failure fixture compiles
+PASS Failed cooking save rolls back time, resources, recipe and people facet
+PASS Retry completes real ninety-minute cooking
+PASS Cooking grants no automatic signatures for B / improvise
+PASS Actual cooking records one sourced Shi experience
+PASS Cooking facet keeps actor, time and actual service response
+PASS Absent diners receive no invented facets
+PASS Cooking experience survives real save reload
+PASS Repeated submission cannot duplicate rewards or people sides
+PASS Cooking still requires a distinct later observation
+PASS One cooking side cannot sign the album
+PASS Later physical observation adds a second personal side
+PASS Two sides do not bypass the later-review wait
+PASS Later in-person review grants the signature
+PASS Earned signatures survive reload
+PASS Signed character can cook another real meal
+PASS Another meal neither farms facets nor revokes an earned signature
+PASS Real kitchen opens for B / careful_menu
+PASS Preparation, heat, stirring, tasting and plating finish
+PASS Cooking save-failure fixture compiles
+PASS Failed cooking save rolls back time, resources, recipe and people facet
+PASS Retry completes real ninety-minute cooking
+PASS Cooking grants no automatic signatures for B / careful_menu
+PASS Actual cooking records one sourced Shi experience
+PASS Cooking facet keeps actor, time and actual service response
+PASS Absent diners receive no invented facets
+PASS Cooking experience survives real save reload
+PASS Repeated submission cannot duplicate rewards or people sides
+PASS Cooking still requires a distinct later observation
+PASS One cooking side cannot sign the album
+PASS Later physical observation adds a second personal side
+PASS Two sides do not bypass the later-review wait
+PASS Later in-person review grants the signature
+PASS Earned signatures survive reload
+PASS Signed character can cook another real meal
+PASS Another meal neither farms facets nor revokes an earned signature
+PASS External cooking result has an actual owned session
+PASS External cooking result cannot inject legacy signatures either
+PASS Legacy signatures remain intact without retroactive facets
+PASS Clock duration and payment text fit beside the close button
+PASS Wrong clock setting earns nothing and spends no time
+PASS Clock cannot settle while another activity owns the session
+PASS Clock rejects crossing a private commitment
+PASS Clock cannot settle after closing or cross midnight
+PASS Clock cannot be submitted outside its real room
+PASS Clock save-failure fixture compiles
+PASS Failed clock save restores whole state including ledger, time, journal and checkpoint
+PASS Failed clock UI reports rollback and retry
+PASS Clock retry settles ten minutes and twenty yuan once
+PASS Clock work affects physical state and engagement
+PASS Clock income ledger records actual work duration
+PASS Actual clock save restores time, cash and paid marker
+PASS Repeated clock confirmation does not settle again
+PASS Another character cannot collect the shared clock reward again
+MINIGAME_SYSTEM_FIXES: 123 checks / 0 failures
+WARNING: 16 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 8 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)

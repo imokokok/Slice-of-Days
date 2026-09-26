@@ -17,6 +17,7 @@ permissions:
 jobs:
   gameplay-storage-and-assets:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: prototypes/100-restaurant
@@ -27,10 +28,15 @@ jobs:
           curl -L --fail -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
           unzip -q godot.zip -d /tmp/godot
           chmod +x /tmp/godot/Godot_v4.7.2-stable_linux.x86_64
-      - name: Import clean project
-        run: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --editor --path . --import
-      - name: Run complete regression suite
-        shell: pwsh
-        run: ./tools/test.ps1 -GodotPath /tmp/godot/Godot_v4.7.2-stable_linux.x86_64
-      - name: Audit recorded audio provenance and PCM assets
-        run: python3 tools/audit_recorded_audio.py
+      - name: Verify check runner failure handling
+        run: python3 -m unittest discover -s tools -p test_checks.py
+      - name: Run full shared checks (import, startup, regression and audio)
+        run: python3 tools/run_checks.py --godot /tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+      - name: Upload per-step logs and complete summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: restaurant-check-results
+          path: prototypes/100-restaurant/.runtime/checks/
+          include-hidden-files: true
+          if-no-files-found: warn

@@ -17,7 +17,7 @@ func _initialize() -> void:
 func _run() -> void:
 	original_mouse_mode = Input.mouse_mode
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"shift_seconds": 240.0, "repository_path": "user://collage_input_%s/cookbook.json" % Time.get_ticks_usec()})
+	game.configure({"shift_seconds": 240.0, "repository_path": "user://collage_input_%s/cookbook.json" % Crypto.new().generate_random_bytes(16).hex_encode()})
 	root.add_child(game)
 	await process_frame
 	await process_frame

@@ -117,3 +117,13 @@
 ## 柜格与菜谱更新
 
 每种原料本班备一件，取走后柜格留空；未加工原料与调料瓶可拖回原柜格，余量保留。锅后五格只放调料；菜谱由底部入口或 J 键打开。平放锅按 1500 ml 的近似容积计算溢出，详见 [库存、菜谱与锅容量说明](docs/STOCK_RECIPE_PAN_20260925.md)。
+
+## 完整开发检查
+
+需要 Python 3 和 Godot 4.7.2。macOS/Linux 在本目录运行：
+
+```sh
+python3 tools/run_checks.py --godot /path/to/godot
+```
+
+Windows 保留 `./tools/test.ps1 -GodotPath C:\path\Godot.exe`，可用 `-PythonPath` 指定 Python 3。本地和 CI 使用同一入口及同一 43 项清单，包含工程导入、120 帧启动、全部回归和音频审计。结果在 `.runtime/checks/summary.json`，失败仍继续汇总其余回归。详见 [CI 检查与故障记录](docs/CI_CHECKS.md)。

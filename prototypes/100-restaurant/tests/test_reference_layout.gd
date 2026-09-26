@@ -7,7 +7,7 @@ func _initialize() -> void:
 	call_deferred("run")
 func run() -> void:
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path": "user://layout_%s/book.json" % Time.get_ticks_usec()})
+	game.configure({"repository_path": "user://layout_%s/book.json" % Crypto.new().generate_random_bytes(16).hex_encode()})
 	root.add_child(game)
 	await process_frame
 	game._close_modal()
@@ -49,7 +49,7 @@ func run() -> void:
 	expect(game._order_paper.position.y <= 140 and game._order_paper.position.y + game._order_paper.size.y >= 440, "order note covers the original blank sheet rather than leaving a top strip")
 	expect(game.world.pan.point(Vector2(809, 541)).y > 639.0, "pan opening starts below the rear rack front")
 	expect(game.world.cutting_board.rect().encloses(Rect2(game.world._knife_rest_position + Vector2(-93, -24), Vector2(188, 52))), "knife art rests entirely on the cutting board")
-	expect(game.world.cutting_board.z_index > game.world.pan.pan_back.z_index and game.world.cutting_board.z_index < game.world._knife_visual.z_index, "board hides the crossing pan handle while the knife remains above the board")
+	expect(game.world.cutting_board.z_index < game.world.pan.pan_back.z_index and game.world.pan.pan_back.z_index < game.world._foods.z_index and game.world.cutting_board.z_index < game.world._knife_visual.z_index, "raised pan handle, food and knife remain above the cutting board without hiding pan contents")
 	for id in ["sock", "confetti", "toilet_paper", "soap"]:
 		var item := game.hud.find_child("Ingredient_" + id, true, false) as Button
 		if item == null: continue

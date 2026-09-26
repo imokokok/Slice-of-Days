@@ -11,10 +11,11 @@ func _initialize() -> void:
 
 func run() -> void:
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path": "user://serving_continuity_%s/book.json" % Time.get_ticks_usec()})
+	game.configure({"repository_path": "user://serving_continuity_%s/book.json" % Crypto.new().generate_random_bytes(16).hex_encode()})
 	root.add_child(game)
 	await process_frame
 	game.world.audio.muted = true
+	check(game.repository.load_recipes().is_empty(), "isolated test cookbook starts empty")
 	game._show_plating()
 	check(is_zero_approx(game._dispense_plating_sauce("ketchup", 5.0)), "uncollected bottle cannot make sauce on the serving plate")
 	game._close_modal()

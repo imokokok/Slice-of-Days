@@ -34,7 +34,7 @@ func run() -> void:
 	check(Art.body_outline("tomato").size() >= 3 and Art.alpha_at("tomato", Vector2.ZERO) > 0.9, "collision and hit testing use the new tomato silhouette")
 	check(CutArt.texture("tomato", "slice") != null and CutArt.texture("tomato", "dice") != null, "tomato cut faces remain available")
 	var game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path": "user://tomato_art_%s/book.json" % Time.get_ticks_usec()})
+	game.configure({"repository_path": "user://tomato_art_%s/book.json" % Crypto.new().generate_random_bytes(16).hex_encode()})
 	root.add_child(game)
 	await process_frame
 	game._close_modal()

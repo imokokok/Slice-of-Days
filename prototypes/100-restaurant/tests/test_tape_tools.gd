@@ -11,7 +11,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path": "user://tape_tools_%s/cookbook.json" % Time.get_ticks_usec()})
+	game.configure({"repository_path": "user://tape_tools_%s/cookbook.json" % Crypto.new().generate_random_bytes(16).hex_encode()})
 	root.add_child(game)
 	await _layout()
 	game._start_shift()

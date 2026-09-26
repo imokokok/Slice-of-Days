@@ -26,7 +26,7 @@ func run() -> void:
 		expect(texture != null and texture == Art.supplementary_food(id), id + " uses labeled new illustration")
 		if texture != null: expect(texture.get_image().get_pixel(0, 0).a < 0.01, id + " generated art has transparent margins")
 	var game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path": "user://team_food_art_%s/book.json" % Time.get_ticks_usec()})
+	game.configure({"repository_path": "user://team_food_art_%s/book.json" % Crypto.new().generate_random_bytes(16).hex_encode()})
 	root.add_child(game)
 	await process_frame
 	game._close_modal()

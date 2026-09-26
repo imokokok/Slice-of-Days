@@ -22,7 +22,7 @@ func _run() -> void:
 		_finish()
 		return
 	game = packed.instantiate()
-	game.configure({"shift_seconds": 30.0, "player_id": "integration_player", "display_name": "集成测试主厨", "repository_path": "user://integration_%s/cookbook.json" % Time.get_ticks_usec()})
+	game.configure({"shift_seconds": 30.0, "player_id": "integration_player", "display_name": "集成测试主厨", "repository_path": "user://integration_%s/cookbook.json" % Crypto.new().generate_random_bytes(16).hex_encode()})
 	game.shift_completed.connect(func(result: Dictionary): settlements.append(result))
 	game.recipe_published.connect(func(record: Dictionary): publications.append(record))
 	root.add_child(game)

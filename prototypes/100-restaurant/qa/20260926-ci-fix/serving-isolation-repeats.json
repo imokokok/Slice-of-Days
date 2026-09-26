@@ -1,0 +1,23 @@
+[
+  {
+    "name": "serving-isolation-repeat-1",
+    "passed": true,
+    "exit_code": 0,
+    "reason": "",
+    "log": "serving-isolation-repeat-1.log"
+  },
+  {
+    "name": "serving-isolation-repeat-2",
+    "passed": true,
+    "exit_code": 0,
+    "reason": "",
+    "log": "serving-isolation-repeat-2.log"
+  },
+  {
+    "name": "serving-isolation-repeat-3",
+    "passed": true,
+    "exit_code": 0,
+    "reason": "",
+    "log": "serving-isolation-repeat-3.log"
+  }
+]

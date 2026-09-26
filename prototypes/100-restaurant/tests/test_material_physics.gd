@@ -24,7 +24,7 @@ func sample(id: String):
 
 func run() -> void:
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path":"user://material_physics_%s/book.json" % Time.get_ticks_usec(),"shift_seconds":3600.0})
+	game.configure({"repository_path":"user://material_physics_%s/book.json" % Crypto.new().generate_random_bytes(16).hex_encode(),"shift_seconds":3600.0})
 	root.add_child(game)
 	await process_frame
 	game._start_shift()

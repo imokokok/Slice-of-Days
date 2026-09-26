@@ -9,7 +9,7 @@ func _initialize() -> void:
 	call_deferred("run")
 func run() -> void:
 	game=preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path":"user://reaction_qa_%s/book.json"%Time.get_ticks_usec(),"shift_seconds":900.0})
+	game.configure({"repository_path":"user://reaction_qa_%s/book.json"%Crypto.new().generate_random_bytes(16).hex_encode(),"shift_seconds":900.0})
 	root.add_child(game)
 	await process_frame
 	game._start_shift()
@@ -74,7 +74,7 @@ func run() -> void:
 	var snapshot: Dictionary=world.describe_body(tofu)
 	snapshot.id="tofu"
 	expect(snapshot.has("thermal") and snapshot.surface_sauce.composition_ml.ketchup>0,"snapshot preserves phase history and sauce composition")
-	var book_path: String="user://reaction_snapshot_%s/book.json"%Time.get_ticks_usec()
+	var book_path: String="user://reaction_snapshot_%s/book.json"%Crypto.new().generate_random_bytes(16).hex_encode()
 	var repository=preload("res://modules/restaurant/storage/recipe_repository.gd").new(book_path)
 	var validation: Dictionary=repository._validate_dish({"ingredients":[snapshot]},false)
 	expect(validation.ok,"new thermal state is accepted by recipe storage: "+str(validation.get("error","")))

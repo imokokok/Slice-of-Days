@@ -41,7 +41,7 @@ func capture(suffix: String) -> void:
 	root.get_texture().get_image().save_png(output+suffix+".png")
 func run() -> void:
 	game=preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path":"user://craft_%d/book.json"%Time.get_ticks_usec(),"display_name":"小满"})
+	game.configure({"repository_path":"user://craft_%s/book.json"%Crypto.new().generate_random_bytes(16).hex_encode(),"display_name":"小满"})
 	root.add_child(game); await settle(); game._start_shift(); game.world.audio.muted=true
 	await settle()
 	expect(game._order_paper.body.get_theme_font("font")==preload("res://modules/restaurant/ui/paper_ink.gd").font(),"order uses licensed handwriting font")
@@ -194,7 +194,7 @@ func run() -> void:
 		game._close_modal(); game._show_recipe_editor(saved[0]); await settle()
 		expect(game._title_input.text=="尚未收进书的修改","existing-recipe draft remains attached to its own id")
 	# Written notes on the sheet count as DIY; a title alone still does not.
-	var notes_book=preload("res://modules/restaurant/storage/recipe_repository.gd").new("user://craft_notes_%d/book.json"%Time.get_ticks_usec())
+	var notes_book=preload("res://modules/restaurant/storage/recipe_repository.gd").new("user://craft_notes_%s/book.json"%Crypto.new().generate_random_bytes(16).hex_encode())
 	var notes_record={"title":"只写一页做法","author":"小满","notes":"把番茄切小块，轻轻翻炒。","dish":{"ingredients":[]}}
 	expect(notes_book.save_recipe(notes_record),"writing instructions directly on paper can save without decorative filler")
 	expect(notes_book.load_recipes()[0].dish.ingredients.is_empty(),"written recipe does not invent a cooked meal")

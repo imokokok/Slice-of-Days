@@ -13,7 +13,7 @@ func _initialize() -> void:
 func run() -> void:
 	if not OS.get_cmdline_user_args().is_empty(): capture_prefix = OS.get_cmdline_user_args()[0]
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path": "user://handdrawn_%s/book.json" % Time.get_ticks_usec(), "shift_seconds": 1200.0})
+	game.configure({"repository_path": "user://handdrawn_%s/book.json" % Crypto.new().generate_random_bytes(16).hex_encode(), "shift_seconds": 1200.0})
 	root.add_child(game)
 	await process_frame
 	game._close_modal()

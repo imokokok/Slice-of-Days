@@ -42,7 +42,7 @@ func _initialize() -> void:
 	var receipt: Dictionary = model.serve()
 	_expect(receipt.has("reaction") and receipt.has("detail") and receipt.has("role"), "serve result carries personality fields across module boundary")
 	_expect(receipt.payment > 0 and model.dish.is_empty(), "feedback preserves settlement and serving semantics")
-	var repo = preload("res://modules/restaurant/storage/recipe_repository.gd").new("user://water_save_%s/book.json" % Time.get_ticks_usec())
+	var repo = preload("res://modules/restaurant/storage/recipe_repository.gd").new("user://water_save_%s/book.json" % Crypto.new().generate_random_bytes(16).hex_encode())
 	var water_dish := {"ingredients":[{"id":"bread","heat":8}], "water_ml":720.0}
 	_expect(repo.save_recipe({"title":"面包汤", "author":"测试", "dish":water_dish}), "actual water quantity saves with the recipe")
 	var reload = preload("res://modules/restaurant/storage/recipe_repository.gd").new(repo.storage_path)

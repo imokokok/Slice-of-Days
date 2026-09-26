@@ -18,7 +18,7 @@ func _initialize() -> void:
 func _run() -> void:
 	original_mouse_mode = Input.mouse_mode
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"shift_seconds": 240.0, "display_name": "DIY 测试主厨", "repository_path": "user://recipe_diy_%s/cookbook.json" % Time.get_ticks_usec()})
+	game.configure({"shift_seconds": 240.0, "display_name": "DIY 测试主厨", "repository_path": "user://recipe_diy_%s/cookbook.json" % Crypto.new().generate_random_bytes(16).hex_encode()})
 	game.recipe_published.connect(func(record: Dictionary): publications.append(record.duplicate(true)))
 	root.add_child(game)
 	await process_frame

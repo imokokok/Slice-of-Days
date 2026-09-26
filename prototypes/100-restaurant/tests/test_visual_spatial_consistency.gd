@@ -15,7 +15,7 @@ func _initialize() -> void:
 func run() -> void:
 	if not OS.get_cmdline_user_args().is_empty(): prefix = OS.get_cmdline_user_args()[0]
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path":"user://spatial_qa_%d/book.json" % Time.get_ticks_usec(), "shift_seconds":900.0})
+	game.configure({"repository_path":"user://spatial_qa_%s/book.json" % Crypto.new().generate_random_bytes(16).hex_encode(), "shift_seconds":900.0})
 	root.add_child(game)
 	await process_frame
 	game._start_shift()

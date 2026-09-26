@@ -36,7 +36,7 @@ func run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if not args.is_empty(): output = args[0]
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path":"/private/tmp/pan_lid_qa_%s/book.json" % Time.get_ticks_usec(), "shift_seconds":900.0})
+	game.configure({"repository_path":"/private/tmp/pan_lid_qa_%s/book.json" % Crypto.new().generate_random_bytes(16).hex_encode(), "shift_seconds":900.0})
 	root.add_child(game)
 	await process_frame
 	game._start_shift()

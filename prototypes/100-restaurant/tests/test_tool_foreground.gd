@@ -11,7 +11,7 @@ func _initialize() -> void:
 
 func run() -> void:
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
-	game.configure({"repository_path": "user://tool_layer_%d/book.json" % Time.get_ticks_usec()})
+	game.configure({"repository_path": "user://tool_layer_%s/book.json" % Crypto.new().generate_random_bytes(16).hex_encode()})
 	root.add_child(game)
 	await process_frame
 	game._start_shift()

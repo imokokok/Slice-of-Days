@@ -33,7 +33,6 @@ var _rattle_phase := 0.0
 var _spin := 0.0
 var _landing_angle := 0.0
 var _landing_spin := 0.0
-var _landing_scale := Vector2.ONE
 var _bounces := 0
 var _previous_pose := Transform2D.IDENTITY
 var _step_seconds := 1.0 / 60.0
@@ -153,9 +152,13 @@ func advance(dt: float, vapor_ml: float, temperature: float, moist_food: bool) -
 		var spin_decay := exp(-dt * SPIN_DRAG)
 		rotation += _spin * (1.0 - spin_decay) / SPIN_DRAG
 		_spin *= spin_decay
-		# One shallow rock through the arc, with no repeated edge-on flips.
+		# Establish the leaning projection gradually through the flight. The
+		# lid already has its resting silhouette at contact, so a rebound never
+		# triggers a second, rapid size change.
 		var arc := clampf(_flight_age / _flight_seconds, 0.0, 1.0)
-		scale = Vector2(1.0, 1.0 - 0.22 * sin(PI * arc))
+		var lean := smoothstep(0.0, 1.0, arc)
+		scale = Vector2.ONE.lerp(REST_SCALE, lean)
+		scale.y -= 0.08 * sin(PI * arc) * (1.0 - lean)
 		if position.y >= HOME.y and _velocity.y > 0.0:
 			var contact := clampf((HOME.y - previous_position.y) / maxf(0.000001, position.y - previous_position.y), 0.0, 1.0)
 			position.x = lerpf(previous_position.x, position.x, contact)
@@ -164,7 +167,6 @@ func advance(dt: float, vapor_ml: float, temperature: float, moist_food: bool) -
 			_settling = SETTLE_SECONDS
 			_landing_angle = wrapf(rotation - REST_ANGLE, -PI, PI)
 			_landing_spin = _spin
-			_landing_scale = scale
 			_velocity.y *= -0.18
 			_bounces = 0
 			world.audio.play_effect("lid_land", 0.8)
@@ -183,7 +185,7 @@ func advance(dt: float, vapor_ml: float, temperature: float, moist_food: bool) -
 		var t := SETTLE_SECONDS - _settling
 		var decay := exp(-12.0 * t)
 		rotation = REST_ANGLE + (_landing_angle + (_landing_spin + 12.0 * _landing_angle) * t) * decay
-		scale = REST_SCALE + (_landing_scale - REST_SCALE) * (1.0 + 12.0 * t) * decay
+		scale = REST_SCALE
 		if _settling == 0.0: rest_lid()
 	if not covered: return
 	# Capture only water actually removed by the authoritative thermal owner.

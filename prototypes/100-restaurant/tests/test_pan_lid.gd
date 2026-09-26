@@ -138,7 +138,12 @@ func run() -> void:
 	var previous_rotation: float = world.lid.rotation
 	var total_turn := 0.0
 	var minimum_projection := 1.0
+	var previous_scale: Vector2 = world.lid.scale
+	var largest_scale_step := 0.0
+	var largest_contact_scale_step := 0.0
+	var contact_scale := Vector2.ZERO
 	for i in 280:
+		var was_airborne: bool = world.lid._flight
 		world.reactions.advance(0.01)
 		peak = minf(peak, world.lid.position.y)
 		largest_step = maxf(largest_step, previous_pose.distance_to(world.lid.position))
@@ -146,12 +151,18 @@ func run() -> void:
 		angular_step = maxf(angular_step, absf(wrapf(world.lid.rotation - previous_rotation, -PI, PI)))
 		total_turn += absf(wrapf(world.lid.rotation - previous_rotation, -PI, PI))
 		if world.lid._flight: minimum_projection = minf(minimum_projection, world.lid.scale.y)
+		largest_scale_step = maxf(largest_scale_step, previous_scale.distance_to(world.lid.scale))
+		if was_airborne and not world.lid._flight: contact_scale = world.lid.scale
+		if not world.lid._flight: largest_contact_scale_step = maxf(largest_contact_scale_step, previous_scale.distance_to(world.lid.scale))
+		previous_scale = world.lid.scale
 		previous_rotation = world.lid.rotation
 		if world.lid._flight and world.lid._velocity.y > 0.0: descending = true
 	expect(world.lid.burst_origin.y - peak > 220.0, "steam impulse launches lid visibly high above the pan")
 	expect(descending and absf(world.lid.rotation - airborne_rotation) > 0.1, "lid tips and descends under gravity")
 	expect(total_turn > 0.5 and total_turn < PI * 0.5, "the entire pop and landing tip less than a quarter turn without repeated spins")
 	expect(minimum_projection >= 0.77, "airborne lid keeps a readable face instead of repeatedly flipping edge-on")
+	expect(largest_scale_step < 0.004, "lid projection changes gradually through the arc instead of shrinking at landing")
+	expect(contact_scale.distance_to(world.lid.REST_SCALE) < 0.0001 and largest_contact_scale_step < 0.0001, "contact, rebound and final rest preserve the same lid dimensions")
 	expect(largest_step < 9.0, "flight and rebound remain continuous without a sideways teleport")
 	expect(angular_step < 0.16, "landing preserves a continuous turn rather than snapping the disc upright")
 	expect(not world.lid._flight and world.lid._settling == 0.0 and world.lid.position == world.lid.HOME and world.lid.scale == world.lid.REST_SCALE, "popped lid settles into clear stand and is reusable")

@@ -7,12 +7,13 @@ var note := ""
 var working := false
 var film_page := 0
 const INK := Color("31658b")
+const STYLE := preload("res://scripts/photography/photo_style.gd")
 
 func _ready() -> void:
 	add_to_group("meta_modal")
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter=MOUSE_FILTER_STOP
-	theme=preload("res://art/ui/solmere_ui.tres")
+	theme=STYLE.theme()
 	FilmSystem.developing_progress.connect(_progress)
 	rebuild()
 
@@ -31,8 +32,7 @@ func label(parent: Node, text: String, at: Vector2, dimensions: Vector2, font_si
 	return l
 
 func button(parent: Node, title: String, at: Vector2, dimensions: Vector2, action: Callable, disabled := false) -> Button:
-	var b:=preload("res://scripts/ui/components/solmere_button.gd").new()
-	b.variant="outlined"
+	var b:=Button.new()
 	b.text=LocalizationSystem.text(title)
 	b.position=at
 	b.size=dimensions
@@ -47,14 +47,15 @@ func rebuild() -> void:
 	for child in get_children(): child.hide(); child.queue_free()
 	var dim:=ColorRect.new()
 	dim.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	dim.color=Color("182e33",.55)
+	dim.color=Color("a9d4ce",.94)
 	add_child(dim)
 	paper=Panel.new()
 	paper.position=Vector2(180,62)
 	paper.size=Vector2(1240,778)
 	var style:=StyleBoxFlat.new()
-	style.bg_color=Color("edf3f4")
-	style.set_corner_radius_all(14)
+	style.bg_color=STYLE.PAPER
+	style.set_corner_radius_all(24)
+	style.shadow_size=12; style.shadow_color=Color("476783",.16); style.shadow_offset=Vector2(0,6)
 	paper.add_theme_stylebox_override("panel",style)
 	add_child(paper)
 	label(paper,"杂货店 · 摄影柜台" if mode=="counter" else "这张照片，接下来",Vector2(38,22),Vector2(900,50),29)
@@ -189,14 +190,19 @@ func _photo_actions() -> void:
 	library.root_path=str(photo.get("library_root","user://photos"))
 	var image:=library.load_photo(photo_id)
 	if image!=null:
-		var picture:=TextureRect.new()
-		picture.texture=ImageTexture.create_from_image(image)
-		picture.position=Vector2(40,112)
-		picture.size=Vector2(720,480)
-		picture.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
-		picture.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		var picture:=preload("res://scripts/photography/photo_print.gd").new()
+		picture.image=image; picture.metadata=photo
+		picture.position=Vector2(40,100)
+		picture.size=Vector2(720,525)
+		picture.mouse_default_cursor_shape=CURSOR_POINTING_HAND
+		picture.gui_input.connect(func(event: InputEvent) -> void:
+			if event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:
+				var editor:=preload("res://scripts/photography/photo_inscription.gd").new()
+				editor.image=image; editor.metadata=photo; editor.library=library
+				editor.saved.connect(func(_text: String) -> void: rebuild())
+				add_child(editor))
 		paper.add_child(picture)
-	label(paper,"Day %d · %s\n原片留在相册，使用时取一张纸质副本。" % [int(photo.get("day",1)),TravelSystem.location_name(str(photo.get("location_id",photo.get("location",""))))],Vector2(40,603),Vector2(720,85),20)
+	label(paper,"点照片，在白边写字。\n原片留在相册，使用时取一张纸质副本。",Vector2(40,640),Vector2(720,65),18)
 	button(paper,"夹入今天的作品集",Vector2(800,127),Vector2(385,48),func()->void:
 		var ok:=ResidencySystem.file_material(photo_id,"day_"+str(GameState.current_day))
 		if ok: FilmSystem.mark_photo_use(photo_id,"dossier")
@@ -221,6 +227,7 @@ func _photo_actions() -> void:
 	if people.is_empty(): label(paper,"下次碰见人时，再把照片拿出来。",Vector2(800,442),Vector2(385,100),19)
 
 func _input(event: InputEvent) -> void:
+	if not get_tree().get_nodes_in_group("photo_inscription").is_empty(): return
 	if not get_tree().get_nodes_in_group("native_confirmation").is_empty(): return
 	if working:
 		if event is InputEventKey or event is InputEventMouseButton: get_viewport().set_input_as_handled()

@@ -7,6 +7,7 @@ var last_error := ""
 var busy := false
 var library := PhotoLibrary.new()
 var capture_root := "user://film_captures"
+const PHOTO_NOTE_LIMIT := 80
 
 func _ready() -> void:
 	config = JSON.parse_string(FileAccess.get_file_as_string("res://data/photography/film_types.json"))
@@ -268,6 +269,42 @@ func _develop(image: Image, kind: String, seed_id: String) -> Image:
 
 func developed_photos() -> Array:
 	return GameState.artifacts.get("photos",[]).filter(func(item: Dictionary)->bool:return str(item.get("status","DEVELOPED"))=="DEVELOPED")
+
+func write_photo_note(id: String, note: String, photo_library: PhotoLibrary = null) -> bool:
+	last_error=""
+	if busy or id.is_empty(): last_error="照片暂时无法写字，请稍后再试。"; return false
+	if note.length()>PHOTO_NOTE_LIMIT: last_error="白边最多写 %d 字，请留下一句短一点的话。" % PHOTO_NOTE_LIMIT; return false
+	var before := GameState.to_save_data().duplicate(true)
+	var captures: Array=[]
+	for roll in state().rolls.values():
+		for captured in roll.get("captures",[]):
+			if str(captured.get("capture_id",""))==id: captures.append(captured)
+	if not captures.is_empty():
+		# An exposed frame keeps its note until pickup copies it to the photo library.
+		for captured in captures: captured["notes"]=note
+		if persist(): return true
+		GameState.load_save_data(before)
+		last_error="白边文字没有保存，请重试。"
+		return false
+	var store := photo_library if photo_library!=null else library
+	var existing: Dictionary={}
+	for item in store.list_photos():
+		if str(item.get("photo_id",""))==id: existing=item; break
+	if existing.is_empty(): last_error="照片不存在或已损坏。"; return false
+	if str(existing.get("role",GameState.current_role))!=GameState.current_role:
+		last_error="这张照片属于另一位旅人，切换到本人后再写字。"
+		return false
+	if not store.update_metadata(id,{"notes":note}): last_error=store.last_error; return false
+	for item in developed_photos():
+		if str(item.get("photo_id",item.get("id","")))==id: item["notes"]=note
+	for roll in state().rolls.values():
+		for captured in roll.get("captures",[]):
+			if str(captured.get("capture_id",""))==str(existing.get("capture_id","")) and existing.has("capture_id"): captured["notes"]=note
+	if persist(): return true
+	GameState.load_save_data(before)
+	store.update_metadata(id,{"notes":str(existing.get("notes",""))})
+	last_error="白边文字没有保存，请重试。"
+	return false
 
 func photo(id: String) -> Dictionary:
 	for row in developed_photos():

@@ -64,6 +64,7 @@ func _style(node: Control) -> void:
 	if _context(node,["elder_board/scripts/main.gd","elder_board/scripts/match.gd","elder_board/scripts/rules_panel.gd","elder_board/scripts/teaching_room.gd","elder_board/scripts/learned_match.gd","elder_board/scripts/elder_story.gd"]): return
 	if _context(node,["map_paper.gd","fish_journal.gd","transport_panel.gd"]): return
 	if _context(node,["direction_card.gd","goods_card.gd","gameplay_shell.gd"]): return
+	if _context(node,["photo_print.gd","photo_inscription.gd","PhotoAlbum.gd"]): return
 	if node.is_in_group("solid_hud"): return
 	if _context(node,["star_gazing_controller.gd","constellation_controller.gd","economy_paper.gd","StudioScreen.gd","myriorama_tarot/scripts/table.gd","native_module_game.gd","save_slots.gd","shop_panel.gd","film_paper.gd","confirm_sheet.gd","travel_card.gd","main_menu.gd","PocketCamera.gd","recorder_lite.gd","shutter_button.gd","living_objects.gd","media_browser.gd","guidance_toasts.gd","runtime_menu.gd","solmere_button.gd","household_panel.gd","RecorderScreen.gd","paper_page.gd","portfolio_item.gd","runtime_debug.gd","flowing_thought.gd","workshop.gd"]): return
 	if speech(node): return

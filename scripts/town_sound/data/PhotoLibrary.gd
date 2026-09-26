@@ -67,15 +67,22 @@ func save_photo(image: Image, context: Dictionary) -> Dictionary:
 	return item
 
 func update_metadata(id: String, values: Dictionary) -> bool:
+	last_error=""
 	for item in list_photos():
 		if str(item.photo_id)!=id: continue
 		item.merge(values,true)
 		var path:=root_path.path_join(id).path_join("photo.json")
 		var file:=FileAccess.open(path+".tmp",FileAccess.WRITE)
-		if file==null: return false
+		if file==null: last_error="无法写入照片信息，请重试。"; return false
 		file.store_string(JSON.stringify(item,"\t"))
+		file.flush()
+		var result := file.get_error()
 		file.close()
-		return DirAccess.rename_absolute(path+".tmp",path)==OK
+		if result!=OK or DirAccess.rename_absolute(path+".tmp",path)!=OK:
+			last_error="照片信息写入失败，请重试。"
+			return false
+		return true
+	last_error="照片不存在或已损坏。"
 	return false
 
 func load_photo(id: String) -> Image:

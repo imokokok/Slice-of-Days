@@ -243,9 +243,11 @@ func _open_record_store() -> void:
 	_show_pocket_panel(panel)
 
 
-func _open_pocket_album() -> void:
+func _open_pocket_album(photo_library: PhotoLibrary = null) -> void:
 	if is_instance_valid(pocket_panel) or pocket_opening: return
-	_show_pocket_panel(load("res://scripts/town_sound/PhotoAlbum.gd").new())
+	var album = load("res://scripts/town_sound/PhotoAlbum.gd").new()
+	if photo_library!=null: album.library=photo_library
+	_show_pocket_panel(album)
 
 
 func _open_pocket_camera() -> void:
@@ -266,6 +268,10 @@ func _open_pocket_camera() -> void:
 	var camera = load("res://scripts/town_sound/PocketCamera.gd").new()
 	camera.source = frame
 	camera.context = {"location": GameState.current_location, "title": _location_name(GameState.current_location), "day": GameState.current_day, "role": GameState.current_role, "game_minute": GameState.current_minute, "subjects": _camera_subjects()}
+	camera.gallery_requested.connect(func() -> void:
+		var photo_library: PhotoLibrary=camera.library
+		await get_tree().process_frame
+		_open_pocket_album(photo_library))
 	_show_pocket_panel(camera)
 
 func _camera_subjects() -> Array[Dictionary]:

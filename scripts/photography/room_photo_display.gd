@@ -18,21 +18,14 @@ func refresh() -> void:
 		library.root_path=str(photo.get("library_root","user://photos"))
 		var image:=library.load_photo(id)
 		if image==null: continue
-		var border:=ColorRect.new()
+		var border:=preload("res://scripts/photography/photo_print.gd").new()
 		border.position=Vector2(i*152+10,18+(i%2)*9)
 		border.size=Vector2(139,116)
-		border.color=Color("f0e8ce")
+		border.image=image
+		border.metadata=photo
 		border.rotation=(-.03 if i%2 else .025)
 		border.mouse_filter=MOUSE_FILTER_IGNORE
 		add_child(border)
-		var art:=TextureRect.new()
-		art.texture=ImageTexture.create_from_image(image)
-		art.position=Vector2(7,9)
-		art.size=Vector2(125,83)
-		art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
-		art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		art.mouse_filter=MOUSE_FILTER_IGNORE
-		border.add_child(art)
 	queue_redraw()
 
 func _draw() -> void:

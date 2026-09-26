@@ -2,11 +2,15 @@ extends RefCounted
 ## Original, seekable pixel animation. No RedSkill templates or CDN images used.
 ## Every frame depends only on source time, signal and seed, including after cuts.
 const BOARD := Vector2(384,216)
+const PAPER := Color("eee6d4")
+const PAPER_EDGE = preload("res://art/town_sound_cc0/card.png")
+# Pigments share the surrounding game's paper, sea green and clay palette.
+# A sound changes the drawing, rather than opening a separate dark display.
 const PALETTES := {
-	"fire":["342f3b","8c554c","d88554","f8d99a"], "wind":["cfdcd0","77998b","3b726f","fbf5d9"],
-	"water":["276370","367e89","8fbcaf","f7edc8"], "rain":["344d60","607b89","a5babc","f2e7c9"],
+	"fire":["ddc9ae","99775f","be875e","f5e6bf"], "wind":["cfd8c9","8d9e83","517c70","f7efd6"],
+	"water":["abc3b8","729a90","4d7c78","f5ecd3"], "rain":["bcc8bf","8d9f97","567979","f3ead3"],
 	"bird":["e3d9bc","b2bda2","47797a","fff8df"], "paper":["e8dfc7","bf9f7a","987563","fff8e4"],
-	"wood":["ddd1b0","ac9972","65775e","faf1d7"], "metal":["293f52","5e7e8d","bcaa78","f6ebc9"],
+	"wood":["ddd1b0","ac9972","65775e","faf1d7"], "metal":["c2c7b8","87968c","718274","f6ebc9"],
 	"voice":["ded0c9","b18486","776f8e","fff0d5"], "pulse":["e8dfc8","b98965","537a82","f9f2dc"]}
 
 static func unit(seed_value:int,index:int) -> float:
@@ -45,11 +49,25 @@ static func paint(c:CanvasItem,extent:Vector2,seconds:float,energy:float,bands:P
 		"paper": paper(c,t,e,bass,high,seed_value,colors)
 		"voice": voice(c,t,e,bass,high,seed_value,colors)
 		_: geometry(c,t,e,bass,high,seed_value,colors)
-	for corner in [Vector2(10,10),Vector2(374,206)]:
-		var d:=1 if corner.x<100 else -1
-		c.draw_line(corner,corner+Vector2(10*d,0),Color(colors[3],.45))
-		c.draw_line(corner,corner+Vector2(0,7*d),Color(colors[3],.45))
+	paper_mount(c,seed_value)
 	c.draw_set_transform(Vector2.ZERO)
+
+static func paper_mount(c:CanvasItem,seed_value:int) -> void:
+	# Fixed paper fibres sit above every pigment, including the moving strokes.
+	# This is the same CC0 material edge used by the surrounding guidance cards.
+	for i in 260:
+		var at:=Vector2(unit(seed_value,i+991)*384,unit(seed_value,i+1301)*216).floor()
+		c.draw_line(at,at+Vector2(1+i%3,0),Color(PAPER,.11))
+	# The wash fades into the paper; there is no black bezel or glowing border.
+	for inset in 12:
+		var ink:=Color(PAPER,1.0 if inset<5 else pow((12-inset)/8.0,2)*.6)
+		c.draw_rect(Rect2(inset,inset,384-inset*2,1),ink)
+		c.draw_rect(Rect2(inset,215-inset,384-inset*2,1),ink)
+		c.draw_rect(Rect2(inset,inset+1,1,214-inset*2),ink)
+		c.draw_rect(Rect2(383-inset,inset+1,1,214-inset*2),ink)
+	var edge:=StyleBoxTexture.new(); edge.texture=PAPER_EDGE; edge.modulate_color=Color(PAPER,.42); edge.draw_center=false
+	for side in [SIDE_LEFT,SIDE_TOP,SIDE_RIGHT,SIDE_BOTTOM]: edge.set_texture_margin(side,4)
+	c.draw_style_box(edge,Rect2(Vector2.ZERO,BOARD))
 
 static func line(c:CanvasItem,points:PackedVector2Array,color:Color,width:=1.0) -> void:
 	for i in points.size(): points[i]=points[i].floor()

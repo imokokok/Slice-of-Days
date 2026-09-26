@@ -136,16 +136,22 @@ func run() -> void:
 	var airborne_rotation: float = world.lid.rotation
 	var angular_step := 0.0
 	var previous_rotation: float = world.lid.rotation
+	var total_turn := 0.0
+	var minimum_projection := 1.0
 	for i in 280:
 		world.reactions.advance(0.01)
 		peak = minf(peak, world.lid.position.y)
 		largest_step = maxf(largest_step, previous_pose.distance_to(world.lid.position))
 		previous_pose = world.lid.position
 		angular_step = maxf(angular_step, absf(wrapf(world.lid.rotation - previous_rotation, -PI, PI)))
+		total_turn += absf(wrapf(world.lid.rotation - previous_rotation, -PI, PI))
+		if world.lid._flight: minimum_projection = minf(minimum_projection, world.lid.scale.y)
 		previous_rotation = world.lid.rotation
 		if world.lid._flight and world.lid._velocity.y > 0.0: descending = true
 	expect(world.lid.burst_origin.y - peak > 220.0, "steam impulse launches lid visibly high above the pan")
-	expect(descending and absf(airborne_rotation) > 0.1, "lid spins and descends under gravity")
+	expect(descending and absf(world.lid.rotation - airborne_rotation) > 0.1, "lid tips and descends under gravity")
+	expect(total_turn > 0.5 and total_turn < PI * 0.5, "the entire pop and landing tip less than a quarter turn without repeated spins")
+	expect(minimum_projection >= 0.77, "airborne lid keeps a readable face instead of repeatedly flipping edge-on")
 	expect(largest_step < 9.0, "flight and rebound remain continuous without a sideways teleport")
 	expect(angular_step < 0.16, "landing preserves a continuous turn rather than snapping the disc upright")
 	expect(not world.lid._flight and world.lid._settling == 0.0 and world.lid.position == world.lid.HOME and world.lid.scale == world.lid.REST_SCALE, "popped lid settles into clear stand and is reusable")
@@ -203,13 +209,16 @@ func run() -> void:
 	# Ballistic motion must not depend on the size of the simulation step.
 	# This would expose the old semi-implicit Euler drift across frame rates.
 	var trajectories: Array[Vector2] = []
+	var angles: Array[float] = []
 	for rate in [30, 60, 120]:
 		world.lid.rest_lid()
 		world.lid.close_lid()
 		world.lid.burst()
 		for frame in rate: world.lid.advance(1.0 / rate, 0.0, 22.0, false)
 		trajectories.append(world.lid.position)
+		angles.append(world.lid.rotation)
 	expect(trajectories[0].distance_to(trajectories[1]) < 0.01 and trajectories[1].distance_to(trajectories[2]) < 0.01, "30/60/120 Hz steps produce the same one-second steam impulse trajectory")
+	expect(absf(angles[0] - angles[1]) < 0.0001 and absf(angles[1] - angles[2]) < 0.0001, "30/60/120 Hz steps preserve the same gentle angular impulse")
 	print("Lid pop after %s seconds of accelerated hot-pan fixture cooking" % elapsed)
 	for failure in failures: push_error(failure)
 	print("%s: pan lid and burning, %d checks" % ["PASS" if failures.is_empty() else "FAIL", checks])

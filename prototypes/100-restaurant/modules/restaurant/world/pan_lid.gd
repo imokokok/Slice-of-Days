@@ -6,6 +6,8 @@ const REST_ANGLE := -1.12
 const REST_SCALE := Vector2(0.68, 0.9)
 const FLIGHT_GRAVITY := 720.0
 const LAUNCH_SPEED := 630.0
+const LAUNCH_SPIN := -0.75
+const SPIN_DRAG := 0.6
 const SETTLE_SECONDS := 0.85
 var world: Node2D
 var covered := false
@@ -20,6 +22,7 @@ var burst_left := 0.0
 var burst_origin := Vector2.ZERO
 var _flight := false
 var _flight_age := 0.0
+var _flight_seconds := 1.0
 var _settling := 0.0
 var _stand: Node2D
 var _velocity := Vector2.ZERO
@@ -145,12 +148,14 @@ func advance(dt: float, vapor_ml: float, temperature: float, moist_food: bool) -
 		var previous_position := position
 		position += _velocity * dt + Vector2(0.0, 0.5 * FLIGHT_GRAVITY * dt * dt)
 		_velocity.y += dt * FLIGHT_GRAVITY
-		rotation += _spin * dt
-		_spin *= exp(-dt * 0.16)
-		# Rounded edge-on projection avoids the cusp from abs(cos), preserving
-		# a readable rim as the same disc tumbles.
-		var face := cos(_flight_age * 4.6)
-		scale = Vector2(1.0, sqrt(face * face + 0.04) / sqrt(1.04))
+		# A steam lift gives a small tipping impulse, not a spinning disc.
+		# Integrate angular drag analytically so frame rate cannot add turns.
+		var spin_decay := exp(-dt * SPIN_DRAG)
+		rotation += _spin * (1.0 - spin_decay) / SPIN_DRAG
+		_spin *= spin_decay
+		# One shallow rock through the arc, with no repeated edge-on flips.
+		var arc := clampf(_flight_age / _flight_seconds, 0.0, 1.0)
+		scale = Vector2(1.0, 1.0 - 0.22 * sin(PI * arc))
 		if position.y >= HOME.y and _velocity.y > 0.0:
 			var contact := clampf((HOME.y - previous_position.y) / maxf(0.000001, position.y - previous_position.y), 0.0, 1.0)
 			position.x = lerpf(previous_position.x, position.x, contact)
@@ -224,10 +229,11 @@ func burst() -> void:
 	_flight = true
 	_flight_age = 0.0
 	_settling = 0.0
-	_spin = 4.6
+	_spin = LAUNCH_SPIN
 	# Solve the descending time to the clear counter support. No sideways tween
 	# or teleport: each fixed thermal-owner step integrates impulse and gravity.
 	var flight_time := (LAUNCH_SPEED + sqrt(LAUNCH_SPEED * LAUNCH_SPEED + 2.0 * FLIGHT_GRAVITY * (HOME.y - position.y))) / FLIGHT_GRAVITY
+	_flight_seconds = flight_time
 	_velocity = Vector2((HOME.x - position.x) / flight_time, -LAUNCH_SPEED)
 	_previous_pose = transform
 	world.audio.effects.lid_tick.stop()

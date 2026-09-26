@@ -3,6 +3,8 @@ extends RefCounted
 const L=preload("res://extensions/collage_letter/scripts/localization.gd")
 var g: Node2D
 var paper_atlas: Texture2D=preload("res://extensions/collage_letter/assets/open_pack/stationery/painted-papers.png")
+var envelope_fibre: Texture2D=preload("res://extensions/collage_letter/assets/open_pack/paper/Papier13.png")
+var botanical_mark: Texture2D=preload("res://extensions/collage_letter/assets/open_pack/icons/tree.svg")
 var letter_pos:=Vector2(720,290)
 var inserted:=false
 var flap:=0.0
@@ -242,14 +244,9 @@ func wax_art() -> void:
 			g.draw_line(pool-Vector2(18,9),pool+Vector2(14,15),Color("6b342a"),2)
 func envelope(at: Vector2 = Vector2(720,545), scale: float = 1.0, show_letter: bool = false) -> void:
 	g.draw_set_transform(at-Vector2(720,545)*scale,0,Vector2.ONE*scale)
-	if flap>=0.99 and not show_letter:
-		g.draw_texture_rect_region(paper_atlas,Rect2(488,418,464,267),Rect2(712,705,273,192),Color(1,0.98,0.92))
-		if Rect2(500,430,440,245).has_point(pool):wax_art()
-		g.draw_set_transform(Vector2.ZERO)
-		return
-	g.paper(Rect2(500,430,440,245),Color("cdb58b"))
+	g.paper(Rect2(500,430,440,245),Color("cbc5b6"))
 	if flap<1:
-		poly([Vector2(500,430),Vector2(940,430),Vector2(720,270+flap*255)],"ead8b6")
+		envelope_paper([Vector2(500,430),Vector2(940,430),Vector2(720,270+flap*255)],"e6e3d6")
 		g.draw_line(Vector2(505,431),Vector2(720,274+flap*250),Color("b19a73"),1.5)
 	g.draw_rect(Rect2(510,431,420,213),Color("e3cfa8") if flap>=0.95 else Color("ae9879"))
 	if show_letter:
@@ -259,19 +256,23 @@ func envelope(at: Vector2 = Vector2(720,545), scale: float = 1.0, show_letter: b
 			g.draw_texture_rect_region(g.letter_preview,Rect2(letter_pos-Vector2(143,58),Vector2(286,maxf(0,minf(116,visible_height-7)))),Rect2(Vector2.ZERO,Vector2(g.letter_preview.get_size())*Vector2(1,0.333*minf(1,(visible_height-7)/116))))
 		if letter_pos.y-45<665: g.draw_line(letter_pos+Vector2(-144,-45),letter_pos+Vector2(144,-45),Color("d8ccb1"))
 	# Front pocket occludes the letter continuously as it crosses the opening.
-	poly([Vector2(500,430),Vector2(720,575),Vector2(940,430),Vector2(940,675),Vector2(500,675)],"e3cfa8")
-	poly([Vector2(500,675),Vector2(720,511),Vector2(940,675)],"efdebd")
+	envelope_paper([Vector2(500,430),Vector2(720,575),Vector2(940,430),Vector2(940,675),Vector2(500,675)],"dedbcf")
+	envelope_paper([Vector2(500,675),Vector2(720,511),Vector2(940,675)],"edeadd")
 	g.draw_line(Vector2(503,672),Vector2(720,513),Color("c3ac86"),1.4)
 	g.draw_line(Vector2(937,672),Vector2(720,513),Color("c3ac86"),1.4)
 	if flap>0:
-		poly([Vector2(500,430),Vector2(940,430),Vector2(720,270+flap*255)],"e8d4af")
+		envelope_paper([Vector2(500,430),Vector2(940,430),Vector2(720,270+flap*255)],"e8e5d8")
 		g.draw_line(Vector2(500,430),Vector2(720,270+flap*255),Color("b8a07d"),1.4)
 		g.draw_line(Vector2(940,430),Vector2(720,270+flap*255),Color("b8a07d"),1.4)
 	if flap>0.8:
-		# Artist-painted closed envelope; keep interactive flap and wax independent.
-		g.draw_texture_rect_region(paper_atlas,Rect2(488,418,464,267),Rect2(712,705,273,192),Color(1,0.98,0.92,clampf((flap-0.8)*5,0,1)))
+		g.draw_texture_rect(botanical_mark,Rect2(704,452,32,43),false,Color(0.26,0.31,0.25,clampf((flap-0.8)*5,0,0.8)))
 	if Rect2(500,430,440,245).has_point(pool): wax_art()
 	g.draw_set_transform(Vector2.ZERO)
+func envelope_paper(vertices: Array, color: String) -> void:
+	var points:=PackedVector2Array(vertices);var coords:=PackedVector2Array()
+	for point in points:coords.append((point-Vector2(500,270))/Vector2(440,405))
+	g.draw_colored_polygon(points,Color(color));g.draw_polygon(points,PackedColorArray([Color(1,1,1,0.48)]),coords,envelope_fibre)
+	var edge:=points.duplicate();edge.append(points[0]);g.draw_polyline(edge,Color(0.99,0.98,0.92,0.65),1.2,true)
 func draw() -> void:
 	if g.stage=="ENVELOPE": envelope(Vector2(720,545),1,true)
 	elif g.stage=="WAX_SEAL":

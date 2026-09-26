@@ -81,6 +81,7 @@ func run() -> void:
  letter.tool="rect";letter.cutting_source=0;letter.start=Vector2(80,271);letter.finish_cut(Vector2(315,306))
  check(letter.pieces_root.get_child_count()==1,"Original rectangle cut creates a paper piece")
  letter.selected.position=Vector2(700,390)
+ letter.tape_start=Vector2(650,380);letter.finish_tape(Vector2(750,400))
  await letter.complete_letter()
  check(letter.stage=="FOLDING" and letter.letter_preview!=null,"Original letter captures and folds")
  check(letter.save_path.begins_with("user://letter_original_"),"Host saves isolated by character and journey")

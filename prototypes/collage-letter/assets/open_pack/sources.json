@@ -945,46 +945,11 @@
     "sha256": "4eb927bed1c95dbfdcff3d431bfbd97aae053de022d671d10936c67352a314ce"
   },
   {
-    "file": "photos/bus_stop.png",
-    "source": "repository art/user_scenes/bus_stop.png",
-    "license": "User-supplied project artwork; not represented as CC0",
-    "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
-    "sha256": "8e69e0c923aa606877b0dcd4caa012859276c2e8bbfefc08c7fb915c9fe4b368"
-  },
-  {
     "file": "photos/lookout_approach.png",
     "source": "repository art/user_scenes/lookout_approach.png",
     "license": "User-supplied project artwork; not represented as CC0",
     "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
     "sha256": "3a323e423619fadc889930df0d611926eb8e25150aecdf079c3d307f848aedbf"
-  },
-  {
-    "file": "photos/produce_stall.png",
-    "source": "repository art/user_scenes/produce_stall.png",
-    "license": "User-supplied project artwork; not represented as CC0",
-    "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
-    "sha256": "cdbe6271f250aea44732e3ad11bd75d92679ea5d25428ed93ea4e5a2f749a947"
-  },
-  {
-    "file": "photos/restaurant.png",
-    "source": "repository art/user_scenes/restaurant.png",
-    "license": "User-supplied project artwork; not represented as CC0",
-    "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
-    "sha256": "d3bccd4bed02ad03e6e652127308e87d3324a41be5cb60e6a3ca0c3a090c8cb1"
-  },
-  {
-    "file": "photos/correspondence_office.png",
-    "source": "repository art/user_scenes/correspondence_office.png",
-    "license": "User-supplied project artwork; not represented as CC0",
-    "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
-    "sha256": "3470dedf27d860b1375cbe3cdff5e2de0485de78943043e898f3cff66ddea33d"
-  },
-  {
-    "file": "photos/tarot_shop.png",
-    "source": "repository art/user_scenes/tarot_shop.png",
-    "license": "User-supplied project artwork; not represented as CC0",
-    "notes": "Existing Solmere artwork reused as in-world photographs, per user request",
-    "sha256": "9fafbc03ce818140bb745972c72eb0eacd51c54a7641d90503c38f7fd9723ca8"
   },
   {
     "file": "scores/original-rags-0.png",
@@ -1513,5 +1478,76 @@
     "author": "PuzzleAndy",
     "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
     "sha256": "aa32b042f5f7c76773064f7e90f181472e2edb39904eac3fbac4c677c2f9744c"
+  },
+  {
+    "file": "audio/typewriter1.wav",
+    "source": "https://opengameart.org/content/typewriter-sounds",
+    "download": "https://opengameart.org/sites/default/files/typewriter1.wav",
+    "license": "CC0-1.0",
+    "author": "Cassie-OrbitGames",
+    "notes": "Original phone-recorded typewriter WAV, unmodified. Verified PCM 16-bit, 22050 Hz, 1 channel(s), 0.659 seconds.",
+    "sha256": "f860766aa7922afbf1523ea1a41504c64f3f6362fa03a60b6497c75c1d0d0344"
+  },
+  {
+    "file": "audio/typewriter2.wav",
+    "source": "https://opengameart.org/content/typewriter-sounds",
+    "download": "https://opengameart.org/sites/default/files/typewriter2.wav",
+    "license": "CC0-1.0",
+    "author": "Cassie-OrbitGames",
+    "notes": "Original phone-recorded typewriter WAV, unmodified. Verified PCM 16-bit, 22050 Hz, 2 channel(s), 0.659 seconds.",
+    "sha256": "b40c17fe45c9e3a6ad8a617f7831da5ccb3c8baab1fa0eb368f8ba3ade52c8a4"
+  },
+  {
+    "file": "audio/typewriter3.wav",
+    "source": "https://opengameart.org/content/typewriter-sounds",
+    "download": "https://opengameart.org/sites/default/files/typewriter3.wav",
+    "license": "CC0-1.0",
+    "author": "Cassie-OrbitGames",
+    "notes": "Original phone-recorded typewriter WAV, unmodified. Verified PCM 16-bit, 22050 Hz, 2 channel(s), 0.569 seconds.",
+    "sha256": "c9bb2c6245bdd60b996fe39f2fb74c810309ee03bbe2d8ae1ee6715888df9c69"
+  },
+  {
+    "file": "audio/typewriter4.wav",
+    "source": "https://opengameart.org/content/typewriter-sounds",
+    "download": "https://opengameart.org/sites/default/files/typewriter4.wav",
+    "license": "CC0-1.0",
+    "author": "Cassie-OrbitGames",
+    "notes": "Original phone-recorded typewriter WAV, unmodified. Verified PCM 16-bit, 22050 Hz, 2 channel(s), 0.539 seconds.",
+    "sha256": "28d4c07732fbd6f324f257c27a92d8a3c14ea5c26517972295b288bb75d5a2c3"
+  },
+  {
+    "file": "photos/station-bench.jpg",
+    "source": "repository art/scene_atlas/73.jpg",
+    "license": "Existing project artwork; external redistribution rights not independently verified",
+    "notes": "Unmodified existing Solmere full-scene artwork, copied byte-for-byte for in-world photo cards. Scene index cites the user-supplied SOLMERE_全场景参考图册.pdf; imported in repository commit 019346d. Not represented as CC0 or licensed for unrelated projects.",
+    "sha256": "2ebb52f2fb0926175b5cfb87cb228c459092fdb6b250f4e467245599342452d4"
+  },
+  {
+    "file": "photos/morning-lemon-stall.jpg",
+    "source": "repository art/scene_atlas/33.jpg",
+    "license": "Existing project artwork; external redistribution rights not independently verified",
+    "notes": "Unmodified existing Solmere full-scene artwork, copied byte-for-byte for in-world photo cards. Scene index cites the user-supplied SOLMERE_全场景参考图册.pdf; imported in repository commit 019346d. Not represented as CC0 or licensed for unrelated projects.",
+    "sha256": "1641b5076f3c2ee059fa1360a6b3efc09af75a2f37e17c9d82b66a4169f9a86d"
+  },
+  {
+    "file": "photos/restaurant-afternoon.jpg",
+    "source": "repository art/scene_atlas/07.jpg",
+    "license": "Existing project artwork; external redistribution rights not independently verified",
+    "notes": "Unmodified existing Solmere full-scene artwork, copied byte-for-byte for in-world photo cards. Scene index cites the user-supplied SOLMERE_全场景参考图册.pdf; imported in repository commit 019346d. Not represented as CC0 or licensed for unrelated projects.",
+    "sha256": "694196308a27e38879da19986d17850da136e16afce61cdebb5e9cbb6ed78d37"
+  },
+  {
+    "file": "photos/letter-office-front.jpg",
+    "source": "repository art/scene_atlas/21.jpg",
+    "license": "Existing project artwork; external redistribution rights not independently verified",
+    "notes": "Unmodified existing Solmere full-scene artwork, copied byte-for-byte for in-world photo cards. Scene index cites the user-supplied SOLMERE_全场景参考图册.pdf; imported in repository commit 019346d. Not represented as CC0 or licensed for unrelated projects.",
+    "sha256": "e6d6dc5d8f7e55948d0ba0072a89d4c5acfb2f5ca1f9a46d7c6e0be2aaeb8762"
+  },
+  {
+    "file": "photos/lookout-terrace.jpg",
+    "source": "repository art/scene_atlas/66.jpg",
+    "license": "Existing project artwork; external redistribution rights not independently verified",
+    "notes": "Unmodified existing Solmere full-scene artwork, copied byte-for-byte for in-world photo cards. Scene index cites the user-supplied SOLMERE_全场景参考图册.pdf; imported in repository commit 019346d. Not represented as CC0 or licensed for unrelated projects.",
+    "sha256": "f2bfe53d1211454e22ed36489f1ade1f9917f416384f0807aef197094fb387e4"
   }
 ]

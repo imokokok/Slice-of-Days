@@ -5,24 +5,20 @@ var paper_color:=Color("f8e1b5")
 var edge_color:=Color("85baa7")
 var postal_trim:=false
 func _draw() -> void:
-	var border:=StyleBoxFlat.new();border.bg_color=edge_color;border.set_corner_radius_all(28)
-	border.shadow_color=Color(0.35,0.23,0.15,0.20);border.shadow_size=5;border.shadow_offset=Vector2(3,5)
-	draw_style_box(border,Rect2(Vector2.ZERO,size))
-	for y in range(36,int(size.y)-24,18):
-		for x in [2,size.x-2]:draw_circle(Vector2(x,y),3.5,edge_color.lightened(0.12))
-	var line:=StyleBoxFlat.new();line.bg_color=paper_color;line.set_corner_radius_all(21);line.border_color=Color("fff3d6");line.set_border_width_all(3)
-	draw_style_box(line,Rect2(Vector2(10,10),size-Vector2(20,20)))
-	var grain: Texture2D=load("res://assets/open_pack/paper/Papier13.png")
-	draw_texture_rect(grain,Rect2(Vector2(20,20),size-Vector2(40,40)),false,Color(1,1,1,0.16))
-	if postal_trim:
-		for i in range(0,int(size.x-100)/35):
-			for y in [22,size.y-22]:
-				var x:=35+i*35.0
-				draw_line(Vector2(x,y-3),Vector2(x+15,y+3),Color("e8b377") if i%2==0 else Color("edcf82"),5,true)
-		var corner:=Vector2(size.x-15,size.y-15)
-		draw_colored_polygon(PackedVector2Array([corner-Vector2(40,0),corner-Vector2(0,42),corner]),Color("e8aa7d"))
-	for y in range(36,int(size.y)-24,17):
-		for x in [16,size.x-16]:draw_circle(Vector2(x,y),1.1,Color("fbefcd"))
+	# A bound material book: cloth cover, stacked leaves and a shaded stitched gutter.
+	var paper=preload("res://scripts/letter_paper.gd")
+	var cover:=StyleBoxFlat.new();cover.bg_color=Color("858e78");cover.set_corner_radius_all(8);cover.shadow_color=Color(0.23,0.18,0.12,0.18);cover.shadow_size=5;cover.shadow_offset=Vector2(4,6)
+	draw_style_box(cover,Rect2(Vector2.ZERO,size))
+	draw_texture_rect(paper.texture(0),Rect2(-18,10,40,size.y-18),false,Color(0.9,0.87,0.75,0.65))
+	for i in range(5,0,-1):
+		paper.paint(self,Rect2(17+i,10+i*1.5,size.x-29-i,size.y-27),1,false)
+		var edge:=PackedVector2Array([Vector2(25,size.y-21+i*1.3),Vector2(size.x*0.6,size.y-19+i),Vector2(size.x-14+i,size.y-22+i)])
+		draw_polyline(edge,Color("c5b69a"),0.7,true)
+	paper.paint(self,Rect2(17,10,size.x-30,size.y-29),1,false)
+	for i in 12:draw_line(Vector2(13+i,17),Vector2(13+i,size.y-24),Color(0.29,0.24,0.17,0.08*(1.0-i/12.0)),1.0)
+	for y in [108,282,459]:
+		draw_arc(Vector2(14,y),8,0.0,PI,16,Color("e7d6ad"),2,true)
+		draw_circle(Vector2(6,y),1.5,Color("6e6858"));draw_circle(Vector2(22,y),1.5,Color("8d8267"))
 	if preview_id>=0 and g:
 		draw_texture_rect(g.get_material_texture(preview_id),Rect2(33,181,300,240),false)
 		if g.cutting_source==preview_id and g.path.size()>1:

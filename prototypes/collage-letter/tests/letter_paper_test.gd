@@ -8,6 +8,8 @@ func run() -> void:
 	while not game.ready_done:await process_frame
 	game.smoke=true;game.conversation_open=false;game.tools_open=true;game.build_ui();game.take_letter(626,Vector2(710,365))
 	var original: Dictionary=game.selected.serialize()
+	game.set_tool("rect")
+	check(absf(game.LETTER.size.x/game.LETTER.size.y-210.0/297.0)<0.001,"All base papers use the A4 aspect ratio")
 	var hashes: Array=[]
 	for style in game.LetterPaper.NAMES.size():
 		game.desk.kit.get_node("LetterPaper_"+str(style)).pressed.emit()
@@ -25,6 +27,7 @@ func run() -> void:
 	game.choose_letter_paper(3);game.save_game(true);game.letter_paper_style=0;game.load_game(true)
 	check(game.letter_paper_style==3,"Selected paper survives reload")
 	check(game.pieces_root.get_child_count()==1,"Collage survives paper reload")
+	game.tape_start=Vector2(665,360);game.finish_tape(Vector2(755,370))
 	await game.complete_letter()
 	check(game.stage=="FOLDING" and game.letter_preview!=null,"Selected paper is captured into the outgoing letter")
 	game.audio.shutdown();game.queue_free();await process_frame;await process_frame

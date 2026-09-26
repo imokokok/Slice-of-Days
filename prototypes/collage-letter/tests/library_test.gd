@@ -69,6 +69,7 @@ func run() -> void:
 	if not output.is_empty():
 		atlas.save_png(output.path_join("678-materials.png"));detail.save_png(output.path_join("material-detail.png"))
 	check(game.texture_cache.size()<=game.MAX_CACHED_MATERIALS,"Unused material renderers are released after browsing all sources")
+	for card in game.desk.shelf.find_children("Material_*","Button",true,false):check(card.icon!=null and not card.icon.get_image().is_empty(),"Drawer thumbnails survive cache pruning")
 	check(retained_piece.texture==retained_texture and not retained_texture.get_image().is_empty(),"Placed cutout keeps its texture while the material cache is pruned")
 	game.pieces_root.remove_child(retained_piece);retained_piece.queue_free();game.selected=null
 	game.select_catalog_material(626)
@@ -112,7 +113,7 @@ func run() -> void:
 	game.help_open=false;game.build_ui()
 	check(not has_chinese(L.t("火漆留下了不规则的印记，它也是这封信的一部分。")),"English wax feedback is translated")
 	await capture("en-workbench")
-	for phase in ["DIALOGUE","FOLDING","ENVELOPE","WAX_SEAL","SEND","END"]:
+	for phase in ["DIALOGUE","FOLDING","ENVELOPE","WAX_SEAL","SEND","BOTTLE","END"]:
 		game.stage=phase;game.build_ui();check_controls(game.ui)
 	game.stage="WORKBENCH";game.build_ui()
 	game.catalog_group="广告";game.catalog_page=0;game.open_material_catalog();check_controls(game.catalog_layer)

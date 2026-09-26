@@ -1,0 +1,17 @@
+Typewriter sounds
+Author: Cassie-OrbitGames
+Published: 2025-09-06
+Source: https://opengameart.org/content/typewriter-sounds
+License: CC0 1.0 Universal
+License deed: https://creativecommons.org/publicdomain/zero/1.0/
+Legal code: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+Verified: 2026-09-26
+
+The source author identifies these sounds as phone recordings made for a game
+and publishes them under CC0. Commercial use and adaptation are permitted
+under that dedication; attribution is not required. This provenance note is
+retained voluntarily.
+
+Included original, unmodified files: typewriter1.wav, typewriter2.wav,
+typewriter3.wav, typewriter4.wav. Per-file SHA-256 values and original
+download URLs are recorded in ../sources.json.

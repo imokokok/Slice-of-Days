@@ -12,17 +12,27 @@ func run()->void:
 	while not game.ready_done:await process_frame
 	game.smoke=true;game.open_commission();await process_frame
 	var card=game.ui.get_child(1)
+	check(not game.desk.visible and not game.pieces_root.visible,"Commission hides workbench controls and collage layers")
+	check(not card.attachments.visible,"Greeting does not show unexplained attachments")
 	check(card.body.visible_characters<card.body.text.length(),"Commission begins with gradual character reveal")
 	card.advance();check(card.step==0 and card.body.visible_characters==card.body.text.length(),"First click reveals without skipping dialogue")
 	await capture("commission-intro")
 	card.advance();card.advance();card.advance();card.advance()
 	check(card.step==2 and card.choices.get_child_count()==2,"Optional questions appear after client's request")
+	check(not card.attachments.visible,"Player's opening reply does not display attachments")
 	card.ask(0);card.advance();await capture("commission-answer")
 	check(card.question_return and card.body.text==game.commissions[0].answers_zh[0],"Question receives the customer's authored answer")
 	card.advance();check(card.step==2 and not card.question_return,"Answer returns to the same dialogue step")
+	var cursor: int=card.step
+	card.open_history();await process_frame
+	check(card.reading_history and game.commission_history["0"].any(func(entry):return entry.key=="answer_0_zh"),"History includes the actual optional answer")
+	var journal=card.get_child(card.get_child_count()-1)
+	await capture("conversation-history")
+	journal.on_close.call();check(card.step==cursor and not card.reading_history,"Closing history preserves dialogue progress")
 	for i in 7:card.advance()
 	await process_frame
 	check(game.accepted_commission==0 and not game.conversation_open and game.drawer_group=="客户","Accepting reveals the attached materials in the drawer")
+	check(game.desk.visible and game.pieces_root.visible,"Leaving commission restores the playable desk")
 	game.take_material_whole(30,Vector2(650,365));await capture("paper-before-paint")
 	var sheet=game.selected
 	var before: Image=sheet.texture.get_image().duplicate()
@@ -40,8 +50,17 @@ func run()->void:
 	sheet.rotation=0.22;sheet.position=Vector2(670,360)
 	game.save_game(true);game.load_game(true);sheet=game.pieces_root.get_child(0)
 	check(sheet.texture.get_image().get_data()==after.get_data() and is_equal_approx(sheet.rotation,0.22),"Paint and transformed paper survive reload together")
-	for i in 6:game.apply_glue(sheet.position,0.12)
-	check(sheet.is_glued,"Glue coverage fixes the paper")
+	game.select(sheet);game.apply_glue(sheet.position,0.12)
+	check(sheet.glue_coverage==0,"Glue cannot be applied on the printed front")
+	game.turn_selected();check(sheet.back_visible,"Turning reveals the paper back")
+	for y in 5:
+		for x in 6:game.apply_glue(sheet.to_global(sheet.bounds().position+sheet.bounds().size*Vector2((x+0.5)/6.0,(y+0.5)/5.0)),0.12)
+	check(sheet.glue_coverage>=0.6 and not sheet.is_glued,"Brushed back is coated but is not attached while face down")
+	await capture("glued-back")
+	game.turn_selected();check(sheet.is_glued and not sheet.back_visible,"Placing the coated back fixes the paper")
+	game.save_game(true);game.load_game(true)
+	check(game.commission_history["0"].any(func(entry):return entry.key=="answer_0_zh"),"Dialogue history survives reloading the draft")
+	sheet=game.pieces_root.get_child(0)
 	game.paint.scope="page";game.paint.dip(0);game.paint.begin(Vector2(585,350));game.paint.move(Vector2(755,390));game.paint.end()
 	check(game.pieces_root.get_child_count()==2 and game.pieces_root.get_child(1).source_id==-4,"Whole-page wash sits above existing collage")
 	game.tools_open=true;game.set_tool("brush");await capture("painted-collage")
@@ -59,10 +78,13 @@ func run()->void:
 			var dialogue=game.ui.get_child(1)
 			for line in dialogue.lines.size():
 				dialogue.step=line;dialogue.show_step();dialogue.advance();await process_frame
-				check(dialogue.body.size.y<=204,"Dialogue fits its stationery: "+locale+" "+str(commission)+" / "+str(line))
+				check(dialogue.body.size.y<=156,"Dialogue fits its stationery: "+locale+" "+str(commission)+" / "+str(line))
+				check(dialogue.attachments.visible==(line>=3 and not game.customer_material_ids().is_empty()),"Attachments follow their introduction")
+				check(dialogue.body.get_rect().end.y<dialogue.reply.position.y,"Text and reply never overlap")
+				if line==3 and commission==0:await capture("commission-enclosures-"+locale)
 			for question in 2:
 				dialogue.ask(question);dialogue.advance();await process_frame
-				check(dialogue.body.size.y<=204,"Optional answer fits its stationery")
+				check(dialogue.body.size.y<=156,"Optional answer fits its stationery")
 			if commission==0:await capture("commission-"+locale)
 			dialogue.close();await process_frame
 	game.audio.shutdown();game.queue_free();await process_frame;await process_frame

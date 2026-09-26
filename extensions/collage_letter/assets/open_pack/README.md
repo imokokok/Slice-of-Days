@@ -12,3 +12,11 @@
 - 14 个 CC0 音频文件，包括纸张、刀剪、铅笔、胶带、火柴、印章与点击。铅笔采用 OpenGameArt 的 Pencil Sounds；胶带采用 Freesound crookedletter 的 packing tape 录音。部分其他动作复用录音，不宣称每一个动作都有专门录音。
 
 本项目创作广告、促销、票据文案及版式；小镇店铺为虚构内容。CC0 无需玩家署名；其他代码与字体许可随源码保留。完整工具功能和互动层次不依赖贴图本身。
+
+## 新增纸张来源
+
+- `paper/fibre-kraft.png`：plaggy 的 Paper02 颜色纹理，CC0；来源 https://opengameart.org/content/cc0-pbr-paper-02-texture-paper02albedopng 。
+- `paper/watercolor_*_0.jpg`：PuzzleAndy 的 12 张数字水彩，CC0；来源 https://opengameart.org/content/cc0-watercolor-textures 。用于流纹、水墨、海雾、盐花等不同纸面，也作为水粉笔沉积颗粒采样。
+- 24 款底纸使用这些原图及既有扫描纸纹；描图纸通过透明度表现，叶纹压痕、咖啡渍线、帘纹和航空边是游戏叠绘。它们不是 24 种真实工艺纸的实物扫描，不将数字水彩称为手工原作。
+
+截至本次版本，清单共 212 个文件，逐项核验 SHA-256。用户字母和既有场景资产不被重新标注为 CC0。

@@ -3,6 +3,7 @@ static func run(g: Node2D) -> void:
 	g.save_path="user://finishing_qa.json"
 	assert(g.stage=="WORKBENCH")
 	g.tool="rect";g.cutting_source=0;g.start=Vector2(90,255);g.finish_cut(Vector2(290,370));g.selected.position=Vector2(700,390)
+	g.tape_start=Vector2(650,380);g.finish_tape(Vector2(750,400))
 	await g.capture_test("desk-new")
 	await g.complete_letter()
 	g.stage_input(Vector2(700,650),true);g.stage_input(Vector2(700,450),false)

@@ -11,7 +11,11 @@ var photo_region:=Rect2()
 var paper_shape:=PackedVector2Array()
 var ink := Color("344c50")
 func _ready() -> void:
-	art=load(asset_root+sheet_data.asset)
+	var image_path: String=str(sheet_data.get("image_path",""))
+	if not image_path.is_empty() and FileAccess.file_exists(image_path):
+		var photo:=Image.load_from_file(image_path)
+		if photo!=null and not photo.is_empty(): art=ImageTexture.create_from_image(photo)
+	if art==null: art=load(asset_root+sheet_data.asset)
 	if sheet_data.kind=="photo":
 		photo_region=Rect2(art.get_image().get_used_rect())
 		if photo_region.size.x/photo_region.size.y>3:photo_region=Rect2(Vector2(photo_region.size.x*0.25,0),Vector2(photo_region.size.y*1.5,photo_region.size.y))
@@ -149,27 +153,48 @@ func advert() -> void:
 	text(str(sheet_data.footer),Vector2(27,218),10,246,accent)
 func printed() -> void:
 	var layout:=int(sheet_data.get("layout",0))%6
-	var y:=55.0
-	if layout==1:
-		draw_rect(Rect2(24,24,252,49),Color(ink,0.12));y=55
-	elif layout==2: draw_rect(Rect2(23,23,254,194),Color(ink,0.4),false,1)
-	elif layout==3: draw_line(Vector2(26,29),Vector2(88,29),ink,4);y=66
-	elif layout==4: draw_circle(Vector2(260,37),8,Color(ink,0.22))
-	elif layout==5:
-		for x in range(26,274,8): draw_circle(Vector2(x,207),0.8,ink)
-	text(str(sheet_data.headline),Vector2(28,y),23,242)
-	draw_line(Vector2(28,y+15),Vector2(271,y+15),Color(ink,0.55),1)
-	lines(str(sheet_data.body),Vector2(28,y+47),16,240,5)
+	text(str(sheet_data.headline),Vector2(28,45),19,242)
+	if layout==1 or layout==5:
+		# Handwritten fragments have quiet, imperfect ruling, without a ticket border.
+		for y in range(76,205,23):draw_line(Vector2(28,y),Vector2(273,y+0.5),Color(ink,0.08),0.7)
+	elif layout==2:
+		draw_line(Vector2(28,54),Vector2(271,54),Color(ink,0.48),1)
+		draw_line(Vector2(28,57),Vector2(271,57),Color(ink,0.2),0.6)
+	elif layout==3:draw_line(Vector2(27,68),Vector2(27,193),Color("a89076"),2,true)
+	var inset:=39.0 if layout==3 else 28.0
+	fit_body(str(sheet_data.body),Vector2(inset,76),15,270-inset,125)
+	text(str(sheet_data.get("footer","")),Vector2(28,217),9,242,Color("84755f"))
 func ticket() -> void:
-	text("SOLMERE",Vector2(28,31),9,240)
-	var layout:=int(sheet_data.get("layout",0))%4
+	var layout:=int(sheet_data.get("ticket_style",0))%8
 	var accent:=Color("8b5745") if layout%2 else ink
-	if layout==1: draw_rect(Rect2(22,22,256,45),Color(accent,0.15))
-	if layout==2: draw_rect(Rect2(23,23,254,194),accent,false,1)
-	text(str(sheet_data.headline),Vector2(28,54),23,244,accent)
-	lines(str(sheet_data.body),Vector2(28,88),15,240,4)
-	for x in range(22,280,9): draw_line(Vector2(x,183),Vector2(x+4,183),Color(accent,0.6))
-	text(str(sheet_data.get("footer","")),Vector2(27,213),10,180,accent)
-	text("%04d" % (kind+1),Vector2(227,213),13,49,accent)
-	if layout==3:
-		for n in 38: draw_line(Vector2(28+n*4,163),Vector2(28+n*4,176),Color(accent,0.7),1 if n%3 else 2)
+	text(str(sheet_data.get("brand","SOLMERE")),Vector2(28,33),11,240,accent)
+	if layout in [0,4,7]:
+		draw_rect(Rect2(23,41,254,25),Color(accent,0.12))
+		for y in range(23,223,8):draw_line(Vector2(279,y),Vector2(279,y+3),Color(accent,0.35),1)
+	elif layout in [1,5]:
+		draw_rect(Rect2(22,20,256,201),Color(accent,0.4),false,0.8)
+	elif layout==6:
+		for y in range(72,196,19):draw_line(Vector2(25,y),Vector2(275,y),Color(accent,0.13),0.7)
+	text(str(sheet_data.headline),Vector2(28,60),19,242,accent)
+	fit_body(str(sheet_data.body),Vector2(28,84),13,243,109)
+	for x in range(24,278,9):draw_line(Vector2(x,200),Vector2(x+4,200),Color(accent,0.5),0.8)
+	text(str(sheet_data.get("footer","")),Vector2(27,216),9,183,accent)
+	if layout in [2,3]:
+		for n in 20:draw_line(Vector2(204+n*3.3,205),Vector2(204+n*3.3,220),Color(accent,0.7),1 if n%3 else 2)
+	else:text("%04d"%(kind+1),Vector2(224,217),12,50,accent)
+func fit_body(value: String, at: Vector2, font_size: int, width: float, height: float) -> void:
+	var fitted:=font_size
+	while fitted>8 and body_rows(value,fitted,width)*(fitted+6)>height:fitted-=1
+	lines(value,at,fitted,width,ceili(height/(fitted+6)))
+func body_rows(value: String, font_size: int, width: float) -> int:
+	var rows:=0
+	for paragraph in value.split("\n"):
+		var row:=""
+		var units:=paragraph.split(" ") if paragraph.to_utf8_buffer().size()==paragraph.length() else paragraph.split("")
+		var separator: String=" " if paragraph.to_utf8_buffer().size()==paragraph.length() else ""
+		for unit in units:
+			var next: String=unit+separator
+			if font.get_string_size(row+next,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x>width:rows+=1;row=""
+			row+=next
+		rows+=1
+	return rows

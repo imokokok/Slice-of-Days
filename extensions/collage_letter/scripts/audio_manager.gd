@@ -22,6 +22,7 @@ func _ready() -> void:
 	bank["pencil"]=load(ROOT+"pencil.ogg")
 	bank["tape"]=load(ROOT+"tape.mp3")
 	for i in range(1,6): bank["click"+str(i)]=load(ROOT+"click"+str(i)+".ogg")
+	for i in range(1,5):bank["typewriter"+str(i)]=load(ROOT+"typewriter"+str(i)+".wav")
 
 func _process(delta: float) -> void:
 	for voice in pool:
@@ -40,6 +41,10 @@ func play(event: String, strength: float = 1.0) -> void:
 	var duration := 0.27
 	var offset := 0.0
 	match event:
+		"PAGE_TURN": clip="paper";offset=0.36;duration=0.58
+		"TYPE_KEY": clip="typewriter"+str([2,4][rng.randi_range(0,1)]);duration=0.32;offset=0.025
+		"CORK_OPEN": clip="click2";duration=0.16
+		"CORK_CLOSE": clip="stamp";duration=0.17
 		"KNIFE_SLICE":
 			clip="scissors";offset=0.12;duration=0.35
 		"PAPER_CUT": clip="tear";duration=0.21;offset=0.2
@@ -73,6 +78,7 @@ func toggle() -> void:
 		for voice in pool: voice.stop()
 
 func shutdown() -> void:
+	muted=true
 	for voice in pool: voice.stop();voice.stream=null
 	bank.clear()
 

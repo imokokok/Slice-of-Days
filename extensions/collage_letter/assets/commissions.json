@@ -7,7 +7,7 @@
     "reply_zh": "小满说，她把信放在书桌旁，像是跟着照片到海盐镇走了一圈。",
     "reply_en": "Xiaoman put the letter by her desk. She said the photos felt like a little walk through Solmere.",
     "attachments": [
-      622,
+      620,
       623
     ],
     "answers_zh": [
@@ -32,12 +32,12 @@
       {
         "speaker": "npc",
         "text": "我来到海盐镇已经有一段时间了，以前总是和朋友用手机聊天。她最近迷上了拼贴，我想把开心的日子用她喜欢的方式寄给她。她叫小满。",
-        "reply": "照片我收好了。",
+        "reply": "嗯，我明白了。",
         "questions": true
       },
       {
         "speaker": "npc",
-        "text": "这些是我在集市和饭店拍的照片。这里的人很好，吃饭也总能遇见熟面孔。我想让她知道，我在这里过得很开心。",
+        "text": "这两张照片，一张是我等车时常坐的长椅，另一张是街角饭店。你看，柜子上还有一碗柠檬。坐在那里吃午饭，抬头就能看见海。我想让小满知道，我在这里过得很开心。",
         "reply": "做好后，我会帮您寄出。"
       },
       {
@@ -65,12 +65,12 @@
       {
         "speaker": "npc",
         "text": "I have lived in Solmere for a while. My friend and I usually chat on our phones. She has taken up collage, so I want to send my happy days in a way she enjoys. Her name is Xiaoman.",
-        "reply": "I have your photographs.",
+        "reply": "I understand.",
         "questions": true
       },
       {
         "speaker": "npc",
-        "text": "These photographs are from the market and restaurant. People are kind, and I keep meeting familiar faces at dinner. I want her to know that I am happy here.",
+        "text": "One photo shows the bench where I wait for the bus; the other is the corner restaurant. There is a bowl of lemons on the cabinet. When I have lunch there, I can look up and see the sea. I want Xiaoman to know I am happy here.",
         "reply": "I will post it for you when it is ready."
       },
       {

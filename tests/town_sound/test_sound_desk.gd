@@ -44,7 +44,9 @@ func run() -> void:
 	desk.timeline.selection_mode=true
 	var scale_x:float=desk.timeline.size.x/desk.timeline.view_seconds
 	mouse(desk.timeline,Vector2(.6*scale_x,57),true)
-	motion(desk.timeline,Vector2(1.2*scale_x,57)); mouse(desk.timeline,Vector2(1.2*scale_x,57),false)
+	# A fast OS drag can coalesce motion events. The release still owns the endpoint.
+	mouse(desk.timeline,Vector2(1.2*scale_x,57),false)
+	check(is_equal_approx(desk.region_end-desk.region_start,.6),"Fast drag uses release coordinates even without a motion event")
 	check(not desk.cut_control.disabled,"Mouse range enables contextual scissors")
 	desk.edit_region(false)
 	check(desk.model.clips.size()==2,"Cutting the middle preserves two audible sides")

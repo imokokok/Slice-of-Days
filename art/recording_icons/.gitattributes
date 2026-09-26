@@ -1,1 +1,2 @@
+# Keep provenance hashes stable on Windows and Unix checkouts.
 *.svg text eol=lf

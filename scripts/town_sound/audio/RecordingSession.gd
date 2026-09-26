@@ -41,7 +41,7 @@ func start(mode:="game") -> bool:
 		message="声音收藏已满，请先整理不用的录音。"; changed.emit(); return false
 	playback.stop(); levels.clear(); marks.clear(); mv_events.clear()
 	saved=false; pending_sample={}; warning=""; checkpoint_age=0; event_until=0
-	context={"role":GameState.current_role,"journey_id":str(GameState.shared_state.get("journey_id","")),"game_day":GameState.current_day,"game_minute":GameState.current_minute,"location":GameState.current_location,"source_mode":mode,"consent_status":"user_voice" if mode=="microphone" else "game_audio","usage_scope":"local_game","sound_kind":"voice" if mode=="microphone" else ambient_kind(),"mv_seed":randi_range(1,999999),"mv_version":3,"locations":[GameState.current_location]}
+	context={"role":GameState.current_role,"journey_id":str(GameState.shared_state.get("journey_id","")),"game_day":GameState.current_day,"game_minute":GameState.current_minute,"location":GameState.current_location,"source_mode":mode,"consent_status":"user_voice" if mode=="microphone" else "game_audio","usage_scope":"local_game","sound_kind":"voice" if mode=="microphone" else ambient_kind(),"mv_seed":randi_range(1,999999),"mv_version":4,"locations":[GameState.current_location]}
 	observed_scope=_scope()
 	context["recording_id"]="sample_"+Crypto.new().generate_random_bytes(12).hex_encode()
 	if not recorder.start(SoundSettings.input_device,mode): return false

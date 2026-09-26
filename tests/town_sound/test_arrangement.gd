@@ -74,6 +74,7 @@ func run() -> void:
 	timeline._gui_input(down)
 	move.position = Vector2(16, 55)
 	timeline._gui_input(move)
+	up.position = move.position
 	timeline._gui_input(up)
 	check(is_equal_approx(edit.clips[0].source_end - edit.clips[0].source_start, 1.0), "Left trim changed loop period")
 	check(is_equal_approx(edit.clips[0].get("phase", 0), 0.5), "Left trim lost loop phase")

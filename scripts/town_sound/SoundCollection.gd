@@ -28,6 +28,8 @@ func _ready() -> void:
 	var backdrop:=ColorRect.new(); backdrop.color=Color("e4cfb3"); backdrop.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(backdrop)
 	page=Control.new(); page.size=Vector2(1460,810); add_child(page); resized.connect(_fit); _fit()
 	var p=preload("res://scripts/ui/components/interface_palette.gd")
+	for area in [Rect2(22,124,452,632),Rect2(487,124,928,632)]:
+		var note=preload("res://scripts/town_sound/PaperNote.gd").new(); note.position=area.position; note.size=area.size; note.ruled=false; page.add_child(note)
 	p.words(page,"路上的声音收藏",Vector2(34,28),1000,34)
 	p.words(page,"每一段都带着地点、时间和同步画面。",Vector2(37,81),1030,20)
 	_button("收好",Vector2(1265,30),Vector2(145,46),_close)
@@ -47,7 +49,9 @@ func _ready() -> void:
 	picture=load("res://scripts/town_sound/visual/SampleVisual.gd").new(); picture.player=player; picture.position=Vector2(506,245); picture.size=Vector2(894,380); picture.mouse_filter=MOUSE_FILTER_IGNORE; page.add_child(picture)
 	scrub=HSlider.new(); scrub.position=Vector2(506,636); scrub.size=Vector2(894,26); scrub.step=.01; page.add_child(scrub)
 	scrub.value_changed.connect(func(value:float):
-		if not refreshing and (player.playing or player.stream_paused): player.seek(value))
+		if refreshing: return
+		picture.time=value; picture.queue_redraw()
+		if player.playing or player.stream_paused: player.seek(value))
 	play=_button("▶ 听一听",Vector2(506,697),Vector2(200,49),_play)
 	play.icon=preload("res://scripts/town_sound/SoundIcons.gd").get_icon("play"); play.add_theme_constant_override("icon_max_width",22)
 	remove=_button("放入回收袋",Vector2(723,697),Vector2(215,49),_delete)

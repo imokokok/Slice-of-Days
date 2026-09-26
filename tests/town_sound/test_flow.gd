@@ -148,6 +148,19 @@ func run() -> void:
 		root.get_texture().get_image().save_png("user://tests/screenshots/pressing-inspect.png")
 	table._gui_input(look)
 	check(not table.inspecting_record and table.library.list_records().size()==1,"Closing inspection does not duplicate the saved record")
+	var shelf=load("res://scripts/town_sound/record_shop/RecordShelf.gd").new(); shelf.host=host; shelf.library.root_path=table.library.root_path; root.add_child(shelf)
+	await process_frame; shelf.listen(table.saved_record); await create_timer(.4).timeout
+	check(shelf.player.playing and shelf.visual.time>0,"Saved record plays its WAV and MV on the real shelf")
+	check(shelf.visual.get_global_rect().end.y<=root.get_visible_rect().end.y,"Shelf MV remains visible beside the record list")
+	shelf._toggle(); var paused:float=shelf.visual.time; await create_timer(.1).timeout
+	check(is_equal_approx(paused,shelf.visual.time),"Pausing the record also pauses its MV")
+	if OS.get_cmdline_user_args().has("--manual-shelf") and failures==0:
+		print("FULL_LOCAL_FLOW: PASS failures=0")
+		root.mode=Window.MODE_WINDOWED
+		root.size=Vector2i(1280,720); root.position=Vector2i(90,90)
+		root.title="Town Sound - Record Shelf QA"
+		return
+	shelf.free(); await process_frame
 	print("FULL_LOCAL_FLOW: ", "PASS" if failures == 0 else "FAIL", " failures=", failures)
 	if OS.get_cmdline_user_args().has("--manual-sleeve") and failures==0:
 		root.mode=Window.MODE_WINDOWED

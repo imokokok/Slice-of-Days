@@ -5,6 +5,9 @@ var info: Label
 var modal: Control
 var radio: AudioStreamPlayer
 var monitor_locked:=false
+var step_grid: GridContainer
+var quest_grid: GridContainer
+var stations: GridContainer
 var samples: Array[Dictionary] = []
 var records: Array[Dictionary] = []
 
@@ -24,6 +27,7 @@ func _ready() -> void:
 	scroll.add_child(margin)
 	body=VBoxContainer.new(); body.add_theme_constant_override("separation",18); margin.add_child(body)
 	radio=AudioStreamPlayer.new(); radio.bus="Music"; radio.volume_db=-18; add_child(radio)
+	resized.connect(_fit_cards)
 	refresh()
 
 func label(text: String, font_size:=20) -> Label:
@@ -42,16 +46,18 @@ func refresh() -> void:
 	var heading:=label("LOCAL RECORDS / 街角唱片店",34); heading.size_flags_horizontal=SIZE_EXPAND_FILL; header.add_child(heading)
 	header.add_child(button("回到店内",func(): queue_free()))
 	body.add_child(label("Xanni：先听、再收集，把路上的声音做成一张真正可以带走的唱片。",21))
-	var steps:=HBoxContainer.new(); steps.add_theme_constant_override("separation",16); body.add_child(steps)
-	for text in ["01  留住声音\n随时录制 → 收进口袋 → 自动保存","02  声音手作桌\n拖入素材 → 裁剪 → 试听","03  声音明信片\n像素 MV → 选择封面","04  制作交付\n压片包装 → 入库 → 委托印章"]:
-		var card:=PanelContainer.new(); card.size_flags_horizontal=SIZE_EXPAND_FILL; steps.add_child(card)
-		card.add_theme_stylebox_override("panel",card_style())
-		var content:=label(text,18); content.custom_minimum_size=Vector2(270,64); card.add_child(content)
-	var actions:=HBoxContainer.new(); actions.add_theme_constant_override("separation",14); body.add_child(actions)
-	actions.add_child(button("声音收藏 / 带来的录音",func(): open_recorder(false)))
-	actions.add_child(button("坐到声音手作桌",func(): open_recorder(true)))
-	actions.add_child(button("我的唱片 / 回放",open_shelf))
-	actions.add_child(button("店内试听台 ♪",toggle_radio))
+	step_grid=GridContainer.new(); step_grid.add_theme_constant_override("h_separation",14); step_grid.add_theme_constant_override("v_separation",10); body.add_child(step_grid)
+	for words in ["01  在路上\n录一段，收进口袋","02  坐下来\n剪掉多余，留住喜欢的","03  留个画面\n从 MV 或相册选封面","04  亲手完成\n压制、装袋，签下名字"]:
+		var card:=PanelContainer.new(); card.size_flags_horizontal=SIZE_EXPAND_FILL; step_grid.add_child(card)
+		card.add_theme_stylebox_override("panel",card_style()); card.add_child(label(words,18))
+	stations=GridContainer.new(); stations.add_theme_constant_override("h_separation",18); stations.add_theme_constant_override("v_separation",14); body.add_child(stations)
+	for item in [["collection","带来的声音","打开磁带盒，听听路上的收藏"],["desk","声音手作桌","把今天剪贴成一张唱片"],["shelf","我的唱片架","取下一张，听完它的故事"]]:
+		var station=preload("res://scripts/town_sound/record_shop/ShopStation.gd").new()
+		station.kind=item[0]; station.caption=item[1]; station.detail=item[2]; stations.add_child(station)
+		if item[0]=="collection": station.pressed.connect(func(): open_recorder(false))
+		elif item[0]=="desk": station.pressed.connect(func(): open_recorder(true))
+		else: station.pressed.connect(open_shelf)
+	var radio_button:=button("♫ 听听店里的唱片",toggle_radio); radio_button.size_flags_horizontal=SIZE_SHRINK_BEGIN; body.add_child(radio_button)
 	info=label("已保存 %d 段声音 · 已制作 %d 张唱片。%s" % [samples.size(),records.size(),"先去街上留下一段声音，再回来剪贴。" if samples.is_empty() else "素材已够用，可以开始制作第一张。"],18); body.add_child(info)
 	var gate:=GameplayModuleSystem.entry_check("sound_sampling",60)
 	if not bool(gate.ok):
@@ -62,10 +68,10 @@ func refresh() -> void:
 				if GameState.combine_flexible_time(): refresh()
 				else: info.text="日程未能保存，安排保持原样。"))
 	body.add_child(label("店里的小委托 / 可选挑战",26))
-	var grid:=GridContainer.new(); grid.columns=2; grid.add_theme_constant_override("h_separation",20); grid.add_theme_constant_override("v_separation",14); body.add_child(grid)
+	var grid:=GridContainer.new(); quest_grid=grid; grid.columns=2; grid.add_theme_constant_override("h_separation",20); grid.add_theme_constant_override("v_separation",14); body.add_child(grid)
 	for quest in Atlas.QUESTS:
 		var matching:=records.filter(func(item:Dictionary): return Atlas.meets(quest,item) and FileAccess.file_exists(str(item.get("final_audio_path",""))))
-		var card:=PanelContainer.new(); card.custom_minimum_size=Vector2(710,125); grid.add_child(card)
+		var card:=PanelContainer.new(); card.custom_minimum_size=Vector2(280,125); card.size_flags_horizontal=SIZE_EXPAND_FILL; grid.add_child(card)
 		card.add_theme_stylebox_override("panel",card_style())
 		var column:=VBoxContainer.new(); card.add_child(column)
 		column.add_child(label(("✓ 已验收 · " if not matching.is_empty() else "○ 待制作 · ")+str(quest.title),22))
@@ -84,6 +90,16 @@ func refresh() -> void:
 		entry.custom_minimum_size=Vector2(170,30)
 		collection.add_child(entry)
 	body.add_child(label("试听曲：Lofi Hip Hop Loop — OMF-Games / CC0 · 声源与 UI 素材：AntumDeluge、Luke.RUSTLTD、Kenney / CC0。",14))
+
+	_fit_cards()
+
+func _fit_cards() -> void:
+	if not is_instance_valid(step_grid): return
+	step_grid.columns=4 if size.x>=1360 else 2
+	stations.columns=3 if size.x>=1060 else 1
+	quest_grid.columns=2 if size.x>=1180 else 1
+	var width:=maxf(280,(size.x-116-20*(quest_grid.columns-1))/quest_grid.columns)
+	for card in quest_grid.get_children(): card.custom_minimum_size.x=width
 
 func can_edit_here() -> bool:
 	return GameState.current_location=="record_store"

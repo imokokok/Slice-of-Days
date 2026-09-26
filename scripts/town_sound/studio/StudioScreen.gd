@@ -65,6 +65,8 @@ func _ready() -> void:
 	_place(label("把今天，做成一张唱片",32),Vector2(56,30),Vector2(750,50))
 	_place(label("声音手作桌  /  采集 → 剪贴 → 听一遍 → 制作",18),Vector2(58,87),Vector2(760,28))
 	_place(button("收好，回店里",_leave_desk),Vector2(1342,35),Vector2(216,48))
+	var guide_paper=preload("res://scripts/town_sound/PaperNote.gd").new()
+	_place(guide_paper,Vector2(53,130),Vector2(808,77))
 	tutorial=label("",21); tutorial.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	_place(tutorial,Vector2(65,137),Vector2(777,72))
 	_place(label("声音盒子 · 拿一卷，放到下面的纸带上",18),Vector2(65,211),Vector2(760,28))
@@ -139,14 +141,14 @@ func _guide() -> void:
 	play_control.disabled=empty or mixing; make_control.disabled=empty or mixing
 	cut_control.disabled=region_start<0 or region_end-region_start<.01
 	keep_control.disabled=cut_control.disabled
-	if empty: tutorial.text="① 先留下一段声音\n把下方的小磁带拖到纸带上；也可以点一下。"
+	if empty: tutorial.text="① 打开声音盒\n把下方的小磁带拖到纸带上；也可以点一下。"
 	elif timeline.selection_mode and region_start>=0:
 		tutorial.text="② 已圈出 %.1f—%.1f 秒\n选「剪掉」或「只留下这段」。剪错可以撤销。"%[region_start,region_end]
 	elif timeline.selection_mode:
 		tutorial.text="② 拿好了剪刀\n在下面的波形上按住并横向划出范围，再松手。"
 	elif not has_listened:
 		tutorial.text="② 摆好声音，听听看\n拖中间换位置，拖两端修短。点选纸条可调音量和速度。"
-	else: tutorial.text="③ 喜欢这一段了吗？\n去店里挑封面、压片，再亲手包装。"
+	else: tutorial.text="③ 喜欢这一段了吗？\n接着挑封面、压片，再亲手包装。"
 
 func _configure_role_project() -> void:
 	if has_node("/root/GameState"):
@@ -304,7 +306,7 @@ func delete_clip() -> void:
 
 func edit_region(keep: bool) -> void:
 	if region_start < 0 or region_end - region_start < 0.01:
-		status.text = LocalizationSystem.text("先点「拖选区域」，再在波形上拖选要剪辑的范围。")
+		status.text = LocalizationSystem.text("先点「剪刀 · 划出一段」，再在波形上拖选要剪辑的范围。")
 		return
 	if keep: model.keep_range(region_start, region_end, region_track)
 	else: model.remove_range(region_start, region_end, region_track)

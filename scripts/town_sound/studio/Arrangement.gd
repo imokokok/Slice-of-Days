@@ -24,7 +24,7 @@ func add_sample(item: Dictionary, track: int, at: float) -> int:
 	var duration := minf(float(item.duration), 60.0 - at)
 	if duration <= 0:
 		return -1
-	clips.append({"sample_id": item.id, "name": item.name, "sound_kind":str(item.get("sound_kind","pulse")), "mv_events":item.get("mv_events",[]).duplicate(true), "track": clampi(track, 0, 3), "start": at,
+	clips.append({"sample_id": item.id, "name": item.name, "sound_kind":str(item.get("sound_kind","pulse")), "mv_seed":int(item.get("mv_seed",seed_value)), "mv_events":item.get("mv_events",[]).duplicate(true), "track": clampi(track, 0, 3), "start": at,
 		"source_start": 0.0, "source_end": float(item.duration), "volume": 1.0, "speed": 1.0,
 		"loop": false, "fade_in": 0.0, "fade_out": 0.0, "length": duration})
 	return clips.size() - 1

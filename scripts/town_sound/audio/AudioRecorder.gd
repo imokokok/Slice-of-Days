@@ -43,7 +43,7 @@ func _ready() -> void:
 	add_child(microphone)
 	set_process(false)
 
-func start(device: String, source: String = "microphone") -> bool:
+func start(device: String, source: String = "game") -> bool:
 	if capturing:
 		return false
 	if AudioServer.get_driver_name() == "Dummy":

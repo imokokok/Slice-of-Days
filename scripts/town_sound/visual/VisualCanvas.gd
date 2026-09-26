@@ -34,7 +34,7 @@ func configure(wav: AudioStreamWAV, prompt: String, seed_number: int) -> void:
 static func parse_prompt(text: String, seed_number: int) -> Dictionary:
 	var value := text.to_lower()
 	var result := {"palette": "warm", "circle": 0.55, "density": 0.4, "speed": 0.7,
-		"motion": "floating", "randomness": 0.2, "seed": seed_number, "visual_version": 3}
+		"motion": "floating", "randomness": 0.2, "seed": seed_number, "visual_version": 4}
 	if has_words(value, ["冷", "蓝", "cold", "blue", "海", "wave"]): result.palette = "cool"
 	if has_words(value, ["红", "red", "黑", "black"]): result.palette = "red"
 	if has_words(value, ["黄", "yellow", "快乐", "happy"]): result.palette = "yellow"
@@ -59,53 +59,40 @@ static func has_words(text: String, words: Array) -> bool:
 	return false
 
 func analyze() -> void:
-	features = [0.0, 0.0, 0.0, 0.0, 0.0]
-	if audio == null or pcm.is_empty(): return
-	var offset := int(time * audio.mix_rate)
-	var low := 0.0
-	var mid_low := 0.0
-	var rms := 0.0
-	var peak := 0.0
-	var bass := 0.0
-	var mid := 0.0
-	var high := 0.0
-	var count := 0
-	var alpha_low := 1.0 - exp(-TAU * 250.0 / audio.mix_rate)
-	var alpha_mid := 1.0 - exp(-TAU * 2000.0 / audio.mix_rate)
-	for i in range(maxi(0, offset - 1024), mini(pcm.size() / 2, offset)):
-		var value := float(pcm.decode_s16(i * 2)) / 32768.0
-		low += alpha_low * (value - low)
-		mid_low += alpha_mid * (value - mid_low)
-		rms += value * value
-		peak = maxf(peak, absf(value))
-		bass += low * low
-		mid += (mid_low - low) * (mid_low - low)
-		high += (value - mid_low) * (value - mid_low)
-		count += 1
-	if count > 0:
-		features = [sqrt(rms / count), peak, sqrt(bass / count), sqrt(mid / count), sqrt(high / count)]
+	features=[0.0,0.0,0.0,0.0,0.0]
+	if audio==null or audio.format!=AudioStreamWAV.FORMAT_16_BITS: return
+	features=preload("res://scripts/town_sound/audio/SignalSpectrum.gd").envelope(pcm,audio.mix_rate,time,audio.stereo)
+
+func visual_context() -> Dictionary:
+	var result:={"kind":force_kind if not force_kind.is_empty() else str(profile.get("kind","pulse")),"time":time,"seed":int(profile.get("seed",23817))}
+	if model==null: return result
+	var strongest:=-1.0
+	for clip in model.clips:
+		var track:=int(clip.track)
+		var gain:=float(clip.volume)*float(model.gains[track])
+		if model.muted[track] or gain<=0 or time<float(clip.start) or time>=float(clip.start)+float(clip.length): continue
+		var local:=(time-float(clip.start))*float(clip.speed)+float(clip.get("phase",0))
+		var span:=float(clip.source_end)-float(clip.source_start)
+		if span<=0: continue
+		if clip.loop: local=fposmod(local,span)
+		elif local>=span: continue
+		local+=float(clip.source_start)
+		# The saved recipe must still work if original samples are archived.
+		# Choose the loudest unmuted layer; motion uses the actual final mixed PCM.
+		if gain<strongest: continue
+		strongest=gain
+		result={"kind":str(clip.get("sound_kind","pulse")),"time":local,"seed":int(clip.get("mv_seed",profile.get("seed",23817)))}
+		for event in clip.get("mv_events",[]):
+			if float(event.get("time",0))<=local: result.kind=str(event.get("kind",result.kind))
+	return result
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color("efe7d3"))
 	if profile.is_empty(): return
 	analyze()
 	if pixel_mode and not str(profile.get("mode", "")).contains("geometry"):
-		var kind := force_kind if not force_kind.is_empty() else str(profile.get("kind","pulse"))
-		if model != null:
-			var weight := -1.0
-			for clip in model.clips:
-				var track := int(clip.track)
-				if model.muted[track] or time < float(clip.start) or time >= float(clip.start)+float(clip.length): continue
-				var level := float(clip.volume)*float(model.gains[track])
-				if level < weight: continue
-				weight=level; kind=str(clip.get("sound_kind","pulse"))
-				var local := (time-float(clip.start))*float(clip.speed)+float(clip.get("phase",0))
-				var span := float(clip.source_end)-float(clip.source_start)
-				if clip.loop and span>0: local=fposmod(local,span)
-				local+=float(clip.source_start)
-				for event in clip.get("mv_events",[]):
-					if float(event.get("time",0))<=local: kind=str(event.get("kind",kind))
-		preload("res://scripts/town_sound/visual/PixelScore.gd").paint(self,size,time,float(features[0]),PackedFloat32Array([features[2],features[3],features[4]]),kind,int(profile.seed))
+		var visual:=visual_context()
+		preload("res://scripts/town_sound/visual/PixelScore.gd").paint(self,size,float(visual.time),float(features[0]),PackedFloat32Array([features[2],features[3],features[4]]),str(visual.kind),int(visual.seed))
 		return
 	# Work in a fixed artboard so covers and playback have identical composition.
 	draw_set_transform(Vector2.ZERO, 0, size / Vector2(960, 540))

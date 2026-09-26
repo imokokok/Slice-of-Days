@@ -52,13 +52,17 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	custom_minimum_size = Vector2(1000, 720)
 	serial = library.list_records().size() + 1
+	var guide_paper=preload("res://scripts/town_sound/PaperNote.gd").new()
+	guide_paper.position=Vector2(24,18); guide_paper.size=Vector2(1058,215); add_child(guide_paper)
 	var column := VBoxContainer.new()
 	column.position = Vector2(36, 28)
-	column.size.x = 970
+	column.size.x = 990
 	column.add_theme_constant_override("separation", 8)
 	add_child(column)
 	column.add_child(room.studio.label("SOLMERE / LOCAL PRESSING", 28))
 	instructions = room.studio.label("01 / 给唱片写张小卡\n老板：先起个名字，再给它挑一张封面。", 18)
+	instructions.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	instructions.custom_minimum_size.x=990
 	column.add_child(instructions)
 	title_input = LineEdit.new()
 	title_input.placeholder_text = LocalizationSystem.text("TITLE / 唱片标题")
@@ -252,7 +256,7 @@ func complete_action() -> void:
 	next_button.disabled = false
 	progress = 0
 	stamp_picked = false
-	var buttons := {3: "辅助操作：对齐标签", 4: "辅助操作：压下把手", 5: "辅助操作：滑入内袋", 6: "辅助操作：装进外套", 7: "辅助操作：装入透明外袋", 8: "辅助操作：折合翻盖", 9: "辅助操作：贴上编号", 10: "辅助操作：交给老板", 11: "返回 Studio"}
+	var buttons := {3: "辅助操作：对齐标签", 4: "辅助操作：压下把手", 5: "辅助操作：滑入内袋", 6: "辅助操作：装进外套", 7: "辅助操作：装入透明外袋", 8: "辅助操作：折合翻盖", 9: "辅助操作：贴上编号", 10: "辅助操作：交给老板", 11: "回到声音手作桌"}
 	next_button.text = LocalizationSystem.text(buttons.get(step, "继续"))
 	if step == 11:
 		next_button.show(); helper.hide()

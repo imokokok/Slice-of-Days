@@ -9,22 +9,18 @@ func _ready() -> void:
 	mouse_filter=MOUSE_FILTER_IGNORE
 	clip_contents=true
 	var face := StyleBoxEmpty.new(); add_theme_stylebox_override("panel",face)
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if not is_instance_valid(source): return
-	var peak := 0.0
-	if source.recorder.capturing and not source.levels.is_empty(): peak=float(source.levels.back())
+	var features:=[0.0,0.0,0.0,0.0,0.0]
+	var analyzer=preload("res://scripts/town_sound/audio/SignalSpectrum.gd")
+	if source.recorder.capturing:
+		features=analyzer.envelope(source.recorder.pcm,source.recorder.sample_rate,float(source.recorder.frame_count)/source.recorder.sample_rate,false,source.recorder.frame_count)
 	elif source.playback.playing and source.playback.stream is AudioStreamWAV:
-		var wav: AudioStreamWAV=source.playback.stream
-		var start := int(source.playback.get_playback_position()*wav.mix_rate)*2
-		for i in range(start,mini(start+1024,wav.data.size()-1),8): peak=maxf(peak,absf(wav.data.decode_s16(i)/32768.0))
-	energy=lerpf(energy,clampf(peak*6,0,1),1-exp(-delta*14))
-	var next := PackedFloat32Array([0,0,0,0,0,0])
-	if source.recorder.capturing: next=source.recorder.spectrum_levels()
-	elif source.playback.playing and source.playback.stream is AudioStreamWAV:
-		next=preload("res://scripts/town_sound/audio/SignalSpectrum.gd").from_wav(source.playback.stream,source.playback.get_playback_position())
-	for i in 6: bands[i]=lerpf(bands[i],next[i],1-exp(-delta*12))
-	if energy>.002: motion+=delta*energy*3
+		var wav:AudioStreamWAV=source.playback.stream
+		features=analyzer.envelope(wav.data,wav.mix_rate,source.playback.get_playback_position(),wav.stereo)
+	energy=float(features[0]); bands=PackedFloat32Array([features[2],features[3],features[4]])
 	frames_seen+=1; queue_redraw()
+
 func _draw() -> void:
 	if not is_instance_valid(source): return
 	var at: float = float(source.recorder.frame_count)/source.recorder.sample_rate if source.recorder.capturing else source.playback.get_playback_position()

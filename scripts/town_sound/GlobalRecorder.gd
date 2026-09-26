@@ -43,7 +43,8 @@ func _process(delta:float) -> void:
 	sample_notice=maxf(0,sample_notice-delta)
 	var recording:=recorder.capturing
 	var camera_open:=not get_tree().get_nodes_in_group("photo_viewfinder").is_empty()
-	var visible_now:=available() and not focused() and not capture_hidden and not camera_open and not SceneRouter.transitioning
+	var workspace_open:=not get_tree().get_nodes_in_group("town_sound_workspace").is_empty()
+	var visible_now:=available() and not focused() and not capture_hidden and not camera_open and not workspace_open and not SceneRouter.transitioning
 	pocket.visible=visible_now; stop_button.visible=visible_now and recording; thumbnail.visible=visible_now and recording
 	var x:=page.size.x-166
 	# The town's direction card and material notice occupy the first 300 px.
@@ -67,7 +68,7 @@ func open_library() -> void:
 	collection=load("res://scripts/town_sound/SoundCollection.gd").new(); page.add_child(collection)
 
 func _unhandled_input(event:InputEvent) -> void:
-	if not available() or focused() or SceneRouter.transitioning or not event.is_pressed() or event.is_echo(): return
+	if not available() or focused() or SceneRouter.transitioning or not get_tree().get_nodes_in_group("town_sound_workspace").is_empty() or not event.is_pressed() or event.is_echo(): return
 	if get_viewport().gui_get_focus_owner() is LineEdit or get_viewport().gui_get_focus_owner() is TextEdit: return
 	if event.is_action_pressed("open_recorder"):
 		if recorder.capturing: RecordingSession.stop()

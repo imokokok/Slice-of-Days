@@ -1,84 +1,209 @@
 extends RefCounted
-## Shared pixel score for live capture, saved samples, arrangements and records.
-## 240 x 135 logical pixels; every frame is a pure function of audio/time/seed.
+## Original, seekable pixel animation. No RedSkill templates or CDN images used.
+## Every frame depends only on source time, signal and seed, including after cuts.
+const BOARD := Vector2(384,216)
 const PALETTES := {
-	"fire":["261f30","c45b42","f2a65a","ffe2a1"], "wind":["233e46","62998c","a6c5a6","efe9c9"],
-	"water":["1d354d","377792","79b6b4","d2e8cf"], "rain":["252e47","5c6b95","9ba8bb","d5dddf"],
-	"bird":["33403d","72947b","d8b870","f2dec4"], "paper":["453c43","af9078","dec59c","f4e7cb"],
-	"wood":["3c3034","926048","c39464","f0d2a0"], "metal":["2b3541","5c8492","d5a66d","e7e8ce"],
-	"voice":["393147","9a6781","d59c98","f4d3b1"], "pulse":["293849","527f91","d49b59","f1d5ac"]}
+	"fire":["342f3b","8c554c","d88554","f8d99a"], "wind":["cfdcd0","77998b","3b726f","fbf5d9"],
+	"water":["276370","367e89","8fbcaf","f7edc8"], "rain":["344d60","607b89","a5babc","f2e7c9"],
+	"bird":["e3d9bc","b2bda2","47797a","fff8df"], "paper":["e8dfc7","bf9f7a","987563","fff8e4"],
+	"wood":["ddd1b0","ac9972","65775e","faf1d7"], "metal":["293f52","5e7e8d","bcaa78","f6ebc9"],
+	"voice":["ded0c9","b18486","776f8e","fff0d5"], "pulse":["e8dfc8","b98965","537a82","f9f2dc"]}
 
-static func paint(canvas: CanvasItem, extent: Vector2, seconds: float, energy: float, bands: PackedFloat32Array, kind: String, seed_value: int) -> void:
-	var colors: Array = PALETTES.get(kind, PALETTES.pulse)
-	var e := clampf(energy * 4.0, 0, 1)
-	var bass := bands[0] if bands.size()>0 else e
-	var high := bands[-1] if bands.size()>0 else e
-	canvas.draw_set_transform(Vector2.ZERO, 0, extent / Vector2(240,135))
-	canvas.draw_rect(Rect2(0,0,240,135), Color(colors[0]))
-	# Stable terrain anchors make this a miniature scene, not floating UI confetti.
-	for x in range(0,240,4):
-		var ridge := 118 + int(sin(x * .04 + float(seed_value % 17)) * 4)
-		canvas.draw_rect(Rect2(x,ridge,4,135-ridge), Color(colors[1],.26))
-	var tick := floorf(seconds * 12) / 12.0
-	# Coherent silhouettes underneath the seeded fragments preserve source identity.
-	if kind=="fire":
-		for layer in range(3):
-			for x in range(68+layer*12,172-layer*12,4):
-				var distance:=absf(float(x-120))/52.0
-				var height: float=(1-distance)*(22+e*45)*(1-layer*.2)+sin(x*.17+tick*5)*e*8
-				canvas.draw_rect(Rect2(x,116-height,4,height),Color(colors[layer+1]))
-	elif kind in ["water","rain"]:
-		for row in range(8):
-			for x in range(0,240,4):
-				var y:=84+row*5+int(sin(x*.055+tick*e*2+row)*3)
-				canvas.draw_rect(Rect2(x,y,4,2),Color(colors[1+row%2],.5))
-	elif kind=="wind":
-		for x in range(0,240,6):
-			var lean:=int(sin(tick*e*3+x*.1)*(2+e*7))
-			canvas.draw_line(Vector2(x,121),Vector2(x+lean,106-x%11),Color(colors[2]),1)
-	for i in 52:
-		var h := float(posmod(seed_value + i * 7919, 997)) / 997.0
-		var x := float(posmod(i * 37 + seed_value, 226) + 7)
-		var y := float(posmod(i * 23 + seed_value / 7, 105) + 12)
-		var color := Color(colors[1 + i % 3])
-		var moving := tick * e
-		match kind:
-			"fire":
-				x = 120 + sin(i * 2.3 + moving) * (12 + h * 65)
-				y = 115 - fposmod(h * 80 + moving * (18+h*25), 90)
-				canvas.draw_rect(Rect2(floorf(x),floorf(y),2+i%3,3+(1-h)*e*9), color)
-			"wind":
-				x = fposmod(x + moving * (15 + h * 30),240)
-				y += sin(x*.05 + h*TAU)* (3 + bass*10)
-				canvas.draw_rect(Rect2(floorf(x),floorf(y),4+e*18,1+i%2),color)
-			"rain":
-				y = fposmod(y+moving*(25+h*40),118)
-				x = fposmod(x+moving*7,240)
-				canvas.draw_line(Vector2(floorf(x),floorf(y)),Vector2(floorf(x)-2,floorf(y)+3+high*6),color,1)
-			"water":
-				y = 40+h*75+sin(tick*1.8+x*.04)*e*4
-				canvas.draw_rect(Rect2(floorf(x),floorf(y),3+h*10+e*10,1),color)
-			"bird":
-				x = fposmod(x+moving*13,240)
-				y += sin(tick*2+h*20)*e*9
-				canvas.draw_line(Vector2(x-3,y-1-high*3).floor(),Vector2(x,y).floor(),color,1)
-				canvas.draw_line(Vector2(x,y).floor(),Vector2(x+3,y-1-high*3).floor(),color,1)
-			"paper":
-				y = fposmod(y+moving*6,118)
-				canvas.draw_rect(Rect2(floorf(x+sin(tick+h*20)*e*8),floorf(y),4+i%4,2+i%3),color)
-			"wood":
-				var height := 2 + absf(sin(i+tick*2)) * e * 40 + bass*8
-				canvas.draw_rect(Rect2(x,116-height,2+i%4,height),color)
-			"metal":
-				var radius := 2+fposmod(h*15+moving*6,18)
-				canvas.draw_rect(Rect2(Vector2(x,y)-Vector2.ONE*radius,Vector2.ONE*radius*2),color,false,1)
-			"voice":
-				y = 68+sin(x*.045+tick)*e*32+sin(x*.13)*high*9
-				canvas.draw_rect(Rect2(x,y,3,2+e*10),color)
-			_:
-				var width := 2+float(i%4)+bass*7
-				if i%3==0: canvas.draw_rect(Rect2(x,y+sin(tick+i)*e*5,width,width),color,false,1)
-				else: canvas.draw_rect(Rect2(x,y+sin(tick+i)*e*5,width,width),color)
-	# The ink horizon acts as an actual amplitude meter.
-	canvas.draw_rect(Rect2(8,128,224*e,2),Color(colors[3]))
-	canvas.draw_set_transform(Vector2.ZERO)
+static func unit(seed_value:int,index:int) -> float:
+	return float(posmod(seed_value*31+index*7919+index*index*17,1009))/1009.0
+
+static func response(raw:float) -> float:
+	return sqrt(clampf((raw-.00008)*6.0,0,1))
+
+static func paint(c:CanvasItem,extent:Vector2,seconds:float,energy:float,bands:PackedFloat32Array,kind:String,seed_value:int) -> void:
+	if extent.x<=0 or extent.y<=0: return
+	var colors:Array[Color]=[]
+	for hex in PALETTES.get(kind,PALETTES.pulse): colors.append(Color(hex))
+	var e:=response(energy)
+	var bass:=response(bands[0]) if bands.size()>0 else e
+	var high:=response(bands[-1]) if bands.size()>0 else e
+	var t:=floorf(maxf(0,seconds)*24)/24.0
+	if e<=.01: t=0.0
+	c.draw_set_transform(Vector2.ZERO,0,extent/BOARD)
+	c.draw_rect(Rect2(Vector2.ZERO,BOARD),colors[0])
+	# Fixed fibres and broad landscape washes leave a calm, coherent backdrop.
+	for layer in 3:
+		var silhouette:=PackedVector2Array([Vector2(0,216)])
+		for x in range(0,389,4):
+			var y:=91+layer*43+sin(x*.013+layer*1.7+unit(seed_value,3)*3)*13
+			silhouette.append(Vector2(x,floorf(y)))
+		silhouette.append(Vector2(384,216))
+		c.draw_colored_polygon(silhouette,Color(colors[1],.12+layer*.06))
+	for i in 180:
+		c.draw_rect(Rect2(unit(seed_value,i)*384,unit(seed_value,i+503)*216,1,1),Color(colors[3],.06))
+	match kind:
+		"fire": fire(c,t,e,bass,high,seed_value,colors)
+		"wind","wood": meadow(c,t,e,bass,high,seed_value,colors,kind=="wood")
+		"water": water(c,t,e,bass,high,seed_value,colors)
+		"rain","metal": hanging(c,t,e,bass,high,seed_value,colors,kind=="metal")
+		"bird": birds(c,t,e,bass,high,seed_value,colors)
+		"paper": paper(c,t,e,bass,high,seed_value,colors)
+		"voice": voice(c,t,e,bass,high,seed_value,colors)
+		_: geometry(c,t,e,bass,high,seed_value,colors)
+	for corner in [Vector2(10,10),Vector2(374,206)]:
+		var d:=1 if corner.x<100 else -1
+		c.draw_line(corner,corner+Vector2(10*d,0),Color(colors[3],.45))
+		c.draw_line(corner,corner+Vector2(0,7*d),Color(colors[3],.45))
+	c.draw_set_transform(Vector2.ZERO)
+
+static func line(c:CanvasItem,points:PackedVector2Array,color:Color,width:=1.0) -> void:
+	for i in points.size(): points[i]=points[i].floor()
+	if points.size()>1: c.draw_polyline(points,color,width,false)
+
+static func orb(c:CanvasItem,at:Vector2,r:float,color:Color,phase:=0.0) -> void:
+	if r<3:
+		c.draw_rect(Rect2(at.floor()-Vector2.ONE,Vector2.ONE*maxf(1,floorf(r))),color); return
+	var p:=PackedVector2Array()
+	for i in 12:
+		var angle:=i*TAU/12
+		p.append((at+Vector2(cos(angle),sin(angle))*r*(1+.07*sin(i*2.3+phase))).floor())
+	if r>=1: c.draw_colored_polygon(p,color)
+
+static func spark(c:CanvasItem,at:Vector2,r:float,color:Color) -> void:
+	if r<5:
+		var center:=at.floor()
+		c.draw_line(center-Vector2(r,0),center+Vector2(r,0),color)
+		c.draw_line(center-Vector2(0,r),center+Vector2(0,r),color); return
+	var p:=PackedVector2Array()
+	for i in 8:
+		var angle:=i*TAU/8
+		p.append((at+Vector2(cos(angle),sin(angle))*(r if i%2==0 else r*.19)).floor())
+	if r>=1: c.draw_colored_polygon(p,color)
+
+static func meadow(c:CanvasItem,t:float,e:float,b:float,h:float,s:int,p:Array[Color],woody:bool) -> void:
+	for i in 22:
+		var u:=unit(s,i); var x:=70+u*229
+		var height:=24+unit(s,i+41)*118
+		var sway:=sin(t*.85+u*6)*(3+e*18)
+		var tip:=Vector2(x+sway,196-height*(.85+b*.15))
+		var points:=PackedVector2Array()
+		for j in 16:
+			var f:=j/15.0
+			points.append(Vector2(x+sway*f*f+sin(f*PI)*e*4,196+(tip.y-196)*f))
+		line(c,points,Color(p[2],.6),2 if woody else 1)
+		orb(c,tip,2.2+u*2.8+e*3,p[3],u*9)
+		if h>.2 and i%4==0: spark(c,tip+Vector2(3,-3),2+h*4,Color(p[3],.75))
+		if woody:
+			for j in [7,10,13]:
+				var end:=points[j]+Vector2((9+u*12)*(1 if (i+j)%2 else -1),-9-e*8)
+				line(c,PackedVector2Array([points[j],end]),p[2])
+				orb(c,end,2+e*3,p[1])
+		elif i%3==0: orb(c,tip+Vector2(-1,1),2+e,p[1])
+	for i in 9:
+		var x:=fposmod(unit(s,i+90)*380+t*17,410)-13
+		var y:=45+unit(s,i+140)*112+sin(x*.027)*e*8
+		line(c,PackedVector2Array([Vector2(x,y),Vector2(x+4+e*8,y-1)]),Color(p[3],e*.7))
+
+static func water(c:CanvasItem,t:float,e:float,b:float,h:float,s:int,p:Array[Color]) -> void:
+	orb(c,Vector2(284,49),18,p[3])
+	for row in 17:
+		var points:=PackedVector2Array()
+		for x in range(17,370,3):
+			points.append(Vector2(x,98+row*6+sin(x*.032+t*1.2+row*.7)*e*(2+b*8)))
+		line(c,points,Color(p[3] if row%4==0 else p[2],.14+row*.02))
+	for i in 16:
+		var u:=unit(s,i); var phase:=fposmod(t*.28+u,1)
+		var at:=Vector2(60+u*267,120+unit(s,i+19)*72)
+		var points:=PackedVector2Array()
+		for j in 33:
+			var a:=j*TAU/32
+			points.append(at+Vector2(cos(a),sin(a)*.24)*(3+phase*19)*e)
+		line(c,points,Color(p[3],(1-phase)*e*.8))
+		if i%4==0: spark(c,at,2+h*4,Color(p[3],e))
+
+static func hanging(c:CanvasItem,t:float,e:float,b:float,h:float,s:int,p:Array[Color],metal:bool) -> void:
+	if metal:
+		for i in 2:
+			var center:=Vector2(158+i*73,47+i*9)
+			var points:=PackedVector2Array()
+			for j in 50: points.append(center+Vector2(cos(j*TAU/49),sin(j*TAU/49))*(28-i*9+b*2))
+			line(c,points,Color(p[3],.85))
+	for i in 23:
+		var u:=unit(s,i); var x:=83+i*9.8 if metal else 52+i*12.3
+		var start:=72+sin(i*.24)*8 if metal else 23.0
+		var length:=47+u*96 if metal else 76+u*100
+		var points:=PackedVector2Array()
+		for j in 16:
+			var f:=j/15.0
+			points.append(Vector2(x+sin(t*.8+u*8-f)*f*f*(3+e*14),start+f*length))
+		line(c,points,Color(p[2],.18+.22*e))
+		if metal:
+			spark(c,points[-1],2+(.5+.5*sin(t*1.3+u*7))*3+h*6,Color(p[3],.4+e*.6))
+			if i%3==0: orb(c,points[9],1+e*2,p[2])
+		else:
+			for bead in 3:
+				var at:=fposmod(u+bead*.31+t*.14,1)
+				var pos:=Vector2(x+sin(t*.8+u*8-at)*at*at*(3+e*14),start+at*length)
+				orb(c,pos,1+e*(1+u*2),Color(p[3],.25+e*.7))
+			if i%4==0: spark(c,points[-1],1+h*5,Color(p[3],e))
+
+static func fire(c:CanvasItem,t:float,e:float,b:float,h:float,s:int,p:Array[Color]) -> void:
+	for layer in 3:
+		var shape:=PackedVector2Array([Vector2(116+layer*17,194)])
+		for x in range(116+layer*17,270-layer*17,2):
+			var distance:=absf(x-193.0)/(77-layer*17)
+			var height:=pow(maxf(0,1-distance),.7)*(36+e*83)*(1-layer*.15)
+			shape.append(Vector2(x,minf(193,194-height+(sin(x*.17+t*3)+sin(x*.07-t*2))*e*8)).floor())
+		shape.append(Vector2(270-layer*17,194))
+		c.draw_colored_polygon(shape,Color(p[layer+1],.7))
+	for i in 24:
+		var u:=unit(s,i); var life:=fposmod(t*(.19+u*.14)+u,1)
+		var x:=191+sin(u*13+life*4)*(12+life*67)
+		var y:=192-life*161
+		line(c,PackedVector2Array([Vector2(x,y+3+e*6),Vector2(x+1,y)]),Color(p[2],(1-life)*e*.65))
+		if i%3==0: spark(c,Vector2(x,y),1+h*3,Color(p[3],(1-life)*e))
+	orb(c,Vector2(189,184),6+b*8,Color(p[3],e*.75))
+
+static func birds(c:CanvasItem,t:float,e:float,b:float,h:float,s:int,p:Array[Color]) -> void:
+	orb(c,Vector2(99,57),22,Color(p[3],.8))
+	for i in 14:
+		var u:=unit(s,i); var x:=fposmod(380+u*440-t*19,458)-37
+		var y:=64+u*82+sin(x*.012+u*5)*29*e
+		var wing:=(2+u*6)*(sin(t*(3+u)+u*6)*e)
+		var at:=Vector2(x,y)
+		line(c,PackedVector2Array([at+Vector2(-9-u*3,-wing),at+Vector2(-4,-1),at,at+Vector2(4,-2),at+Vector2(10+u*3,-wing)]),p[2])
+		line(c,PackedVector2Array([at+Vector2(-1,1),at+Vector2(2,4+h*3),at+Vector2(4,2)]),Color(p[2],.7))
+		if i%5==0: line(c,PackedVector2Array([at+Vector2(15,2),at+Vector2(30+b*13,4)]),Color(p[1],e*.8))
+
+static func paper(c:CanvasItem,t:float,e:float,b:float,h:float,s:int,p:Array[Color]) -> void:
+	for i in 17:
+		var u:=unit(s,i); var at:=Vector2(77+u*225,40+unit(s,i+81)*140)
+		at+=Vector2(sin(t*.7+u*5)*e*8,cos(t*.6+u*8)*e*11)
+		var r:=5+unit(s,i+14)*12+b*3
+		var angle:=u*2+sin(t*.6+u)*e*.2
+		var points:=PackedVector2Array()
+		for v in [Vector2(-1,-.7),Vector2(.7,-1),Vector2(1,.7),Vector2(-.7,1)]: points.append((at+v.rotated(angle)*r).floor())
+		c.draw_colored_polygon(points,p[3] if i%3 else p[1])
+		line(c,PackedVector2Array([points[0],points[2]]),Color(p[2],.4))
+		if i%4==0: line(c,PackedVector2Array([points[0],points[0]-Vector2(5+h*8,12)]),Color(p[2],.3))
+
+static func voice(c:CanvasItem,t:float,e:float,b:float,h:float,s:int,p:Array[Color]) -> void:
+	for row in 12:
+		var points:=PackedVector2Array()
+		for x in range(38,351,3):
+			var envelope:=sin((x-38)/313.0*PI)
+			var y:=83+row*5+sin(x*.027+t*1.6+row*.3)*envelope*(7+e*32)+sin(x*.11+t*2)*h*6
+			points.append(Vector2(x,y))
+		line(c,points,Color(p[2] if row%3 else p[1],.28+row*.035))
+	for i in 9:
+		var x:=71+unit(s,i)*235
+		orb(c,Vector2(x,79+sin(x*.027+t*1.6)*e*32),2+b*5,Color(p[3],.8))
+
+static func geometry(c:CanvasItem,t:float,e:float,b:float,h:float,s:int,p:Array[Color]) -> void:
+	var center:=Vector2(123+unit(s,1)*35,88)
+	orb(c,center,29+b*8,p[2]); orb(c,center+Vector2(-8,2),17,p[0])
+	line(c,PackedVector2Array([Vector2(74,171),Vector2(305,59)]),p[2])
+	for i in 9:
+		var x:=174+i*11.5; var at:=Vector2(x,150-(x-174)*.47)
+		line(c,PackedVector2Array([at-Vector2(6,12),at+Vector2(9,18+e*14)]),Color(p[2],.8))
+	c.draw_colored_polygon(PackedVector2Array([Vector2(217,78),Vector2(182,165),Vector2(247,160)]),Color(p[1],.7))
+	for i in 12:
+		var u:=unit(s,i); var at:=Vector2(67+u*247,57+unit(s,i+17)*111)
+		at.y+=sin(t+u*7)*e*4
+		if i%3: orb(c,at,2+u*4+h*3,p[2])
+		else: spark(c,at,3+h*5,p[3])

@@ -30,6 +30,21 @@ func run() -> void:
 	expect(tomato_size.size.x / opening_width > 0.13 and tomato_size.size.x / opening_width < 0.28, "whole tomato occupies a credible fraction of the skillet")
 	w.audio.muted = true
 	w.reactions.set_physics_process(false)
+	var handle_tip: Vector2 = w.pan.point(Vector2(1035,586))
+	expect(w.pan.can_grab(handle_tip), "pan handle tip above the board remains grabbable")
+	if DisplayServer.get_name() != "headless":
+		await process_frame
+		RenderingServer.force_draw(false)
+		var pixel: Vector2i = Vector2i(root.get_final_transform()*w.get_global_transform_with_canvas()*handle_tip)
+		var handle_visible := root.get_texture().get_image().get_pixelv(pixel)
+		w.cutting_board.hide()
+		await process_frame
+		RenderingServer.force_draw(false)
+		var without_board := root.get_texture().get_image().get_pixelv(pixel)
+		expect(handle_visible.r < 0.4 and handle_visible.g < 0.4, "GPU displays dark handle grip over the wooden board")
+		expect(Vector3(handle_visible.r,handle_visible.g,handle_visible.b).distance_to(Vector3(without_board.r,without_board.g,without_board.b)) < 0.015, "board visibility does not obscure the rendered handle tip")
+		w.cutting_board.show()
+		await snapshot("handle-fixed")
 	game._notify("空间检查")
 	expect(not game.hint_label.visible and game.toast_label.visible, "status notice and pointer hint never occupy the footer simultaneously")
 	await snapshot("kitchen")
@@ -143,12 +158,12 @@ func run() -> void:
 	w._update_food_depth()
 	expect(w._food_at(sauce.position) == null, "opaque pan wall blocks selecting a hidden sauce portion")
 	if DisplayServer.get_name() != "headless":
-		await RenderingServer.frame_post_draw
+		RenderingServer.force_draw(false)
 		var sample: Vector2i = Vector2i(root.get_final_transform()*w.get_global_transform_with_canvas()*sauce.position)
 		var covered := root.get_texture().get_image().get_pixelv(sample)
 		w.pan.pan_front.hide()
 		await process_frame
-		await RenderingServer.frame_post_draw
+		RenderingServer.force_draw(false)
 		var exposed := root.get_texture().get_image().get_pixelv(sample)
 		expect(Vector3(covered.r,covered.g,covered.b).distance_to(Vector3(exposed.r,exposed.g,exposed.b)) > 0.1, "GPU pan wall actually occludes the sauce pixel")
 		w.pan.pan_front.show()
@@ -163,7 +178,7 @@ func snapshot(label: String) -> void:
 	if prefix.is_empty() or DisplayServer.get_name() == "headless": return
 	game._update_hud()
 	await process_frame
-	await RenderingServer.frame_post_draw
+	RenderingServer.force_draw(false)
 	expect(root.get_texture().get_image().save_png(prefix+"-"+label+".png") == OK,"GPU snapshot saved: "+label)
 
 func polygon_bounds(points: PackedVector2Array) -> Rect2:

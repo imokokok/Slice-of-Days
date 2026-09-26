@@ -1,0 +1,32 @@
+tests/test_visual_spatial_consistency.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+MEASURED film displacement error ml: 0.000003750
+PASS: visual spatial consistency, 41 checks
+
+tests/test_free_pan.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS free pan 12 checks
+
+tests/test_cut_batch_stability.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: cut-batch stability, 42 checks
+
+tests/test_knife_drag.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: real knife mouse drag, 23 checks
+
+tests/test_pan_lid.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+Lid pop after 79.0 seconds of accelerated hot-pan fixture cooking
+PASS: pan lid and burning, 31 checks
+
+tests/test_integration.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: restaurant integration, 127 checks
+

@@ -21,7 +21,9 @@ const PLAYER_HOME_ART = preload("res://art/user_scenes/player_home.png")
 const SHARED_HOME_ART = preload("res://art/user_scenes/shared_home_supplied.jpg")
 const XANNI_ART = preload("res://art/user_scenes/xanni_supplied.jpg")
 const AuthoredJPEG = preload("res://scripts/ui/authored_jpeg.gd")
-const PRODUCE_STALL_ART = preload("res://art/user_scenes/produce_stall.png")
+const PRODUCE_STALL_ART = preload("res://art/user_scenes/produce_stall_supplied.jpg")
+const POST_OFFICE_ART = preload("res://art/user_scenes/post_office_supplied.png")
+const GROCERY_ART = preload("res://art/user_scenes/grocery_supplied.png")
 const RESTAURANT_ART = preload("res://art/user_scenes/restaurant.png")
 const CORRESPONDENCE_OFFICE_ART = preload("res://art/user_scenes/correspondence_office.png")
 const PROTAGONIST_ART = preload("res://art/user_scenes/protagonist_colored.png")
@@ -469,7 +471,13 @@ func _draw_street_middle() -> void:
 			_draw_authored_building(PLAYER_HOME_ART, x, place_id)
 			continue
 		if place_id == "produce_stall":
-			_draw_authored_building(PRODUCE_STALL_ART, x, place_id)
+			_draw_authored_building(AuthoredJPEG.cutout(PRODUCE_STALL_ART,false,Composition.PRODUCE_PAPER_OPENINGS), x, place_id)
+			continue
+		if place_id == "handcraft_shop":
+			_draw_authored_building(POST_OFFICE_ART,x,place_id)
+			continue
+		if place_id == "cafe":
+			# Display crates and the low fruit table in front of the paving.
 			continue
 		if place_id == "night_market":
 			_draw_authored_building(RESTAURANT_ART, x, place_id)
@@ -495,13 +503,14 @@ func _draw_authored_building(texture: Texture2D, center_x: float, location: Stri
 	draw_texture_rect(texture, rect, false, _scene_art_tint())
 
 func _draw_street_foreground() -> void:
-	# The post-office wall ends above its mailbox and chair in the source art.
-	# Ground the wall on the curb while letting those props extend onto the road.
+	# Ground facade walls on the curb while their low display props overlap
+	# the paving; draw them before people so the walking lane stays in front.
 	for place in places:
-		if str(place.get("id", "")) != "print_shop": continue
+		var place_id := str(place.get("id", ""))
+		if place_id not in ["print_shop","cafe"]: continue
 		var x := float(place.x) - camera_x
 		if x < -700 or x > 2300: continue
-		_draw_authored_building(CORRESPONDENCE_OFFICE_ART, x, "print_shop")
+		_draw_authored_building(GROCERY_ART if place_id=="cafe" else CORRESPONDENCE_OFFICE_ART,x,place_id)
 
 func _draw_foreground_road() -> void:
 	# Shared baseline -> broad pedestrian paving -> raised curb -> carriageway.

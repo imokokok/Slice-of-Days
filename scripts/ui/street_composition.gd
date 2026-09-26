@@ -8,6 +8,10 @@ const ROAD := 863.0
 const SHARED_HOME_CANVAS := Vector2(1811, 1280)
 const SHARED_HOME_DOOR := Vector2(1060, 1205)
 const SHARED_HOME_STAIRS := Vector2(190, 1205)
+const POST_OFFICE_CANVAS := Vector2(3508,2480)
+const PRODUCE_CANVAS := Vector2(1333,1079)
+const GROCERY_CANVAS := Vector2(2048,2048)
+const PRODUCE_PAPER_OPENINGS: Array[Vector2i] = [Vector2i(700,400),Vector2i(280,420),Vector2i(1040,420)]
 const SHARED_HOME_PAPER_OPENINGS: Array[Vector2i] = [
 	Vector2i(160,1100), Vector2i(205,1060), Vector2i(275,1000),
 	Vector2i(315,960), Vector2i(360,935), Vector2i(385,660),
@@ -24,7 +28,9 @@ static func rain_amount(day: int, minute: float) -> float:
 const CUTOUTS := {
 	"residence": {"size":Vector2(1200,850), "ground":1205.0},
 	"dorm": {"size":Vector2(600,500), "ground":1166.0},
-	"produce_stall": {"size":Vector2(560,375), "ground":941.0},
+	"produce_stall": {"size":Vector2(660,520), "ground":1033.0},
+	"handcraft_shop": {"size":Vector2(1300,700), "ground":2355.0},
+	"cafe": {"size":Vector2(780,690), "ground":1892.0},
 	"night_market": {"size":Vector2(620,540), "ground":1193.0},
 	"print_shop": {"size":Vector2(690,455), "ground":920.0},
 }
@@ -54,8 +60,14 @@ static func entry_offset(location: String) -> float:
 		"bus_stop": return 45.0
 		"chess_stall": return 66.0
 		"print_shop": return 0.0
-		"produce_stall": return -65.0
+		"produce_stall": return supplied_entry_offset(location,PRODUCE_CANVAS,670)
+		"handcraft_shop": return supplied_entry_offset(location,POST_OFFICE_CANVAS,1136)
+		"cafe": return supplied_entry_offset(location,GROCERY_CANVAS,1320)
 	return 0.0
+
+static func supplied_entry_offset(location: String, canvas: Vector2, source_x: float) -> float:
+	var rect := cutout_rect(location,canvas,0)
+	return rect.position.x+source_x*rect.size.x/canvas.x
 
 static func home_entry_offset(role: String) -> float:
 	# Upstairs is reached from the left exterior stair; downstairs has its own door.

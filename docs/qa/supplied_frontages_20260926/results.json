@@ -1,0 +1,18 @@
+[
+  {
+    "expected_errors": [],
+    "test": "integration/test_shop_work_routes",
+    "exit_code": 0,
+    "seconds": 25.8,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_street_motion",
+    "exit_code": 0,
+    "seconds": 15.17,
+    "errors": [],
+    "result": "PASS"
+  }
+]

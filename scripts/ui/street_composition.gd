@@ -63,6 +63,7 @@ static func entry_offset(location: String) -> float:
 		"produce_stall": return supplied_entry_offset(location,PRODUCE_CANVAS,670)
 		"handcraft_shop": return supplied_entry_offset(location,POST_OFFICE_CANVAS,1136)
 		"cafe": return supplied_entry_offset(location,GROCERY_CANVAS,1320)
+		"park": return preload("res://scripts/ui/lookout_art.gd").telescope_offset()
 	return 0.0
 
 static func supplied_entry_offset(location: String, canvas: Vector2, source_x: float) -> float:

@@ -13,6 +13,7 @@ const Composition = preload("res://scripts/ui/street_composition.gd")
 const ActorMotion = preload("res://scripts/ui/actor_motion.gd")
 const COASTAL_GRADE = preload("res://scripts/ui/coastal_grade.gdshader")
 const Atlas = preload("res://scripts/ui/scene_atlas.gd")
+const LookoutArt = preload("res://scripts/ui/lookout_art.gd")
 const COAST_ART = preload("res://art/user_scenes/lookout_approach.png")
 const CHESS_ART = preload("res://art/user_scenes/chess_stall.png")
 const BUS_ART = preload("res://art/user_scenes/bus_stop.png")
@@ -61,6 +62,7 @@ var presence = preload("res://scripts/ui/resident_presence.gd").new()
 var neighboring_residents: Array[Dictionary] = []
 var weather_last := ""
 var everyday_display: Node
+var lookout_photos: Control
 
 func presented_residents() -> Array[Dictionary]:
 	return presence.reconcile(hotspots + neighboring_residents, camera_x)
@@ -97,6 +99,7 @@ func _ready() -> void:
 	_update_world_finish()
 
 func _process(delta: float) -> void:
+	_sync_lookout_photos()
 	idle_time += delta
 	idle_redraw += delta
 	# Limited to 15 Hz for the quiet paper-puppet idle; walking redraws normally.
@@ -658,11 +661,12 @@ func _draw_outdoor(x: float, kind: String) -> void:
 		"street":
 			pass
 		"lookout":
-			for i in range(8): draw_line(Vector2(x - 340 + i * 96, 613), Vector2(x - 340 + i * 96, 715), wood, 5)
-			draw_line(Vector2(x - 350, 626), Vector2(x + 350, 626), wood, 6)
-			draw_line(Vector2(x, 658), Vector2(x - 45, 718), wood, 5)
-			draw_line(Vector2(x, 658), Vector2(x + 45, 718), wood, 5)
-			draw_line(Vector2(x - 30, 651), Vector2(x + 30, 622), Color("b7aa8b"), 19)
+			var platform := LookoutArt.platform_rect(x)
+			var screen := LookoutArt.screen_rect(x)
+			draw_texture_rect(LookoutArt.screen_texture(), screen, false, _scene_art_tint())
+			draw_texture_rect(LookoutArt.platform_texture(), platform, false, _scene_art_tint())
+			dialogue_scenery.append(platform.grow(12))
+			dialogue_scenery.append(screen.grow(12))
 		"produce":
 			for side in [-1, 1]: draw_line(Vector2(x + side * 180, 487), Vector2(x + side * 180, 718), wood, 6)
 			draw_colored_polygon(PackedVector2Array([Vector2(x - 215, 511), Vector2(x - 170, 455), Vector2(x + 170, 455), Vector2(x + 215, 511)]), Color("b0875c"))
@@ -685,6 +689,25 @@ func _draw_user_scene(texture: Texture2D, source: Rect2, x: float, width: float)
 	var destination := Rect2(x - width * 0.5, 718.0 - height, width, height)
 	dialogue_scenery.append(destination.grow(12))
 	draw_texture_rect_region(texture, destination, source, _scene_art_tint())
+
+func _sync_lookout_photos() -> void:
+	var center := INF
+	for place in places:
+		if str(place.get("id", "")) == "park": center = float(place.x) - camera_x
+	if not is_finite(center):
+		if is_instance_valid(lookout_photos): lookout_photos.hide()
+		return
+	if not is_instance_valid(lookout_photos):
+		lookout_photos = preload("res://extensions/observatory/scripts/slideshow_controller.gd").new()
+		lookout_photos.name = "LookoutPhotoScreen"
+		lookout_photos.preserve_background_when_empty = true
+		lookout_photos.projection_shader = preload("res://extensions/observatory/shaders/photo_perspective.gdshader")
+		lookout_photos.mouse_filter = MOUSE_FILTER_IGNORE
+		add_child(lookout_photos)
+	var rect := LookoutArt.photo_rect(center)
+	lookout_photos.position = rect.position
+	lookout_photos.size = rect.size
+	lookout_photos.visible = rect.end.x > 0 and rect.position.x < 1600
 
 func _draw_room_details() -> void:
 	if room_kind in ["record_shop", "public_archive", "grocery", "letter_office"]:

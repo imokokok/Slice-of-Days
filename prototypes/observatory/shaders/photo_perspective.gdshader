@@ -5,18 +5,15 @@ uniform float projection_contrast : hint_range(0.0, 1.0) = 0.63;
 uniform vec3 ambient_paper = vec3(0.14,0.16,0.205);
 uniform float edge_softness : hint_range(0.0, 0.04) = 0.009;
 void vertex() { tint = COLOR; }
-// 幕布四角对应原图 (945,245), (1316,233), (1316,453), (945,450)。
-// 先映射斜边幕布，再按照片比例裁切；原始 JPG 不做修改。
+// New supplied display: inset rectangle (407,137) to (1467,704).
 void fragment() {
- float top = mix(12.0/220.0, 0.0, UV.x);
- float bottom = mix(217.0/220.0, 1.0, UV.x);
- vec2 p = vec2(UV.x, (UV.y-top)/(bottom-top));
+ vec2 p = UV;
  vec2 screen_uv = p;
  float edge = min(min(p.x,1.0-p.x),min(p.y,1.0-p.y));
  float mask = smoothstep(0.0,edge_softness,edge);
  vec2 photo_size = vec2(textureSize(TEXTURE,0));
  float aspect = photo_size.x/photo_size.y;
- float screen_aspect = 371.0/214.0;
+ float screen_aspect = 1060.0/567.0;
  if (aspect > screen_aspect) p.x = (p.x-0.5)*screen_aspect/aspect+0.5;
  else p.y = (p.y-0.5)*aspect/screen_aspect+0.5;
  vec4 sampled = texture(TEXTURE,p);

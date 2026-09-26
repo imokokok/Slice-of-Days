@@ -27,6 +27,8 @@ func _process(_delta: float) -> void :
 						var art: Node2D = body.get_node_or_null("FoodArt")
 						if art: wanted.append(art)
 					if is_instance_valid(tool._rim_visual): wanted.append(tool._rim_visual)
+		if world.lid.active or world.lid._flight or world.lid._settling > 0.0 or (world.lid.covered and (world.pan.active or world.pan.falling)):
+			wanted.append(world.lid)
 		if world._knife_held: wanted.append(world._knife_visual)
 		if world.sponge.active: wanted.append(world.sponge)
 		if world.cloth.active: wanted.append(world.cloth)
@@ -68,7 +70,7 @@ func _process(_delta: float) -> void :
 		if source == world.pan.pan_back: visual.z_index = 0
 		elif source == world.plate: visual.z_index = 1
 		elif plate_food: visual.z_index = 2 if source.name == "SauceBlob" else 3
-		elif source in [world._knife_visual, world.sponge, world.cloth]: visual.z_index = 8
+		elif source in [world._knife_visual, world.sponge, world.cloth, world.lid]: visual.z_index = 8
 		elif spoon_rim: visual.z_index = 7
 		elif spoon_food: visual.z_index = 6
 		elif world.utensils.has(source): visual.z_index = 5

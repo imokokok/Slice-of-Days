@@ -1,0 +1,68 @@
+{
+	"checks": 20,
+	"events": [
+		{
+			"frame": 60,
+			"seconds": 2.5,
+			"stage": "① 锅盖斜放在独立支架，拖到锅口盖上"
+		},
+		{
+			"frame": 190,
+			"seconds": 7.91666666666667,
+			"stage": "② 盖住持续加热，蒸汽逐渐积聚"
+		},
+		{
+			"frame": 448,
+			"seconds": 18.6666666666667,
+			"stage": "盖沿冒汽、锅盖开始震动和敲击"
+		},
+		{
+			"frame": 548,
+			"seconds": 22.8333333333333,
+			"stage": "③ 拖开锅盖，放出蒸汽"
+		},
+		{
+			"frame": 636,
+			"seconds": 26.5,
+			"stage": "④ 再次盖上，继续大火加热"
+		},
+		{
+			"frame": 862,
+			"seconds": 35.9166666666667,
+			"stage": "盖着摇锅：热汽继续积聚，食物不能穿盖"
+		},
+		{
+			"frame": 901,
+			"seconds": 37.5416666666667,
+			"stage": "危险升高，锅盖马上被顶起"
+		},
+		{
+			"frame": 1354,
+			"seconds": 56.4166666666667,
+			"stage": "⑤ 砰！锅盖向上炸飞、翻转，再落地回弹"
+		},
+		{
+			"frame": 1492,
+			"seconds": 62.1666666666667,
+			"stage": "⑥ 不关火继续炒：焦黄逐渐变成焦糊"
+		},
+		{
+			"frame": 1750,
+			"seconds": 72.9166666666667,
+			"stage": "用锅铲向上翻动，露出真正烧焦的底面"
+		},
+		{
+			"frame": 1871,
+			"seconds": 77.9583333333333,
+			"stage": "已经炒糊：斑驳焦色、焦味提醒和轻烟"
+		},
+		{
+			"frame": 2054,
+			"seconds": 85.5833333333333,
+			"stage": "⑦ 关火仍有余热，焦糊的部分不会恢复"
+		}
+	],
+	"fps": 24,
+	"frames": 2154,
+	"note": "Actual production GPU recording; raw food prepared before shot; explicitly accelerated waiting; no pressure, char or temperature injection."
+}

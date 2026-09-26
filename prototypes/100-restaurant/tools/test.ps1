@@ -9,6 +9,7 @@ function Invoke-GodotTest([string]$Script) {
         throw "Engine test failed or did not reach its success marker: $Script (exit $code)"
     }
 }
+Invoke-GodotTest tests/test_pan_lid.gd
 Invoke-GodotTest tests/test_thermal_reactions.gd
 if ($LASTEXITCODE -ne 0) { throw 'Thermal reaction tests failed' }
 Invoke-GodotTest tests/test_reaction_kitchen.gd

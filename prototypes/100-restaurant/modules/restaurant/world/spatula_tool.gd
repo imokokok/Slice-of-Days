@@ -125,7 +125,7 @@ func release_tool() -> void :
 	queue_redraw()
 
 func stir_sweep(from: Vector2, to: Vector2) -> int:
-	if not active or not world.controls_enabled or from.distance_to(to) < 3:
+	if not active or not world.controls_enabled or world.lid.covered or from.distance_to(to) < 3:
 		return 0
 	var count: = 0
 	var now: = Time.get_ticks_msec()
@@ -205,7 +205,7 @@ func bowl_contents() -> Array:
 	return result
 
 func _physics_process(_delta: float) -> void :
-	if kind != "spoon" or not active or not world.controls_enabled: return
+	if kind != "spoon" or not active or not world.controls_enabled or world.lid.covered: return
 	var center: = to_global(Vector2(-25, 1))
 	for body in world._foods.get_children():
 		if not body is RigidBody2D or body.freeze or body == world._held or body.get_meta("is_container", false) or body.get_meta("plated", false): continue

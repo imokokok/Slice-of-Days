@@ -19,6 +19,7 @@ var _egg_shells: Node2D
 var shell_waste_kg := 0.0
 var _pan_area: Area2D
 var _pan_walls: Array = []
+var lid: Node2D
 var pan: Node2D
 var plate: Node2D
 var cutting_board: Node2D
@@ -210,6 +211,9 @@ func _ready() -> void :
 	reactions.world = self
 	reactions.z_index = 8
 	add_child(reactions)
+	lid = preload("res://modules/restaurant/world/pan_lid.gd").new()
+	lid.world = self
+	add_child(lid)
 	plate = preload("res://modules/restaurant/world/plate_controller.gd").new()
 	plate.world = self
 	add_child(plate)
@@ -396,7 +400,7 @@ func _input(event: InputEvent) -> void :
 		_move_knife(get_global_transform_with_canvas().affine_inverse() * event.position)
 
 func _unhandled_input(event: InputEvent) -> void :
-	if not controls_enabled or pan.active or plate.active:
+	if not controls_enabled or pan.active or plate.active or lid.active:
 		return
 	if event is InputEventMouseButton and event.pressed and _knife_held and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
 		_rotate_knife_by(deg_to_rad(-15.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 15.0))
@@ -482,6 +486,7 @@ func set_poster(_data: Dictionary) -> void :
 		_poster_canvas = null
 
 func set_controls_enabled(value: bool) -> void :
+	if not value and is_instance_valid(lid): lid.suspend()
 	if not value and is_instance_valid(pan): pan.suspend()
 	if not value and is_instance_valid(plate): plate.finish(false)
 	if not value and _dragging: _finish_food_drag(true)
@@ -569,6 +574,7 @@ func _make_food_visual(body: RigidBody2D, definition: Dictionary) -> void :
 		body.add_child(sprite)
 
 func _food_at(pos: Vector2) -> RigidBody2D:
+	if is_instance_valid(lid) and lid.blocks(pos): return null
 	_update_food_depth()
 	var bodies := _foods.get_children()
 	bodies.sort_custom(func(a, b): return a.z_index < b.z_index or (a.z_index == b.z_index and a.get_index() < b.get_index()))
@@ -661,6 +667,9 @@ func _finish_food_drag(force: = false) -> void :
 		_drag_group.clear()
 		return
 	var point: = to_local(_held.global_position)
+	if lid.covered and (pan.contains(point) or lid.blocks(point)):
+		interaction.emit("notice", "先揭开锅盖，再放入食材或调味。")
+		return
 	if not force and _held_is_sauce_bottle() and _squeeze_region().has_point(point):
 		interaction.emit("notice", "调料已拿到锅边。" + get_held_operation_hint())
 		return
@@ -755,6 +764,9 @@ func drop_held(throw_item: = false) -> void :
 	_food_drag_offset = Vector2.ZERO
 	if not is_instance_valid(_held):
 		return
+	if lid.covered and (pan.contains(_held.position) or lid.blocks(_held.position)):
+		interaction.emit("notice", "锅盖挡住了锅口，先把盖子拖开。")
+		return
 	_stop_squeezing()
 	if storage_return_handler.is_valid() and storage_return_handler.call(_held): return
 	var body: = _held
@@ -781,6 +793,9 @@ func drop_held(throw_item: = false) -> void :
 	held_changed.emit("")
 
 func drop_into_pan() -> void :
+	if lid.covered:
+		interaction.emit("notice", "先揭开锅盖，再往锅里放食材。")
+		return
 	if not is_instance_valid(_held):
 		return
 	# Pick a clear part of the pan for the keyboard shortcut. Random releases
@@ -802,7 +817,7 @@ func _is_whole_egg(body: RigidBody2D) -> bool:
 	return is_instance_valid(body) and str(body.get_meta("id", "")) == "egg" and not bool(body.get_meta("thermal", {}).get("egg_opened", false))
 
 func _egg_tap_target(point: Vector2) -> bool:
-	if not pan.on_stove(): return false
+	if lid.covered or not pan.on_stove(): return false
 	var local: Vector2 = pan.local_point(point)
 	# The back rim is a narrow, visible hard surface; an arbitrary pan drop is
 	# never interpreted as a crack.
@@ -1136,6 +1151,7 @@ func discard_held() -> bool:
 	return true
 
 func get_held_name() -> String:
+	if is_instance_valid(lid) and lid.active: return "锅盖"
 	if is_instance_valid(sponge) and sponge.active: return "清洁海绵"
 	if is_instance_valid(cloth) and cloth.active: return "抹布"
 	for utensil in utensils:
@@ -1356,6 +1372,10 @@ func _pan_capacity_used() -> int:
 	return count
 
 func _dispense_seasoning(requested_ml: float = -1.0) -> RigidBody2D:
+	if lid.covered:
+		_stop_squeezing()
+		interaction.emit("notice", "先揭开锅盖，再加入调味料。")
+		return null
 	if not _held_is_sauce_bottle() or not controls_enabled:
 		return null
 	if is_zero_approx(requested_ml): return null
@@ -1809,6 +1829,7 @@ func _polygon_area(polygon: PackedVector2Array) -> float:
 	return absf(area) * 0.5
 
 func has_active_utensil() -> bool:
+	if is_instance_valid(lid) and lid.active: return true
 	if is_instance_valid(sponge) and sponge.active: return true
 	if is_instance_valid(cloth) and cloth.active: return true
 	for tool in utensils:

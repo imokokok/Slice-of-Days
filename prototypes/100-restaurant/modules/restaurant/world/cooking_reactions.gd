@@ -38,8 +38,11 @@ func advance(dt: float) -> void:
 
 func _step(dt: float) -> void:
 	clock+=dt
+	var vapor_ml := 0.0
+	var moist_food := false
+	var covered: bool = is_instance_valid(world.lid) and world.lid.covered
 	var burner: float = {"low":1100.0,"medium":1800.0,"high":2600.0}.get(world.heat_level,1800.0) if world.cooking and world.pan.on_stove() else 0.0
-	pan_c=clampf(pan_c+(burner-10.0*(pan_c-22.0))*dt*4.0/450.0,22.0,300.0)
+	pan_c=clampf(pan_c+(burner-(7.0 if covered else 10.0)*(pan_c-22.0))*dt*4.0/450.0,22.0,300.0)
 	if world.pan.water_ml>0.0:
 		var capacity: float = maxf(1.0,world.pan.water_ml*4.18)
 		var q := Thermal.exchange(pan_c,world.pan.water_heat,450.0,capacity,38.0,dt*4.0)
@@ -49,6 +52,7 @@ func _step(dt: float) -> void:
 		var evaporated: float = minf(world.pan.water_ml,excess/2256.0)
 		world.pan.water_ml-=evaporated
 		evaporated_water_ml+=evaporated
+		vapor_ml+=evaporated
 		world.pan.water_heat=clampf(next_temp,22.0,100.0)
 		world.pan.water_heat=lerpf(world.pan.water_heat,22.0,1.0-exp(-dt*0.012))
 	var solids: Array = []
@@ -73,11 +77,15 @@ func _step(dt: float) -> void:
 		var before := float(state.evaporated_kg)
 		var film: Dictionary = body.get_meta("surface_sauce",{})
 		var native := maxf(0.000001,body.mass-float(film.get("mass_kg",0.0)))
-		var absorbed_heat := Thermal.advance(state,definition,dt,env,world.pan.water_heat,wet,native)
+		var exposed := minf(100.0, lerpf(22.0, pan_c, 0.62)) if covered and in_pan else 22.0
+		var absorbed_heat := Thermal.advance(state,definition,dt,env,world.pan.water_heat,wet,native,exposed,0.65 if covered and in_pan else 1.0)
+		if in_pan:
+			vapor_ml += (float(state.evaporated_kg)-before)*1000.0
+			moist_food = moist_food or (bool(Thermal.profile(definition).edible) and float(state.water_kg)>0.0001)
 		if in_pan:
 			if wet:
 				world.pan.water_heat=maxf(22.0,world.pan.water_heat-absorbed_heat/maxf(1.0,world.pan.water_ml*4.18))
-			elif contact: pan_c=maxf(22.0,pan_c-absorbed_heat/450.0)
+			elif contact or covered: pan_c=maxf(22.0,pan_c-absorbed_heat/450.0)
 		body.mass=maxf(0.000001,body.mass-(float(state.evaporated_kg)-before))
 		if str(definition.get("id","")) in ["noodles","bread"] and wet and world.pan.water_heat>=80.0:
 			var limit := float(state.initial_kg)*(0.8 if str(definition.id)=="noodles" else 0.25)
@@ -92,6 +100,11 @@ func _step(dt: float) -> void:
 			if body.has_meta("liquid_state"): liquids.append(body)
 			else: solids.append(body)
 		_apply(body,state)
+		var charred := maxf(float(state.char[0]),float(state.char[1]))
+		if in_pan and charred>0.15 and not body.get_meta("burn_warning",false):
+			body.set_meta("burn_warning",true)
+			world.interaction.emit("notice", "%s已经开始焦糊！翻面和减小火力可以减缓，焦味无法消除。" % str(definition.get("name","食材")))
+	world.lid.advance(dt,vapor_ml,pan_c,moist_food or world.pan.water_ml>0.0)
 	# Pools only wet nearby ingredients. Falling streams select the first hit food.
 	for source in liquids:
 		var previous: Vector2 = source.get_meta("reaction_previous",source.position-Vector2(0,4))
@@ -229,7 +242,7 @@ func _draw() -> void:
 		if not _eligible(body) or not body.get_meta("enrolled",false): continue
 		var response := activity(body)
 		var strength := maxf(float(response.fry),float(response.sauce))
-		if strength<0.08: continue
+		if strength<0.08 or world.lid.covered: continue
 		var center: Vector2 = body.position
 		if body.has_node("SauceBlob"): center=world.to_local(body.get_node("SauceBlob").global_position)
 		for i in 5:

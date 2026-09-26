@@ -1,0 +1,24 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+Movie Maker mode enabled, recording movie in 1440×851 @ 24 FPS...
+MOVIE at 2.50s: ① 锅盖斜放在独立支架，拖到锅口盖上
+MOVIE at 7.92s: ② 盖住持续加热，蒸汽逐渐积聚
+MOVIE at 18.67s: 盖沿冒汽、锅盖开始震动和敲击
+MOVIE at 22.83s: ③ 拖开锅盖，放出蒸汽
+MOVIE at 26.50s: ④ 再次盖上，继续大火加热
+MOVIE at 35.92s: 盖着摇锅：热汽继续积聚，食物不能穿盖
+MOVIE at 37.54s: 危险升高，锅盖马上被顶起
+MOVIE at 56.42s: ⑤ 砰！锅盖向上炸飞、翻转，再落地回弹
+MOVIE at 62.17s: ⑥ 不关火继续炒：焦黄逐渐变成焦糊
+MOVIE at 72.92s: 用锅铲向上翻动，露出真正烧焦的底面
+MOVIE at 77.96s: 已经炒糊：斑驳焦色、焦味提醒和轻烟
+MOVIE at 85.58s: ⑦ 关火仍有余热，焦糊的部分不会恢复
+PASS: new lid feature movie, 20 checks, 2154 annotated frames, 89.75s
+--------------------------------------------------------------------------------
+Done recording movie at path: /Users/imokokok/Documents/Solmere/prototypes/100-restaurant/.runtime/pan-lid-video-v2/new-features.avi
+2150 frames at 24 FPS (movie length: 00:01:29:14), recorded in 00:00:40 (222% of real-time speed).
+CPU render time: 2.17 seconds (average: 1.01 ms/frame)
+GPU render time: 0.00 seconds (average: 0.00 ms/frame)
+Encoding time: 12.05 seconds (average: 5.60 ms/frame)
+--------------------------------------------------------------------------------

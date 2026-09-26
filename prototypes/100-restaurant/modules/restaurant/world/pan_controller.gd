@@ -72,7 +72,7 @@ func _process(delta: float) -> void :
 	overflowing = false
 	if world.controls_enabled:
 		if active and _tipping: set_angle(move_toward(angle, deg_to_rad(110), delta * 3.8))
-		if faucet_on and under_tap():
+		if faucet_on and under_tap() and not world.lid.covered:
 			if is_empty_for_cleaning(): residue.waste_kg += residue.wipe(delta * 0.00018 * faucet_amount)
 			var incoming := delta * 180.0 * faucet_amount
 			var accepted: float = minf(incoming, world.pan_free_ml())
@@ -217,11 +217,16 @@ func move_to(destination: Variant) -> void :
 			body.rotation = float(body.get_meta("pan_rotation", 0)) + angle
 	world._stations["cook"] = pose * Rect2(677, 535, 265, 125)
 	world._update_landed_seasoning()
+	if is_instance_valid(world.lid): world.lid._sync_pose()
 
 func set_angle(value: float) -> void :
 	var was_below_pour_angle := absf(angle) < deg_to_rad(85)
 	angle = clampf(value, deg_to_rad(-125), deg_to_rad(125))
 	move_pointer(_pointer)
+	if absf(angle) >= deg_to_rad(85) and world.lid.covered:
+		world.lid.open_lid()
+		world.lid.rest_lid()
+		world.interaction.emit("notice", "锅倾斜太多，锅盖滑回了台面。")
 	if absf(angle) >= deg_to_rad(85):
 		if was_below_pour_angle and water_ml > 0.0:
 			var poured_ml := water_ml
@@ -243,6 +248,10 @@ func set_angle(value: float) -> void :
 		_carried.clear()
 
 func _toss_contents(travel: Vector2, now: int) -> int:
+	if world.lid.covered:
+		world.lid.agitate(travel.length())
+		world.audio.play_effect("pan", 0.55)
+		return 0
 	# A short upward pan motion releases only food actually supported by the pan.
 	# The rigid bodies then fly and land through Godot physics; no food is replaced.
 	if not active or now - _last_toss_msec < 650 or absf(angle) > 0.16:

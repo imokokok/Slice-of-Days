@@ -11,6 +11,8 @@ import html
 import json
 import re
 import urllib.request
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -59,6 +61,9 @@ SOURCES = [
     ("KaleidacousticsAudio", 627656, "Dry pasta dropped in ceramic bowl", [("drop_dry", 4, 0.8, False)]),
     ("SpliceSound", 218339, "Metal pot rattling while moved on stove", [("toss", 3.8, 1.3, False), ("toss", 7.3, 1.3, False)]),
     ("postworkflow", 360648, "Vegetables dropped into hot oil on stovetop", [("hot_drop", 11.7, 1.8, False)]),
+    ("bowlingballout", 210100, "Metal domed pot lid lifted and placed down", [("lid_tick", 10.23, 0.3, False), ("lid_pop", 1.43, 0.55, False), ("lid_land", 12.62, 0.61, False)]),
+    ("greenlinker", 757514, "Closing a pot lid", [("lid_close", 0.4, 0.65, False)]),
+    ("wubitog", 234782, "Recorded air pressure release hiss, used as a steam-release approximation", [("steam_release", 0.19, 1.284, False)]),
 ]
 
 
@@ -89,7 +94,7 @@ def fetch(entry, cache):
     return entry, data.mean(axis=1), rate, {
         "id": sound_id, "author": author, "description": description,
         "page": url, "license": "CC0-1.0", "license_url": LICENSE,
-        "license_checked": "2026-09-25", "attribution_required": False,
+        "license_checked": datetime.now(ZoneInfo("Asia/Shanghai")).date().isoformat(), "attribution_required": False,
         "download_url": media_url, "download_kind": "public lossy Ogg preview, not original lossless recording",
         "source_sha256": hashlib.sha256(raw.read_bytes()).hexdigest(),
         "page_sha256": hashlib.sha256(page.encode()).hexdigest(),

@@ -134,15 +134,20 @@ func run() -> void:
 	var largest_step := 0.0
 	var descending := false
 	var airborne_rotation: float = world.lid.rotation
+	var angular_step := 0.0
+	var previous_rotation: float = world.lid.rotation
 	for i in 280:
 		world.reactions.advance(0.01)
 		peak = minf(peak, world.lid.position.y)
 		largest_step = maxf(largest_step, previous_pose.distance_to(world.lid.position))
 		previous_pose = world.lid.position
+		angular_step = maxf(angular_step, absf(wrapf(world.lid.rotation - previous_rotation, -PI, PI)))
+		previous_rotation = world.lid.rotation
 		if world.lid._flight and world.lid._velocity.y > 0.0: descending = true
 	expect(world.lid.burst_origin.y - peak > 220.0, "steam impulse launches lid visibly high above the pan")
 	expect(descending and absf(airborne_rotation) > 0.1, "lid spins and descends under gravity")
 	expect(largest_step < 9.0, "flight and rebound remain continuous without a sideways teleport")
+	expect(angular_step < 0.16, "landing preserves a continuous turn rather than snapping the disc upright")
 	expect(not world.lid._flight and world.lid._settling == 0.0 and world.lid.position == world.lid.HOME and world.lid.scale == world.lid.REST_SCALE, "popped lid settles into clear stand and is reusable")
 	world.lid.close_lid()
 	world.lid.burst()
@@ -150,6 +155,7 @@ func run() -> void:
 	world.set_controls_enabled(false)
 	await create_timer(0.15).timeout
 	expect(world.lid.position == paused_pose, "modal pause freezes airborne lid")
+	expect(world.lid.display_transform() == world.lid.transform, "paused rendering does not interpolate a moving pose")
 	world.set_controls_enabled(true)
 	world.reactions.advance(3.0)
 	world.pan.water_ml = 0.0
@@ -194,6 +200,16 @@ func run() -> void:
 	world.pan._process(0.5)
 	expect(world.pan.water_ml == 0.0 and world.sink_water_ml > 0.0, "tap water runs off closed lid instead of entering the pot")
 	world.pan.faucet_on = false
+	# Ballistic motion must not depend on the size of the simulation step.
+	# This would expose the old semi-implicit Euler drift across frame rates.
+	var trajectories: Array[Vector2] = []
+	for rate in [30, 60, 120]:
+		world.lid.rest_lid()
+		world.lid.close_lid()
+		world.lid.burst()
+		for frame in rate: world.lid.advance(1.0 / rate, 0.0, 22.0, false)
+		trajectories.append(world.lid.position)
+	expect(trajectories[0].distance_to(trajectories[1]) < 0.01 and trajectories[1].distance_to(trajectories[2]) < 0.01, "30/60/120 Hz steps produce the same one-second steam impulse trajectory")
 	print("Lid pop after %s seconds of accelerated hot-pan fixture cooking" % elapsed)
 	for failure in failures: push_error(failure)
 	print("%s: pan lid and burning, %d checks" % ["PASS" if failures.is_empty() else "FAIL", checks])

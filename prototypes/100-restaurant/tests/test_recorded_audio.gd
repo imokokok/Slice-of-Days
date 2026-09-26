@@ -109,6 +109,29 @@ func _run() -> void:
 	var tossed: int = world.pan._toss_contents(Vector2(0, -40), Time.get_ticks_msec())
 	_expect(tossed > 0 and sound.effects.toss.playing, "a real pan toss adds cookware motion sound only when food launches")
 	world.pan.release_pan()
+	await create_timer(0.6).timeout
+	world.lid.rest_lid()
+	world.lid.close_lid()
+	sound.stop_all()
+	sound._last_effect.clear()
+	world.lid.open_lid()
+	_expect(sound.effects.lid_close.playing and not sound.effects.steam_release.playing, "opening a cold lid plays a light contact without invented steam")
+	world.lid.close_lid()
+	world.lid.pressure = 0.7
+	world.lid.steam_ml = 0.1
+	sound.stop_all()
+	sound._last_effect.clear()
+	world.lid.open_lid()
+	_expect(sound.effects.steam_release.playing and not sound.effects.lid_pop.playing, "manually venting a hot lid uses quiet release rather than a pop")
+	world.lid.close_lid()
+	sound.stop_all()
+	sound._last_effect.clear()
+	world.lid.burst()
+	_expect(sound.effects.lid_pop.playing and sound.effects.steam_release.playing, "steam impulse synchronizes a dedicated lid transient and recorded air release")
+	_expect(not sound.effects.pan.playing and not sound.effects.hot_drop.playing and not sound.effects.lid_close.playing, "pop does not stack unrelated pan, frying-entry or manual-opening sounds")
+	world.lid.advance(2.0, 0.0, 22.0, false)
+	_expect(sound.effects.lid_land.playing, "the first real support impact triggers its own landing recording")
+	_expect(sound.effects.lid_tick.volume_db < sound.effects.lid_pop.volume_db and sound.effects.lid_land.volume_db < sound.effects.lid_pop.volume_db, "warning and support impact use a restrained mix below the initial pop")
 	sound.muted = true
 	for player in sound.loops.values() + sound.effects.values():
 		_expect(not player.playing, "mute stops every recorded player")

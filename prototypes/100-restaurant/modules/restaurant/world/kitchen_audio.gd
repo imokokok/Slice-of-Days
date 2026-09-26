@@ -4,6 +4,7 @@ extends Node
 const LOOPS := {"flame": -26.0, "sizzle": -14.0, "sauce": -13.0, "boil": -12.0, "water": -15.0, "squeeze": -14.0, "pour": -14.0, "powder": -13.0}
 const EFFECT_BANKS := {"ignite": "ignite", "tap": "tap", "bell": "bell", "pan": "pan", "chop": "chop", "chop_soft": "chop_soft", "chop_hard": "chop_hard", "stir": "stir_wood", "stir_wet": "stir_wet", "stir_meat": "stir_wet", "stir_dry": "stir_dry", "stir_hard": "pan", "stir_water": "stir_water", "stir_sauce": "stir_sauce", "stir_pasta": "stir_pasta", "stir_wood": "stir_wood", "stir_metal": "stir_metal", "drop": "drop", "drop_dry": "drop_dry", "drain": "drain", "pour": "drain", "wipe": "wipe", "paper": "paper", "serve": "serve", "toss": "toss", "hot_drop": "hot_drop"}
 const OILS := ["oil", "butter", "olive_oil", "sesame_oil"]
+const LID_LEVELS := {"lid_tick": -27.0, "lid_close": -20.0, "lid_pop": -13.0, "lid_land": -18.0, "steam_release": -20.0}
 const SAUCES := ["ketchup", "mayonnaise", "mustard", "chili_sauce", "soy_sauce", "soy", "cream", "milk", "honey"]
 var muted := false:
 	set(value):
@@ -35,6 +36,11 @@ func _ready() -> void:
 	for id in EFFECT_BANKS:
 		var player := AudioStreamPlayer.new()
 		player.volume_db = -19.0 if id.begins_with("stir") or id.begins_with("drop") else -14.0
+		add_child(player)
+		effects[id] = player
+	for id in LID_LEVELS:
+		var player := AudioStreamPlayer.new()
+		player.volume_db = LID_LEVELS[id]
 		add_child(player)
 		effects[id] = player
 
@@ -156,9 +162,10 @@ func play_effect(id: String, strength: float = 1.0) -> void:
 	var player: AudioStreamPlayer = effects[id]
 	if id.begins_with("stir") and player.playing: return
 	_last_effect[id] = now
-	player.stream = _stream(EFFECT_BANKS[id])
-	player.pitch_scale = _rng.randf_range(0.985, 1.015)
-	player.volume_db = (-19.0 if id.begins_with("stir") or id.begins_with("drop") else -14.0) + linear_to_db(clampf(strength, 0.2, 1.0))
+	player.stream = _stream(id if LID_LEVELS.has(id) else EFFECT_BANKS[id])
+	player.pitch_scale = _rng.randf_range(0.992, 1.008) if LID_LEVELS.has(id) else _rng.randf_range(0.985, 1.015)
+	var level: float = LID_LEVELS.get(id, -19.0 if id.begins_with("stir") or id.begins_with("drop") else -14.0)
+	player.volume_db = level + linear_to_db(clampf(strength, 0.05 if LID_LEVELS.has(id) else 0.2, 1.0))
 	player.play()
 
 func stir_profile(definition: Dictionary) -> String:

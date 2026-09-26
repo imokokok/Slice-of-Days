@@ -595,6 +595,54 @@
       "page_sha256": "8c443ddccbb974051e5550b861ed0e6bdb01cfcd0a986ee7534ff81b6fbfb00b",
       "source_duration_seconds": 21.865,
       "source_sample_rate": 44100
+    },
+    {
+      "id": 210100,
+      "author": "bowlingballout",
+      "description": "Metal domed pot lid lifted and placed down",
+      "page": "https://freesound.org/people/bowlingballout/sounds/210100/",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "license_checked": "2026-09-26",
+      "attribution_required": false,
+      "download_url": "https://cdn.freesound.org/previews/210/210100_485650-lq.ogg",
+      "download_kind": "public lossy Ogg preview, not original lossless recording",
+      "source_sha256": "9043186886fa75cad355e6c2b3d530e0cdb567a7796b93a20bd1cfee34ef6f95",
+      "page_sha256": "86762a1ec99140dc182d8801c656932839a18b147aa9220a218d98f92fb9a227",
+      "source_duration_seconds": 24.569,
+      "source_sample_rate": 44100
+    },
+    {
+      "id": 757514,
+      "author": "greenlinker",
+      "description": "Closing a pot lid",
+      "page": "https://freesound.org/people/greenlinker/sounds/757514/",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "license_checked": "2026-09-26",
+      "attribution_required": false,
+      "download_url": "https://cdn.freesound.org/previews/757/757514_6812548-lq.ogg",
+      "download_kind": "public lossy Ogg preview, not original lossless recording",
+      "source_sha256": "e0236b2a9236a61a087a42aa131882167d58a58611b7d5004d0a971c05bd5ea2",
+      "page_sha256": "a96de6c7777b22378f1d02e79655480f347c5163b99632612be803b5abde394c",
+      "source_duration_seconds": 5.267,
+      "source_sample_rate": 44100
+    },
+    {
+      "id": 234782,
+      "author": "wubitog",
+      "description": "Recorded air pressure release hiss, used as a steam-release approximation",
+      "page": "https://freesound.org/people/wubitog/sounds/234782/",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "license_checked": "2026-09-26",
+      "attribution_required": false,
+      "download_url": "https://cdn.freesound.org/previews/234/234782_3501487-lq.ogg",
+      "download_kind": "public lossy Ogg preview, not original lossless recording",
+      "source_sha256": "e682840fea8815fcd47b96bfa905eae60cf067f56bfc348ebf480f05f7a3dcf5",
+      "page_sha256": "581292e1e17f7ada8c75f82d3eaef74f63aa7aae67582df32ea2a836e59b887b",
+      "source_duration_seconds": 1.474,
+      "source_sample_rate": 44100
     }
   ],
   "clips": [
@@ -1273,6 +1321,71 @@
       "channels": 1,
       "peak": 0.63,
       "sha256": "c984df1894a1c73ce5bd7a99a77e533a5f5113d7b7cc1e8eb58b1dc6b6c10e88"
+    },
+    {
+      "file": "res://modules/restaurant/assets/audio/recorded/lid_tick_01.wav",
+      "source_id": 210100,
+      "source_start_seconds": 10.23,
+      "source_end_seconds": 10.53,
+      "gain": 2.046939,
+      "loop": false,
+      "frames": 13230,
+      "sample_rate": 44100,
+      "channels": 1,
+      "peak": 0.63,
+      "sha256": "cf21bcb79671fab1a5562f0f6ae723fc748510e6038bdfca2e56aa18010266ff"
+    },
+    {
+      "file": "res://modules/restaurant/assets/audio/recorded/lid_pop_01.wav",
+      "source_id": 210100,
+      "source_start_seconds": 1.43,
+      "source_end_seconds": 1.98,
+      "gain": 0.873354,
+      "loop": false,
+      "frames": 24255,
+      "sample_rate": 44100,
+      "channels": 1,
+      "peak": 0.63,
+      "sha256": "c40e8ccd408b91faa043a6f4792a1df57602675a3f4305aa4708a66c16f9301c"
+    },
+    {
+      "file": "res://modules/restaurant/assets/audio/recorded/lid_land_01.wav",
+      "source_id": 210100,
+      "source_start_seconds": 12.62,
+      "source_end_seconds": 13.23,
+      "gain": 0.923721,
+      "loop": false,
+      "frames": 26901,
+      "sample_rate": 44100,
+      "channels": 1,
+      "peak": 0.63,
+      "sha256": "6835719afc8042a0356e60a7c17bc5103789ab31a4b73d3be6ff13220f1644e3"
+    },
+    {
+      "file": "res://modules/restaurant/assets/audio/recorded/lid_close_01.wav",
+      "source_id": 757514,
+      "source_start_seconds": 0.4,
+      "source_end_seconds": 1.05,
+      "gain": 0.87803,
+      "loop": false,
+      "frames": 28665,
+      "sample_rate": 44100,
+      "channels": 1,
+      "peak": 0.63,
+      "sha256": "c3a4188fa533023cc75237a2e2eb069308d051b3094a49d9aa442713f6d888f5"
+    },
+    {
+      "file": "res://modules/restaurant/assets/audio/recorded/steam_release_01.wav",
+      "source_id": 234782,
+      "source_start_seconds": 0.19,
+      "source_end_seconds": 1.4739909297052154,
+      "gain": 0.588955,
+      "loop": false,
+      "frames": 56624,
+      "sample_rate": 44100,
+      "channels": 1,
+      "peak": 0.63,
+      "sha256": "e95ca34ca64f6382050ce86b27e5a1e79d0d300fd6c9f534c0687c6501d010ea"
     }
   ]
 }

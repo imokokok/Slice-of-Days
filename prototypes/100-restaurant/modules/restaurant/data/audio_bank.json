@@ -118,5 +118,20 @@
   ],
   "hot_drop": [
     "res://modules/restaurant/assets/audio/recorded/hot_drop_01.wav"
+  ],
+  "lid_tick": [
+    "res://modules/restaurant/assets/audio/recorded/lid_tick_01.wav"
+  ],
+  "lid_pop": [
+    "res://modules/restaurant/assets/audio/recorded/lid_pop_01.wav"
+  ],
+  "lid_land": [
+    "res://modules/restaurant/assets/audio/recorded/lid_land_01.wav"
+  ],
+  "lid_close": [
+    "res://modules/restaurant/assets/audio/recorded/lid_close_01.wav"
+  ],
+  "steam_release": [
+    "res://modules/restaurant/assets/audio/recorded/steam_release_01.wav"
   ]
 }

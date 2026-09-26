@@ -61,6 +61,8 @@ func _process(_delta: float) -> void :
 			copies[id] = {"source": source, "proxy": proxy}
 		var visual: Node2D = copies[id].proxy
 		visual.transform = source.get_global_transform_with_canvas()
+		if source == world.lid:
+			visual.transform = world.get_global_transform_with_canvas() * world.lid.display_transform()
 		# Proxies remain views of the live food, including while it keeps cooking.
 		for property_name in ["cut", "heat", "softness", "thermal", "coating", "compression", "liquid_state", "crack_progress"]:
 			if property_name in source and property_name in visual: visual.set(property_name, source.get(property_name))

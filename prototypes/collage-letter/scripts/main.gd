@@ -427,6 +427,8 @@ func advance_dialogue() -> void:
 	build_ui()
 
 func set_tool(value: String) -> void:
+	if value=="write" and tool=="write" and is_instance_valid(desk) and is_instance_valid(desk.writing):
+		desk.writing.grab_focus();return
 	if paint and paint.active:paint.end()
 	tool = value
 	if tool=="write":

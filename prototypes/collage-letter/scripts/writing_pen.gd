@@ -10,8 +10,10 @@ var rhythm:=0.0
 var target_tip:=Vector2.ZERO
 var has_position:=false
 var committed_strokes:=0
+var resting_mouse_filter:=Control.MOUSE_FILTER_STOP
 func _ready() -> void:
 	mouse_filter=Control.MOUSE_FILTER_IGNORE;z_index=5;modulate.a=0
+	if resting_object is Control:resting_mouse_filter=resting_object.mouse_filter
 func committed(characters: int) -> void:
 	if characters<=0:return
 	stroke_left=clampf(0.16+characters*0.025,0.19,0.42)
@@ -37,9 +39,13 @@ func _process(dt: float) -> void:
 	update_resting_pen()
 	queue_redraw()
 func update_resting_pen() -> void:
-	if is_instance_valid(resting_object):resting_object.modulate.a=1.0-modulate.a
+	if is_instance_valid(resting_object):
+		resting_object.modulate.a=1.0-modulate.a
+		if resting_object is Control:resting_object.mouse_filter=Control.MOUSE_FILTER_IGNORE if modulate.a>0.05 else resting_mouse_filter
 func _exit_tree() -> void:
-	if is_instance_valid(resting_object):resting_object.modulate.a=1.0
+	if is_instance_valid(resting_object):
+		resting_object.modulate.a=1.0
+		if resting_object is Control:resting_object.mouse_filter=resting_mouse_filter
 func _draw() -> void:
 	if modulate.a<0.01:return
 	var touching:=stroke_left>0

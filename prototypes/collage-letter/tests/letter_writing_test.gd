@@ -22,6 +22,9 @@ func run() -> void:
 	check(pen.mouse_filter==Control.MOUSE_FILTER_IGNORE,"Physical pen never intercepts writing clicks")
 	await process_frame;await RenderingServer.frame_post_draw;await process_frame
 	check(pen.position.distance_to(pen.caret_tip())<8 and game.LETTER.has_point(pen.target_tip),"Pen nib follows the real rendered caret within the paper")
+	check(pen.resting_object.mouse_filter==Control.MOUSE_FILTER_IGNORE,"The lifted desk pen leaves no invisible clickable button")
+	game.set_tool("write")
+	check(game.desk.writing.get_instance_id()==original_editor_id and editor.get_caret_line()==original_line and editor.get_caret_column()==original_column,"Choosing the current pen preserves the editor and caret")
 	var commits: int=pen.committed_strokes
 	editor.set_caret_line(0);editor.set_caret_column(3)
 	await process_frame;await RenderingServer.frame_post_draw;await process_frame
@@ -30,6 +33,7 @@ func run() -> void:
 	check(pen.committed_strokes==commits and game.letter_text==content,"An unchanged-text signal never counts as committed ink")
 	await create_timer(1.0).timeout
 	check(pen.modulate.a<0.02,"An idle pen lifts and fades instead of covering the letter")
+	check(pen.resting_object.mouse_filter==Control.MOUSE_FILTER_STOP,"Returned desk pen becomes clickable again")
 	editor.insert_text_at_caret("好");await process_frame;await RenderingServer.frame_post_draw;await process_frame
 	var folder:=OS.get_environment("COLLAGE_TEST_OUTPUT")
 	if not folder.is_empty():root.get_texture().get_image().save_png(folder.path_join("writing-pen.png"))

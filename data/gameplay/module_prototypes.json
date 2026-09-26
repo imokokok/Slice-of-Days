@@ -192,11 +192,6 @@
                 "zhou_xiaoliu": [
                   "记得她只剩十分钟，先出了她的那份"
                 ]
-              },
-              "confirmations": {
-                "shi_yongqi": "granted",
-                "xanni": "granted",
-                "zhou_xiaoliu": "granted"
               }
             },
             "B": {
@@ -234,10 +229,7 @@
             "B": {
               "encounters": [
                 "shi_yongqi"
-              ],
-              "confirmations": {
-                "shi_yongqi": "granted"
-              }
+              ]
             }
           }
         }

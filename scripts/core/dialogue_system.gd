@@ -259,7 +259,7 @@ func mark_invitation_heard(npc: String, persist := true) -> void:
 	var invitation := invitation_for(npc)
 	if not invitation.is_empty():
 		# Called only after the invitation has actually been heard.
-		var fact := {"id":"invite_"+str(invitation.module),"text":str(invitation.label),"source_npc_id":npc,"subject_id":str(invitation.location),"predicate":"lead","confidence":1.0,"learned_day":GameState.current_day}
+		var fact := {"id":"invite_"+str(invitation.module),"module":str(invitation.module),"text":str(invitation.label),"source_npc_id":npc,"subject_id":str(invitation.location),"predicate":"lead","confidence":1.0,"learned_day":GameState.current_day}
 		var facts: Array=GameState.shared_state.get("knowledge_"+GameState.current_role,[])
 		if not facts.any(func(row: Dictionary) -> bool: return row.get("id","")==fact.id): facts.append(fact)
 		GameState.shared_state["knowledge_"+GameState.current_role]=facts

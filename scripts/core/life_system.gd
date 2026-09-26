@@ -99,7 +99,7 @@ func close_day() -> void:
 func known_cards() -> Array:
 	var result: Array=[{"id":"rest","title":"回家歇一会儿","minutes":30,"location":"residence","type":"short","source":"自己的住处"},{"id":"meal","title":"回家吃一顿饭","minutes":20,"location":"residence","type":"short","source":"自己的住处"},{"id":"quiet","title":"安静整理今天的思绪","minutes":20,"location":"residence","type":"short","source":"自己的住处"}]
 	for module in GameplayModuleSystem.modules:
-		if not GameplayModuleSystem.is_unlocked(str(module)): continue
+		if not GameplayModuleSystem.is_known(str(module)): continue
 		var meta: Dictionary=GameplayModuleSystem.modules[module]
 		var place := WorldGraph.activity_location(str(module))
 		if place.is_empty():

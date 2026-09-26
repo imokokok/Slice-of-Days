@@ -116,6 +116,20 @@ func is_unlocked(module_id: String) -> bool:
 	return ChapterSystem.module_available(module_id) and bool(ensure_state(module_id).get("unlocked", false))
 
 
+func is_known(module_id: String) -> bool:
+	# Discovery permits planning, without starting a session or granting a result.
+	if not modules.has(module_id) or not ChapterSystem.module_available(module_id): return false
+	if is_unlocked(module_id): return true
+	for fact: Dictionary in GameState.shared_state.get("knowledge_"+GameState.current_role,[]):
+		if str(fact.get("predicate",""))=="lead" and (str(fact.get("module",""))==module_id or str(fact.get("id",""))=="invite_"+module_id): return true
+	# Invitations remain known on later days, including saves made before discovery
+	# was used by the planner. Another role's invitations stay private.
+	var accepted: Dictionary=GameState.shared_state.get("accepted_invitations",{})
+	for key in accepted:
+		if str(key).begins_with(GameState.current_role+"_") and str(accepted[key].get("module",""))==module_id: return true
+	return false
+
+
 func state_for(module_id: String) -> Dictionary:
 	return ensure_state(module_id).duplicate(true)
 
@@ -261,6 +275,9 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 	if module_id == "cooking":
 		results.erase("money")
 		role_results.erase("money")
+		# A meal records an encounter; only a later people-puzzle review signs it.
+		results.erase("confirmations")
+		role_results.erase("confirmations")
 		for artifact in results.get("artifacts",[]):
 			if str(artifact.get("collection",""))!="recipes": continue
 			artifact.data.merge({"id":"recipe_"+Crypto.new().generate_random_bytes(12).hex_encode(),"format":"solmere.recipe.v1","author":GameState.current_role,"ingredients":stored_interaction.get("selected_tokens",[]).duplicate(),"heat":float(stored_interaction.get("mechanic",{}).get("heat",0.58)),"notes":COOKING.recipe_notes(stored_interaction),"strokes":[]},true)
@@ -276,7 +293,9 @@ func complete_choice(choice_id: String, interaction_record: Dictionary = {}) -> 
 		outcome["craft_grade"]=stored_interaction.get("mechanic",{}).get("grade",{}).duplicate(true)
 		outcome["service_response"]=COOKING.service_response(stored_interaction)
 	complete(module_id, outcome)
-	if module_id == "cooking": EconomySystem.finish_cooking(outcome, stored_interaction.get("selected_tokens", []))
+	if module_id == "cooking":
+		PeoplePuzzleSystem.record_cooking_experience(stored_interaction,str(outcome.service_response))
+		EconomySystem.finish_cooking(outcome, stored_interaction.get("selected_tokens", []))
 	if work_payment > 0:
 		var issuer := "handcraft_shop" if module_id == "ghostwriting" else "record_store"
 		GameState.earn_money(work_payment,"书信委托报酬" if module_id == "ghostwriting" else "采样整理报酬",{"work_minutes":minutes,"kind":"income","issuer":issuer,"source":"module_"+module_id})
@@ -308,6 +327,7 @@ func complete_external(module_id: String, outcome: Dictionary, results: Dictiona
 	if not complete(module_id, outcome):
 		return false
 	var granted := results.duplicate(true)
+	if module_id == "cooking": granted.erase("confirmations")
 	# This extension contains one authored client commission. Reopening its
 	# finished letter is a keepsake, not a new payable delivery.
 	if module_id == "ghostwriting":

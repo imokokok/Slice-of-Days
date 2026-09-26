@@ -1,6 +1,7 @@
 extends Control
 
 const REWARD_KEY := "community_clock_repair_paid"
+const WORK_MINUTES := 10
 const INK := Color("31658b")
 const MUTED := Color("698594")
 const PAPER := Color("faf7ee")
@@ -38,6 +39,7 @@ func _build_ui() -> void:
 	_label("请把旧钟调到", Vector2(1125, 205), Vector2(300, 34), 20, MUTED)
 	_label(_format_time(target_hour, target_minute), Vector2(1115, 245), Vector2(320, 70), 46, INK)
 	_label("先选择时针或分针，再在钟面上拖动。\n也可以用下方按钮逐格微调。", Vector2(1085, 330), Vector2(365, 90), 18, MUTED)
+	_label("校准约需 %d 分钟 · 工钱 %d 元" % [WORK_MINUTES,reward], Vector2(1085, 480), Vector2(370, 40), 18, MUTED)
 	status_label = _label("", Vector2(1085, 600), Vector2(370, 72), 18, MUTED)
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	time_label = _label("", Vector2(610, 676), Vector2(380, 36), 22, INK, HORIZONTAL_ALIGNMENT_CENTER)
@@ -128,26 +130,48 @@ func _set_hand_from_pointer(pointer: Vector2) -> void:
 
 func _submit() -> void:
 	if _is_paid():
-		status_label.text = LocalizationSystem.text("这只钟已经校准过，20 元工钱也已经领过了。")
+		status_label.text = LocalizationSystem.text("这只钟已经校准过，工钱也已经领过了。")
 		return
 	if not is_correct():
 		status_label.text = LocalizationSystem.text("还没对准。再看看校时单上的时间。")
 		WorldSound.play_ui("dialogue")
 		return
+	if GameState.current_location!="print_shop" or SceneRouter.active_space_id!="print_studio":
+		status_label.text = LocalizationSystem.text("先到社区中心的旧钟旁，再完成校准。")
+		return
+	if not GameplayModuleSystem.pending_module_id().is_empty():
+		status_label.text = LocalizationSystem.text("先收好手头的活动，再校准旧钟。")
+		return
+	var hours := WorldGraph.location_status("print_shop")
+	if not bool(hours.open) or GameState.current_minute+WORK_MINUTES>int(hours.closes):
+		status_label.text = LocalizationSystem.text("社区中心快休息了，校准需要完整的 %d 分钟。下次早点来。" % WORK_MINUTES)
+		return
+	if not GameState.can_fit_now(WORK_MINUTES):
+		status_label.text = LocalizationSystem.text("这段空档不够校准旧钟，需要 %d 分钟。先看看今天的安排。" % WORK_MINUTES)
+		return
+	var snapshot := GameState.to_save_data().duplicate(true)
+	GameState.spend_time(WORK_MINUTES)
+	LifeSystem.change({"body":-1,"engagement":-2,"clarity":2},"花了 %d 分钟校准社区中心的旧钟。" % WORK_MINUTES)
 	GameState.shared_state[REWARD_KEY] = true
 	GameState.earn_money(reward, "校准社区中心旧钟", {
 		"kind": "income",
 		"issuer": "print_shop",
 		"source": "community_clock_repair",
+		"work_minutes": WORK_MINUTES,
 	})
 	GameState.add_journal_entry({
 		"id": "community_clock_repair",
 		"kind": "work",
-		"text": "把社区中心的旧钟校准到 %s，领到 %d 元工钱。" % [_format_time(target_hour, target_minute), reward],
+		"text": "花了 %d 分钟，把社区中心的旧钟校准到 %s，领到 %d 元工钱。" % [WORK_MINUTES, _format_time(target_hour, target_minute), reward],
 	})
-	SaveManager.save_or_report("旧钟校准后保存失败")
+	GameState.commit_active_role_state()
+	if not SaveManager.save_or_report("旧钟校准后保存失败"):
+		GameState.load_save_data(snapshot)
+		status_label.text = LocalizationSystem.text("没有保存成功，本次校准的时间和工钱已撤销。可以重试。")
+		_refresh()
+		return
 	WorldSound.play_ui("coin")
-	status_label.text = LocalizationSystem.text("指针与校时单完全一致。工钱 +%d 元，已经放进钱包。" % reward)
+	status_label.text = LocalizationSystem.text("花了 %d 分钟，指针与校时单完全一致。工钱 +%d 元，已经放进钱包。" % [WORK_MINUTES,reward])
 	_refresh()
 
 
@@ -166,9 +190,9 @@ func _refresh() -> void:
 	hour_button.button_pressed = selected_hand == "hour"
 	minute_button.button_pressed = selected_hand == "minute"
 	if _is_paid():
-		submit_button.text = LocalizationSystem.text("已经校准 · 已领 20 元")
+		submit_button.text = LocalizationSystem.text("已经校准 · 工钱已领取")
 	else:
-		submit_button.text = LocalizationSystem.text("确认时间 · +%d 元" % reward)
+		submit_button.text = LocalizationSystem.text("确认 · %d分钟 · +%d元" % [WORK_MINUTES,reward])
 	queue_redraw()
 
 

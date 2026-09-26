@@ -116,7 +116,7 @@
         {
           "id": "station_clock",
           "name": "需要校准的旧钟",
-          "detail": "按照校时单拨动时针和分针。调准后可领取 20 元工钱。",
+          "detail": "按照校时单拨动时针和分针。校准需要 10 分钟，调准后可领取 20 元工钱。",
           "kind": "clock_repair",
           "target_hour": 10,
           "target_minute": 20,

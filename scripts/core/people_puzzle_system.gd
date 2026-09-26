@@ -24,11 +24,23 @@ func page(npc: String) -> Dictionary:
 func present(npc: String) -> bool:
 	return DialogueSystem.people_at(GameState.current_location,SceneRouter.active_space_id).has(npc)
 
+func record_cooking_experience(interaction: Dictionary, response: String) -> void:
+	# One sourced side, earned through actual preparation, tasting and service.
+	# Repeated dishes cannot replace a later observation and in-person review.
+	if GameplayModuleSystem.pending_module_id()!="cooking" or interaction.get("context",{})!=GameplayModuleSystem.session_context(): return
+	if GameState.current_location!="night_market" or not present("shi_yongqi"): return
+	var mechanic: Dictionary=interaction.get("mechanic",{})
+	if mechanic.get("preparations",[]).is_empty() or mechanic.get("additions",[]).is_empty() or int(mechanic.get("stir_count",0))<2 or str(mechanic.get("plating","")).is_empty() or mechanic.get("grade",{}).is_empty(): return
+	var p := page("shi_yongqi")
+	if p.facets.any(func(f: Dictionary) -> bool: return str(f.id)=="cooking_tasting"): return
+	p.facets.append({"id":"cooking_tasting","title":"愿意认真尝过再回应","text":"一起备料、尝味并出餐后，她没有只说好吃，而是认真回应了这道菜的具体做法。\n"+response,"source":"共同出餐 · "+TravelSystem.location_name(GameState.current_location),"role":GameState.current_role,"day":GameState.current_day,"minute":GameState.current_minute})
+	GameState.meet_resident("shi_yongqi")
+
 func offer(npc: String) -> Dictionary:
 	if not SCENES.has(npc) or not present(npc): return {}
 	var p := page(npc)
 	var scene: Array=SCENES[npc]
-	if p.facets.is_empty(): return {"kind":"observe","text":scene[1],"choices":[["留意一下："+str(scene[0])+"（5分钟）","observe"],["先不打扰。","later"]]}
+	if not p.facets.any(func(f: Dictionary) -> bool: return str(f.id)=="observation"): return {"kind":"observe","text":scene[1],"choices":[["留意一下："+str(scene[0])+"（5分钟）","observe"],["先不打扰。","later"]]}
 	if p.facets.size()==1:
 		var first: Dictionary=p.facets[0]
 		if int(first.day)==GameState.current_day and GameState.current_minute<int(first.minute)+30: return {}

@@ -6,8 +6,8 @@ const REST_ANGLE := -1.12
 const REST_SCALE := Vector2(0.68, 0.9)
 const FLIGHT_GRAVITY := 720.0
 const LAUNCH_SPEED := 630.0
-const LAUNCH_SPIN := -0.75
-const SPIN_DRAG := 0.6
+const FLIGHT_TURN := -TAU
+const SPIN_DRAG := 0.85
 const SETTLE_SECONDS := 0.85
 var world: Node2D
 var covered := false
@@ -33,6 +33,7 @@ var _rattle_phase := 0.0
 var _spin := 0.0
 var _landing_angle := 0.0
 var _landing_spin := 0.0
+var _rest_rotation := REST_ANGLE
 var _bounces := 0
 var _previous_pose := Transform2D.IDENTITY
 var _step_seconds := 1.0 / 60.0
@@ -143,13 +144,14 @@ func advance(dt: float, vapor_ml: float, temperature: float, moist_food: bool) -
 	_rattle_clock += dt
 	burst_left = maxf(0.0, burst_left - dt)
 	if _flight:
-		_flight_age += dt
+		var turn_dt := minf(dt, maxf(0.0, _flight_seconds - _flight_age))
+		_flight_age = minf(_flight_seconds, _flight_age + dt)
 		var previous_position := position
 		position += _velocity * dt + Vector2(0.0, 0.5 * FLIGHT_GRAVITY * dt * dt)
 		_velocity.y += dt * FLIGHT_GRAVITY
-		# A steam lift gives a small tipping impulse, not a spinning disc.
-		# Integrate angular drag analytically so frame rate cannot add turns.
-		var spin_decay := exp(-dt * SPIN_DRAG)
+		# One impulse completes one turn over this gravity arc. Angular drag
+		# slows the turn before contact; only integrate actual airborne time.
+		var spin_decay := exp(-turn_dt * SPIN_DRAG)
 		rotation += _spin * (1.0 - spin_decay) / SPIN_DRAG
 		_spin *= spin_decay
 		# Establish the leaning projection gradually through the flight. The
@@ -166,6 +168,7 @@ func advance(dt: float, vapor_ml: float, temperature: float, moist_food: bool) -
 			_flight = false
 			_settling = SETTLE_SECONDS
 			_landing_angle = wrapf(rotation - REST_ANGLE, -PI, PI)
+			_rest_rotation = rotation - _landing_angle
 			_landing_spin = _spin
 			_velocity.y *= -0.18
 			_bounces = 0
@@ -184,7 +187,7 @@ func advance(dt: float, vapor_ml: float, temperature: float, moist_food: bool) -
 			else: _velocity.y = 0.0
 		var t := SETTLE_SECONDS - _settling
 		var decay := exp(-12.0 * t)
-		rotation = REST_ANGLE + (_landing_angle + (_landing_spin + 12.0 * _landing_angle) * t) * decay
+		rotation = _rest_rotation + (_landing_angle + (_landing_spin + 12.0 * _landing_angle) * t) * decay
 		scale = REST_SCALE
 		if _settling == 0.0: rest_lid()
 	if not covered: return
@@ -231,11 +234,11 @@ func burst() -> void:
 	_flight = true
 	_flight_age = 0.0
 	_settling = 0.0
-	_spin = LAUNCH_SPIN
 	# Solve the descending time to the clear counter support. No sideways tween
 	# or teleport: each fixed thermal-owner step integrates impulse and gravity.
 	var flight_time := (LAUNCH_SPEED + sqrt(LAUNCH_SPEED * LAUNCH_SPEED + 2.0 * FLIGHT_GRAVITY * (HOME.y - position.y))) / FLIGHT_GRAVITY
 	_flight_seconds = flight_time
+	_spin = FLIGHT_TURN * SPIN_DRAG / (1.0 - exp(-SPIN_DRAG * flight_time))
 	_velocity = Vector2((HOME.x - position.x) / flight_time, -LAUNCH_SPEED)
 	_previous_pose = transform
 	world.audio.effects.lid_tick.stop()

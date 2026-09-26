@@ -1,0 +1,11 @@
+{
+  "frames": 333,
+  "fps": 60,
+  "seconds": 5.55,
+  "peak_dbfs": -16.726834,
+  "unique_frames_during_turn": 100,
+  "sampled_turn_frames": 100,
+  "sha256": "2d271fb8582bf1b1ab347678a0519139f3d9bd27db22cf2212dfc5cc53683517",
+  "bytes": 740591,
+  "decode": "PASS"
+}

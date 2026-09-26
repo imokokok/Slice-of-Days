@@ -3,13 +3,26 @@ extends SceneTree
 ## pressure, impulse, food physics and landing. No injected pressure or char.
 var game
 var prefix := ""
+var force_offscreen_draw := false
 
 func _initialize() -> void:
 	# MovieWriter is initialized before _initialize; preserve the project's
 	# original viewport size throughout the recording.
 	root.size = Vector2i(1440, 851)
+	root.gui_disable_input = true
 	Engine.max_fps = 60
+	# Optional GPU capture when macOS stops presenting a hidden window.
+	# MovieWriter still records each simulation frame, so refresh its texture
+	# after scene processing rather than accepting a frozen viewport image.
+	process_frame.connect(_queue_movie_draw)
 	call_deferred("run")
+
+func _queue_movie_draw() -> void:
+	if force_offscreen_draw: call_deferred("_draw_movie_frame")
+
+func _draw_movie_frame() -> void:
+	RenderingServer.viewport_set_update_mode(root.get_viewport_rid(), RenderingServer.VIEWPORT_UPDATE_ALWAYS)
+	RenderingServer.force_draw(false)
 
 func snapshot(name: String) -> void:
 	# GPU readbacks inside MovieWriter can stall/skip its output frames.
@@ -23,6 +36,7 @@ func run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.is_empty(): quit(1); return
 	prefix = args[0]
+	force_offscreen_draw = args.has("--offscreen-draw") and not Engine.get_write_movie_path().is_empty()
 	game = preload("res://modules/restaurant/restaurant.tscn").instantiate()
 	game.configure({"repository_path": "user://lid_polish_capture_%s/book.json" % Crypto.new().generate_random_bytes(16).hex_encode(), "shift_seconds": 3600.0})
 	root.add_child(game)
@@ -82,7 +96,7 @@ func run() -> void:
 	if world.lid.burst_count != 1:
 		push_error("Actual hot-pan state did not pop")
 		quit(1); return
-	print("POP_PREVIEW frame=", Engine.get_frames_drawn(), " warning_frames=", frames)
+	print("POP_PREVIEW process_frame=", Engine.get_process_frames(), " warning_frames=", frames)
 	var pop_clock: float = world.reactions.clock
 	var i := 0
 	while world.reactions.clock - pop_clock < 4.0 and i < 480:

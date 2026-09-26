@@ -123,8 +123,11 @@ func run() -> void:
 	# No direct pressure injection here: actual food/water/heat step until a pop.
 	var elapsed := 0.0
 	while world.lid.burst_count == 0 and elapsed < 240.0:
-		world.reactions.advance(1.0)
-		elapsed += 1.0
+		# Stop near the actual pop, rather than missing part of the turn inside
+		# the final accelerated one-second heating chunk.
+		var cooking_dt := 0.01 if world.lid.pressure >= 0.975 else 1.0
+		world.reactions.advance(cooking_dt)
+		elapsed += cooking_dt
 	expect(world.lid.burst_count == 1 and not world.lid.covered, "sustained real heating pops the lid once")
 	expect(food.linear_velocity.y < 0.0 and world.cooking, "burst moves the same food bodies while burner remains on")
 	expect(food.get_meta("thermal").initial_kg == fresh.initial_kg, "burst preserves food identity and processing history")
@@ -137,6 +140,7 @@ func run() -> void:
 	var angular_step := 0.0
 	var previous_rotation: float = world.lid.rotation
 	var total_turn := 0.0
+	var airborne_turn := 0.0
 	var minimum_projection := 1.0
 	var previous_scale: Vector2 = world.lid.scale
 	var largest_scale_step := 0.0
@@ -150,6 +154,7 @@ func run() -> void:
 		previous_pose = world.lid.position
 		angular_step = maxf(angular_step, absf(wrapf(world.lid.rotation - previous_rotation, -PI, PI)))
 		total_turn += absf(wrapf(world.lid.rotation - previous_rotation, -PI, PI))
+		if was_airborne: airborne_turn += wrapf(world.lid.rotation - previous_rotation, -PI, PI)
 		if world.lid._flight: minimum_projection = minf(minimum_projection, world.lid.scale.y)
 		largest_scale_step = maxf(largest_scale_step, previous_scale.distance_to(world.lid.scale))
 		if was_airborne and not world.lid._flight: contact_scale = world.lid.scale
@@ -158,8 +163,8 @@ func run() -> void:
 		previous_rotation = world.lid.rotation
 		if world.lid._flight and world.lid._velocity.y > 0.0: descending = true
 	expect(world.lid.burst_origin.y - peak > 220.0, "steam impulse launches lid visibly high above the pan")
-	expect(descending and absf(world.lid.rotation - airborne_rotation) > 0.1, "lid tips and descends under gravity")
-	expect(total_turn > 0.5 and total_turn < PI * 0.5, "the entire pop and landing tip less than a quarter turn without repeated spins")
+	expect(descending and absf(wrapf(world.lid.rotation - airborne_rotation, -PI, PI)) > 0.1, "lid turns and descends under gravity")
+	expect(absf(airborne_turn + TAU) < 0.3 and total_turn < TAU + PI * 0.5, "lid completes one airborne turn then leans into its stand without extra spins")
 	expect(minimum_projection >= 0.77, "airborne lid keeps a readable face instead of repeatedly flipping edge-on")
 	expect(largest_scale_step < 0.004, "lid projection changes gradually through the arc instead of shrinking at landing")
 	expect(contact_scale.distance_to(world.lid.REST_SCALE) < 0.0001 and largest_contact_scale_step < 0.0001, "contact, rebound and final rest preserve the same lid dimensions")
@@ -221,15 +226,22 @@ func run() -> void:
 	# This would expose the old semi-implicit Euler drift across frame rates.
 	var trajectories: Array[Vector2] = []
 	var angles: Array[float] = []
+	var flight_turns: Array[float] = []
 	for rate in [30, 60, 120]:
 		world.lid.rest_lid()
 		world.lid.close_lid()
 		world.lid.burst()
+		var launch_angle: float = world.lid.rotation
 		for frame in rate: world.lid.advance(1.0 / rate, 0.0, 22.0, false)
 		trajectories.append(world.lid.position)
 		angles.append(world.lid.rotation)
+		for frame in rate * 4:
+			if not world.lid._flight: break
+			world.lid.advance(1.0 / rate, 0.0, 22.0, false)
+		flight_turns.append(world.lid.rotation - launch_angle)
 	expect(trajectories[0].distance_to(trajectories[1]) < 0.01 and trajectories[1].distance_to(trajectories[2]) < 0.01, "30/60/120 Hz steps produce the same one-second steam impulse trajectory")
-	expect(absf(angles[0] - angles[1]) < 0.0001 and absf(angles[1] - angles[2]) < 0.0001, "30/60/120 Hz steps preserve the same gentle angular impulse")
+	expect(absf(angles[0] - angles[1]) < 0.0001 and absf(angles[1] - angles[2]) < 0.0001, "30/60/120 Hz steps preserve the same damped angular impulse")
+	expect(absf(flight_turns[0] + TAU) < 0.0001 and absf(flight_turns[1] + TAU) < 0.0001 and absf(flight_turns[2] + TAU) < 0.0001, "30/60/120 Hz all finish exactly one turn before landing")
 	print("Lid pop after %s seconds of accelerated hot-pan fixture cooking" % elapsed)
 	for failure in failures: push_error(failure)
 	print("%s: pan lid and burning, %d checks" % ["PASS" if failures.is_empty() else "FAIL", checks])

@@ -47,7 +47,7 @@ def launch(profile=None):
     if not engine:
         raise SystemExit('Install Godot 4.5.1+ and add godot/godot4 to PATH, or set GODOT_BIN to its executable.')
     # A source ZIP has no editor cache: import its real image/audio files once.
-    marker=ROOT/'.godot/open-pack-import-v3'
+    marker=ROOT/'.godot/open-pack-import-v4'
     if not marker.exists():
         with (STATE/'import.log').open('w',encoding='utf-8') as log:
             command=[engine,'--headless','--editor','--path',str(ROOT),'--import','--quit']

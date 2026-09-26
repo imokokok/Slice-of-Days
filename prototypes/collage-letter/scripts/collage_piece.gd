@@ -3,7 +3,12 @@ class_name CollagePiece
 
 const Tape=preload("res://scripts/tape_art.gd")
 var alpha_hit:=false
+var painted_png:=""
+var is_glued:=false
+var glue_coverage:=0.0
+var glue_flash:=0.0
 var lift:=0.0
+var paper_thickness:=0.8
 var hit_image: Image
 var settling: Tween
 var tape_style:=0
@@ -28,15 +33,23 @@ func _draw() -> void:
 		return
 	var shadow := PackedVector2Array()
 	for p in polygon:
-		shadow.append(p + Vector2(3+lift*4,5+lift*6))
-	if not alpha_hit: draw_colored_polygon(shadow,Color(0.15,0.14,0.1,0.15))
+		shadow.append(p + Vector2(1.2+paper_thickness+lift*4,1.4+paper_thickness*1.8+lift*6))
+	if not alpha_hit: draw_colored_polygon(shadow,Color(0.15,0.14,0.1,0.08+paper_thickness*0.045))
+	elif texture and source_id>=0:
+		# The shadow follows the texture alpha, including torn edges and letter cutouts.
+		draw_polygon(shadow,PackedColorArray([Color(0.23,0.20,0.15,0.17)]),uv,texture)
 	if source_id == -2:
 		Tape.paint(self,polygon,tape_style)
 	elif texture:
 		draw_polygon(polygon,PackedColorArray([Color.WHITE]),uv,texture)
+		if not alpha_hit:
+			var rim:=polygon.duplicate();rim.append(rim[0])
+			draw_polyline(rim,Color(1,0.97,0.87,0.36),0.55+paper_thickness*0.35,true)
 	else:
 		draw_colored_polygon(polygon,Color("f5eddb"))
 		draw_string(font,Vector2(-bounds().size.x/2+10,9),handwriting,HORIZONTAL_ALIGNMENT_LEFT,-1,24,Color("40566b"))
+	if glue_flash>0 and texture:
+		draw_polygon(polygon,PackedColorArray([Color(1,1,0.82,glue_flash*0.22)]),uv,texture)
 	if selected:
 		var border := polygon.duplicate()
 		border.append(polygon[0])
@@ -57,6 +70,7 @@ func hit(point: Vector2) -> bool:
 	if alpha_hit and texture:
 		if not hit_image: hit_image=texture.get_image()
 		var pixel:=Vector2(150,119)+to_local(point)
+		if source_id==-4:pixel=(to_local(point)-bounds().position)/bounds().size*Vector2(hit_image.get_size())
 		return hit_image.get_pixelv(Vector2i(pixel).clamp(Vector2i.ZERO,hit_image.get_size()-Vector2i.ONE)).a>0.1
 	return true
 
@@ -69,12 +83,13 @@ func serialize() -> Dictionary:
 		uvs.append([p.x,p.y])
 	var points: Array=[]
 	for p in strokes: points.append([p.x,p.y])
-	return {"alpha_hit":alpha_hit,"strokes":points,"tape_style":tape_style,"pen_color":pen_color.to_html(),"pen_width":pen_width,"source":source_id,"source_language":source_language,"polygon":poly,"uv":uvs,"position":[position.x,position.y],"rotation":rotation,"scale":[scale.x,scale.y],"taped":is_taped,"text":handwriting}
+	return {"painted_png":painted_png,"glued":is_glued,"glue_coverage":glue_coverage,"paper_thickness":paper_thickness,"alpha_hit":alpha_hit,"strokes":points,"tape_style":tape_style,"pen_color":pen_color.to_html(),"pen_width":pen_width,"source":source_id,"source_language":source_language,"polygon":poly,"uv":uvs,"position":[position.x,position.y],"rotation":rotation,"scale":[scale.x,scale.y],"taped":is_taped,"text":handwriting}
 
 func release_lift() -> void:
 	if settling and settling.is_running(): settling.kill()
 	settling=create_tween()
 	settling.tween_property(self,"lift",0.0,0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	settling.tween_callback(queue_redraw)
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if glue_flash>0:glue_flash=maxf(0,glue_flash-delta);queue_redraw()
 	if lift>0: queue_redraw()

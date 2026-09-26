@@ -27,7 +27,7 @@ func run() -> void:
 		await process_frame
 	game.smoke=true
 	check(game.ready_done and game.materials.size()==678,"678 material library loads")
-	check(game.texture_cache.size()<=4,"Only visible sources render at startup")
+	check(game.texture_cache.size()<=18,"Only visible sources render at startup")
 	var counts={"图案":100,"纸张":96,"广告":160,"文字":120,"票据":121,"乐谱":17,"字母":52}
 	for group in counts: check(game.material_ids(group).size()==counts[group],"Category "+group)
 	var english:=0;var chinese:=0

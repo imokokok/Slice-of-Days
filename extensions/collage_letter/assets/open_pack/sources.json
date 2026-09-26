@@ -1397,5 +1397,121 @@
     "license": "CC0",
     "notes": "Original file retained; source atlas regions and color washes applied at runtime",
     "sha256": "0d013d29e98541e61ae1423f2f11207ed90ea4fb7857389cfc3a46968729a27a"
+  },
+  {
+    "file": "paper/fibre-kraft.png",
+    "source": "https://opengameart.org/content/cc0-pbr-paper-02-texture-paper02albedopng",
+    "download": "https://opengameart.org/sites/default/files/oga-textures/91242/paper02albedo.png",
+    "license": "CC0-1.0",
+    "notes": "Original 2048px paper colour scan by plaggy / photos-public-domain.com. Only colour texture used in 2D; no PBR lighting.",
+    "sha256": "1fbf875c34cf25eddc9dc386d04b2d5a4074028fb815d0781e3426c9f54d8004"
+  },
+  {
+    "file": "paper/watercolor_10_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_10_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "9159e661e17b68f16333148768fee8a8a234ec58d3a6ceae1441c45346da922d"
+  },
+  {
+    "file": "paper/watercolor_11_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_11_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "2b13cc18f3fa98e292b0f76fcbad324457e43cb1d196267983e8de4f57c49e55"
+  },
+  {
+    "file": "paper/watercolor_12_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_12_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "7d5c25df413be10e2c50259dd3bd4e729ecfae5cff64e0a44b0506a7479d9525"
+  },
+  {
+    "file": "paper/watercolor_1_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_1_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "c36fb454bea105dade31121f68c4f30b1dbfb453e7788c6fc0c6f839d0bec551"
+  },
+  {
+    "file": "paper/watercolor_2_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_2_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "20ad77991cf54242478b574c1913fc085e97441b317279bb24009d539f50d1af"
+  },
+  {
+    "file": "paper/watercolor_3_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_3_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "9423f0b606b1984c1298858a6b01994f1ed1d70f09aee126dabf85a734b036fb"
+  },
+  {
+    "file": "paper/watercolor_4_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_4_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "0cc43b468a98ca9dbe199d5c7f2707a15a6ec3a19d8c7997deaebcae2fbd0274"
+  },
+  {
+    "file": "paper/watercolor_5_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_5_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "c1bea7e29f305a14e491b534323120a45064c0b6494d74593f13f07b46479542"
+  },
+  {
+    "file": "paper/watercolor_6_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_6_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "85bc3a6f4dcf800dfeb96a42b15170028b1609cc02a3cf495c4cbf5de455f340"
+  },
+  {
+    "file": "paper/watercolor_7_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_7_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "fbc50ab551b8b47c248a42ee79e97499b97cf353bf7ce7f67fa172945af87448"
+  },
+  {
+    "file": "paper/watercolor_8_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_8_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "0fa0d6251f42058457d9eed356fd915f29d2e0df3c7f9eb59a07d053a98704d0"
+  },
+  {
+    "file": "paper/watercolor_9_0.jpg",
+    "source": "https://opengameart.org/content/cc0-watercolor-textures",
+    "download": "https://opengameart.org/sites/default/files/watercolor_9_0.jpg",
+    "license": "CC0-1.0",
+    "author": "PuzzleAndy",
+    "notes": "Existing watercolor texture, unchanged original. Source page states CC0 and discusses pre-2019 source licensing.",
+    "sha256": "aa32b042f5f7c76773064f7e90f181472e2edb39904eac3fbac4c677c2f9744c"
   }
 ]

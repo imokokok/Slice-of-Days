@@ -2,8 +2,21 @@ extends Button
 ## Simple original illustrated tool silhouettes; native vectors remain sharp at any window size.
 var tool_id: String=""
 var sample_style: int=-1
+var paper_style_index: int=-1
+var show_pigment:=false
+var pigment_color:=Color.WHITE
 const Tape=preload("res://extensions/collage_letter/scripts/tape_art.gd")
+const LetterPaper=preload("res://extensions/collage_letter/scripts/letter_paper.gd")
 func _draw() -> void:
+	if show_pigment:
+		var center:=size/2
+		draw_circle(center+Vector2(0,1),17,Color("b8b6a1"));draw_circle(center,16,Color("fff6dd"))
+		var shape:=PackedVector2Array();var coords:=PackedVector2Array()
+		for i in 32:
+			var vector:=Vector2.from_angle(i*TAU/32);shape.append(center+vector*(12+sin(i*2.7)*0.45));coords.append(vector*0.5+Vector2.ONE*0.5)
+		draw_colored_polygon(shape,pigment_color)
+		draw_polygon(shape,PackedColorArray([Color(pigment_color,0.35)]),coords,LetterPaper.texture(19))
+	if paper_style_index>=0:LetterPaper.paint(self,Rect2(5,5,size.x-10,size.y-10),paper_style_index,false)
 	if sample_style>=0:
 		var shape:=PackedVector2Array([Vector2(6,8),Vector2(size.x-5,6),Vector2(size.x-7,13),Vector2(size.x-4,22),Vector2(6,25),Vector2(8,18)])
 		Tape.paint(self,shape,sample_style)
@@ -11,6 +24,14 @@ func _draw() -> void:
 	var ink:=Color("476258")
 	draw_set_transform(Vector2(size.x*0.5,23),-0.10 if is_hovered() else 0.0)
 	match tool_id:
+		"brush":
+			draw_line(Vector2(-8,9),Vector2(11,-16),Color("bd8f60"),6,true)
+			draw_line(Vector2(-8,9),Vector2(-3,2),Color("95a8a1"),8,true)
+			draw_colored_polygon(PackedVector2Array([Vector2(-12,9),Vector2(-16,18),Vector2(-6,17),Vector2(-2,11)]),Color("708f87"))
+		"glue":
+			draw_style_box(load("res://extensions/collage_letter/scripts/journal_style.gd").rounded(Color("94af86"),5),Rect2(-9,-8,18,27))
+			draw_style_box(load("res://extensions/collage_letter/scripts/journal_style.gd").rounded(Color("fff3d8"),4),Rect2(-8,-17,16,13))
+			draw_line(Vector2(-7,10),Vector2(7,10),Color("f3e4be"),4,true)
 		"move":
 			draw_colored_polygon(PackedVector2Array([Vector2(-12,-13),Vector2(-9,14),Vector2(-2,6),Vector2(5,16),Vector2(11,12),Vector2(4,3),Vector2(15,0)]),Color("fff6de"))
 			draw_polyline(PackedVector2Array([Vector2(-12,-13),Vector2(-9,14),Vector2(-2,6),Vector2(5,16),Vector2(11,12),Vector2(4,3),Vector2(15,0),Vector2(-12,-13)]),ink,1.7,true)

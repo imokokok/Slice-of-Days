@@ -45,6 +45,7 @@ func play(event: String, strength: float = 1.0) -> void:
 		"PAPER_CUT": clip="tear";duration=0.21;offset=0.2
 		"TAPE_TEAR": clip="tape";offset=2.1;duration=0.65
 		"TAPE_PULL": clip="tape";offset=0.25;duration=0.8
+		"BRUSH_DRAW": clip="strokes";offset=rng.randf_range(0.1,0.5);duration=0.32
 		"PENCIL_DRAW": clip="pencil";offset=rng.randf_range(0.1,0.7);duration=0.3
 		"STAMP_PRESS", "STAMP_RELEASE", "PAPER_PRESS", "TAPE_STICK": clip="stamp";duration=0.22
 		"MATCH_STRIKE": clip="match";duration=0.48

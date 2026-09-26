@@ -1,47 +1,39 @@
 extends SceneTree
 var failures:=0
 func check(ok:bool, why:String)->void:
-	if not ok: failures+=1;push_error(why)
+	if not ok:failures+=1;push_error(why)
 func _initialize()->void:call_deferred("run")
+func visible_buttons(node: Node, result: Array) -> void:
+	if node is Button and node.is_visible_in_tree() and Rect2(0,0,1440,900).intersects(node.get_global_rect()):result.append(node)
+	for child in node.get_children():visible_buttons(child,result)
+func capture(name: String) -> void:
+	await process_frame;await RenderingServer.frame_post_draw
+	var folder:=OS.get_environment("COLLAGE_TEST_OUTPUT")
+	if not folder.is_empty():root.get_texture().get_image().save_png(folder.path_join(name+".png"))
 func run()->void:
 	var game=load("res://Main.tscn").instantiate();root.add_child(game)
 	while not game.ready_done:await process_frame
-	game.smoke=true
-	for index in 8:
-		var tab=game.ui.get_node("Category_"+str(index))
-		tab.pressed.emit()
-		await process_frame
-		check(game.material_ids().has(game.primary),"Category tab loads its material group")
-		check(game.ui.get_node("Category_"+str(index)).tooltip_text.contains(str(game.material_ids().size())),"Tab exposes the current group count")
-	game.set_tool("tape")
-	var before: int=game.pieces_root.get_child_count()
-	for pressed in [true,false]:
-		var event:=InputEventMouseButton.new()
-		event.button_index=MOUSE_BUTTON_LEFT;event.pressed=pressed
-		event.position=Vector2(600,350) if pressed else Vector2(760,390)
-		game._unhandled_input(event)
-	check(game.pieces_root.get_child_count()==before+1,"Queued drag retains event positions")
-	check(game.selected.position.is_equal_approx(Vector2(680,370)),"Tape lands between press and release positions")
-	game.take_letter(626,Vector2(650,350))
+	game.smoke=true;game.conversation_open=false;game.build_ui()
+	check(not game.shelf_open and not game.tools_open,"Both drawers start closed")
+	await capture("closed-desk")
+	game.desk.toggle("shelf");await create_timer(0.3).timeout
+	check(is_equal_approx(game.desk.shelf.position.x,38),"Shelf slides into its open position")
+	game.desk.toggle("tools");await create_timer(0.3).timeout
+	check(is_equal_approx(game.desk.kit.position.x,1039),"Kit slides into its open position")
+	game.desk.begin_material_drag(622,Vector2(200,360))
+	var drop:=InputEventMouseButton.new();drop.button_index=MOUSE_BUTTON_LEFT;drop.pressed=false;drop.position=Vector2(650,360);game.desk._input(drop)
+	check(game.selected.source_id==622 and game.selected.position==drop.position,"Drawer drag creates an independent photo at release position")
 	for locale in ["zh","en"]:
 		if game.L.language!=locale:game.switch_language()
 		for dimensions in [Vector2i(960,600),Vector2i(1280,800),Vector2i(1440,900)]:
 			DisplayServer.window_set_size(dimensions)
-			for tool in ["move","tape","pen","rect","free"]:
-				game.set_tool(tool)
-				await process_frame;await process_frame
-				var buttons:Array=[]
-				for node in game.ui.get_children():
-					if node is Button:
-						buttons.append(node)
-						check(Rect2(Vector2.ZERO,Vector2(1440,900)).encloses(node.get_rect()),"Button stays inside canvas: "+node.text)
-						if node.has_meta("layout_rect"):check(node.size.is_equal_approx(node.get_meta("layout_rect").size),"Actual button respects allocated height: "+node.text)
+			for tool in ["move","tape","pen","brush","glue","rect","free"]:
+				game.set_tool(tool);await process_frame;await process_frame
+				var buttons:Array=[];visible_buttons(game.desk,buttons)
 				for a in buttons.size():
-					for b in range(a+1,buttons.size()):check(not buttons[a].get_rect().intersects(buttons[b].get_rect()),"Controls overlap: "+buttons[a].text+" / "+buttons[b].text)
-				if dimensions==Vector2i(1280,800):
-					await RenderingServer.frame_post_draw
-					var folder:=OS.get_environment("COLLAGE_TEST_OUTPUT")
-					if not folder.is_empty():root.get_texture().get_image().save_png(folder.path_join("ui-"+locale+"-"+tool+".png"))
-	game.queue_free();await process_frame;await process_frame
-	print("UI_LAYOUT_TEST: ","PASS" if failures==0 else "FAIL"," failures=",failures," locales=2 window_sizes=3 tools=5")
+					check(Rect2(0,0,1440,900).encloses(buttons[a].get_global_rect()),"Button inside canvas: "+buttons[a].text)
+					for b in range(a+1,buttons.size()):check(not buttons[a].get_global_rect().intersects(buttons[b].get_global_rect()),"Overlapping controls: "+buttons[a].text+" / "+buttons[b].text)
+				if dimensions==Vector2i(1280,800):await capture("ui-"+locale+"-"+tool)
+	game.audio.shutdown();game.queue_free();await process_frame;await process_frame
+	print("UI_LAYOUT_TEST: ","PASS" if failures==0 else "FAIL"," failures=",failures," locales=2 window_sizes=3 tools=7")
 	quit(failures)

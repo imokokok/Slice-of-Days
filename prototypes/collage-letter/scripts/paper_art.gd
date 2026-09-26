@@ -68,6 +68,7 @@ func _draw() -> void:
 	draw_set_transform(Vector2(150,120)-dimensions*0.5-Vector2(12,12)*dimensions/Vector2(276,216),0,dimensions/Vector2(276,216))
 	var bounds:=Rect2(12,12,276,216)
 	var tint:=Color(sheet_data.get("color","#faf2df"))
+	if type=="photo":tint=Color("fff9eb")
 	var corners: Array=[Vector2(12,12),Vector2(288,12),Vector2(288,228),Vector2(12,228)]
 	var random:=RandomNumberGenerator.new();random.seed=int(sheet_data.get("edge_seed",kind*97+31))
 	paper_shape.clear()
@@ -79,8 +80,11 @@ func _draw() -> void:
 			point+=Vector2(random.randf_range(-rough,rough),random.randf_range(-rough,rough))
 			if form==3 and side%2==1: point.x+=sin(step*PI/2)*3.3
 			paper_shape.append(point);coordinates.append((point-Vector2(12,12))/Vector2(276,216))
+	if type=="paper" and sheet_data.has("paper_style"):
+		preload("res://scripts/letter_paper.gd").paint(self,bounds,int(sheet_data.paper_style),false)
+		paper_pattern(str(sheet_data.pattern));return
 	draw_colored_polygon(paper_shape,tint)
-	draw_polygon(paper_shape,PackedColorArray([Color(tint,float(sheet_data.get("texture_strength",0.75)))]),coordinates,backing if backing else art)
+	draw_polygon(paper_shape,PackedColorArray([Color(tint,0.16 if type=="photo" else float(sheet_data.get("texture_strength",0.75)))]),coordinates,backing if backing else art)
 	var edge:=paper_shape.duplicate();edge.append(edge[0]);draw_polyline(edge,Color(0.95,0.88,0.72,0.6),1.2,true)
 	if type in ["art","photo"]:
 		var region:=photo_region if type=="photo" else Rect2(Vector2.ZERO,art.get_size())

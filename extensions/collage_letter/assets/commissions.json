@@ -2,10 +2,88 @@
   {
     "name_zh": "林舟",
     "name_en": "Lin Zhou",
-    "request_zh": "写给很久没见的朋友。不要直说想念，也不要像告别；放入那张旧车票。",
-    "request_en": "For an old friend. Hint at missing them without a farewell. Include the old tram ticket.",
-    "reply_zh": "她认出了车票上的站名，说下次一起坐到终点。",
-    "reply_en": "She recognized the stop on the ticket. Next time, she wants to ride to the end together."
+    "request_zh": "写给小满：在海盐镇过得很开心。用暖色、自然纸边和这里的照片，让她收到一点我的新生活。",
+    "request_en": "For Xiaoman: life in Solmere has been happy. Warm colours, natural paper edges and these photos will bring her a little of my new life.",
+    "reply_zh": "小满说，她把信放在书桌旁，像是跟着照片到海盐镇走了一圈。",
+    "reply_en": "Xiaoman put the letter by her desk. She said the photos felt like a little walk through Solmere.",
+    "attachments": [
+      622,
+      623
+    ],
+    "answers_zh": [
+      "她喜欢奶油色、浅蓝色和植物，也喜欢留着毛边的纸。她说太整齐了，反而舍不得碰。",
+      "我们总约在车站旁喝东西。她会先把杯垫翻过来画几笔，等我到了才把菜单递给我。"
+    ],
+    "answers_en": [
+      "She likes cream, pale blue, plants and torn paper edges. Anything too perfect makes her afraid to touch it.",
+      "We used to meet by the station. She would doodle on the back of a coaster while waiting, then slide the menu over when I arrived."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "我来到海盐镇已经有一段时间了，以前总是和朋友用手机聊天。她最近迷上了拼贴，我想把开心的日子用她喜欢的方式寄给她。她叫小满。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这些是我在集市和饭店拍的照片。这里的人很好，吃饭也总能遇见熟面孔。我想让她知道，我在这里过得很开心。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "I have lived in Solmere for a while. My friend and I usually chat on our phones. She has taken up collage, so I want to send my happy days in a way she enjoys. Her name is Xiaoman.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "These photographs are from the market and restaurant. People are kind, and I keep meeting familiar faces at dinner. I want her to know that I am happy here.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   },
   {
     "name_zh": "潮汐面包房",
@@ -13,7 +91,85 @@
     "request_zh": "给搬来的新邻居一张欢迎信。用暖色，留一点能写地址的空白。",
     "request_en": "Welcome a new neighbor with warm colors. Leave room to write an address.",
     "reply_zh": "她把欢迎信放在了早餐篮里，连同两只面包一起送过去。",
-    "reply_en": "The welcome note went into a breakfast basket with two warm rolls."
+    "reply_en": "The welcome note went into a breakfast basket with two warm rolls.",
+    "attachments": [
+      622,
+      620
+    ],
+    "answers_zh": [
+      "他家窗台上摆着黄色的小花。也许用暖色的纸，再留一块能写地址的空白，就很合适。",
+      "搬家那天，他把梯子借给了我们，我们才终于挂好门口的招牌。明早想给他送两只面包。"
+    ],
+    "answers_en": [
+      "He keeps yellow flowers on his windowsill. Warm paper and a clear space for the address would suit him.",
+      "He lent us a ladder on moving day so we could hang the shop sign. Tomorrow I want to leave two fresh rolls at his door."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "给搬来的新邻居一张欢迎信。用暖色，留一点能写地址的空白。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这几张照片也交给你。你可以裁下一部分，或者给它们添一点颜色。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "Welcome a new neighbor with warm colors. Leave room to write an address.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "Here are the photographs. You may use a detail, or add a little colour.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   },
   {
     "name_zh": "灯塔看守人",
@@ -21,7 +177,85 @@
     "request_zh": "写给第一次出海的学徒。要有海的颜色，不要写一路顺风。",
     "request_en": "For a new sailor. Use sea colors, but avoid the usual good-luck phrases.",
     "reply_zh": "学徒把这张信贴在了储物柜门里。",
-    "reply_en": "The apprentice tucked your letter inside the locker door."
+    "reply_en": "The apprentice tucked your letter inside the locker door.",
+    "attachments": [
+      621,
+      623
+    ],
+    "answers_zh": [
+      "她喜欢海蓝和旧地图，不喜欢把所有东西都摆正。像风刚吹过桌面那样就好。",
+      "她第一次值夜班，带了一大壶热茶，却忘了拿杯子。我们最后用两个洗干净的果酱瓶喝完了。"
+    ],
+    "answers_en": [
+      "She likes sea blue, old maps and arrangements that look as if a breeze just passed over the desk.",
+      "On her first night shift she brought a huge flask of tea and no cups. We drank it from two clean jam jars."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "写给第一次出海的学徒。要有海的颜色，不要写一路顺风。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这几张照片也交给你。你可以裁下一部分，或者给它们添一点颜色。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "For a new sailor. Use sea colors, but avoid the usual good-luck phrases.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "Here are the photographs. You may use a detail, or add a little colour.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   },
   {
     "name_zh": "旧街花店",
@@ -29,7 +263,85 @@
     "request_zh": "给退休的园丁道谢。放一些植物，别写年龄，也别太隆重。",
     "request_en": "Thank a retiring gardener. Include plants; avoid age and grand speeches.",
     "reply_zh": "园丁笑着说，明年还会回来看看那棵树。",
-    "reply_en": "The gardener smiled and promised to visit the tree next year."
+    "reply_en": "The gardener smiled and promised to visit the tree next year.",
+    "attachments": [
+      622,
+      625
+    ],
+    "answers_zh": [
+      "他会把掉下来的叶子夹进书里。植物剪影和带纤维的纸就好，字不要太满。",
+      "以前他总把多种的一小盆薄荷放在花店门口。现在窗边那一排，全是从他那盆分出来的。"
+    ],
+    "answers_en": [
+      "He presses fallen leaves in books. Plant silhouettes, fibrous paper and plenty of space would be lovely.",
+      "He used to leave spare mint plants outside our shop. Every pot on our windowsill came from that first one."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "给退休的园丁道谢。放一些植物，别写年龄，也别太隆重。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这几张照片也交给你。你可以裁下一部分，或者给它们添一点颜色。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank a retiring gardener. Include plants; avoid age and grand speeches.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "Here are the photographs. You may use a detail, or add a little colour.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   },
   {
     "name_zh": "海风唱片行",
@@ -37,7 +349,85 @@
     "request_zh": "给错过演出的朋友留个纪念。用一小片乐谱和一张票据。",
     "request_en": "A keepsake for a friend who missed the show. Add a music scrap and a ticket.",
     "reply_zh": "他认出了曲谱，轻轻哼了起来。",
-    "reply_en": "He recognized the score and began to hum."
+    "reply_en": "He recognized the score and began to hum.",
+    "attachments": [
+      623,
+      621
+    ],
+    "answers_zh": [
+      "她喜欢旧演出票、手写日期和黑白照片。可以有一点亮色，像舞台刚亮起来。",
+      "返场时大家一起打拍子，鼓手却慢了半拍，自己也笑了。我想把这种小失误带来的快乐留给她。"
+    ],
+    "answers_en": [
+      "She loves old gig tickets, handwritten dates and black-and-white photos, with a flash of stage-light colour.",
+      "During the encore everyone clapped along. The drummer missed half a beat and laughed. That small, happy imperfection is what I want her to feel."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "给错过演出的朋友留个纪念。用一小片乐谱和一张票据。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这几张照片也交给你。你可以裁下一部分，或者给它们添一点颜色。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "A keepsake for a friend who missed the show. Add a music scrap and a ticket.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "Here are the photographs. You may use a detail, or add a little colour.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   },
   {
     "name_zh": "米娅",
@@ -45,7 +435,85 @@
     "request_zh": "我把室友的杯子打碎了。帮我道歉，真诚一点，不要找借口。",
     "request_en": "I broke my roommate's cup. Help me apologize honestly, without excuses.",
     "reply_zh": "室友说，下周一起去挑一只新的吧。",
-    "reply_en": "Her roommate suggested choosing a new cup together next week."
+    "reply_en": "Her roommate suggested choosing a new cup together next week.",
+    "attachments": [
+      624,
+      622
+    ],
+    "answers_zh": [
+      "她喜欢简单的东西。白纸、蓝色的笔迹就够了，别把道歉包装得太漂亮。",
+      "杯子上有她自己画的一条歪鱼。我找到了同款空白杯，想邀请她一起重新画一个，不是装作旧杯没坏。"
+    ],
+    "answers_en": [
+      "She likes simple things. White paper and blue ink are enough. I do not want the apology to look like wrapping paper.",
+      "She painted a crooked fish on that cup. I found the same blank mug and want to paint a new one together, without pretending the old one was never broken."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "我把室友的杯子打碎了。帮我道歉，真诚一点，不要找借口。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这几张照片也交给你。你可以裁下一部分，或者给它们添一点颜色。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "I broke my roommate's cup. Help me apologize honestly, without excuses.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "Here are the photographs. You may use a detail, or add a little colour.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   },
   {
     "name_zh": "码头书摊",
@@ -53,7 +521,85 @@
     "request_zh": "给常来读书的小朋友一封鼓励信。颜色明亮，不要像成绩单。",
     "request_en": "Encourage a young regular at the bookstall. Bright colors, no report-card tone.",
     "reply_zh": "小读者把信夹在了最喜欢的故事那一页。",
-    "reply_en": "The reader slipped it into the favorite page of a storybook."
+    "reply_en": "The reader slipped it into the favorite page of a storybook.",
+    "attachments": [
+      622,
+      623
+    ],
+    "answers_zh": [
+      "他会把喜欢的词剪下来当书签。明亮一点、字大一点，像一张值得夹进书里的小纸条。",
+      "他昨天终于找到一直想看的那本书，走出店门又折回来，只为了告诉我第一页就很好笑。"
+    ],
+    "answers_en": [
+      "He cuts out favourite words to use as bookmarks. Bright colours and a few large letters would make a note worth keeping in a book.",
+      "Yesterday he found the book he had been looking for. He came back through the door just to tell me the first page was already funny."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "给常来读书的小朋友一封鼓励信。颜色明亮，不要像成绩单。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这几张照片也交给你。你可以裁下一部分，或者给它们添一点颜色。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "Encourage a young regular at the bookstall. Bright colors, no report-card tone.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "Here are the photographs. You may use a detail, or add a little colour.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   },
   {
     "name_zh": "北窗裁缝铺",
@@ -61,7 +607,85 @@
     "request_zh": "想感谢替我照看店铺的人。用朴素的纸，留一点亲手画的东西。",
     "request_en": "Thank the friend who watched my shop. Plain paper and a little doodle, please.",
     "reply_zh": "他注意到了你画的小细节，认真看了很久。",
-    "reply_en": "He noticed your little drawing and studied it for a long time."
+    "reply_en": "He noticed your little drawing and studied it for a long time.",
+    "attachments": [
+      622,
+      620
+    ],
+    "answers_zh": [
+      "她偏爱朴素的纸，偶尔在角落画一条线。请给她留些空白，让她自己添。",
+      "我回来时，桌上的布头被她按大小叠好了。她还留了张字条，说最小的一块可以给玩偶做口袋。"
+    ],
+    "answers_en": [
+      "She likes plain paper with a small doodle in a corner. Leave some space so she can add her own marks.",
+      "When I returned, she had sorted the fabric scraps by size. A note said the smallest piece would make a pocket for a doll."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "想感谢替我照看店铺的人。用朴素的纸，留一点亲手画的东西。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这几张照片也交给你。你可以裁下一部分，或者给它们添一点颜色。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank the friend who watched my shop. Plain paper and a little doodle, please.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "Here are the photographs. You may use a detail, or add a little colour.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   },
   {
     "name_zh": "周末集市",
@@ -69,7 +693,85 @@
     "request_zh": "做一封邻里野餐邀请。带一点广告传单的活泼感，别像催人消费。",
     "request_en": "Invite the neighbors to a picnic. Lively like a flyer, without a sales pitch.",
     "reply_zh": "邀请信贴出去后，有人写上了自己会带的菜。",
-    "reply_en": "Neighbors began adding the dishes they would bring beneath the invitation."
+    "reply_en": "Neighbors began adding the dishes they would bring beneath the invitation.",
+    "attachments": [
+      621,
+      623
+    ],
+    "answers_zh": [
+      "大家都不一样，所以做得活泼一点吧。像贴在街角的邀请，不用像商店打折广告。",
+      "上次野餐，每个人都说只带一点，最后却铺满了三块桌布。这次记得写：杯子要自己带。"
+    ],
+    "answers_en": [
+      "Everyone has different tastes, so make it lively, like a street-corner invitation rather than a sale flyer.",
+      "Last time everyone promised to bring only a little food and we filled three tablecloths. This time please remind them to bring their own cups."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "做一封邻里野餐邀请。带一点广告传单的活泼感，别像催人消费。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这几张照片也交给你。你可以裁下一部分，或者给它们添一点颜色。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "Invite the neighbors to a picnic. Lively like a flyer, without a sales pitch.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "Here are the photographs. You may use a detail, or add a little colour.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   },
   {
     "name_zh": "安宁",
@@ -77,7 +779,85 @@
     "request_zh": "给离家的姐姐报平安。放一张小镇照片，告诉她日子照常过。",
     "request_en": "Write to my sister away from home. Include a town photo and a sense of daily life.",
     "reply_zh": "姐姐回信说，她一眼就认出了那条路。",
-    "reply_en": "Her sister wrote back that she recognized the street at once."
+    "reply_en": "Her sister wrote back that she recognized the street at once.",
+    "attachments": [
+      622,
+      625
+    ],
+    "answers_zh": [
+      "姐姐喜欢旧照片和蓝色格子，字会写得很密。你可以留一小块空白，我再补一句。",
+      "她总问街口的猫还在不在。昨天它又睡在那张椅子上了，谁坐过去，它就往旁边挪一点。"
+    ],
+    "answers_en": [
+      "My sister likes old photos and blue checks. She writes closely spaced notes. Leave a little room for one last sentence from me.",
+      "She always asks about the cat on our street. Yesterday it was asleep on the same chair, shifting over a little whenever someone sat down."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "给离家的姐姐报平安。放一张小镇照片，告诉她日子照常过。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这几张照片也交给你。你可以裁下一部分，或者给它们添一点颜色。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "Write to my sister away from home. Include a town photo and a sense of daily life.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "Here are the photographs. You may use a detail, or add a little colour.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   },
   {
     "name_zh": "修车铺阿岳",
@@ -85,7 +865,85 @@
     "request_zh": "谢谢借给我工具的朋友。做得利落一点，可以有字母拼贴。",
     "request_en": "Thank a friend for lending tools. Keep it simple; letter cutouts are welcome.",
     "reply_zh": "他把这封信摆在工具箱旁边，没舍得收起来。",
-    "reply_en": "He left the letter beside his toolbox where he could see it."
+    "reply_en": "He left the letter beside his toolbox where he could see it.",
+    "attachments": [
+      623,
+      621
+    ],
+    "answers_zh": [
+      "他喜欢直接一点，也很爱把不同的字母拼在一起。做得像一句随手留下的谢谢，就很好。",
+      "那天修到一半缺一把扳手，他从店门口递过来，顺便给我带了午饭。工具已经擦干净还回去了。"
+    ],
+    "answers_en": [
+      "He likes direct words and mismatched cutout letters. A casual, thoughtful thank-you will suit him.",
+      "I was halfway through a repair when I needed a wrench. He arrived with one and lunch. I have already cleaned and returned the tools."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "谢谢借给我工具的朋友。做得利落一点，可以有字母拼贴。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这几张照片也交给你。你可以裁下一部分，或者给它们添一点颜色。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank a friend for lending tools. Keep it simple; letter cutouts are welcome.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "Here are the photographs. You may use a detail, or add a little colour.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   },
   {
     "name_zh": "晚班邮差",
@@ -93,6 +951,84 @@
     "request_zh": "给明天接班的同事留封信。无需煽情，写一点日常的提醒和善意。",
     "request_en": "A note for tomorrow's shift. Small reminders and kindness, without drama.",
     "reply_zh": "第二天，同事在桌上留了一杯还热着的茶。",
-    "reply_en": "The next morning, a cup of warm tea was waiting on the desk."
+    "reply_en": "The next morning, a cup of warm tea was waiting on the desk.",
+    "attachments": [
+      624,
+      622
+    ],
+    "answers_zh": [
+      "接班的人喜欢看一眼就懂的字条。浅色纸配几块小标签，事情分开写，别挤在一起。",
+      "门口第二把伞有点漏水，茶罐在最上层。还有，傍晚那位总来问路的客人，其实是来和大家打招呼的。"
+    ],
+    "answers_en": [
+      "The next carrier likes notes that can be understood at a glance. Pale paper and a few small labels will help keep things separate.",
+      "The second umbrella by the door leaks. The tea is on the top shelf. And the regular who asks directions every evening is really stopping by to say hello."
+    ],
+    "dialogue_zh": [
+      {
+        "speaker": "npc",
+        "text": "你好，可以请你帮我做一封拼贴信吗？",
+        "reply": "好的，请说。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，想把什么心情寄给对方呢？",
+        "reply": "请继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "给明天接班的同事留封信。无需煽情，写一点日常的提醒和善意。",
+        "reply": "照片我收好了。",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "这几张照片也交给你。你可以裁下一部分，或者给它们添一点颜色。",
+        "reply": "做好后，我会帮您寄出。"
+      },
+      {
+        "speaker": "player",
+        "text": "好的，我会把这些心意放进信里，做好后帮您寄出。",
+        "reply": "继续"
+      },
+      {
+        "speaker": "npc",
+        "text": "好的，麻烦您了。慢慢来，我很期待。",
+        "reply": "收好照片，开始拼贴"
+      }
+    ],
+    "dialogue_en": [
+      {
+        "speaker": "npc",
+        "text": "Hello. Could you help me make a collage letter?",
+        "reply": "Of course. Tell me about it."
+      },
+      {
+        "speaker": "player",
+        "text": "Of course. What would you like the letter to say?",
+        "reply": "Go on"
+      },
+      {
+        "speaker": "npc",
+        "text": "A note for tomorrow's shift. Small reminders and kindness, without drama.",
+        "reply": "I have your photographs.",
+        "questions": true
+      },
+      {
+        "speaker": "npc",
+        "text": "Here are the photographs. You may use a detail, or add a little colour.",
+        "reply": "I will post it for you when it is ready."
+      },
+      {
+        "speaker": "player",
+        "text": "I will put that feeling into the letter, then post it for you.",
+        "reply": "Continue"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you. Take your time; I look forward to it.",
+        "reply": "Take the photos and begin"
+      }
+    ]
   }
 ]

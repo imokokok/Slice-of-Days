@@ -131,6 +131,8 @@ func _run() -> void:
 	_expect(not sound.effects.pan.playing and not sound.effects.hot_drop.playing and not sound.effects.lid_close.playing, "pop does not stack unrelated pan, frying-entry or manual-opening sounds")
 	world.lid.advance(2.0, 0.0, 22.0, false)
 	_expect(sound.effects.lid_land.playing, "the first real support impact triggers its own landing recording")
+	world.lid.advance(0.5, 0.0, 22.0, false)
+	_expect(sound.effects.lid_land.playing and sound.effects.lid_rebound.playing, "a quieter rebound voice preserves the first impact's ringing tail")
 	_expect(sound.effects.lid_tick.volume_db < sound.effects.lid_pop.volume_db and sound.effects.lid_land.volume_db < sound.effects.lid_pop.volume_db, "warning and support impact use a restrained mix below the initial pop")
 	sound.muted = true
 	for player in sound.loops.values() + sound.effects.values():

@@ -2,8 +2,8 @@
   "seconds": 5.568,
   "rate": 48000,
   "channels": 2,
-  "peak_dbfs": -16.833839968202827,
-  "rms_dbfs": -39.80226416960009,
+  "peak_dbfs": -16.68779382655812,
+  "rms_dbfs": -38.58064707276414,
   "clipped_samples": 0,
   "human_audition": "not claimed"
 }

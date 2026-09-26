@@ -171,7 +171,7 @@ func advance(dt: float, vapor_ml: float, temperature: float, moist_food: bool) -
 		if position.y >= HOME.y:
 			position.y = HOME.y
 			if _bounces == 0 and _velocity.y > 35.0:
-				world.audio.play_effect("lid_land", 0.24)
+				world.audio.play_effect("lid_rebound", 0.24)
 				_velocity.y *= -0.12
 				_bounces += 1
 			else: _velocity.y = 0.0

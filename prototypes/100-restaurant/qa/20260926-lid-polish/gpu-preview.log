@@ -6,8 +6,8 @@ POP_PREVIEW frame=90 warning_frames=90
 PASS: GPU lid pop preview, real production animation and recorded audio, preheat=78.75
 --------------------------------------------------------------------------------
 Done recording movie at path: /private/tmp/solmere-lid-polish.avi
-226 frames at 60 FPS (movie length: 00:00:03:46), recorded in 00:00:07 (42% of real-time speed).
-CPU render time: 0.43 seconds (average: 1.90 ms/frame)
+333 frames at 60 FPS (movie length: 00:00:05:33), recorded in 00:00:07 (71% of real-time speed).
+CPU render time: 0.40 seconds (average: 1.21 ms/frame)
 GPU render time: 0.00 seconds (average: 0.00 ms/frame)
-Encoding time: 1.86 seconds (average: 8.22 ms/frame)
+Encoding time: 1.86 seconds (average: 5.59 ms/frame)
 --------------------------------------------------------------------------------

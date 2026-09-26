@@ -67,6 +67,9 @@ var stamp_lift := 0.0
 var materials: Array = []
 var source_materials: Array = []
 var texture_cache: Dictionary = {}
+var texture_viewports: Dictionary = {}
+var texture_use_order: Array[String] = []
+const MAX_CACHED_MATERIALS := 96
 var catalog_group := "全部"
 var catalog_page := 0
 const CATALOG_PAGE_SIZE = 24
@@ -1018,8 +1021,37 @@ func get_material_texture(id: int, locale: String = "") -> Texture2D:
 		art.kind=id;art.sheet_data=L.material(source_materials[id],locale);art.font=font
 		viewport.add_child(art)
 		texture_cache[key]=viewport.get_texture()
+		texture_viewports[key]=viewport
+	texture_use_order.erase(key)
+	texture_use_order.append(key)
 	if locale==L.language: textures[id]=texture_cache[key]
+	prune_material_textures(key)
 	return texture_cache[key]
+
+func prune_material_textures(keep_key: String = "") -> void:
+	if texture_cache.size()<=MAX_CACHED_MATERIALS: return
+	var protected: Dictionary={keep_key:true}
+	for id in [primary,secondary,album_source,photo_source]:
+		protected[L.language+":"+str(id)]=true
+	for piece in pieces_root.get_children():
+		if piece.source_id>=0:
+			protected[piece.source_language+":"+str(piece.source_id)]=true
+	if is_instance_valid(catalog_layer):
+		for card in catalog_layer.find_children("Material_*","Button",true,false):
+			protected[L.language+":"+card.name.trim_prefix("Material_")]=true
+	for old_key in texture_use_order.duplicate():
+		if texture_cache.size()<=MAX_CACHED_MATERIALS: break
+		if protected.has(old_key): continue
+		var old_texture: Texture2D=texture_cache[old_key]
+		texture_cache.erase(old_key)
+		texture_use_order.erase(old_key)
+		var old_viewport: SubViewport=texture_viewports[old_key]
+		texture_viewports.erase(old_key)
+		old_viewport.queue_free()
+		var parts: PackedStringArray=old_key.split(":",false,1)
+		if parts[0]==L.language:
+			var old_id:=int(parts[1])
+			if textures[old_id]==old_texture: textures[old_id]=null
 
 func switch_language() -> void:
 	L.choose("en" if L.language=="zh" else "zh")

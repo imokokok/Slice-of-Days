@@ -97,7 +97,7 @@
   "去海边读信 / 回信": "Read or reply at sea",
   "导出作品 PNG": "Export PNG",
   "桌边操作指南": "At the Letter Desk",
-  "① 刻刀：在纸张上拖方框，或按住划出自由轮廓。\n② 移动：把裁下的纸片摆上信纸，松手就放好。\n③ 胶带：沿纸片边缘拖出一条装饰胶带。\n④ 素材按类型分类；点「查看全部素材」浏览并拿取。\n⑤ 漂流瓶：自由发信、读旧信、回复其他寄信人。\n\n滚轮缩放 · Q / E 旋转 · Delete 删除 · 右键返回移动\n发出新漂流瓶后，需要回复一封来信，才能再发新信。\n自动保存作品和回信对象；发信失败可以原样重试。": "1. Knife: drag a rectangle or trace a freehand outline.\n2. Move: place a cutout on the letter and release it.\n3. Tape: drag a strip across the edge of a cutout.\n4. Browse Materials: choose a category or a thumbnail.\n5. Drift Mail: write, read old letters, and reply.\n\nWheel: scale / Q-E: rotate / Delete: remove / Right click: Move\nAfter a new drift letter, reply to one before sending again.\nDrafts save automatically. A failed send can be retried.",
+  "① 刻刀：在纸张上拖方框，或按住划出自由轮廓。\n② 移动：把裁下的纸片摆上信纸，松手就放好。\n③ 胶带：沿纸片边缘拖出一条装饰胶带。\n④ 素材按类型分类；字母可直接拿取，涂鸦笔按住绘画。\n⑤ 漂流瓶：自由发信、读旧信、回复其他寄信人。\n\n滚轮缩放 · Q / E 旋转 · Delete 删除 · 右键返回移动\n发出新漂流瓶后，需要回复一封来信，才能再发新信。\n自动保存作品和回信对象；发信失败可以原样重试。": "1. Knife: drag a rectangle or trace a freehand outline.\n2. Move: place a cutout on the letter and release it.\n3. Tape: drag a strip across the edge of a cutout.\n4. Browse categories; take letters directly or hold the doodle pen to draw.\n5. Drift Mail: write, read old letters, and reply.\n\nWheel: scale / Q-E: rotate / Delete: remove / Right click: Move\nAfter a new drift letter, reply to one before sending again.\nDrafts save automatically. A failed send can be retried.",
   "01  /  听一段往事": "01 / A story to hear",
   "02  /  捡到语言，重新排列": "02 / Gather and arrange",
   "03  /  折好这一页": "03 / Fold the letter",
@@ -252,6 +252,7 @@
   "笔迹已留下，可以用移动工具重新排列。": "Your drawing is ready to rearrange with the move tool.",
   "按住鼠标在信纸上涂鸦。松手留下笔迹，可以移动、缩放或删除。": "Hold to draw on the letter. Release to leave a stroke; move, resize or delete it.",
   "④ 素材按类型分类；字母可直接拿取，涂鸦笔按住绘画。": "4. Browse categories; take letters directly or hold the doodle pen to draw.",
+  "火漆留下了不规则的印记，它也是这封信的一部分。": "The wax left an irregular mark; it is part of this letter too.",
   "素材夹": "Material folio",
   "方框裁剪": "Box cut",
   "自由裁剪": "Free cut"

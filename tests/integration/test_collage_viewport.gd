@@ -57,7 +57,8 @@ func run() -> void:
  # Check every imported source on the renderer and through the real crop action.
  var image_hashes := {}
  var atlas := Image.create(180*10,144*68,false,Image.FORMAT_RGBA8)
- for id in letter.materials.size():
+ var source_limit: int=mini(24,letter.materials.size()) if OS.get_cmdline_user_args().has("--quick") else letter.materials.size()
+ for id in source_limit:
   letter.get_material_texture(id)
   await process_frame
   await RenderingServer.frame_post_draw
@@ -84,7 +85,7 @@ func run() -> void:
  check(letter.stage=="FOLDING" and letter.letter_preview!=null,"Original letter captures and folds")
  check(letter.save_path.begins_with("user://letter_original_"),"Host saves isolated by character and journey")
  letter.audio.shutdown();host.queue_free();gameplay.cancel_session();await process_frame
- print("ORIGINAL_COLLAGE_HOST_TEST: ","PASS" if failures==0 else "FAIL"," failures=",failures)
+ print("ORIGINAL_COLLAGE_HOST_TEST: ","PASS" if failures==0 else "FAIL"," failures=",failures," sources=",source_limit)
  quit(failures)
 
 func image_hash(bytes: PackedByteArray) -> String:

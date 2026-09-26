@@ -43,6 +43,9 @@ func run() -> void:
 	check(game.catalog_layer.find_children("Material_*","Button",true,false).size()==24,"Catalog page capped at 24")
 	await capture("zh-ad-catalog")
 	game.close_material_catalog()
+	game.take_letter(626,Vector2(680,390))
+	var retained_piece=game.selected
+	var retained_texture=retained_piece.texture
 	var hashes: Dictionary={}
 	var atlas:=Image.create(180*10,144*68,false,Image.FORMAT_RGBA8)
 	var detail:=Image.create(300*4,240*5,false,Image.FORMAT_RGBA8)
@@ -65,6 +68,9 @@ func run() -> void:
 			game.pieces_root.remove_child(game.selected);game.selected.queue_free();game.selected=null
 	if not output.is_empty():
 		atlas.save_png(output.path_join("678-materials.png"));detail.save_png(output.path_join("material-detail.png"))
+	check(game.texture_cache.size()<=game.MAX_CACHED_MATERIALS,"Unused material renderers are released after browsing all sources")
+	check(retained_piece.texture==retained_texture and not retained_texture.get_image().is_empty(),"Placed cutout keeps its texture while the material cache is pruned")
+	game.pieces_root.remove_child(retained_piece);retained_piece.queue_free();game.selected=null
 	game.select_catalog_material(626)
 	await process_frame
 	await RenderingServer.frame_post_draw
@@ -102,6 +108,9 @@ func run() -> void:
 	game.tool="rect";game.cutting_source=243;game.start=game.sources[243].position+Vector2(24,26);game.finish_cut(game.start+Vector2(240,176))
 	check(game.selected.source_language=="en","New cut uses English source")
 	game.build_ui();check_controls(game.ui)
+	game.help_open=true;game.build_ui();check_controls(game.ui)
+	game.help_open=false;game.build_ui()
+	check(not has_chinese(L.t("火漆留下了不规则的印记，它也是这封信的一部分。")),"English wax feedback is translated")
 	await capture("en-workbench")
 	for phase in ["DIALOGUE","FOLDING","ENVELOPE","WAX_SEAL","SEND","END"]:
 		game.stage=phase;game.build_ui();check_controls(game.ui)

@@ -31,7 +31,7 @@ func current_mv_kind() -> String: return RecordingSession.current_mv_kind()
 func current_mv_seed() -> int: return RecordingSession.current_mv_seed()
 func available() -> bool:
 	var scene:=get_tree().current_scene
-	return is_instance_valid(scene) and scene.scene_file_path in SCENES
+	return CharacterSystem.owns_pocket_item("recorder") and is_instance_valid(scene) and scene.scene_file_path in SCENES
 func focused() -> bool: return is_instance_valid(view) or is_instance_valid(collection)
 
 func _process(delta:float) -> void:
@@ -55,6 +55,7 @@ func _process(delta:float) -> void:
 	if RecordingSession.pending_wav!=null: pocket.text="录音待保存"
 
 func open_recorder() -> Control:
+	if not CharacterSystem.owns_pocket_item("recorder"): return null
 	if is_instance_valid(view): return view
 	if is_instance_valid(collection): collection.queue_free()
 	RecordingSession.recover_pending()

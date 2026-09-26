@@ -44,7 +44,7 @@ func portrait_path(role := "") -> String:
 
 func owns_pocket_item(item: String, role := "") -> bool:
 	var owner := GameState.current_role if role.is_empty() else role
-	if item == "recorder": return owner in ["A","B"] # Global field recording; B still owns her notebook.
+	if item == "recorder": return owner == "A"
 	if item == "notebook": return owner == "B"
 	return true
 

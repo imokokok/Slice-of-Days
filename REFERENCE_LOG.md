@@ -27,3 +27,12 @@ Little Chef、Cila、R4orce、HuntSounds 已下载并安装选用文件；UI Ani
 ## 历史记录
 
 [2026-09-18 开源方案](OPEN_SOURCE_INTEGRATION_PLAN.md) 保留作历史审计，其七日制、作品集等内容已经过时，不能作为当前玩法规格。最新五日基线与接入状态见本轮核对文件。
+
+## 2026-09-26 采用与舍弃
+
+- 继续用用户确认的 Summer House 氛围、Venba 的步骤集中与即时食材反馈、纸本 UI 参考约束本作；不下载这些商业游戏的成品 UI 或音效当作免费资源。
+- Skymon 是独立手绘符号包：统一线条、低饱和染色、保留用户确认的随身物件轮廓。采用范围见许可索引；不宣传为成熟游戏的已验证在用资源。
+- Kenney 的 Interface Sounds、RPG Audio 已实际安装，并接入 WorldSound 的控件/物件反馈；素材数不等于功能数。
+- Nathan Hoad 的音效池与 Maaack 的 UI 信号注册采用 MIT 代码片段；均固定版本、保留完整版权许可，并适配现有 Godot 总线。
+- Game-icons.net 的 CC BY 图标可署名商用，但线条语言与现有物件不一致，本轮未导入。Kenney Scribble Platformer 的角色/平台风格也不适用，没有为“多导入”而替换场景或角色。
+- 原有字体与手写待办继续沿用 Xiaolai；无新远程字体/CDN依赖。键盘弹窗焦点参考 Godot 官方 GUI navigation 机制，只做现有页面的焦点范围与返回，不替换存档、角色或任务架构。

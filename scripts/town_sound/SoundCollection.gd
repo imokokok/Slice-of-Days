@@ -40,7 +40,8 @@ func _ready() -> void:
 	page.add_child(filter); filter.item_selected.connect(func(_i:int): refresh())
 	var scroll:=ScrollContainer.new(); scroll.position=Vector2(36,254); scroll.size=Vector2(427,420); page.add_child(scroll)
 	rows=VBoxContainer.new(); rows.size_flags_horizontal=SIZE_EXPAND_FILL; rows.add_theme_constant_override("separation",8); scroll.add_child(rows)
-	_button("＋ 录下新的声音",Vector2(36,697),Vector2(423,49),func(): _close(); GlobalRecorder.open_recorder.call_deferred())
+	if CharacterSystem.owns_pocket_item("recorder"):
+		_button("＋ 录下新的声音",Vector2(36,697),Vector2(423,49),func(): _close(); GlobalRecorder.open_recorder.call_deferred())
 	name_input=LineEdit.new(); name_input.max_length=60; name_input.placeholder_text="选择左边的一段声音"; name_input.position=Vector2(506,137); name_input.size=Vector2(660,43); page.add_child(name_input)
 	rename=_button("记下名字",Vector2(1190,137),Vector2(210,43),_rename)
 	detail=p.words(page,"",Vector2(510,194),890,18)

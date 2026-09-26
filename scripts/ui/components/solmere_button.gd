@@ -2,6 +2,10 @@ extends Button
 ## Shared native states; variants express the reference without duplicating behavior.
 var variant := "quiet"
 var feedback_tween: Tween
+var icon_kind := "":
+	set(value):
+		icon_kind=value
+		if is_inside_tree(): refresh()
 var selected := false:
 	set(value):
 		selected=value
@@ -35,6 +39,13 @@ func refresh() -> void:
 	add_theme_color_override("font_hover_pressed_color",Production.INK)
 	add_theme_color_override("font_focus_color",PaperLanguage.WHITE if dark and not selected else Production.INK)
 	add_theme_color_override("font_disabled_color",Production.MUTED_INK)
+	icon=preload("res://scripts/ui/open_assets.gd").icon(icon_kind) if not icon_kind.is_empty() else null
+	expand_icon=true
+	add_theme_constant_override("icon_max_width",24)
+	add_theme_constant_override("h_separation",10)
+	for state in ["normal","hover","pressed","focus","disabled"]:
+		var color := get_theme_color("font_color" if state=="normal" else "font_"+state+"_color")
+		add_theme_color_override("icon_"+state+"_color",color)
 	add_theme_font_override("font",PaperLanguage.body_font)
 	if not has_theme_font_size_override("font_size"): add_theme_font_size_override("font_size",20)
 

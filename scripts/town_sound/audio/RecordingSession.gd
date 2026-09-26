@@ -35,6 +35,7 @@ func _ready() -> void:
 	WorldSound.sound_occurred.connect(_sound_event)
 
 func start(mode:="game") -> bool:
+	if not CharacterSystem.owns_pocket_item("recorder"): return false
 	if recorder.capturing or pending_wav!=null: return false
 	if mode not in ["game","microphone"]: return false
 	if SampleStore.new(store_path).list_samples().size()>=SampleStore.MAX_SAMPLES:

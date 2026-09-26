@@ -9,6 +9,7 @@ const SLOT_COUNT := 3
 
 var active_slot := 1
 var last_error := ""
+var save_sequence := 0
 
 
 func path_for_slot(slot: int) -> String:
@@ -48,7 +49,10 @@ func has_save(path := "") -> bool:
 func save_game(path := "") -> bool:
 	last_error = ""
 	var target_path := path_for_slot(active_slot) if str(path).is_empty() else str(path)
-	var temporary_path := target_path + ".tmp"
+	# Separate editor/export instances must never validate or rename each other's
+	# partially written temporary file. Final replacement remains atomic.
+	save_sequence+=1
+	var temporary_path := target_path + ".%d.%d.tmp" % [OS.get_process_id(),save_sequence]
 	var file := FileAccess.open(temporary_path, FileAccess.WRITE)
 	if file == null:
 		return _save_error("无法创建临时存档：%s" % error_string(FileAccess.get_open_error()))
@@ -56,10 +60,13 @@ func save_game(path := "") -> bool:
 	var payload := JSON.stringify(GameState.to_save_data(), "\t")
 	file.store_string(payload)
 	file.flush()
+	# Close the Windows write handle explicitly before validating or renaming.
+	file.close()
 	file = null
 	# Never replace a good save with a truncated or otherwise invalid payload.
-	var written = JSON.parse_string(FileAccess.get_file_as_string(temporary_path))
-	if typeof(written) != TYPE_DICTIONARY:
+	var readback := FileAccess.get_file_as_string(temporary_path)
+	var validation := JSON.new()
+	if readback!=payload or validation.parse(readback)!=OK or not validation.data is Dictionary:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(temporary_path))
 		return _save_error("无法校验临时存档。")
 	var temporary_absolute := ProjectSettings.globalize_path(temporary_path)

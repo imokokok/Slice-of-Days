@@ -4,6 +4,7 @@ const PALETTE = preload("res://scripts/ui/components/interface_palette.gd")
 var card: Button
 var words: Label
 var heading: Label
+var mark: Control
 var age := 0.0
 var entrance_age := 0.0
 var lifetime := 14.0
@@ -12,7 +13,8 @@ func _ready() -> void:
 	name="GuidanceToast"; mouse_filter=MOUSE_FILTER_IGNORE
 	card=preload("res://scripts/ui/components/solmere_button.gd").new(); card.variant="paper"; add_child(card)
 	card.pressed.connect(_open_record)
-	heading=PALETTE.words(card,"",Vector2(22,15),346,15,PALETTE.MUTED)
+	mark=preload("res://scripts/ui/components/ink_icon.gd").new(); mark.position=Vector2(19,12); mark.size=Vector2(27,27); card.add_child(mark)
+	heading=PALETTE.words(card,"",Vector2(53,15),315,15,PALETTE.MUTED)
 	words=PALETTE.words(card,"",Vector2(22,44),346,19,PALETTE.INK)
 	words.max_lines_visible=6; words.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	card.hide()
@@ -24,6 +26,9 @@ func _process(delta: float) -> void:
 		current=GuidanceSystem.take_feedback()
 		if current.is_empty(): return
 		WorldSound.play_ui("notification")
+		var entries: Array=current.get("entries",[])
+		var kind:=str(entries[0].get("kind","NOTICE")) if not entries.is_empty() else "NOTICE"
+		mark.set("kind",str({"REPLY":"mail","APPRECIATED":"heart","DONE":"check","FOUND":"bag","HEARD":"sound","CONNECTED":"personal"}.get(kind,"notice"))); mark.queue_redraw()
 		heading.text=LocalizationSystem.text(str(current.get("heading","刚刚发生")))
 		words.text=LocalizationSystem.text(str(current.text)); age=0; entrance_age=0; card.show()
 		var actionable: bool=not current.get("target",{}).is_empty()

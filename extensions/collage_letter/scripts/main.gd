@@ -112,6 +112,7 @@ func _ready() -> void:
 	finishing=Finishing.new(self)
 	commissions=JSON.parse_string(FileAccess.get_file_as_string("res://extensions/collage_letter/assets/commissions.json"))
 	source_materials=JSON.parse_string(FileAccess.get_file_as_string("res://extensions/collage_letter/assets/materials.json"))
+	_load_host_materials()
 	for raw in source_materials: materials.append(L.material(raw,L.language))
 	letter_title=L.t(letter_title)
 	bottle=BottleClient.new()
@@ -341,7 +342,7 @@ func _draw() -> void:
 				paper(Rect2(-sources[i].size*0.5+Vector2(depth*5,depth*4),sources[i].size),[Color("dfc4a5"),Color("f3dcc0"),Color("ece2c5")][depth-1])
 				draw_set_transform(Vector2.ZERO)
 			if textures.size()>i:
-				draw_texture_rect(textures[i],sources[i],false)
+				if textures[i]!=null: draw_texture_rect(textures[i],sources[i],false)
 		if cutting_source >= 0 and path.size()>1:
 			if tool == "rect":
 				draw_rect(Rect2(start,get_global_mouse_position()-start).abs(),Color(0.9,0.85,0.72,0.08))
@@ -801,6 +802,12 @@ func animate_property(property: String, target: float, duration: float, after: C
 	if after.is_valid():
 		after.call()
 
+func _load_host_materials() -> void:
+	pass
+
+func _host_save_data() -> Dictionary:
+	return {}
+
 func save_game(force: bool = false) -> void:
 	if smoke and not force:
 		return
@@ -811,6 +818,7 @@ func save_game(force: bool = false) -> void:
 	for p in seal_points:
 		points.append([p.x,p.y])
 	var data := {"version":3,"finishing":finishing.serialize(),"commission_index":commission_index,"letter_mode":letter_mode,"reply_parent":reply_parent,"letter_title":letter_title,"bottle_request_id":bottle_request_id,"bottle_published_id":bottle_published_id,"compose_server":compose_server,"category":category,"material_page":material_page,"album_source":album_source,"photo_source":photo_source,"task":"summer_still_here","stage":stage,"dialogue":dialogue,"pieces":all,"fold":fold,"inserted":envelope_inserted,"wax_step":wax_step,"wax_progress":wax_progress,"seal_style":seal_style,"seal_points":points,"feedback":final_feedback,"muted":audio.muted,"photos":[{"id":materials[album_source].asset,"title":materials[album_source].title}],"owned_sources":[0,1,2,3,4]}
+	data.merge(_host_save_data(),true)
 	var file := FileAccess.open(save_path+".tmp",FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(data))

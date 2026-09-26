@@ -9,7 +9,7 @@ func run() -> void:
 	var router = root.get_node("SceneRouter")
 	var modules = root.get_node("GameplayModuleSystem")
 	root.get_node("ChapterSystem").start_new_game()
-	state.current_location="park"; state.current_minute=1260
+	state.current_location="park"; state.current_minute=1320
 	router.gameplay_module("contemplation","street:park")
 	await create_timer(2.0).timeout
 	var host = current_scene

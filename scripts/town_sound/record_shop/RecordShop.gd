@@ -58,7 +58,7 @@ func refresh() -> void:
 		elif item[0]=="desk": station.pressed.connect(func(): open_recorder(true))
 		else: station.pressed.connect(open_shelf)
 	var radio_button:=button("♫ 听听店里的唱片",toggle_radio); radio_button.size_flags_horizontal=SIZE_SHRINK_BEGIN; body.add_child(radio_button)
-	info=label("已保存 %d 段声音 · 已制作 %d 张唱片。%s" % [samples.size(),records.size(),"先去街上留下一段声音，再回来剪贴。" if samples.is_empty() else "素材已够用，可以开始制作第一张。"],18); body.add_child(info)
+	info=label("已保存 %d 段声音 · 已制作 %d 张唱片。%s" % [samples.size(),records.size(),"可以从声音手作桌右侧加入店内素材。" if samples.is_empty() else "素材已够用，可以开始制作第一张。"],18); body.add_child(info)
 	var gate:=GameplayModuleSystem.entry_check("sound_sampling",60)
 	if not bool(gate.ok):
 		body.add_child(label("制作时间："+str(gate.reason),18))

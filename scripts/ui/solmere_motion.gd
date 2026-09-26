@@ -56,5 +56,3 @@ static func attach(button: BaseButton) -> void:
 	button.button_up.connect(func(): press(button,false,SettingsSystem.reduced_motion()))
 	button.focus_exited.connect(func(): press(button,false,SettingsSystem.reduced_motion()))
 	button.mouse_exited.connect(func(): press(button,false,SettingsSystem.reduced_motion()))
-	button.pressed.connect(func():
-		if not button.disabled and button.is_visible_in_tree(): WorldSound.play_ui("click"))

@@ -1,7 +1,7 @@
 extends SceneTree
-const Settings = preload("res://scripts/town_sound/audio/SoundSettings.gd")
 func _initialize() -> void: call_deferred("run")
 func run() -> void:
+	var Settings = load("res://scripts/town_sound/audio/SoundSettings.gd")
 	assert(Settings.choose_device(PackedStringArray(["Default", "ToDesk Virtual Audio", "Realtek Microphone"]), "") == "Realtek Microphone")
 	assert(Settings.choose_device(PackedStringArray(["Default", "ToDesk Virtual Audio", "Realtek Microphone"]), "ToDesk Virtual Audio") == "ToDesk Virtual Audio")
 	assert(Settings.choose_device(PackedStringArray(["Default"]), "Missing") == "Default")

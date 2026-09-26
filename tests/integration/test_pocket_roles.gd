@@ -64,16 +64,14 @@ func run() -> void:
 	check(shell.get_node("Pocket_notebook").visible and not shell.get_node("Pocket_recorder").visible,"B carries notebook, not recorder")
 	await capture("b-pocket")
 	key(shell,"open_recorder"); await process_frame
-	check(is_instance_valid(shell.tool),"B recorder hotkey opens the global recorder")
-	shell.tool.put_away(); await process_frame
+	check(not is_instance_valid(shell.tool) and not root.get_node("GlobalRecorder").pocket.visible,"B has no recorder view or global shortcut")
 	shell.open_tool("recorder"); await process_frame
-	check(is_instance_valid(shell.tool),"Direct request reuses global recording for B")
-	shell.tool.put_away(); await process_frame
+	check(not is_instance_valid(shell.tool) and not root.get_node("RecordingSession").start("game"),"Direct UI and recording-service calls both respect B ownership")
 	shell.open_paper("sound_library"); await process_frame
-	check(has_text(shell.overlay,"新录音"),"B sound collection offers the same recording action")
+	check(not has_text(shell.overlay,"新录音"),"B sound collection offers no personal recording action")
 	shell.overlay._home_action("recorder"); await process_frame
 	await process_frame
-	check(is_instance_valid(shell.tool),"Collection routes B to shared recording")
+	check(not is_instance_valid(shell.tool),"Collection cannot bypass B ownership")
 	if is_instance_valid(shell.tool): shell.tool.put_away(); await process_frame
 	await close_paper(shell)
 	gs.current_location="record_store"

@@ -46,9 +46,9 @@ func verify_card(card: Panel, stage: Control, caption: String, scenery := true) 
 				check(color.a==1,caption+": response state has its own solid backing")
 				var ink: Color=button.get_theme_color("font_color" if state_name=="normal" else "font_"+state_name+"_color")
 				check(contrast(ink,color)>=4.5,caption+": every response state has readable contrast")
-func town(location: String) -> void:
+func town(location: String, minute:=630) -> void:
 	state.begin_new_game("A"); state.current_location=location
-	state.current_minute=600; state.shared_state.typewriter=false
+	state.current_minute=minute; state.shared_state.typewriter=false
 	change_scene_to_file("res://scenes/town_day.tscn")
 	await create_timer(.45).timeout
 	current_scene.street.player_x=current_scene._world_x(current_scene.street_order.find(location),690)
@@ -90,9 +90,12 @@ func run() -> void:
 	key("dialogue_advance")
 	check(panel.index==same_index and panel.text_label.visible_characters==-1,"First advance reveals text without skipping a line")
 	panel.typewriter=false
-	for i in 40:
-		if is_instance_valid(panel.vendor_choices): break
-		panel._advance()
+	for i in 80:
+		if is_instance_valid(panel.vendor_choices):
+			if panel.vendor_choices.get_child_count()==5: break
+			panel.vendor_choices.get_child(panel.vendor_choices.get_child_count()-1).pressed.emit()
+		else: panel._advance()
+		await process_frame
 	await create_timer(.25).timeout
 	check(is_instance_valid(panel.vendor_choices) and panel.vendor_choices.get_child_count()==5,"All five real counter actions appear")
 	verify_card(panel.speech_card,current_scene.street,"Grocery choices")
@@ -118,7 +121,7 @@ func run() -> void:
 		check(panel.starting_topic=="schedule_info" and not is_instance_valid(panel.vendor_choices),"Topic selection enters its actual reply")
 	key("ui_cancel"); await process_frame; await process_frame
 	check(not is_instance_valid(current_scene.conversation) and current_scene.street.enabled,"Esc immediately restores walking")
-	await town("produce_stall")
+	await town("town_entrance",1080)
 	current_scene._talk_nearby("wu_wu")
 	await process_frame
 	panel=current_scene.conversation
@@ -138,27 +141,12 @@ func run() -> void:
 		await process_frame
 		check(panel.text_label.text.contains("先把手放低"),"Choosing to pet the dog produces that branch")
 	panel._close(); await process_frame; await process_frame
-	current_scene._start_market_encounter()
-	await create_timer(.25).timeout
-	var argument=current_scene.conversation.get_child(0)
-	check(argument._head(0).x>argument._head(1).x,"CICI speech and memory point to the pink character on the right")
-	verify_card(argument.dialogue_card,current_scene.street,"Street argument")
-	for i in 20:
-		if argument.waiting: break
-		argument.typed=1000
-		argument._continue()
-	await create_timer(.25).timeout
-	check(argument.waiting,"Argument still reaches its interactive memory beat")
-	verify_card(argument.dialogue_card,current_scene.street,"Memory beat")
-	check(root.get_node("UIStateSystem").current()=="DIALOGUE" and not root.get_node("UIStateSystem").policy().notify,"Street argument holds unrelated feedback until the conversation ends")
-	await capture("05-street-memory")
-	for obstacle: Rect2 in argument.dialogue_card.additional_obstacles:
-		check(not argument.dialogue_card.get_rect().intersects(obstacle),"Dialogue does not cover the draggable memories")
-	key("ui_cancel"); await process_frame; await process_frame
-	check(not is_instance_valid(current_scene.conversation),"Input Map cancel also exits the argument")
+	await town("produce_stall")
+	check(not root.get_node("DialogueSystem").argument_pending(),"Cancelled misunderstanding minigame is not a live encounter")
 	# Room conversations use the same component and respect the larger silhouettes.
 	root.get_node("SceneRouter").active_space_id="restaurant"
 	state.current_location="night_market"
+	state.current_minute=690
 	change_scene_to_file("res://scenes/interactive_space.tscn")
 	await create_timer(.5).timeout
 	current_scene.stage.player_x=800
@@ -181,9 +169,8 @@ func run() -> void:
 	check(current_scene.conversation.text_label.visible_characters==-1 and current_scene.conversation.speech_card.modulate.a==1,"Reduced motion shows the complete line without animation")
 	current_scene.conversation._close()
 	settings.values.reduced_motion=motion_before
-	await town("produce_stall")
-	state.current_minute=1260; current_scene._refresh()
-	current_scene._talk_nearby("beetman")
+	await town("park",1260)
+	current_scene._talk_nearby("yuxingqing")
 	await create_timer(.3).timeout
 	verify_card(current_scene.conversation.speech_card,current_scene.street,"Night dialogue")
 	await capture("07-night-line")

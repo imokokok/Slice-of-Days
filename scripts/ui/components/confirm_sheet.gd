@@ -15,6 +15,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter=MOUSE_FILTER_STOP
 	theme=P.theme_for_tools()
+	preload("res://scripts/ui/modal_focus.gd").install(self)
 	var shade := ColorRect.new(); shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT); shade.color=Color("16334b",.55); add_child(shade)
 	paper=Panel.new(); paper.name="ConfirmationPaper"; add_child(paper)
 	paper.size=Vector2(620,480); paper.position=(size-paper.size)*.5

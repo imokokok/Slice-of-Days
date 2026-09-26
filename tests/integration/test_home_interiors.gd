@@ -43,7 +43,7 @@ func run() -> void:
 			check(stage.nearest_interactable().get("index",-1)==i,"Nearest prompt belongs to "+str(room.objects[i].id))
 			check(shell._special().is_empty(),"Old service cannot replace room object prompt")
 			if str(room.objects[i].kind)=="journal":
-				await interact(); check(is_instance_valid(shell.overlay) and shell.overlay.mode=="notebook","Desk opens the shared hand-drawn notebook")
+				await interact(); check(is_instance_valid(shell.overlay) and shell.overlay.mode==("notebook" if role=="B" else "day_schedule"),"Desk respects each character's own planner and pocket item")
 				if is_instance_valid(shell.overlay): shell.overlay.close(); await settle()
 		stage.player_x=560; stage.set_process(false)
 		await RenderingServer.frame_post_draw

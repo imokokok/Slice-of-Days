@@ -43,7 +43,7 @@ func stir(style := "gentle") -> void:
 	stir_from_tints=current_tints
 	stir_count+=1
 	stir_style=style
-	WorldSound.play_ui("water" if COOKING.pan_moisture(exposure.values())>=0.45 else "drop")
+	WorldSound.play_world("pot")
 	if stir_tween and stir_tween.is_valid(): stir_tween.kill()
 	stir_progress=0.0
 	stir_tween=create_tween()

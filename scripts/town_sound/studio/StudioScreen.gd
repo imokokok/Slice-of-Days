@@ -79,7 +79,7 @@ func _ready() -> void:
 			selected=model.add_sample(item,0,minf(model.length(),59.8)); timeline.selected=selected; changed())
 		row.add_child(card)
 	if row.get_child_count()==0:
-		row.add_child(label("声音盒还是空的。\n回到街上，用右上角录音机留下一段声音。",21))
+		row.add_child(label("声音盒还是空的。\n先用右边的店内素材试一试，也可以带自己的录音来。",21))
 	play_control=button("▶ 听听看",func():
 		if player.playing: pause()
 		else: play())
@@ -88,10 +88,15 @@ func _ready() -> void:
 	make_control=button("拿去做唱片 →",request_visual)
 	_place(make_control,Vector2(598,377),Vector2(245,43))
 	mv=VisualCanvas.new(); mv.name="AlwaysVisibleMV"; mv.mouse_filter=MOUSE_FILTER_IGNORE
-	_place(mv,Vector2(922,126),Vector2(614,278))
+	_place(mv,Vector2(922,126),Vector2(614,252))
 	mv.profile=VisualCanvas.parse_prompt(model.prompt,model.seed_value); mv.model=model
 	mv_caption=label("声音明信片 · 播放时，画面跟着声音走",17)
-	_place(mv_caption,Vector2(929,415),Vector2(607,28))
+	_place(mv_caption,Vector2(929,390),Vector2(607,28))
+	var shop_sources:=HBoxContainer.new(); shop_sources.name="ShopSoundSources"; shop_sources.add_theme_constant_override("separation",8)
+	_place(shop_sources,Vector2(922,433),Vector2(614,45))
+	for kind in ["wind","water","fire"]:
+		var pick:=button("加入店内"+str({"wind":"风声","water":"水声","fire":"火声"}[kind]),_add_shop_sample.bind(kind))
+		pick.name="ShopSource_"+kind; pick.tooltip_text="加入约 8 秒的店内声音，可以继续剪辑"; pick.size_flags_horizontal=SIZE_EXPAND_FILL; pick.add_theme_font_size_override("font_size",18); shop_sources.add_child(pick)
 	var tools:=HBoxContainer.new(); tools.add_theme_constant_override("separation",12)
 	_place(tools,Vector2(65,491),Vector2(970,48))
 	var group:=ButtonGroup.new()
@@ -122,6 +127,31 @@ func _ready() -> void:
 	_place(status,Vector2(64,856),Vector2(1490,32))
 	build_inspector(); _guide()
 
+func _add_shop_sample(kind: String) -> void:
+	if mixing or GameState.current_location!="record_store" or kind not in ["wind","water","fire"]: return
+	if model.length()>=59.9: status.text="纸带已经放满一分钟了，先剪短一段再添加。"; return
+	var store:=SampleStore.new()
+	var source_tag: String="shop_library_"+kind
+	var existing:=store.list_samples().filter(func(item: Dictionary): return str(item.get("event_tag",""))==source_tag and not bool(item.get("missing",false)))
+	var item: Dictionary={}
+	if not existing.is_empty(): item=existing[0]
+	else:
+		var sound=preload("res://scripts/town_sound/data/SoundAtlas.gd").stream(kind)
+		if not sound is AudioStreamWAV: status.text="这段店内素材暂时无法读取。"; return
+		# Provide a short editable excerpt, leaving space for a second sound.
+		# The approved source recording remains untouched on disk.
+		var excerpt:=AudioStreamWAV.new()
+		excerpt.format=sound.format; excerpt.mix_rate=sound.mix_rate; excerpt.stereo=sound.stereo
+		excerpt.data=sound.data.slice(0,mini(sound.data.size(),sound.mix_rate*(4 if sound.stereo else 2)*8))
+		var snapshot:=GameState.to_save_data().duplicate(true)
+		item=store.save_sample(excerpt,"店内素材 · "+str({"wind":"风声","water":"水声","fire":"火声"}[kind]),{"source_mode":"shop_library","event_tag":source_tag,"sound_kind":kind,"location":"record_store","game_day":GameState.current_day,"game_minute":GameState.current_minute,"mv_seed":23817,"mv_version":3,"usage_scope":"shareable","consent_status":"provided_asset"})
+		if item.is_empty(): status.text=store.last_error; return
+		if not SaveManager.save_or_report("店内声音素材保存失败"):
+			store.delete_sample(str(item.id)); GameState.load_save_data(snapshot)
+			status.text="这段素材还没有存好，没有加入纸带。请再试一次。"; return
+	selected=model.add_sample(item,0,model.length()); timeline.selected=selected
+	if changed(): status.text="已加入"+str(item.name)+"。可以修短、换位置，再听一听。"
+
 func _place(node:Control,at:Vector2,extent:Vector2) -> void:
 	node.position=at; node.size=extent; desk.add_child(node)
 
@@ -141,7 +171,7 @@ func _guide() -> void:
 	play_control.disabled=empty or mixing; make_control.disabled=empty or mixing
 	cut_control.disabled=region_start<0 or region_end-region_start<.01
 	keep_control.disabled=cut_control.disabled
-	if empty: tutorial.text="① 打开声音盒\n把下方的小磁带拖到纸带上；也可以点一下。"
+	if empty: tutorial.text="① 挑一段声音\n点选自己的小磁带，或从右边加入店内素材。"
 	elif timeline.selection_mode and region_start>=0:
 		tutorial.text="② 已圈出 %.1f—%.1f 秒\n选「剪掉」或「只留下这段」。剪错可以撤销。"%[region_start,region_end]
 	elif timeline.selection_mode:
@@ -217,7 +247,7 @@ func build_inspector() -> void:
 	inspector.add_child(speed)
 	inspector.add_child(button("拿走这段",delete_clip))
 
-func changed() -> void:
+func changed() -> bool:
 	revision+=1
 	has_listened=false
 	if not restoring_history: _remember_edit()
@@ -229,8 +259,10 @@ func changed() -> void:
 	timeline.view_seconds=clampf(ceilf(model.length()/4.0)*4.0+4.0,12,60)
 	timeline.queue_redraw()
 	build_inspector()
-	if not model.save_project(): status.text = LocalizationSystem.text(model.error)
+	var saved: bool=model.save_project()
+	if not saved: status.text = LocalizationSystem.text(model.error)
 	_guide()
+	return saved
 
 func prepare_mix() -> bool:
 	if mixing:

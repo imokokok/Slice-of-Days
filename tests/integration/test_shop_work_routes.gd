@@ -67,7 +67,7 @@ func run():
 	economy.open_counter(current_scene,"restaurant"); await settle()
 	var work=get_nodes_in_group("economy_paper")[0]
 	var start=work.find_child("StartRestaurantWork",true,false)
-	check(start!=null and not start.disabled and start.text.begins_with("开始工作"),"Natural, enabled Start Work label is present")
+	check(start!=null and not start.disabled and start.text.begins_with("开始"),"Natural, enabled Start Work label is present")
 	if start==null or start.disabled: print("SHOP_WORK_ROUTES: ",checks," checks, ",failures," failures"); quit(1); return
 	start.pressed.emit(); await settle()
 	check(get_nodes_in_group("native_confirmation").size()==1,"Starting work produces exactly one confirmation")

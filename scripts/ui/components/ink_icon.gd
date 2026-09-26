@@ -1,12 +1,18 @@
 extends Control
 var kind := "book"
-var ink := Color("3d7096")
+var ink := Color("48544a")
+const OpenAssets = preload("res://scripts/ui/open_assets.gd")
 func _ready() -> void: mouse_filter=MOUSE_FILTER_IGNORE
 func line(points: Array, width := 2.0) -> void:
 	var p := PackedVector2Array()
 	for point in points: p.append(Vector2(point)*size/64.0)
 	draw_polyline(p,ink,width,true)
 func _draw() -> void:
+	var texture := OpenAssets.icon(kind)
+	if texture != null:
+		var side := minf(size.x, size.y)
+		draw_texture_rect(texture, Rect2((size-Vector2.ONE*side)*.5,Vector2.ONE*side), false, ink)
+		return
 	match kind:
 		"book":
 			line([Vector2(7,12),Vector2(20,10),Vector2(32,15),Vector2(44,10),Vector2(57,12),Vector2(57,52),Vector2(44,50),Vector2(32,55),Vector2(20,50),Vector2(7,52),Vector2(7,12)])

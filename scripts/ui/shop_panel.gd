@@ -21,6 +21,7 @@ var receipt: Dictionary={}
 func _ready() -> void:
 	add_to_group("meta_modal"); set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	theme=P.theme_for_tools()
+	preload("res://scripts/ui/modal_focus.gd").install(self)
 	shop=EconomySystem.catalog.get(shop_id,{})
 	var backdrop := ColorRect.new(); backdrop.color=Color("f4f1e6"); backdrop.set_anchors_and_offsets_preset(PRESET_FULL_RECT); add_child(backdrop)
 	P.words(self,str(shop.get("name","小镇杂货")) ,Vector2(80,42),830,32)
@@ -106,6 +107,7 @@ func _tag() -> void:
 	var quote := EconomySystem.cart_quote(shop_id)
 	checkout_button=_btn(right,"结账 · %d 件 / %d 元" % [count,int(quote.get("total",0))],Vector2(30,582),Vector2(470,54),_checkout)
 	checkout_button.name="ShelfCheckout"; checkout_button.variant="primary"
+	checkout_button.set("icon_kind","coin")
 	checkout_button.refresh()
 	checkout_button.disabled=buying or count==0 or not bool(quote.ok) or int(quote.get("total",0))>GameState.money or not EconomySystem.shop_open(shop_id)
 	checkout_button.tooltip_text=LocalizationSystem.text("先选一件货品" if count==0 else "余额不足" if int(quote.get("total",0))>GameState.money else "付款并收取小票")

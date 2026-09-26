@@ -77,6 +77,10 @@ func run() -> void:
 	gs.current_location="record_store"
 	var shop=load("res://scripts/town_sound/record_shop/RecordShop.gd").new(); current_scene.add_child(shop)
 	check(not has_text(shop,"随身录音 / 素材库"),"B record shop has no personal recorder entrance")
+	check(not has_text(shop,"录一段，收进口袋") and has_text(shop,"加入店内素材"),"B shop instructions match the available source-material workflow")
+	shop.stations.get_child(0).pressed.emit(); await process_frame
+	check(is_instance_valid(shop.modal) and shop.modal.page_scroll.visible and not has_text(shop.modal,"录下新的声音"),"B's visible collection station opens real library without a recorder")
+	shop.modal.queue_free(); await process_frame
 	shop.open_shelf(); await process_frame
 	check(is_instance_valid(shop.modal) and not shop.modal.page_scroll.visible,"B can listen to records without exposing recorder")
 	check(shop.modal.recorder==root.get_node("RecordingSession").recorder,"Shop wrapper uses the same global device")

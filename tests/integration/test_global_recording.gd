@@ -72,6 +72,7 @@ func run() -> void:
 		check(load(script)!=null,"Integrated script compiles: "+script.get_file())
 	gs.begin_new_game("A"); gs.switch_to_role("A",5,true); gs.shared_state["journey_id"]=Crypto.new().generate_random_bytes(12).hex_encode(); gs.current_location="night_market"; gs.current_minute=690
 	root.get_node("ChapterSystem").story().reveal_completed=true
+	check(gs.combine_flexible_time(),"A reserves a long enough real free window for cooking")
 	await settle()
 	check(router.gameplay_module("cooking","global_audio_test"),"Enter a real cooking session")
 	await create_timer(1).timeout

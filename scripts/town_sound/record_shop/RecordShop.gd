@@ -42,19 +42,20 @@ func refresh() -> void:
 	for child in body.get_children(): body.remove_child(child); child.queue_free()
 	samples=SampleStore.new().list_samples().filter(func(item:Dictionary): return not bool(item.get("missing",true)) and float(item.get("signal_peak",1))>.0001)
 	records=LocalRecordLibrary.new().list_records().filter(func(item:Dictionary): return str(item.get("origin",""))!="preset")
+	var field_recording:=CharacterSystem.owns_pocket_item("recorder")
 	var header:=HBoxContainer.new(); body.add_child(header)
 	var heading:=label("LOCAL RECORDS / 街角唱片店",34); heading.size_flags_horizontal=SIZE_EXPAND_FILL; header.add_child(heading)
 	header.add_child(button("回到店内",func(): queue_free()))
-	body.add_child(label("Xanni：先听、再收集，把路上的声音做成一张真正可以带走的唱片。",21))
+	body.add_child(label("Xanni：先听、再收集，把路上的声音做成一张真正可以带走的唱片。" if field_recording else "Xanni：店里备好了风声、水声和火声，挑喜欢的，做成一张唱片吧。",21))
 	step_grid=GridContainer.new(); step_grid.add_theme_constant_override("h_separation",14); step_grid.add_theme_constant_override("v_separation",10); body.add_child(step_grid)
-	for words in ["01  在路上\n录一段，收进口袋","02  坐下来\n剪掉多余，留住喜欢的","03  留个画面\n从 MV 或相册选封面","04  亲手完成\n压制、装袋，签下名字"]:
+	for words in ["01  在路上\n录一段，收进口袋" if field_recording else "01  挑声音\n到手作桌，加入店内素材","02  坐下来\n剪掉多余，留住喜欢的","03  留个画面\n从 MV 或相册选封面","04  亲手完成\n压制、装袋，签下名字"]:
 		var card:=PanelContainer.new(); card.size_flags_horizontal=SIZE_EXPAND_FILL; step_grid.add_child(card)
 		card.add_theme_stylebox_override("panel",card_style()); card.add_child(label(words,18))
 	stations=GridContainer.new(); stations.add_theme_constant_override("h_separation",18); stations.add_theme_constant_override("v_separation",14); body.add_child(stations)
-	for item in [["collection","带来的声音","打开磁带盒，听听路上的收藏"],["desk","声音手作桌","把今天剪贴成一张唱片"],["shelf","我的唱片架","取下一张，听完它的故事"]]:
+	for item in [["collection","声音收藏","打开磁带盒，听听已保存的声音"],["desk","声音手作桌","把今天剪贴成一张唱片"],["shelf","我的唱片架","取下一张，听完它的故事"]]:
 		var station=preload("res://scripts/town_sound/record_shop/ShopStation.gd").new()
 		station.kind=item[0]; station.caption=item[1]; station.detail=item[2]; stations.add_child(station)
-		if item[0]=="collection": station.pressed.connect(func(): open_recorder(false))
+		if item[0]=="collection": station.pressed.connect(open_collection)
 		elif item[0]=="desk": station.pressed.connect(func(): open_recorder(true))
 		else: station.pressed.connect(open_shelf)
 	var radio_button:=button("♫ 听听店里的唱片",toggle_radio); radio_button.size_flags_horizontal=SIZE_SHRINK_BEGIN; body.add_child(radio_button)
@@ -70,21 +71,23 @@ func refresh() -> void:
 	body.add_child(label("店里的小委托 / 可选挑战",26))
 	var grid:=GridContainer.new(); quest_grid=grid; grid.columns=2; grid.add_theme_constant_override("h_separation",20); grid.add_theme_constant_override("v_separation",14); body.add_child(grid)
 	for quest in Atlas.QUESTS:
+		if not field_recording and not quest.required.all(func(kind: String): return kind in ["wind","water","fire"] or Atlas.kinds_in(samples).has(kind)): continue
 		var matching:=records.filter(func(item:Dictionary): return Atlas.meets(quest,item) and FileAccess.file_exists(str(item.get("final_audio_path",""))))
 		var card:=PanelContainer.new(); card.custom_minimum_size=Vector2(280,125); card.size_flags_horizontal=SIZE_EXPAND_FILL; grid.add_child(card)
 		card.add_theme_stylebox_override("panel",card_style())
 		var column:=VBoxContainer.new(); card.add_child(column)
 		column.add_child(label(("✓ 已验收 · " if not matching.is_empty() else "○ 待制作 · ")+str(quest.title),22))
-		column.add_child(label(str(quest.brief),18))
+		column.add_child(label("用店内的火声与风声，编成至少 12 秒的作品。" if not field_recording and quest.id=="hearth_and_air" else str(quest.brief),18))
 		var kinds:=Atlas.kinds_in(samples)
 		var collected:=0
 		for kind in quest.required:
 			if kinds.has(kind): collected+=1
 		column.add_child(label("声音类型 %d / %d · 时长至少 %d 秒" % [mini(kinds.size(),int(quest.kinds)),quest.kinds,int(quest.seconds)] if quest.required.is_empty() else "目标声源 %d / %d 已收集" % [collected,quest.required.size()],17))
-	body.add_child(label("声音图鉴 · 去对应地点录制并保存即可收集",23))
+	body.add_child(label("声音图鉴 · 去对应地点录制并保存即可收集" if field_recording else "声音图鉴 · 加入店内素材后点亮",23))
 	var collection:=HFlowContainer.new(); collection.add_theme_constant_override("h_separation",15); body.add_child(collection)
 	var found:=Atlas.kinds_in(samples)
 	for kind in Atlas.KINDS:
+		if not field_recording and kind not in ["wind","water","fire"] and not found.has(kind): continue
 		var entry:=label(("● " if found.has(kind) else "○ ")+Atlas.label(kind),17)
 		entry.autowrap_mode=TextServer.AUTOWRAP_OFF
 		entry.custom_minimum_size=Vector2(170,30)
@@ -119,6 +122,9 @@ func open_recorder(studio: bool, library_only := false) -> void:
 		if is_inside_tree() and not is_queued_for_deletion():
 			WorldSound.lock_monitor(true); monitor_locked=true; refresh())
 	if studio: modal._open_studio()
+
+func open_collection() -> void:
+	open_recorder(false,true)
 
 func open_shelf() -> void:
 	open_recorder(false,true)

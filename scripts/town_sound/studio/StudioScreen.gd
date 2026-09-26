@@ -38,6 +38,7 @@ var cut_control: Button
 var keep_control: Button
 var has_listened := false
 var revision := 0
+var sample_row: HBoxContainer
 
 func _ready() -> void:
 	add_to_group("meta_modal")
@@ -72,14 +73,8 @@ func _ready() -> void:
 	_place(label("声音盒子 · 拿一卷，放到下面的纸带上",18),Vector2(65,211),Vector2(760,28))
 	var sample_scroll:=ScrollContainer.new(); sample_scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
 	_place(sample_scroll,Vector2(64,246),Vector2(782,127))
-	var row:=HBoxContainer.new(); row.add_theme_constant_override("separation",14); sample_scroll.add_child(row)
-	for item in SampleStore.new().list_samples():
-		var card:=DragButton.new(); card.sample=item; card.disabled=item.missing
-		card.pressed.connect(func():
-			selected=model.add_sample(item,0,minf(model.length(),59.8)); timeline.selected=selected; changed())
-		row.add_child(card)
-	if row.get_child_count()==0:
-		row.add_child(label("声音盒还是空的。\n先用右边的店内素材试一试，也可以带自己的录音来。",21))
+	sample_row=HBoxContainer.new(); sample_row.name="SoundBox"; sample_row.add_theme_constant_override("separation",14); sample_scroll.add_child(sample_row)
+	_refresh_sound_box()
 	play_control=button("▶ 听听看",func():
 		if player.playing: pause()
 		else: play())
@@ -127,6 +122,16 @@ func _ready() -> void:
 	_place(status,Vector2(64,856),Vector2(1490,32))
 	build_inspector(); _guide()
 
+func _refresh_sound_box() -> void:
+	for child in sample_row.get_children(): sample_row.remove_child(child); child.queue_free()
+	for item in SampleStore.new().list_samples():
+		var card:=DragButton.new(); card.sample=item; card.disabled=item.missing
+		card.pressed.connect(func():
+			selected=model.add_sample(item,0,minf(model.length(),59.8)); timeline.selected=selected; changed())
+		sample_row.add_child(card)
+	if sample_row.get_child_count()==0:
+		sample_row.add_child(label("声音盒还是空的。\n先用右边的店内素材试一试，也可以带自己的录音来。",21))
+
 func _add_shop_sample(kind: String) -> void:
 	if mixing or GameState.current_location!="record_store" or kind not in ["wind","water","fire"]: return
 	if model.length()>=59.9: status.text="纸带已经放满一分钟了，先剪短一段再添加。"; return
@@ -150,6 +155,7 @@ func _add_shop_sample(kind: String) -> void:
 			store.delete_sample(str(item.id)); GameState.load_save_data(snapshot)
 			status.text="这段素材还没有存好，没有加入纸带。请再试一次。"; return
 	selected=model.add_sample(item,0,model.length()); timeline.selected=selected
+	_refresh_sound_box()
 	if changed(): status.text="已加入"+str(item.name)+"。可以修短、换位置，再听一听。"
 
 func _place(node:Control,at:Vector2,extent:Vector2) -> void:

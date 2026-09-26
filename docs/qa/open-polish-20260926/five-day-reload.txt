@@ -1,0 +1,18 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+PASS separate process loads completed five-day save
+PASS quit then restart preserves chosen role and reveal
+PASS quit then restart preserves public objects and owners
+PASS finished letter remains A's private draft across process restart
+PASS separate process loads the real cross-domain completion save
+PASS cross-domain save restores B at Day 5
+PASS both letters remain in independent private drafts
+PASS saved cross-domain result belongs to A / cooking
+PASS saved cross-domain result belongs to A / chess
+PASS saved cross-domain result belongs to B / sound_sampling
+PASS saved cross-domain result belongs to B / ghostwriting
+PASS sourced everyday objects survive a process restart
+PASS earlier five-day saves rebuild ordinary objects only from real delivered work and original owner's receipts
+FIVE_DAY_RELOAD: PASS checks=13

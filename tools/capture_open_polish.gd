@@ -42,7 +42,15 @@ func run() -> void:
 	shop.checkout_button.pressed.emit(); await shot("13-receipt")
 	shop.queue_free(); await settle()
 	var confirm=load("res://scripts/ui/components/confirm_sheet.gd").new(); confirm.heading="把今天收好"; confirm.description="这张确认单保留清楚的文字、足够的间距和完整的键盘操作。\n\n长说明在纸页内部滚动。Tab 不会跳到背后的场景。"; current_scene.add_child(confirm); await shot("14-confirm"); confirm.queue_free(); await settle()
+	gs.switch_to_role("B",5,true); root.get_node("ChapterSystem").story().reveal_completed=true
+	gs.current_location="record_store"; gs.current_minute=690; router.town_day(.01); await settle(); current_scene.set_process(false)
+	current_scene._open_record_store(); await shot("15-record-shop")
+	var records=current_scene.pocket_panel
+	records.open_recorder(true); await settle()
+	var work=records.modal.get_children().filter(func(child: Node): return child.get_script()!=null and child.get_script().resource_path.ends_with("StudioScreen.gd"))[0]
+	work.find_child("ShopSource_wind",true,false).pressed.emit(); work.find_child("ShopSource_water",true,false).pressed.emit(); await shot("16-b-sound-materials")
+	records.queue_free(); await settle()
 	shell=current_scene.get_node("GameplayShell")
 	shell.open_paper("settings")
-	print("OPEN_POLISH_CAPTURE: 14 real game screens")
+	print("OPEN_POLISH_CAPTURE: 16 real game screens")
 	if not OS.get_cmdline_user_args().has("--keep-open"): quit()

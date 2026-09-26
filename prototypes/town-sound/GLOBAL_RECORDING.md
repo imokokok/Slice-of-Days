@@ -1,6 +1,6 @@
 # 全局声音采集 · 2026-09-26
 
-本系统已经接入根目录的 Solmere 主游戏，源码只有一份。右侧口袋录音机贯穿街区、室内、原生小游戏和扩展小游戏。A、B 都可使用录音，B 仍保留自己的手账与日程；各自录音按角色隔离。主菜单、结局、过场不显示采集入口。
+本系统已经接入根目录的 Solmere 主游戏，源码只有一份。A 的右侧口袋录音机贯穿街区、室内、原生小游戏和扩展小游戏。B 只拥有随身本，没有录音入口；B 在唱片店可选择明确标注的店内声音素材，实际剪辑、混音和压片。各自声音收藏按角色隔离。主菜单、结局、过场不显示采集入口。
 
 ## 玩家操作
 
@@ -28,7 +28,7 @@ Windows 数据目录：`%APPDATA%/Solmere_Playable_Meta`。录音、照片与个
 | [Lucide](https://github.com/lucide-icons/lucide) | 实际接入磁带、声音、麦克风、剪刀、地点和播放六个 2D 线描图标 | ISC / Feather MIT；完整许可在 third_party/licenses/lucide/LICENSE。固定提交 66d8f9fc394b8530377e5f6112f0b8908ba01280；仅将 currentColor 改为统一棕墨色 |
 | [Godot Sound Manager / Nathan Hoad](https://github.com/nathanhoad/godot_sound_manager) | 实际改编播放器的获取、回收和复用，加入 12 路上限、尾部淡出与世界音频路由 | MIT；完整许可在 third_party/licenses/godot_sound_manager/LICENSE。固定提交 1c041582db806a0d0edad77111d1fb7a009346ef |
 | [Kenney RPG Audio](https://kenney.nl/assets/rpg-audio)、[Impact Sounds](https://kenney.nl/assets/impact-sounds) | 复用仓库已有 CC0 翻纸、锅和木击音，挂接到真实互动；火焰等来源见 art/town_sound_cc0/SOURCES.md | CC0，保留逐文件来源与摘要；未重复下载同一资源 |
-| [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds) | 评估后保留现有轻提示音，避免叠加另一套按钮声音 | 候选，未安装 |
+| [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds) | 已选择性安装，原生控件信号统一触发按钮、返回、滑杆等提示；避免重复绑定和叠加 | CC0，逐文件映射见 data/presentation/open_ui_manifest.json |
 | [Sonniss GDC](https://sonniss.com/gdc-bundle-license/) | 音效候选；原始素材再分发限制不适合本次公开源码素材目录 | 未下载、未纳入 |
 
 保持原有场景、角色和厨房美术；不混入 3D 或写实照片风格资源。新增资源均在下表明确许可，不将整个项目的历史素材统称为可自由再分发。

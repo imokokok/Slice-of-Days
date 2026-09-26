@@ -169,7 +169,7 @@ func run() -> void:
 	check(current_scene.conversation.text_label.visible_characters==-1 and current_scene.conversation.speech_card.modulate.a==1,"Reduced motion shows the complete line without animation")
 	current_scene.conversation._close()
 	settings.values.reduced_motion=motion_before
-	await town("park",1260)
+	await town("park",1270)
 	current_scene._talk_nearby("yuxingqing")
 	await create_timer(.3).timeout
 	verify_card(current_scene.conversation.speech_card,current_scene.street,"Night dialogue")

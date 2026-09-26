@@ -16,6 +16,7 @@ func run()->void:
 	work.find_child("ShopSource_wind",true,false).pressed.emit()
 	work.find_child("ShopSource_water",true,false).pressed.emit()
 	check(work.model.clips.size()==2 and store.list_samples().size()==2,"Visible buttons add two real source files and two editable clips")
+	check(work.sample_row.get_child_count()==2 and work.sample_row.get_child(0) is Button,"Sound box immediately replaces empty copy with reusable source cards")
 	for sample in store.list_samples():
 		check(sample.role=="B" and sample.source_mode=="shop_library","Source metadata says shop library and actual owner")
 		var wav=store.load_audio(sample)

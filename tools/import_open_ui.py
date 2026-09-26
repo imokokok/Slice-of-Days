@@ -104,8 +104,6 @@ def main():
     for pack, page in [('interface', 'interface-sounds'), ('rpg', 'rpg-audio')]:
         archive_path = CACHE / f'{pack}.zip'
         manifest['packs'][pack] = {
-            'author': 'Kenney', 'license': 'CC0-1.0',
-            'page': f'https://kenney.nl/assets/{page}',
             'author': 'Kenney / Kenney Vleugels', 'license': 'CC0-1.0',
             'page': f'https://kenney.nl/assets/{page}',
             'download': DOWNLOADS[pack],

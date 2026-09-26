@@ -22,8 +22,8 @@ func run() -> void:
 		var recorder=load("res://scripts/residency/recorder_lite.gd").new()
 		root.add_child(recorder)
 		await process_frame
-		recorder.sound_kind="fire" if place=="night_market" else "wind"
 		recorder.toggle_recording()
+		world.play_kind("fire" if place=="night_market" else "wind")
 		await create_timer(1.3).timeout
 		check(recorder.recorder.frame_count>0,"Main-game pocket tool captures PCM: "+place)
 		check(not recorder.recorder.microphone.playing,"Game recording does not activate microphone")
@@ -35,7 +35,7 @@ func run() -> void:
 		if not listed.is_empty(): items.append(listed[-1])
 		recorder.free()
 		await process_frame
-	check(items.size()==2 and items[0].sound_kind=="fire" and items[1].sound_kind=="wind","Source identity survives local save")
+	check(items.size()==2 and items[0].mv_events.any(func(e):return str(e.kind)=="fire") and items[1].mv_events.any(func(e):return str(e.kind)=="wind"),"Actual sound events survive local save")
 	check(items.size()==2 and not items[0].mv_events.is_empty(),"Synchronous MV event recipe is saved")
 	gs.current_location="record_store"
 	world.set_location("record_store")
@@ -70,7 +70,7 @@ func run() -> void:
 	wind_image.save_png("user://tests/music_release/mv_wind.png")
 	check(fire_image.get_data()!=wind_image.get_data(),"Timeline changes switch pixel imagery with the sources")
 	var library:=LocalRecordLibrary.new(); library.root_path="user://tests/music_records_"+str(Time.get_ticks_msec())
-	var record:=library.save_record({"title":"Fire and Wind","artist":"Test","duration":wav.get_length(),"sound_kinds":Atlas.kinds_in(studio.model.clips),"mv_clips":studio.model.clips.duplicate(true)},wav,wind_image)
+	var record:=library.save_record({"title":"Fire and Wind","artist":"Test","duration":wav.get_length(),"sound_kinds":Atlas.audible_kinds(studio.model),"mv_clips":studio.model.clips.duplicate(true)},wav,wind_image)
 	check(not record.is_empty() and Atlas.meets(Atlas.QUESTS[1],record),"Completed work qualifies for the fire/wind commission")
 	check(not Atlas.meets(Atlas.QUESTS[2],record),"Unmet commission cannot be faked by pressing a button")
 	check(library.list_records().size()==1,"Record and its MV recipe survive disk reload")

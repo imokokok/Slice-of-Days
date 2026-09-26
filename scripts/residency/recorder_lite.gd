@@ -34,10 +34,13 @@ var compact_button: Button
 
 func _ready() -> void:
 	if not CharacterSystem.owns_pocket_item("recorder"):
-		set_process_input(false); queue_free(); return
+		set_process_input(false); set_process(false); queue_free(); return
 	theme=preload("res://scripts/ui/components/interface_palette.gd").theme_for_tools()
 	add_to_group("world_tool"); add_to_group("mobile_recorder")
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT); mouse_filter=MOUSE_FILTER_IGNORE
+	# Copy the world before drawing the recorder, avoiding a recursive preview.
+	var world_copy:=BackBufferCopy.new(); world_copy.name="RecordingWorldCopy"
+	world_copy.copy_mode=BackBufferCopy.COPY_MODE_VIEWPORT; add_child(world_copy)
 	face=Control.new(); face.size=Vector2(1200,720); face.mouse_filter=MOUSE_FILTER_STOP; add_child(face)
 	resized.connect(_fit_face); _fit_face()
 	var shell:=Panel.new(); shell.size=face.size; shell.mouse_filter=MOUSE_FILTER_IGNORE
@@ -51,11 +54,13 @@ func _ready() -> void:
 	live_screen=preload("res://scripts/ui/components/live_sound_window.gd").new()
 	live_screen.source=self; live_screen.position=Vector2(44,193); live_screen.size=Vector2(670,377); live_screen.name="LiveRecordingPicture"; face.add_child(live_screen)
 	meter=ProgressBar.new(); meter.position=Vector2(44,580); meter.size=Vector2(670,8); meter.max_value=1; meter.show_percentage=false; face.add_child(meter)
-	p.words(face,"现场声音 → 实时画面  ·  不需要挑选或播放素材",Vector2(48,603),690,18)
+	p.words(face,"街景是实时预览；声音图形会随录音保存。",Vector2(48,603),690,18)
 	source_picker=OptionButton.new(); source_picker.position=Vector2(758,138); source_picker.size=Vector2(398,45)
 	source_picker.add_icon_item(preload("res://scripts/town_sound/SoundIcons.gd").get_icon("audio-lines"),"游戏声音 · 环境与互动"); source_picker.add_icon_item(preload("res://scripts/town_sound/SoundIcons.gd").get_icon("mic"),"人声补录 · 麦克风"); source_picker.add_theme_constant_override("icon_max_width",24); face.add_child(source_picker)
 	source_picker.select(1 if recorder.capturing and recorder.source_mode=="microphone" else 0)
-	p.words(face,"按圆键开始，再按一次保存。\n收起来，可以继续走动和做事。\n剪辑与制作，回唱片店再继续。",Vector2(759,211),397,20)
+	var note=preload("res://scripts/town_sound/PaperNote.gd").new()
+	note.position=Vector2(747,204); note.size=Vector2(415,117); face.add_child(note)
+	p.words(face,"① 按圆键，留下此刻的声音。\n② 收进口袋，可以边走边录。\n③ 带回唱片店，剪贴成作品。",Vector2(765,216),380,19)
 	record_button=preload("res://scripts/town_sound/studio/RecordKey.gd").new()
 	record_button.position=Vector2(866,329); record_button.size=Vector2(136,136); record_button.name="RecordToggle"; record_button.accessibility_name="开始 / 停止并保存录音"; face.add_child(record_button); record_button.pressed.connect(toggle_recording)
 	elapsed_label=p.words(face,"00:00 / 01:00",Vector2(859,479),280,22)

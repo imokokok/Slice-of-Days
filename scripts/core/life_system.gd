@@ -287,7 +287,9 @@ func schedule_override(role: String, day: int, original: Dictionary) -> Dictiona
 	return result
 
 func work_fits(role: String, minute: int, duration: int) -> bool:
-	var shift := active_shift()
+	# Availability checks must not create a daily-life record. In particular a
+	# rejected purchase/trip must leave the save snapshot exactly unchanged.
+	var shift: Dictionary = GameState.artifacts.get("daily_life",{}).get("active_shift",{})
 	return role==GameState.current_role and not shift.is_empty() and minute>=int(shift.actual_start) and minute+duration<=int(shift.actual_end) and GameState.current_location=="night_market"
 
 func persist(snapshot: Dictionary, message: String) -> Dictionary:

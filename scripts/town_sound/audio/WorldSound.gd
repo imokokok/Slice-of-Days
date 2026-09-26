@@ -7,6 +7,13 @@ const MUSIC_BUS := "TownWorldMusic"
 const SOUND_EFFECTS_BUS := "TownWorldSoundEffects"
 const RATE := 22050
 const Production = preload("res://scripts/ui/production_assets.gd")
+const OpenAssets = preload("res://scripts/ui/open_assets.gd")
+signal cue_played(cue: String, stream: AudioStream, bus: String)
+var cue_pool: Node
+var cue_times: Dictionary = {}
+var cue_variations: Dictionary = {}
+var click_pending := false
+var last_specific_msec := -1000
 var ambience: AudioStreamPlayer
 var foley: AudioStreamPlayer
 var coast: AudioStreamPlayer
@@ -37,6 +44,7 @@ var last_ui_key := ""
 var world_pool: Node
 
 func _ready() -> void:
+	process_mode=PROCESS_MODE_ALWAYS
 	_ensure_bus(BUS, "Master")
 	_ensure_bus(MUSIC_BUS, BUS)
 	_ensure_bus(SOUND_EFFECTS_BUS, BUS)
@@ -59,6 +67,8 @@ func _ready() -> void:
 	add_child(coast)
 	add_child(weather_player)
 	add_child(ui)
+	cue_pool=preload("res://scripts/town_sound/audio/cue_pool.gd").new()
+	cue_pool.name="FeedbackPool"; cue_pool.process_mode=PROCESS_MODE_ALWAYS; add_child(cue_pool)
 	for player in [ambience, foley]:
 		add_child(player)
 	natural=AudioStreamPlayer.new(); natural_previous=AudioStreamPlayer.new()
@@ -80,6 +90,7 @@ func set_active(value: bool) -> void:
 	active = value
 	if not active:
 		world_pool.stop_all()
+		cue_pool.stop_bus(SOUND_EFFECTS_BUS)
 		coast.stop()
 		ambience.stop()
 		foley.stop()
@@ -147,6 +158,7 @@ func _start_ambience_job(place: String) -> void:
 
 
 func _process(_delta: float) -> void:
+	if get_tree().paused: return
 	_refresh_nature()
 	if weather_player.playing:
 		var target_volume := db_to_linear(-24.0 if indoors else -20.0)*WorldAtmosphere.rain if weather=="rain" else 0.0
@@ -215,17 +227,42 @@ func note_sound(kind:String) -> void:
 	sound_occurred.emit(kind)
 
 func play_ui(cue: String) -> void:
-	if AudioServer.get_driver_name() == "Dummy": return
+	if cue=="click":
+		if not click_pending:
+			click_pending=true
+			_flush_click.call_deferred()
+		return
+	# Coalesce the generic callback regardless of signal-connection order.
+	last_specific_msec=Time.get_ticks_msec()
+	_play_cue(cue,"SoundEffects")
+
+func _flush_click() -> void:
+	click_pending=false
+	if Time.get_ticks_msec()-last_specific_msec<85: return
+	_play_cue("click","SoundEffects")
+
+func play_world(cue: String) -> void:
+	_play_cue(cue,SOUND_EFFECTS_BUS)
+
+func _play_cue(cue: String, bus: String) -> void:
 	var now := Time.get_ticks_msec()
-	# Specific action feedback wins over the global generic button callback.
-	if cue=="click" and now-last_ui_msec<85: return
-	if cue=="focus" and now-last_ui_msec<120: return
+	var interval := 120 if cue in ["focus","slider"] else 65
+	if now-int(cue_times.get(cue,-1000))<interval: return
 	var key := str({"focus":"ui_focus","dialogue":"ui_click","coin":"ui_success","error":"ui_error","record_start":"ui_record_start","record_stop":"ui_record_stop","paper":"ui_slide","open":"ui_open","close":"ui_close","notification":"ui_notice","check":"ui_check","drag":"ui_drag","drop":"ui_drop","snap":"ui_snap","cut":"foley_wood_1","water":"foley_water_1"}.get(cue,"ui_click"))
-	var sample := Production.sound(key) if cue!="shutter" else null
-	ui.stream = sample if sample!=null else make_ui(cue)
-	ui.volume_db = -19.0 if sample!=null else -5.0
+	var variation := int(cue_variations.get(cue,0))
+	var sample: AudioStream=OpenAssets.sound(cue,variation)
+	var volume := OpenAssets.volume(cue)
+	if sample==null:
+		sample=Production.sound(key) if cue!="shutter" else null
+		volume=-19.0 if sample!=null else -5.0
+		if sample==null: sample=make_ui(cue)
+	var priority := 2 if cue in ["coin","error","check","notification","record_start","record_stop"] else 0
+	var player: AudioStreamPlayer=cue_pool.play(sample,bus,volume,priority)
+	if player==null: return
+	if bus=="SoundEffects": ui=player
+	cue_times[cue]=now; cue_variations[cue]=variation+1
 	last_ui_msec=now; last_ui_key=key
-	ui.play()
+	cue_played.emit(cue,sample,bus)
 
 static func make_ui(cue: String) -> AudioStreamWAV:
 	var durations := {"focus": 0.055, "dialogue": 0.075, "coin": 0.24, "error": 0.16, "shutter": 0.18, "record_start": 0.16, "record_stop": 0.12, "paper": 0.38}

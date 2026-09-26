@@ -1,0 +1,519 @@
+{
+  "packs": {
+    "skymon": {
+      "author": "Deface Games / Amanz",
+      "license": "CC0-1.0",
+      "version": "v250329",
+      "page": "https://defacegames.com/product/skymon-icon-pack-free/",
+      "license_page": "https://opengameart.org/content/skymon-icon-pack-free",
+      "download": "https://opengameart.org/sites/default/files/skymon-icons-free-v250329.zip",
+      "archive_sha256": "5bbc701b68544a2eb4e64c258789f92630c7ee97f151ae60484a7bdbda3f6743",
+      "modification": "None; only runtime tint and scale."
+    },
+    "interface": {
+      "author": "Kenney / Kenney Vleugels",
+      "license": "CC0-1.0",
+      "page": "https://kenney.nl/assets/interface-sounds",
+      "download": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+      "archive_sha256": "f2193d072726d6758a5f7871b2dcc54dcce0d5c35c6f0a62f92549b327c81232",
+      "modification": "Original OGG bytes; runtime volume only."
+    },
+    "rpg": {
+      "author": "Kenney / Kenney Vleugels",
+      "license": "CC0-1.0",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "download": "https://kenney.nl/media/pages/assets/rpg-audio/8e99002d76-1677590336/kenney_rpg-audio.zip",
+      "archive_sha256": "6dbeaf8544da958d8f2adcb4a4a4b76c1ade34a05f8ab9edccd327da7375f38b",
+      "modification": "Original OGG bytes; runtime volume only."
+    }
+  },
+  "icons": {
+    "book": {
+      "path": "res://art/ui/open_sketch/reading-book.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/reading-book.png",
+      "sha256": "e63839d9a7595222b0063d64f85c5c5eff0bfa2233b08dbb8eac5c12d4a7c921"
+    },
+    "personal": {
+      "path": "res://art/ui/open_sketch/user.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/user.png",
+      "sha256": "0b2baa7c380a34b3dd9f223a6361d51763f12dd24f8f3f2157adef85aafdb3a4"
+    },
+    "star": {
+      "path": "res://art/ui/open_sketch/star-alt.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/star-alt.png",
+      "sha256": "a83ec5cc207d1f992c1927e58defabfdc2f166d8d24b4d31e0b8a460e998c17b"
+    },
+    "mail": {
+      "path": "res://art/ui/open_sketch/inbox.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/inbox.png",
+      "sha256": "dbc906b60948602d8b1625ef4a1cc34b1fa9b2af388d7bee550271132e6e25c0"
+    },
+    "photo": {
+      "path": "res://art/ui/open_sketch/image-square.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/image-square.png",
+      "sha256": "5b9da2c40eb450d29962c15cf0d96ca4247003735ee78287e60ff850cbd17e27"
+    },
+    "life": {
+      "path": "res://art/ui/open_sketch/image-square.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/image-square.png",
+      "sha256": "5b9da2c40eb450d29962c15cf0d96ca4247003735ee78287e60ff850cbd17e27"
+    },
+    "requirements": {
+      "path": "res://art/ui/open_sketch/quest.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/quest.png",
+      "sha256": "6bf38cae121437e140fdf11be86d46eb50cbd3a0487966797cecf2037ae32ac1"
+    },
+    "add": {
+      "path": "res://art/ui/open_sketch/plus.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/plus.png",
+      "sha256": "0d3829995356e003f30b01aae1d21b6134bd2b3df1716ab34aa3793e9e72ab13"
+    },
+    "text": {
+      "path": "res://art/ui/open_sketch/paper.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/paper.png",
+      "sha256": "e9115a6e6fe17cb090a7b611fe9ddcd8dc6d018873757d4b2742e36d544b2650"
+    },
+    "draw": {
+      "path": "res://art/ui/open_sketch/pencil.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/pencil.png",
+      "sha256": "cc92c3f4c787641f0415e9fc626c075f5633867f836beee1bdabc0e99f85660e"
+    },
+    "pause": {
+      "path": "res://art/ui/open_sketch/pause.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/pause.png",
+      "sha256": "dbce5562f59bf3f326092f1a367da183e1e509da792b7fd19123cb3a44bad471"
+    },
+    "back": {
+      "path": "res://art/ui/open_sketch/left-arrow.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/left-arrow.png",
+      "sha256": "ee4baa7cedc03b086b9a75105370705f2fe74ecd2919717ea0de0273a5a7be74"
+    },
+    "close": {
+      "path": "res://art/ui/open_sketch/close-x.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/close-x.png",
+      "sha256": "18702080d71cb801db6feba777ac79aa594b0cba5c2d0015f95eebb479542648"
+    },
+    "settings": {
+      "path": "res://art/ui/open_sketch/settings.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/settings.png",
+      "sha256": "02bf3e4c5f75ac5bb8ea25077e09bb024f498943793ba34b86e78e4380676acd"
+    },
+    "sound": {
+      "path": "res://art/ui/open_sketch/volume-medium.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/volume-medium.png",
+      "sha256": "c44e06aaed10de4fac7afcafe97e83d6be651efb9f502e210012ab6403346b1f"
+    },
+    "mute": {
+      "path": "res://art/ui/open_sketch/volume-mute.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/volume-mute.png",
+      "sha256": "9526f17b94aa4e58b69bc87cac893f4e9e7d6d248bbc04e0516e8d8d1344431d"
+    },
+    "clock": {
+      "path": "res://art/ui/open_sketch/wall-clock.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/wall-clock.png",
+      "sha256": "fdcd49587040254db48d672756ca19fca541d70402ca5e1927963c8ae47e6544"
+    },
+    "sun": {
+      "path": "res://art/ui/open_sketch/sun.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/sun.png",
+      "sha256": "97c2f6eba3c8c5fb5aa9b7777e4ef4f3236122515052194e5a157f6a6f8ea95b"
+    },
+    "moon": {
+      "path": "res://art/ui/open_sketch/moon.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/moon.png",
+      "sha256": "f7e14d0cadea661a03fe42ed66747efd950459ce02cd9ee26e50d3d583950118"
+    },
+    "rain": {
+      "path": "res://art/ui/open_sketch/umbrella.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/umbrella.png",
+      "sha256": "9737ce02c3347abdbdf8b3ddd6e46c8878a86f3d2d18ed486847f0e547462c05"
+    },
+    "cloud": {
+      "path": "res://art/ui/open_sketch/cloud.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/cloud.png",
+      "sha256": "f7b33638305860b937b3897af27970d7df1ae8d71bae0f9f45a56b41ea9b93d4"
+    },
+    "coin": {
+      "path": "res://art/ui/open_sketch/coin.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/coin.png",
+      "sha256": "bbf1318dcc1ef29d26c40c555a6615d6116db35cf49e808ac8363c95af3be13d"
+    },
+    "check": {
+      "path": "res://art/ui/open_sketch/check-mark.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/check-mark.png",
+      "sha256": "b9d5780f16c888e5c6790559590670216285baa5ffa465ad0f5481a49185b6c8"
+    },
+    "notice": {
+      "path": "res://art/ui/open_sketch/bell.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/bell.png",
+      "sha256": "f55334c557a54f0eed94f3dd78f2c4334124f425c5485d813f3235f50cfc1619"
+    },
+    "error": {
+      "path": "res://art/ui/open_sketch/info-round.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/info-round.png",
+      "sha256": "84e6b92a8344be3b65bb162122208ae7d130b6b8bb1f6043cbb02c6521e62227"
+    },
+    "map": {
+      "path": "res://art/ui/open_sketch/map1.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/map1.png",
+      "sha256": "99a2af6f05d733b5299aa0217f842fedc0e7a2f13fc361dc4bf8392a19933b1d"
+    },
+    "place": {
+      "path": "res://art/ui/open_sketch/map-marker.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/map-marker.png",
+      "sha256": "52f886314f5760965723a4540d8474f5d9c7ff34a376b6d69c7ef699ffb1568c"
+    },
+    "bag": {
+      "path": "res://art/ui/open_sketch/pouch.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/pouch.png",
+      "sha256": "05f6ccb773cab84e198a7d7191fa2fcfa5a12c158e12d1d6a3a8a3d9919efb88"
+    },
+    "heart": {
+      "path": "res://art/ui/open_sketch/plain-heart.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/plain-heart.png",
+      "sha256": "57300c44b14da3f3ed9e6f58fa4dd81f3f103c293ea0887b24f190ccb96ccf01"
+    },
+    "camera": {
+      "path": "res://art/ui/open_sketch/camera.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/camera.png",
+      "sha256": "ad0bf5bca4224e0f08ad1112f69f95264ebd95e69f0b095948c8840e6b8c000c"
+    },
+    "move": {
+      "path": "res://art/ui/open_sketch/footprint.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/footprint.png",
+      "sha256": "57153d28cb41193b11973c4180047a8e883788feee9a67b6e3ad9039df94244f"
+    },
+    "zoom_in": {
+      "path": "res://art/ui/open_sketch/zoom-plus.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/zoom-plus.png",
+      "sha256": "ae2cd0c254d70402d153bfa178021f0539030c0df9eb0111077a5ccdba11293e"
+    },
+    "zoom_out": {
+      "path": "res://art/ui/open_sketch/zoom-minus.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/zoom-minus.png",
+      "sha256": "1c60abe8d22b4938cff66042799fb5c169abeddc5360ce1a06d80c8eb9315c09"
+    },
+    "coffee": {
+      "path": "res://art/ui/open_sketch/coffee.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/coffee.png",
+      "sha256": "36f954bdf84b32ed151bbd8cc99c67ebf1c988b66f67d6a2794ac8903e6fae21"
+    },
+    "water": {
+      "path": "res://art/ui/open_sketch/water-drop.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/water-drop.png",
+      "sha256": "1c8454a43825301bc6a5c889dca6cd77405d68fdb8de3aea4dd88e43b90cf6b3"
+    },
+    "fire": {
+      "path": "res://art/ui/open_sketch/fire.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/fire.png",
+      "sha256": "e28be54982da9dd268132acc1a15bf67d575b54c41fa34bffa6a722665751fcf"
+    },
+    "lock": {
+      "path": "res://art/ui/open_sketch/padlock-locked.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/padlock-locked.png",
+      "sha256": "92a131400f37740104462ddebde65006369eeb43d95d8cb3fbfa232fba7819d5"
+    },
+    "expand": {
+      "path": "res://art/ui/open_sketch/arrows-expand.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/arrows-expand.png",
+      "sha256": "6dc536e53c4b3ce721f40292e9acfd89e6a587769dfb7a290d5657d384094f2b"
+    },
+    "home": {
+      "path": "res://art/ui/open_sketch/home.png",
+      "pack": "skymon",
+      "member": "skymon-icons-white/home.png",
+      "sha256": "a6223a2920ea07e49c7703ff7b91d918eebdbc2d0611b622cf9dea4500d1a7a5"
+    }
+  },
+  "sounds": {
+    "click": {
+      "pack": "interface",
+      "volume_db": -23,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/interface/click_003.ogg",
+          "member": "Audio/click_003.ogg",
+          "sha256": "2fa929138bc3a0f432696588f66eac94b8f6d463905ec8808c6461ce4b054292"
+        }
+      ]
+    },
+    "focus": {
+      "pack": "interface",
+      "volume_db": -30,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/interface/select_001.ogg",
+          "member": "Audio/select_001.ogg",
+          "sha256": "aec0c31ea934a35936ae0d2ab8fac8123c93aa5647f935853a58dbaf90278b7a"
+        }
+      ]
+    },
+    "dialogue": {
+      "pack": "interface",
+      "volume_db": -27,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/interface/click_001.ogg",
+          "member": "Audio/click_001.ogg",
+          "sha256": "ccfb7fa0cccdd9faec0eb16033c732b1e308d139d80f799161495d58f7adcdb9"
+        }
+      ]
+    },
+    "error": {
+      "pack": "interface",
+      "volume_db": -23,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/interface/error_004.ogg",
+          "member": "Audio/error_004.ogg",
+          "sha256": "0b574cea597d96507e782ae9764f88482ce49f46e931e57054bf7150047f2d69"
+        }
+      ]
+    },
+    "notification": {
+      "pack": "interface",
+      "volume_db": -23,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/interface/confirmation_002.ogg",
+          "member": "Audio/confirmation_002.ogg",
+          "sha256": "33b17a9a9a2397c62b285c52c33a907fdffb476909c99e42dde603f6a7a8b12c"
+        }
+      ]
+    },
+    "check": {
+      "pack": "interface",
+      "volume_db": -23,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/interface/confirmation_001.ogg",
+          "member": "Audio/confirmation_001.ogg",
+          "sha256": "063564703b6094d70718a3e787a55cc9141611e4ecd6b6637f8828f79b4a8c3a"
+        }
+      ]
+    },
+    "record_start": {
+      "pack": "interface",
+      "volume_db": -23,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/interface/switch_002.ogg",
+          "member": "Audio/switch_002.ogg",
+          "sha256": "6fc395be2ad1f99ce318a5d28f98fb76dbeb676d83a0b28239d8c1fb90736180"
+        }
+      ]
+    },
+    "record_stop": {
+      "pack": "interface",
+      "volume_db": -23,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/interface/switch_003.ogg",
+          "member": "Audio/switch_003.ogg",
+          "sha256": "ca12dd32103f401481d5aff56d5e9831174e99bb577139c09b07d046eb8b837e"
+        }
+      ]
+    },
+    "slider": {
+      "pack": "interface",
+      "volume_db": -29,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/interface/scroll_001.ogg",
+          "member": "Audio/scroll_001.ogg",
+          "sha256": "320c6aafb2c7a503eae508dc443b72d7f7c0a317bfd16813157ed400cd04cf16"
+        }
+      ]
+    },
+    "tab": {
+      "pack": "interface",
+      "volume_db": -25,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/interface/back_001.ogg",
+          "member": "Audio/back_001.ogg",
+          "sha256": "07db973f79f6ae0f2edc34561e7592e24d0577455919fb602cb8ecc0da991dcf"
+        }
+      ]
+    },
+    "snap": {
+      "pack": "interface",
+      "volume_db": -26,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/interface/click_005.ogg",
+          "member": "Audio/click_005.ogg",
+          "sha256": "a3ee7ebb036bc3cdc218ae52bb27548c4f49bcf07505274f8b61b1af8236acc2"
+        }
+      ]
+    },
+    "open": {
+      "pack": "rpg",
+      "volume_db": -24,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/rpg/bookOpen.ogg",
+          "member": "Audio/bookOpen.ogg",
+          "sha256": "953390534377222bee89ac8cd9e60a58fdc037c71a4d7c18c43cd647c7f34ba8"
+        }
+      ]
+    },
+    "close": {
+      "pack": "rpg",
+      "volume_db": -26,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/rpg/bookClose.ogg",
+          "member": "Audio/bookClose.ogg",
+          "sha256": "81e976532565f4372abd14e83d2684195fa548d0a28d345de221e56052454f32"
+        }
+      ]
+    },
+    "paper": {
+      "pack": "rpg",
+      "volume_db": -24,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/rpg/bookFlip1.ogg",
+          "member": "Audio/bookFlip1.ogg",
+          "sha256": "fa81ac2fedc8c641661b87e349630a36c9800e795e0c800e029214efdbe26a7d"
+        },
+        {
+          "path": "res://audio/open_foley/rpg/bookFlip2.ogg",
+          "member": "Audio/bookFlip2.ogg",
+          "sha256": "3409042acbfaebc24c1a6327dc073e36f9250841712e96c5040da566a97df73c"
+        },
+        {
+          "path": "res://audio/open_foley/rpg/bookFlip3.ogg",
+          "member": "Audio/bookFlip3.ogg",
+          "sha256": "c85db5dceb3f1df073e960630277eaa88a5afda0477c1ddd68dad707621767be"
+        }
+      ]
+    },
+    "coin": {
+      "pack": "rpg",
+      "volume_db": -22,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/rpg/handleCoins.ogg",
+          "member": "Audio/handleCoins.ogg",
+          "sha256": "8a91f969e932df709df80ee124d86a51389eed9b67f22e5e716bc2bbf60d8dab"
+        },
+        {
+          "path": "res://audio/open_foley/rpg/handleCoins2.ogg",
+          "member": "Audio/handleCoins2.ogg",
+          "sha256": "4b857968d64f9ac9336a10ffac6694d7547e1f01566ad6857b30bc8db3ee6c32"
+        }
+      ]
+    },
+    "drag": {
+      "pack": "rpg",
+      "volume_db": -28,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/rpg/cloth1.ogg",
+          "member": "Audio/cloth1.ogg",
+          "sha256": "ddb93a3671233f95da0e0b10367f082f7eb42fa6caaddcf776410aa8833c747d"
+        }
+      ]
+    },
+    "drop": {
+      "pack": "rpg",
+      "volume_db": -26,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/rpg/cloth2.ogg",
+          "member": "Audio/cloth2.ogg",
+          "sha256": "8a7451193c38bc05483aec25dd193e163a15d44cf7fff04ac7912573231b0201"
+        }
+      ]
+    },
+    "cut": {
+      "pack": "rpg",
+      "volume_db": -23,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/rpg/chop.ogg",
+          "member": "Audio/chop.ogg",
+          "sha256": "d00c2b3c9fff07e376145c8c8c45c90e5084ec192f6ce0387db233f7b86f1486"
+        }
+      ]
+    },
+    "pot": {
+      "pack": "rpg",
+      "volume_db": -26,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/rpg/metalPot1.ogg",
+          "member": "Audio/metalPot1.ogg",
+          "sha256": "159def979e8e386c2c539f5e99cc30a080eb2dcb6c911fa2e4ccc0785b2522fd"
+        },
+        {
+          "path": "res://audio/open_foley/rpg/metalPot2.ogg",
+          "member": "Audio/metalPot2.ogg",
+          "sha256": "8e1f820d217d380fde10e969d109db34303e3f4d11c3951926eddef813d04ae2"
+        }
+      ]
+    },
+    "door_open": {
+      "pack": "rpg",
+      "volume_db": -24,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/rpg/doorOpen_1.ogg",
+          "member": "Audio/doorOpen_1.ogg",
+          "sha256": "4ab93bab96522d8eb109ff96dc57cb6765deb02448fe14c10472084be5bb2a0b"
+        }
+      ]
+    },
+    "door_close": {
+      "pack": "rpg",
+      "volume_db": -26,
+      "variants": [
+        {
+          "path": "res://audio/open_foley/rpg/doorClose_1.ogg",
+          "member": "Audio/doorClose_1.ogg",
+          "sha256": "834d29c60a8a8bfb50b158cdb6b7dfa8f02812a408a1ee9703d038dfab0b1aeb"
+        }
+      ]
+    }
+  }
+}

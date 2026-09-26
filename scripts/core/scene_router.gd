@@ -81,6 +81,7 @@ func enter_space(space_id: String) -> void:
 		if space_id != ("home_a" if GameState.current_role=="A" else "home_b"): return
 		if GameState.current_location!=CoreLoopSystem.home(): return
 	active_space_id = space_id
+	WorldSound.play_world("door_open")
 	go_to(INTERACTIVE_SPACE)
 
 
@@ -99,6 +100,9 @@ func chapter_transition() -> void:
 func gameplay_module(module_id: String, source_event_id := "", rollback_snapshot: Dictionary = {}) -> bool:
 	if transitioning: return false
 	if module_id=="sound_sampling":
+		if GameState.current_location!="record_store":
+			GuidanceSystem.blocked("请先到唱片店，再坐到声音手作桌。")
+			return false
 		# All entrances use the real recording / arrangement / pressing chain.
 		# Delivery opens its own transactional session after a WAV exists.
 		var gate:=GameplayModuleSystem.entry_check(module_id)
@@ -146,6 +150,8 @@ func return_from_gameplay() -> void:
 
 
 func leave_space() -> void:
+	if transitioning: return
+	WorldSound.play_world("door_close")
 	room_positions.erase(active_space_id)
 	active_space_id = ""
 	# Clean up navigation values written by development builds before interiors became transient.

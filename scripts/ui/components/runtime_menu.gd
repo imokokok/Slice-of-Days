@@ -7,6 +7,7 @@ func _ready() -> void:
 	name="CassetteMenu"
 	process_mode=PROCESS_MODE_ALWAYS
 	get_tree().paused=true
+	preload("res://scripts/ui/modal_focus.gd").install(self)
 	var art := TextureRect.new(); art.name="CassetteArtwork"
 	art.texture=preload("res://art/ui/reference_paper/cassette.png")
 	art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
@@ -42,6 +43,7 @@ func _ready() -> void:
 func _add_button(parent: Node, title: String, action: Callable, id: String) -> void:
 	var b := preload("res://scripts/ui/components/solmere_button.gd").new()
 	b.name="Cassette_"+id; b.variant="outlined"; b.text=LocalizationSystem.text(title)
+	b.icon_kind=str({"resume":"back","settings":"settings","save":"check","menu":"home","display":"expand","motion":"move","back":"back"}.get(id,""))
 	b.alignment=HORIZONTAL_ALIGNMENT_LEFT; b.custom_minimum_size=Vector2(348,45 if settings else 67)
 	parent.add_child(b); b.add_theme_font_size_override("font_size",20 if settings else 24); b.pressed.connect(action)
 
@@ -51,10 +53,11 @@ func _action(action: String) -> void:
 		"pause","settings": owner_ui.mode=action; owner_ui.build()
 		"save":
 			if SaveManager.save_or_report("保存失败"):
+				WorldSound.play_ui("check")
 				owner_ui.feedback.text=LocalizationSystem.text("已保存，可以安心歇一会。")
 				var shell := owner_ui.get_parent()
 				if shell.has_method("_camera_source") and DisplayServer.get_name()!="headless": SaveManager.save_thumbnail(await shell._camera_source())
-			else: owner_ui.feedback.text=SaveManager.last_error
+			else: owner_ui.feedback.text=SaveManager.last_error; WorldSound.play_ui("error")
 		"menu":
 			if SaveManager.save_or_report("保存失败"):
 				get_tree().paused=false; SceneRouter.main_menu(); owner_ui.queue_free()

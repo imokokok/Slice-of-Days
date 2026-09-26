@@ -1,0 +1,344 @@
+[
+  {
+    "expected_errors": [],
+    "test": "integration/test_open_polish",
+    "exit_code": 0,
+    "seconds": 13.98,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged-final",
+    "log": "test_open_polish.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_resource_integration",
+    "exit_code": 0,
+    "seconds": 17.88,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged-final",
+    "log": "test_resource_integration.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_production_ui",
+    "exit_code": 0,
+    "seconds": 43.78,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged-final",
+    "log": "test_production_ui.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_reference_paper_ui",
+    "exit_code": 0,
+    "seconds": 26.83,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged-final",
+    "log": "test_reference_paper_ui.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_handmade_life",
+    "exit_code": 0,
+    "seconds": 21.05,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_handmade_life.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_dialogue_presentation",
+    "exit_code": 0,
+    "seconds": 26.59,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_dialogue_presentation.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_five_day_flow",
+    "exit_code": 0,
+    "seconds": 186.25,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged",
+    "log": "test_five_day_flow.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_architecture_alignment",
+    "exit_code": 0,
+    "seconds": 15.33,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_architecture_alignment.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_five_day_identity_mechanics",
+    "exit_code": 0,
+    "seconds": 13.81,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_five_day_identity_mechanics.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_daily_life",
+    "exit_code": 0,
+    "seconds": 26.25,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_daily_life.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_pocket_roles",
+    "exit_code": 0,
+    "seconds": 32.55,
+    "errors": [],
+    "result": "PASS",
+    "run": "role-shop-final",
+    "log": "test_pocket_roles.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_save_failure_recovery",
+    "exit_code": 0,
+    "seconds": 14.16,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_save_failure_recovery.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_transaction_boundaries",
+    "exit_code": 0,
+    "seconds": 14.48,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged-final",
+    "log": "test_transaction_boundaries.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_shop_work_routes",
+    "exit_code": 0,
+    "seconds": 28.67,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_shop_work_routes.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_midnight_rollover",
+    "exit_code": 0,
+    "seconds": 26.7,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged-final",
+    "log": "test_midnight_rollover.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_night_and_interaction",
+    "exit_code": 0,
+    "seconds": 31.97,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_night_and_interaction.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_atmosphere_transition",
+    "exit_code": 0,
+    "seconds": 21.59,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_atmosphere_transition.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_home_interiors",
+    "exit_code": 0,
+    "seconds": 25.06,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_home_interiors.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_street_motion",
+    "exit_code": 0,
+    "seconds": 19.58,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_street_motion.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_supplied_home_and_owner",
+    "exit_code": 0,
+    "seconds": 29.91,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_supplied_home_and_owner.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_cooking_rhythm",
+    "exit_code": 0,
+    "seconds": 16.36,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_cooking_rhythm.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_collage_viewport",
+    "exit_code": 0,
+    "seconds": 60.2,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged-final",
+    "log": "test_collage_viewport.txt"
+  },
+  {
+    "expected_errors": [
+      "ERROR: Could not create directory: 'res://project.godot/not-a-directory'."
+    ],
+    "test": "integration/test_nebula_telescope",
+    "exit_code": 0,
+    "seconds": 32.31,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_nebula_telescope.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "town_sound/test_audio_settings",
+    "exit_code": 0,
+    "seconds": 14.16,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged",
+    "log": "test_audio_settings.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "town_sound/test_world_capture",
+    "exit_code": 0,
+    "seconds": 18.55,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_world_capture.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "town_sound/test_recorder",
+    "exit_code": 0,
+    "seconds": 15.69,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_recorder.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "town_sound/test_pocket_media",
+    "exit_code": 0,
+    "seconds": 27.81,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged",
+    "log": "test_pocket_media.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "town_sound/test_visual_composition",
+    "exit_code": 0,
+    "seconds": 16.66,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_visual_composition.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_recording_retry",
+    "exit_code": 0,
+    "seconds": 21.19,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged",
+    "log": "test_recording_retry.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_live_recording_picture",
+    "exit_code": 0,
+    "seconds": 15.81,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged-final",
+    "log": "test_live_recording_picture.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_shop_sound_materials",
+    "exit_code": 0,
+    "seconds": 20.86,
+    "errors": [],
+    "result": "PASS",
+    "run": "sound-box-final",
+    "log": "test_shop_sound_materials.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_v3_film",
+    "exit_code": 0,
+    "seconds": 27.11,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged",
+    "log": "test_v3_film.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "integration/test_global_recording",
+    "exit_code": 0,
+    "seconds": 34.61,
+    "errors": [],
+    "result": "PASS",
+    "run": "final-regression",
+    "log": "test_global_recording.txt"
+  },
+  {
+    "expected_errors": [],
+    "test": "town_sound/test_sound_poetry",
+    "exit_code": 0,
+    "seconds": 14.53,
+    "errors": [],
+    "result": "PASS",
+    "run": "merged",
+    "log": "test_sound_poetry.txt"
+  }
+]

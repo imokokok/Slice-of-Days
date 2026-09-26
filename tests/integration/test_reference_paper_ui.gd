@@ -45,8 +45,9 @@ func run():
 	change_scene_to_file("res://scenes/town_day.tscn"); await settle()
 	var hud=current_scene.get_node("GameplayShell")
 	check(hud.clock_label.text.contains(str(gs.money)),"HUD ticket shows the real balance")
-	for i in hud.pocket_objects.size()-1:
-		check(not hud.pocket_objects[i].get_global_rect().intersects(hud.pocket_objects[i+1].get_global_rect()),"Bottom objects have independent click targets "+str(i))
+	var visible_objects: Array=hud.pocket_objects.filter(func(item): return item.visible)
+	for i in visible_objects.size()-1:
+		check(not visible_objects[i].get_global_rect().intersects(visible_objects[i+1].get_global_rect()),"Visible owned objects have independent click targets "+str(i))
 	check(not hud.hints.get_global_rect().intersects(hud.pocket_objects.back().get_global_rect()),"The context action does not overlap the bottom inventory")
 	await snapshot("street-hud")
 	hud.open_paper("pause"); await settle()

@@ -1,0 +1,229 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 566.24 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 4050 Laptop GPU
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+PASS five chapters, one role per day
+PASS empty day cannot be skipped
+PASS retired translation cannot launch
+PASS no character switching or reveal on Day 1
+PASS travel to record_store
+PASS wait for record shop opening consumes actual free time
+PASS music fits the actual shop hours and character schedule
+PASS capture actual game audio, no microphone
+PASS game recording auto-saves real audio
+PASS capture actual game audio, no microphone
+PASS game recording auto-saves real audio
+PASS only this character's recordings appear
+PASS production Studio reads current character
+PASS actual visual sound room opened
+PASS boss listens to actual mixed recording
+PASS eleven production pressing steps deliver real WAV and cover
+PASS retrying delivery cannot duplicate rewards
+PASS Day 1 genuine music completion
+PASS conversation partner has a real scene placement
+PASS reach the actual door before speaking to an indoor resident
+PASS partner exists once in the active scene
+PASS real conversation opens for xanni
+PASS conversation completes without debug flags
+PASS next real time block remains available
+PASS confirmed wait consumes shared world time
+PASS travel to residence
+PASS EndDay accepts actual completed activity and narrative
+PASS one overnight advances exactly one day
+PASS overnight save and reload preserves day and role
+PASS Day 2 loads B's private money
+PASS A money survives overnight
+PASS NPC actual encounters are separate from perceived identity
+PASS first encounter starts the explicit identity progression
+PASS B does not inherit A's audio library
+PASS ordinary home shelf opens through the actual room object
+PASS other role's real record is present in shared world
+PASS clicking actual trace records discovery
+PASS shared cabinet loads actual Day 1 record audio
+PASS B can listen to A's public recording
+PASS Day 2 trace does not prematurely start search
+PASS travel to night_market
+PASS real restaurant order accepted
+PASS travel to produce_stall
+PASS purchase real ingredient tomato
+PASS purchase real ingredient herbs
+PASS purchase real ingredient sea_beans
+PASS travel to night_market
+PASS procurement delivered with receipts
+PASS start production module cooking
+PASS production scene resolves active context
+PASS actual mechanic ready cooking
+PASS real result saved cooking
+PASS conversation partner has a real scene placement
+PASS reach the actual door before speaking to an indoor resident
+PASS partner exists once in the active scene
+PASS real conversation opens for shi_yongqi
+PASS conversation completes without debug flags
+PASS travel to residence
+PASS EndDay accepts actual completed activity and narrative
+PASS one overnight advances exactly one day
+PASS overnight save and reload preserves day and role
+PASS Day 3 returns to A
+PASS Day 3 does not seed noticing flags
+PASS travel to handcraft_shop
+PASS wait for handcraft_shop opening consumes actual free time
+PASS real letter host starts
+PASS letter receives current character
+PASS Original letter draft persists under this journey and character
+PASS Placed collage reaches real folding
+PASS Two physical folds reach envelope
+PASS Inserted letter and closed flap reach sealing
+PASS Real match strike lights candle
+PASS Pellets melt over candle before pouring
+PASS Wax impression cools before posting
+PASS Save and reload preserve the actual seal
+PASS Actual NPC mailbox delivery reaches completion
+PASS Day 3 actual letter completes main task
+PASS travel to residence
+PASS ordinary home shelf opens through the actual room object
+PASS one ordinary object cannot confirm another person
+PASS repeated clicks cannot count as two independent observations
+PASS other role's real record is present in shared world
+PASS clicking actual trace records discovery
+PASS two sourced ordinary objects set the day-specific narrative flag
+PASS actual observations change possibility guidance
+PASS Day 3 recognition uses two different kinds of sourced object
+PASS travel to handcraft_shop
+PASS conversation partner has a real scene placement
+PASS reach the actual door before speaking to an indoor resident
+PASS partner exists once in the active scene
+PASS real conversation opens for mossner
+PASS conversation completes without debug flags
+PASS real clue then conversation starts search
+PASS Day 3 dialogue records A's identity response
+PASS Day 3 conversation advances NPC identity memory
+PASS travel to residence
+PASS EndDay accepts actual completed activity and narrative
+PASS one overnight advances exactly one day
+PASS overnight save and reload preserves day and role
+PASS Day 4 returns to B
+PASS travel to chess_stall
+PASS wait for chess_stall opening consumes actual free time
+PASS same production chess host starts
+PASS real legal moves versus AI reach a game result
+PASS board result reaches host
+PASS travel to residence
+PASS ordinary home shelf opens through the actual room object
+PASS one ordinary object cannot confirm another person
+PASS repeated clicks cannot count as two independent observations
+PASS other role's real record is present in shared world
+PASS clicking actual trace records discovery
+PASS two sourced ordinary objects set the day-specific narrative flag
+PASS actual observations change possibility guidance
+PASS travel to chess_stall
+PASS conversation partner has a real scene placement
+PASS partner exists once in the active scene
+PASS real conversation opens for naonao
+PASS conversation completes without debug flags
+PASS real dialogue choice arranges meeting
+PASS Day 4 dialogue records B's identity response before the meeting choice
+PASS Day 4 evidence and choice advance suspicion
+PASS travel to residence
+PASS EndDay accepts actual completed activity and narrative
+PASS one overnight advances exactly one day
+PASS overnight save and reload preserves day and role
+PASS Day 5 starts before reveal; switching locked
+PASS travel to print_shop
+PASS meeting reflects actual observed objects
+PASS reading a non-final meeting beat does not unlock
+PASS reading a non-final meeting beat does not unlock
+PASS reading a non-final meeting beat does not unlock
+PASS reading a non-final meeting beat does not unlock
+PASS reading a non-final meeting beat does not unlock
+PASS reading a non-final meeting beat does not unlock
+PASS reading a non-final meeting beat does not unlock
+PASS only actual final meeting acknowledgement unlocks
+PASS meeting confirms identity for NPCs who held evidence
+PASS no instant character switch while simply walking
+PASS explicit safe planner exposes real other-role button
+PASS planner button switches the actual role
+PASS switch loads B private balance
+PASS switch loads B's independent inventory and relationships
+PASS switch preserves the actual world scene
+PASS switch preserves time and shared world
+PASS five-day save written
+PASS new session loads five-day save
+PASS reveal and chosen role survive load
+PASS world trace ownership and discovery survive load
+PASS no instant character switch while simply walking
+PASS explicit safe planner exposes real other-role button
+PASS planner button switches the actual role
+PASS travel to night_market
+PASS Day 5 A accepts a real restaurant order
+PASS travel to produce_stall
+PASS wait for produce_stall opening consumes actual free time
+PASS A buys own cooking ingredient
+PASS A buys own cooking ingredient
+PASS A buys own cooking ingredient
+PASS travel to night_market
+PASS A's own receipts reimburse A
+PASS start production module cooking
+PASS production scene resolves active context
+PASS actual mechanic ready cooking
+PASS real result saved cooking
+PASS A's actual cooking cost and result route correctly
+PASS first opposite-domain completion becomes optional Day 5 practice
+PASS travel to chess_stall
+PASS same production chess host starts
+PASS real legal moves versus AI reach a game result
+PASS board result reaches host
+PASS A actually completes the existing chess game
+PASS A's completed cross-domain activities do not alter B's wallet or items
+PASS no instant character switch while simply walking
+PASS explicit safe planner exposes real other-role button
+PASS planner button switches the actual role
+PASS travel to record_store
+PASS music fits the actual shop hours and character schedule
+PASS only this character's recordings appear
+PASS production Studio reads current character
+PASS B does not gain A's pocket recorder
+PASS B adds actual shop audio using visible workbench buttons
+PASS actual visual sound room opened
+PASS boss listens to actual mixed recording
+PASS eleven production pressing steps deliver real WAV and cover
+PASS retrying delivery cannot duplicate rewards
+PASS B creates actual music and pays its real time cost
+PASS B's opposite-domain completion keeps its own perspective record
+PASS travel to handcraft_shop
+PASS real letter host starts
+PASS letter receives current character
+PASS Original letter draft persists under this journey and character
+PASS Placed collage reaches real folding
+PASS Two physical folds reach envelope
+PASS Inserted letter and closed flap reach sealing
+PASS Real match strike lights candle
+PASS Pellets melt over candle before pouring
+PASS Wax impression cools before posting
+PASS Save and reload preserve the actual seal
+PASS Actual NPC mailbox delivery reaches completion
+PASS B actually completes and saves a private letter
+PASS B's completed cross-domain activities preserve A's private accounts
+PASS cross-domain outcomes save after real completion
+PASS ending reflection exposes overflow through a real scroll range
+PASS no instant character switch while simply walking
+PASS explicit safe planner exposes real other-role button
+PASS planner button switches the actual role
+PASS no instant character switch while simply walking
+PASS explicit safe planner exposes real other-role button
+PASS planner button switches the actual role
+PASS Music rejects an entrance away from the actual shop
+PASS Day 5 B can enter cooking
+PASS minigame reads correct character context
+PASS switching is disabled while a minigame owns the context
+PASS Day 5 B can enter ghostwriting
+PASS minigame reads correct character context
+PASS switching is disabled while a minigame owns the context
+PASS mounted extension receives correct role
+PASS Day 5 B can enter chess
+PASS minigame reads correct character context
+PASS switching is disabled while a minigame owns the context
+PASS mounted extension receives correct role
+PASS old seven-day save explicitly rejected
+PASS story completion does not silently submit a residency application
+FIVE_DAY_FLOW: PASS checks=223 failures=0

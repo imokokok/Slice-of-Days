@@ -99,10 +99,13 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if not event.pressed:
 			if drag_mode == "range":
+				range_end=clampf(event.position.x/size.x*view_seconds,0,60)
+				queue_redraw()
 				region_selected.emit(minf(range_begin, range_end), maxf(range_begin, range_end), range_track)
 				drag_mode = ""
 				return
 			if not drag_mode.is_empty():
+				if selected>=0: _apply_drag(event.position)
 				edited.emit()
 			drag_mode = ""
 			return
@@ -137,28 +140,31 @@ func _gui_input(event: InputEvent) -> void:
 		range_end = clampf(event.position.x / size.x * view_seconds, 0, 60)
 		queue_redraw()
 	elif event is InputEventMouseMotion and not drag_mode.is_empty() and selected >= 0:
-		var clip := arrangement.clips[selected]
-		var delta: float = (event.position.x - down.x) / size.x * view_seconds
-		if drag_mode == "move":
-			clip.start = clampf(snappedf(float(original.start) + delta, 0.05), 0, 60 - float(clip.length))
-			clip.track = clampi(int((event.position.y - 32) / 66), 0, 3)
-		elif drag_mode == "right":
-			var maximum := 60.0 - float(clip.start)
-			if not clip.loop:
-				var source := arrangement.load_pcm(clip.sample_id)
-				if source.is_empty():
-					return
-				maximum = minf(maximum, (float(source.pcm.size()) / float(source.rate) - float(clip.source_start) - float(clip.get("phase", 0))) / float(clip.speed))
-			clip.length = clampf(float(original.length) + delta, 0.05, maxf(0.05, maximum))
-			if not clip.loop:
-				clip.source_end = float(clip.source_start) + float(clip.get("phase", 0)) + float(clip.length) * float(clip.speed)
-		elif drag_mode == "left":
-			var earliest := -float(original.start) if clip.loop else maxf(-float(original.start), -float(original.source_start) / float(original.speed))
-			var movement := clampf(delta, earliest, float(original.length) - 0.05)
-			clip.start = float(original.start) + movement
-			clip.length = float(original.length) - movement
-			if clip.loop:
-				clip.phase = float(original.get("phase", 0.0)) + movement * float(original.speed)
-			else:
-				clip.source_start = float(original.source_start) + movement * float(original.speed)
-		queue_redraw()
+		_apply_drag(event.position)
+
+func _apply_drag(at:Vector2) -> void:
+	var clip := arrangement.clips[selected]
+	var delta: float = (at.x - down.x) / size.x * view_seconds
+	if drag_mode == "move":
+		clip.start = clampf(snappedf(float(original.start) + delta, 0.05), 0, 60 - float(clip.length))
+		clip.track = clampi(int((at.y - 32) / 66), 0, 3)
+	elif drag_mode == "right":
+		var maximum := 60.0 - float(clip.start)
+		if not clip.loop:
+			var source := arrangement.load_pcm(clip.sample_id)
+			if source.is_empty():
+				return
+			maximum = minf(maximum, (float(source.pcm.size()) / float(source.rate) - float(clip.source_start) - float(clip.get("phase", 0))) / float(clip.speed))
+		clip.length = clampf(float(original.length) + delta, 0.05, maxf(0.05, maximum))
+		if not clip.loop:
+			clip.source_end = float(clip.source_start) + float(clip.get("phase", 0)) + float(clip.length) * float(clip.speed)
+	elif drag_mode == "left":
+		var earliest := -float(original.start) if clip.loop else maxf(-float(original.start), -float(original.source_start) / float(original.speed))
+		var movement := clampf(delta, earliest, float(original.length) - 0.05)
+		clip.start = float(original.start) + movement
+		clip.length = float(original.length) - movement
+		if clip.loop:
+			clip.phase = float(original.get("phase", 0.0)) + movement * float(original.speed)
+		else:
+			clip.source_start = float(original.source_start) + movement * float(original.speed)
+	queue_redraw()

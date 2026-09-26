@@ -1,0 +1,2 @@
+# Preserve the author's original license bytes and formatting.
+LICENSE.txt -text -whitespace

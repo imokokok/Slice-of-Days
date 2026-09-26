@@ -2,6 +2,10 @@
 
 已接入 Solmere 主游戏，请打开仓库根目录 `project.godot`。
 
+完整要求对照、最新 MV 与许可取舍见 [创作者体验复核](ARTIST_EXPERIENCE_REVIEW.md)。
+
+本轮回归与实际窗口检查见 [创作者体验验证](QA_ARTIST_EXPERIENCE.md)。
+
 当前全局录音、统一收藏、跨场景恢复和资源接入见 [全局录音说明](GLOBAL_RECORDING.md)。
 
 完整操作、参考游戏、素材许可与测试说明见 [本轮版本说明](RELEASE_20260926.md)。

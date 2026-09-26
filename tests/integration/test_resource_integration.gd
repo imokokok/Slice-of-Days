@@ -104,6 +104,7 @@ func run() -> void:
 	for i in 2: kitchen.stir_buttons.fold.pressed.emit()
 	kitchen.primary_button.pressed.emit()
 	kitchen.seasoning_buttons.salt.pressed.emit()
+	kitchen.primary_button.pressed.emit() # Finish tasting before choosing the actual plating.
 	kitchen.plating_buttons.share.pressed.emit(); await settle()
 	check(kitchen.stage_ready and kitchen.illustrated_pot.ingredients.size()==3,"Pot clicks add real ingredients through the complete cooking workflow")
 	check(kitchen.illustrated_pot.stir_tween!=null,"Accepted cooking input animates the spoon")

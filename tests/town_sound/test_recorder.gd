@@ -78,7 +78,7 @@ func run() -> void:
 	root.add_child(recorder)
 	var errors: Array[String] = []
 	recorder.failed.connect(func(message: String) -> void: errors.append(message))
-	check(not recorder.start("nonexistent device"), "Missing microphone accepted")
+	check(not recorder.start("nonexistent device","microphone"), "Missing microphone accepted")
 	check(errors.size() == 1, "Missing microphone did not notify UI")
 	check(not recorder.capturing, "Failed start left recording active")
 	recorder.free()

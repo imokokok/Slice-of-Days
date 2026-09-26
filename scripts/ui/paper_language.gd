@@ -17,6 +17,7 @@ func _ready() -> void:
 
 func _added(node: Node) -> void:
 	if node is BaseButton: Motion.attach_id.call_deferred(node.get_instance_id())
+	if node is Control: preload("res://scripts/ui/ui_sound_bindings.gd").attach_id.call_deferred(node.get_instance_id())
 	if node is Control and not _context(node,["workshop.gd"]):
 		_style_id.call_deferred(node.get_instance_id())
 

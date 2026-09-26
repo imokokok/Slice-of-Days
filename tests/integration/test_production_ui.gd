@@ -35,9 +35,10 @@ func run() -> void:
 	await snap("exploration")
 	var shell = current_scene.get_node("GameplayShell")
 	state.shared_state["knowledge_A"]=[{"id":"long_notebook_lead","text":"杂货店 08:00—22:00；番茄12元、青草10元、星形盐片22元。日用品、酱料和摄影柜台都在这里。","source_npc_id":"grocery","subject_id":"cafe","predicate":"lead","confidence":1.0}]
-	shell.open_paper("notebook"); await settle()
-	var preview= shell.overlay.find_child("HeardPreview_0",true,false)
-	check(is_instance_valid(preview) and preview.size.x<=380,"Long real leads stay inside the left notebook page")
+	shell.open_paper("leads"); await settle()
+	var labels: Array=shell.overlay.find_children("*","Label",true,false)
+	var previews:=labels.filter(func(label): return str(label.text).contains("番茄12元"))
+	check(not previews.is_empty() and previews[0].size.x<=1170 and previews[0].autowrap_mode==TextServer.AUTOWRAP_WORD_SMART,"A's long leads wrap in the clues page without gaining B's notebook")
 	await snap("notebook_long_lead"); shell.overlay.close(); await settle()
 	state.shared_state["knowledge_A"]=[]
 	var dialogue = load("res://scripts/ui/conversation_panel.gd").new(); dialogue.npc="wu_wu"; current_scene.add_child(dialogue); await settle(); dialogue._advance()
@@ -48,7 +49,7 @@ func run() -> void:
 	var answer: Array=[]
 	ask.chosen.connect(func(topic: String) -> void: answer.append(topic))
 	var ask_buttons: Array=ask.find_children("*","Button",true,false)
-	check(ask_buttons.size()==4 and ask_buttons[0].get_script()==load("res://scripts/ui/components/dialogue_choice.gd"),"Follow-up questions share the real dialogue choice component")
+	check(ask_buttons.size()==5 and ask_buttons[0].get_script()==load("res://scripts/ui/components/dialogue_choice.gd"),"Five follow-up questions share the real dialogue choice component")
 	await snap("ask_choices")
 	ask_buttons[0].pressed.emit(); ask_buttons[0].pressed.emit(); await settle()
 	check(answer==["schedule_info"],"Question selection emits the real topic once")
@@ -92,6 +93,7 @@ func run() -> void:
 		studio._undo_edit(); check(studio.model.clips.size()==count,"Studio undo restores tracks")
 		studio._redo_edit(); check(studio.model.clips.size()==count+1,"Studio redo restores the edited clip")
 	await snap("music_studio"); studio.queue_free(); await settle(); state.current_location="cafe"
+	state.current_minute=690 # Explicit free window after the independent camera/recording fixture.
 	shell.open_paper("map"); await settle(); var map = shell.overlay
 	map._map_select("produce_stall"); await snap("travel_options")
 	before=state.money; var minute: int=state.current_minute
@@ -111,7 +113,9 @@ func run() -> void:
 	check(save.slot_summary(save.active_slot).location==state.current_location,"Slot metadata includes actual location")
 	var modules = root.get_node("GameplayModuleSystem")
 	for id in ["cooking","tarot","chess","contemplation","ghostwriting"]:
-		state.current_minute=1260 if id=="contemplation" else 660
+		state.switch_to_role("B" if id in ["cooking","chess"] else "A",2 if id=="cooking" else 4 if id=="chess" else 3 if id=="ghostwriting" else 1,true)
+		state.current_minute=1320 if id=="contemplation" else 720 if id=="cooking" else 690
+		if id=="ghostwriting": check(state.combine_flexible_time(),"Letter session reserves a real combined free block")
 		var started: bool=modules.begin_session(id,"production_ui_"+id)
 		print("Production capture ",id," session=",started," pending=",modules.pending_module_id())
 		check(started,"Start real module "+id)

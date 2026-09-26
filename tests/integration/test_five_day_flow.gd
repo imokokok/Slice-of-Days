@@ -180,7 +180,7 @@ func studio() -> void:
 	recorder.shop_mode=true; current_scene.add_child(recorder)
 	await process_frame
 	var session=root.get_node("RecordingSession")
-	for index in 2:
+	for index in (2 if gs.current_role=="A" else 0):
 		session.start("game")
 		check(session.recorder.capturing,"capture actual game audio, no microphone")
 		await create_timer(4.5).timeout
@@ -188,11 +188,17 @@ func studio() -> void:
 		check(session.saved and session.playback.stream.get_length()>=4,"game recording auto-saves real audio")
 		session.rename_sample(session.last_sample,"街边的声音 "+str(index+1))
 	var samples: Array=recorder.store.list_samples()
-	check(samples.size()==2,"only this character's recordings appear")
+	check(samples.size()==(2 if gs.current_role=="A" else 0),"only this character's recordings appear")
 	var work=load("res://scripts/town_sound/studio/StudioScreen.gd").new()
 	recorder.add_child(work); await process_frame
 	check(work.model.hosted_role==gs.current_role,"production Studio reads current character")
-	work.model.add_sample(samples[0],0,0); work.model.add_sample(samples[1],1,4.5); work.changed()
+	if gs.current_role=="A":
+		work.model.add_sample(samples[0],0,0); work.model.add_sample(samples[1],1,4.5); work.changed()
+	else:
+		check(not root.get_node("CharacterSystem").owns_pocket_item("recorder"),"B does not gain A's pocket recorder")
+		work.find_child("ShopSource_wind",true,false).pressed.emit()
+		work.find_child("ShopSource_water",true,false).pressed.emit()
+		check(work.model.clips.size()==2 and work.model.length()>=8,"B adds actual shop audio using visible workbench buttons")
 	await work.open_visual(); await process_frame
 	var room=recorder.get_child(recorder.get_child_count()-1)
 	check(room.has_method("submit"),"actual visual sound room opened")
@@ -214,37 +220,47 @@ func letter() -> void:
 	var game=host.experience
 	check(str(game.get_meta("solmere_context").current_character)==gs.current_role,"letter receives current character")
 	while not game.ready_done: await process_frame
-	game.open_browser(); game.take_material()
-	game.pointer=game.active.position; game._press()
-	motion(game,game.main_paper.position); game._release()
-	game.save_game()
-	check(gs.artifacts.minigame_drafts.ghostwriting.papers.size()==2,"letter draft belongs to current role")
-	await game.begin_folding()
-	check(game.stage=="FOLDING","actual placed paper allows folding")
-	game.pointer=Vector2(700,600); game._press(); motion(game,Vector2(700,400)); game._release()
-	game.pointer=Vector2(700,300); game._press(); motion(game,Vector2(700,510)); game._release()
-	check(game.stage=="ENVELOPE","two real fold gestures form letter")
-	game.pointer=game.packed_letter_at; game._press(); motion(game,Vector2(1000,450)); game._release()
-	await create_timer(.65).timeout
-	game.pointer=Vector2(1000,280); game._press(); motion(game,Vector2(1000,560)); game._release()
-	check(game.stage=="WAX_SEAL","insert and close envelope")
-	game.pointer=Vector2(350,620); game._press()
-	motion(game,Vector2(480,620)); motion(game,Vector2(335,620)); motion(game,Vector2(509,382))
-	game._process_wax(.6); game._release()
-	check(game.candle_lit,"struck match lights actual candle")
-	game.pointer=Vector2(600,322); game._press(); motion(game,Vector2(390,330)); game._release()
-	game.pointer=Vector2(600,322); game._press(); motion(game,Vector2(509,350)); game._release()
-	game._process_wax(6.1)
-	game.pointer=Vector2(509,350); game._press(); motion(game,Vector2(1000,455)); game._process_wax(1.9); game._release()
-	game.pointer=Vector2(1360,455); game._press(); motion(game,Vector2(1000,477)); game._process_wax(1.1); game._release()
-	game._process_wax(2.6)
-	check(game.wax_step==6,"actual melt, pour, stamp and cooling reach posting")
-	await game.send_letter()
-	check(host._experience_completed(),"actual NPC delivery reaches completion")
+	game.tool="rect"; game.cutting_source=0; game.start=Vector2(90,255)
+	game.finish_cut(Vector2(290,370)); game.selected.position=Vector2(700,390)
+	game.save_game(true)
+	check(FileAccess.file_exists(game.save_path) and game.save_path.contains("_"+gs.current_role+".json"),"Original letter draft persists under this journey and character")
+	await game.complete_letter()
+	check(game.stage=="FOLDING","Placed collage reaches real folding")
+	game.stage_input(Vector2(700,650),true); game.stage_input(Vector2(700,450),false)
+	await create_timer(.6).timeout
+	game.stage_input(Vector2(700,270),true); game.stage_input(Vector2(700,450),false)
+	await create_timer(.6).timeout
+	game.stage_input(Vector2(700,450),true); game.stage_input(Vector2(700,450),false)
+	check(game.stage=="ENVELOPE","Two physical folds reach envelope")
+	var f=game.finishing
+	f.input(f.letter_pos,true); f.mouse_move(Vector2(720,650)); f.input(Vector2(720,650),false)
+	f.input(Vector2(720,270),true); f.mouse_move(Vector2(720,525)); f.input(Vector2(720,525),false)
+	check(game.stage=="WAX_SEAL","Inserted letter and closed flap reach sealing")
+	f.input(f.match_pos,true); f.mouse_move(Vector2(115,699)); f.mouse_move(Vector2(205,699))
+	f.mouse_move(f.WICK); f.input(f.WICK,false)
+	check(f.candle,"Real match strike lights candle")
+	f.input(Vector2(310,600),true); f.mouse_move(f.spoon); f.input(f.spoon,false)
+	f.input(f.spoon,true); f.mouse_move(f.WICK-Vector2(0,40)); f.input(f.spoon,false)
+	await create_timer(3.4).timeout
+	check(f.phase=="POUR","Pellets melt over candle before pouring")
+	f.input(f.spoon,true); f.mouse_move(f.SEAM-Vector2(0,55)); f.input(f.spoon,false)
+	await create_timer(1.3).timeout
+	f.input(f.stamp,true); f.mouse_move(f.pool); await create_timer(1.1).timeout; f.input(f.pool,false)
+	await create_timer(2).timeout
+	check(game.stage=="SEND" and f.impression_good,"Wax impression cools before posting")
+	game.save_game(true); game.load_game(true); f=game.finishing
+	check(f.impression_good and f.pour_committed,"Save and reload preserve the actual seal")
+	f.input(f.mail_pos,true); f.input(f.mail_pos,false)
+	f.input(f.mail_pos,true); f.mouse_move(Vector2(1070,435)); f.input(Vector2(1070,435),false)
+	await create_timer(1).timeout
+	f.input(Vector2(1070,280),true); f.mouse_move(Vector2(1070,465)); f.input(Vector2(1070,465),false)
+	check(host._experience_completed(),"Actual NPC mailbox delivery reaches completion")
 	host._complete(); await settle()
-func motion(game: Node, at: Vector2) -> void:
-	game.previous_pointer=game.pointer; game.pointer=at
-	game._motion(InputEventMouseMotion.new())
+func letter_draft(role: String) -> Dictionary:
+	var key: String=(str(gs.shared_state.get("journey_id","local"))+"_"+role).validate_filename()
+	var path: String="user://letter_original_"+key+".json"
+	var data=JSON.parse_string(FileAccess.get_file_as_string(path)) if FileAccess.file_exists(path) else null
+	return data if data is Dictionary else {}
 func chess() -> void:
 	await wait_for_opening("chess_stall")
 	await ensure_time(60)
@@ -282,10 +298,11 @@ func run() -> void:
 		check(save.load_game("user://five_day_roundtrip.json"),"separate process loads completed five-day save")
 		check(gs.current_role=="B" and gs.current_day==5 and root.get_node("CharacterSystem").switch_unlocked(),"quit then restart preserves chosen role and reveal")
 		check(gs.shared_state.public_traces.size()==4 and gs.shared_state.public_traces.A_1_sound_sampling.owner=="A","quit then restart preserves public objects and owners")
-		check(gs.role_states.A.artifacts.minigame_drafts.ghostwriting.stage=="END" and not gs.artifacts.get("minigame_drafts",{}).has("ghostwriting"),"finished letter remains A's private draft across process restart")
+		# Workshop files are the latest private drafts, independent of older core snapshots.
+		check(letter_draft("A").get("stage","")=="END","finished letter remains A's private draft across process restart")
 		check(save.load_game("user://stage2_cross_domain.json"),"separate process loads the real cross-domain completion save")
 		check(gs.current_role=="B" and gs.current_day==5,"cross-domain save restores B at Day 5")
-		check(gs.artifacts.minigame_drafts.ghostwriting.stage=="END" and gs.role_states.A.artifacts.minigame_drafts.ghostwriting.stage=="END","both letters remain in independent private drafts")
+		check(letter_draft("A").get("stage","")=="END" and letter_draft("B").get("stage","")=="END","both letters remain in independent private drafts")
 		for role in ["A","B"]:
 			for module in (["cooking","chess"] if role=="A" else ["sound_sampling","ghostwriting"]):
 				var outcome: Dictionary=gs.role_states[role].module_states[module].outcomes[-1]
@@ -417,13 +434,16 @@ func run() -> void:
 			# This final pass checks launch/cancel as time allows; all four opposite
 			# domains above have already completed through real mechanics.
 			if not modules.entry_check(module).ok: continue
+			if module=="sound_sampling" and gs.current_location!="record_store":
+				check(not router.gameplay_module(module,"street:"+gs.current_location),"Music rejects an entrance away from the actual shop")
+				continue
 			check(router.gameplay_module(module,"street:"+gs.current_location),"Day 5 "+role+" can enter "+module)
 			await settle()
 			if module=="sound_sampling":
 				var workspaces=get_nodes_in_group("town_sound_workspace")
-				check(workspaces.size()==1 and workspaces[0].shop_mode and modules.pending_module_id().is_empty(),"music reopens real recorder without inventing a completion session")
+				check(workspaces.size()==1 and workspaces[0].has_method("open_recorder") and modules.pending_module_id().is_empty(),"music reopens the physical shop without inventing a completion session")
 				check(not root.get_node("CharacterSystem").can_switch(),"recording workspace owns the current role")
-				workspaces[0].request_close(); await settle(); continue
+				workspaces[0].queue_free(); await settle(); continue
 			check(modules.session_context().current_character==role,"minigame reads correct character context")
 			check(not root.get_node("CharacterSystem").can_switch(),"switching is disabled while a minigame owns the context")
 			if module in ["ghostwriting","chess"]:

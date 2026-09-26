@@ -70,14 +70,16 @@ func run() -> void:
 	# Native activity and extensions share the same physical bus and HUD.
 	for script in ["res://scripts/ui/native_module_game.gd","res://scripts/ui/components/cooking_board.gd","res://extensions/collage_letter/scripts/audio_manager.gd","res://extensions/observatory/scripts/audio_manager.gd","res://extensions/myriorama_tarot/scripts/sound.gd"]:
 		check(load(script)!=null,"Integrated script compiles: "+script.get_file())
-	gs.begin_new_game("B"); gs.shared_state["journey_id"]=Crypto.new().generate_random_bytes(12).hex_encode(); gs.current_location="night_market"; gs.current_minute=600
+	gs.begin_new_game("A"); gs.switch_to_role("A",5,true); gs.shared_state["journey_id"]=Crypto.new().generate_random_bytes(12).hex_encode(); gs.current_location="night_market"; gs.current_minute=690
+	root.get_node("ChapterSystem").story().reveal_completed=true
+	check(gs.combine_flexible_time(),"A reserves a long enough real free window for cooking")
 	await settle()
 	check(router.gameplay_module("cooking","global_audio_test"),"Enter a real cooking session")
 	await create_timer(1).timeout
 	var kitchen=current_scene
 	check(global.available(),"Global recording pocket is present inside cooking")
 	var device_view=global.open_recorder(); await settle()
-	check(is_instance_valid(device_view) and device_view.live_screen!=null,"B also uses the real global recorder")
+	check(is_instance_valid(device_view) and device_view.live_screen!=null,"A keeps the real recorder during a Day 5 cooking session")
 	device_view.put_away(); await settle()
 	session.start("game")
 	for token in ["lemon","bread","cheese"]: kitchen._toggle_token(token)

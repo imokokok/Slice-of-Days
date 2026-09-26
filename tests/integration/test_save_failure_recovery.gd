@@ -39,8 +39,8 @@ func run() -> void:
 	check(state.money == before_money - int(item.price) and int(state.inventory.get(item.id,0)) == int(before_inventory.get(item.id,0)) + 1, "Retry purchases exactly once")
 	shop.queue_free()
 	await process_frame
-	# Use the longer afternoon free block so the trip reaches the save boundary.
-	state.current_minute = 840
+	# Noon is B's free block; 14:00 belongs to the fixed restaurant shift.
+	state.current_minute = 720
 	var old_place: String = state.current_location
 	var old_minute: int = int(state.current_minute)
 	var old_money: int = int(state.money)

@@ -132,16 +132,17 @@ func run()->void:
 		if str(letter.materials[i].get("photo_id",""))==str(photo.id): index=i;break
 	check(index>=0,"Real collage workbench reads developed photos as printable sources")
 	if index>=0:
-		check(letter.material_images[index].get_pixel(150,60)!=Color("faf7ee"),"RGB camera image is printed into the RGBA paper copy")
-		letter.browser_category="全部"; letter.browser_index=index; letter.take_material()
-		var original = letter.active
-		original.position=Vector2(205,685)
-		letter.use_tool("mat"); letter.take_knife()
-		letter._split_focused(PackedVector2Array([Vector2(20,20),Vector2(160,20),Vector2(160,120),Vector2(20,120)]),"knife")
-		letter.save_game()
-		check(str(letter.active.photo_id)==str(photo.id) and not letter.active.cut_history.is_empty(),"Existing craft knife cuts the player's photo")
-		var snapshot: Dictionary=letter.snapshot(); letter.restore_snapshot(snapshot)
-		check(letter.papers.get_children().any(func(piece: Node) -> bool: return str(piece.photo_id)==str(photo.id)),"Photo source IDs survive workshop restore")
+		letter.open_material_catalog(); await process_frame
+		letter.select_catalog_material(index)
+		check(letter.photo_source==index,"Catalog selection puts the developed photo on the actual cutting surface")
+		await RenderingServer.frame_post_draw
+		var source_texture: Texture2D=letter.get_material_texture(index)
+		check(source_texture.get_image().get_pixel(150,60)!=Color("faf7ee"),"Developed image renders in the paper copy")
+		letter.tool="rect"; letter.cutting_source=index; letter.start=Vector2(1090,504)
+		letter.finish_cut(Vector2(1230,604))
+		check(letter.selected!=null and letter.selected.source_id==index,"Original craft knife cuts the player's real photograph")
+		letter.save_game(true); letter.load_game(true)
+		check(letter.pieces_root.get_children().any(func(piece: Node): return piece.source_id==index),"Photo piece keeps its source identity after save reload")
 		check(film.photo(str(photo.id)).used_in_collage,"Saving collage writes real photo usage metadata")
 		check(film.library.load_photo(str(photo.id))!=null,"Cutting a paper copy preserves the Gallery original")
 	letter.queue_free()

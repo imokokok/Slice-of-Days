@@ -1,0 +1,536 @@
+[
+  {
+    "test": "integration/test_open_polish",
+    "exit_code": 0,
+    "seconds": 13.75,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_resource_integration",
+    "exit_code": 0,
+    "seconds": 17.47,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_production_ui",
+    "exit_code": 9,
+    "seconds": 32.0,
+    "errors": [
+      "ERROR: Follow-up questions share the real dialogue choice component",
+      "ERROR: A real confirmation must exist",
+      "ERROR: Confirmed route changes location and clock",
+      "ERROR: A real relationship flag unlocks friend travel",
+      "ERROR: Start real module cooking",
+      "ERROR: Start real module tarot",
+      "ERROR: Start real module chess",
+      "ERROR: Start real module contemplation",
+      "ERROR: Start real module ghostwriting"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_reference_paper_ui",
+    "exit_code": 1,
+    "seconds": 24.81,
+    "errors": [
+      "ERROR: Bottom objects have independent click targets 3"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_handmade_life",
+    "exit_code": 0,
+    "seconds": 19.67,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_dialogue_presentation",
+    "exit_code": 1,
+    "seconds": 17.48,
+    "errors": [
+      "SCRIPT ERROR: Invalid access to property or key 'speech_card' on a base object of type 'Nil'."
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_five_day_flow",
+    "exit_code": 1,
+    "seconds": 84.52,
+    "errors": [
+      "SCRIPT ERROR: Invalid call. Nonexistent function 'open_browser' in base 'Node2D (host_adapter.gd)'.",
+      "ERROR: Day 3 actual letter completes main task"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_architecture_alignment",
+    "exit_code": 0,
+    "seconds": 14.86,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_five_day_identity_mechanics",
+    "exit_code": 0,
+    "seconds": 13.67,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_daily_life",
+    "exit_code": 0,
+    "seconds": 24.52,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_pocket_roles",
+    "exit_code": 0,
+    "seconds": 23.73,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_save_failure_recovery",
+    "exit_code": 3,
+    "seconds": 14.36,
+    "errors": [
+      "ERROR: Route failure returns a visible retry message to the map: 当前空闲时段不足以完成这段路程。",
+      "ERROR: Prepare a pending gameplay session",
+      "ERROR: Failed cancel save preserves the pending minigame for retry"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_transaction_boundaries",
+    "exit_code": 1,
+    "seconds": 12.12,
+    "errors": [
+      "ERROR: Failed purchases change neither inventory, time nor accounts"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_shop_work_routes",
+    "exit_code": 1,
+    "seconds": 27.17,
+    "errors": [
+      "ERROR: Natural, enabled Start Work label is present"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_starting_budgets",
+    "exit_code": 6,
+    "seconds": 11.97,
+    "errors": [
+      "ERROR: Both roles receive only their missing starting capital",
+      "ERROR: Existing transactions survive with one adjustment entry",
+      "ERROR: Reload and character switching never duplicate the grant",
+      "ERROR: B keeps the same spent balance after switching",
+      "ERROR: The 1000/160 release migrates directly without repeating its earlier A grant",
+      "ERROR: Unversioned historic saves keep their unknown starting-budget history"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_midnight_rollover",
+    "exit_code": 3,
+    "seconds": 21.3,
+    "errors": [
+      "ERROR: 22:00 automatically starts the night transition",
+      "ERROR: Midnight advances once to the authored second Day 1 perspective",
+      "ERROR: Next morning clears the rollover latch"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_night_and_interaction",
+    "exit_code": 1,
+    "seconds": 28.05,
+    "errors": [
+      "ERROR: Grocery has a physical doorway"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_atmosphere_transition",
+    "exit_code": 0,
+    "seconds": 19.42,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_scene_atlas",
+    "exit_code": 2,
+    "seconds": 17.47,
+    "errors": [
+      "ERROR: Restaurant interaction aligns with its pictured door on the main street",
+      "ERROR: Restaurant entry prompt appears at the door"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_home_interiors",
+    "exit_code": 1,
+    "seconds": 22.94,
+    "errors": [
+      "ERROR: Desk opens the shared hand-drawn notebook"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_resident_spaces",
+    "exit_code": 1,
+    "seconds": 19.39,
+    "errors": [
+      "ERROR: New Game enters town directly without the opening movie",
+      "ERROR: real travel to cafe",
+      "ERROR: one physical doorway for grocery",
+      "SCRIPT ERROR: Invalid access to property or key 'stage' on a base object of type 'Control (town_day.gd)'."
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_street_motion",
+    "exit_code": 0,
+    "seconds": 17.33,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_coastal_composition",
+    "exit_code": 1,
+    "seconds": 30.45,
+    "errors": [
+      "SCRIPT ERROR: Invalid access of index '0' on a base object of type: 'Array[Dictionary]'."
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_supplied_home_and_owner",
+    "exit_code": 0,
+    "seconds": 29.67,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_crisp_street",
+    "exit_code": 150,
+    "seconds": 23.25,
+    "errors": [
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Left picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam",
+      "ERROR: Right picture remains opaque at the seam"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_late_night_people",
+    "exit_code": 14,
+    "seconds": 21.28,
+    "errors": [
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Evening encounter at record_store",
+      "ERROR: Late conversation does not reopen the store",
+      "ERROR: Shop interior stays closed"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_linear_dialogue",
+    "exit_code": 1,
+    "seconds": 21.3,
+    "errors": [
+      "SCRIPT ERROR: Invalid call. Nonexistent function 'find_children' in base 'Nil'."
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_life_feedback",
+    "exit_code": 1,
+    "seconds": 21.08,
+    "errors": [
+      "ERROR: A new day does not duplicate its direction as a notification",
+      "ERROR: The current action and useful context are separate real labels",
+      "ERROR: The actual Input Map binding opens the notebook",
+      "ERROR: The actual cancel binding closes the notebook",
+      "ERROR: The visible context control starts the actual nearest resident conversation",
+      "ERROR: The mapped talk action uses the same real conversation path",
+      "ERROR: A deliberate tracked lead outranks daily suggestions",
+      "ERROR: A person is found at their current schedule, not a hardcoded old shop",
+      "SCRIPT ERROR: Invalid access to property or key 'location' on a base object of type 'Dictionary'."
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_cooking_rhythm",
+    "exit_code": 0,
+    "seconds": 16.86,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_native_modules",
+    "exit_code": 1,
+    "seconds": 14.52,
+    "errors": [
+      "ERROR: photography should begin",
+      "ERROR: Native gameplay scene received unsupported module: ",
+      "ERROR: photography scene should resolve its pending module",
+      "SCRIPT ERROR: Invalid assignment of property or key 'text' with value of type 'String' on a base object of type 'Nil'.",
+      "SCRIPT ERROR: Invalid assignment of property or key 'text' with value of type 'String' on a base object of type 'Nil'.",
+      "SCRIPT ERROR: Invalid assignment of property or key 'value' with value of type 'float' on a base object of type 'Nil'.",
+      "ERROR: optical_illusion should begin",
+      "ERROR: Native gameplay scene received unsupported module: "
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_collage_viewport",
+    "exit_code": 0,
+    "seconds": 57.23,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_letter_workshop",
+    "result": "MISSING"
+  },
+  {
+    "test": "integration/test_feedback_systems",
+    "exit_code": 9,
+    "seconds": 20.67,
+    "errors": [
+      "ERROR: A due at-home commitment should wait for player input",
+      "ERROR: The work computer should receive a pending commitment",
+      "ERROR: B should be able to start the due commitment from the home computer",
+      "ERROR: Work should consume its authored minutes and pay income",
+      "ERROR: Work income should be visible in the ledger",
+      "ERROR: Conversation card advertises Space as the continue key",
+      "ERROR: Accepted commission can settle",
+      "ERROR: Accepted letter commission pays its configured real fee",
+      "ERROR: Reopening a completed letter cannot farm the same fee"
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "integration/test_nebula_telescope",
+    "exit_code": 1,
+    "seconds": 14.34,
+    "errors": [
+      "SCRIPT ERROR: Invalid access to property or key 'experience' on a base object of type 'null instance'."
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "town_sound/test_audio_settings",
+    "exit_code": 1,
+    "seconds": 2.88,
+    "errors": [
+      "SCRIPT ERROR: Compile Error: Identifier not found: SettingsSystem",
+      "SCRIPT ERROR: Compile Error: Failed to compile depended scripts.",
+      "ERROR: Failed to load script \"res://tests/town_sound/test_audio_settings.gd\" with error \"Compilation failed\"."
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "town_sound/test_world_capture",
+    "exit_code": 0,
+    "seconds": 15.41,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "town_sound/test_recorder",
+    "exit_code": 0,
+    "seconds": 12.8,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "town_sound/test_pocket_media",
+    "exit_code": 1,
+    "seconds": 18.67,
+    "errors": [
+      "SCRIPT ERROR: Invalid access to property or key 'playing' on a base object of type 'Nil'."
+    ],
+    "result": "REVIEW"
+  },
+  {
+    "test": "town_sound/test_visual_composition",
+    "exit_code": 0,
+    "seconds": 12.81,
+    "errors": [],
+    "result": "PASS"
+  },
+  {
+    "test": "integration/test_recording_retry",
+    "exit_code": 1,
+    "seconds": 19.38,
+    "errors": [
+      "SCRIPT ERROR: Invalid call. Nonexistent function 'close' in base 'Nil'."
+    ],
+    "result": "REVIEW"
+  }
+]

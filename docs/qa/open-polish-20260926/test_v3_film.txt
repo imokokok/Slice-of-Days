@@ -1,0 +1,87 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 566.24 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 4050 Laptop GPU
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+PASS A starts without bypassing the camera purchase choice
+PASS A directly buys the used camera at the configured price
+PASS A's purchased visual tool is available in normal play
+PASS A's purchase includes one unused 24-exposure normal roll
+PASS Camera opens directly in the full-screen viewfinder
+PASS LMB raises the real viewfinder
+PASS Saved frame matches the full-screen 16:9 viewfinder
+PASS Scroll advances to 1.3x
+PASS Scroll is capped at 1.6x
+PASS Space consumes one exposure through the camera
+PASS Shutter gives a short black mechanical frame
+PASS Black frame clears immediately
+PASS Exposure 2 committed
+PASS Exposure 3 committed
+PASS Exposure 4 committed
+PASS Exposure 5 committed
+PASS Exposure 6 committed
+PASS Exposure 7 committed
+PASS Exposure 8 committed
+PASS Exposure 9 committed
+PASS Exposure 10 committed
+PASS Exposure 11 committed
+PASS Exposure 12 committed
+PASS Exposure 13 committed
+PASS Exposure 14 committed
+PASS Exposure 15 committed
+PASS Exposure 16 committed
+PASS Exposure 17 committed
+PASS Exposure 18 committed
+PASS Exposure 19 committed
+PASS Exposure 20 committed
+PASS Exposure 21 committed
+PASS Exposure 22 committed
+PASS Exposure 23 committed
+PASS Exposure 24 committed
+PASS 24 shots fill one roll
+PASS A full roll rejects exposure 25
+PASS Unprocessed captures are absent from Gallery and Dossier
+PASS Active roll persists through real save/load
+PASS Exposure count survives reload
+PASS Rush drop-off charges the configured actual fee
+PASS Dropped-off roll leaves the camera
+PASS A real processing ticket enters Loose Papers
+PASS Repeated drop-off cannot charge again
+PASS Processing cannot be picked up early
+PASS 179 game minutes are insufficient for Rush
+PASS Actual clock makes Rush ready after 180 minutes
+PASS Ready photos still require visiting the grocery counter
+PASS Counter pickup develops and hands over the real photographs
+PASS All 24 developed photographs enter persistent Gallery
+PASS Duplicate pickup creates no extra copies or payment
+PASS Developed metadata keeps roll_id
+PASS Developed metadata keeps film_type
+PASS Developed metadata keeps capture_path
+PASS Developed metadata keeps developed_path
+PASS Developed metadata keeps shown_to_npcs
+PASS Developed metadata keeps used_in_collage
+PASS Developed metadata keeps submitted_to_dossier
+PASS Original capture and developed PNG both remain available
+PASS A developed photo can be attached to the residency dossier cover
+PASS The selected dossier cover photo is saved in residency state
+PASS The residency dossier renders the attached photo on its cover
+PASS Photo action actually selects the copy for collage
+PASS Photo action stores the paper copy in the actual room
+PASS Room photo string renders the saved photo copy
+PASS Showing a photograph records a real NPC encounter
+PASS Real collage workbench reads developed photos as printable sources
+PASS Catalog selection puts the developed photo on the actual cutting surface
+PASS Developed image renders in the paper copy
+PASS Original craft knife cuts the player's real photograph
+PASS Photo piece keeps its source identity after save reload
+PASS Saving collage writes real photo usage metadata
+PASS Cutting a paper copy preserves the Gallery original
+PASS B's fresh game starts without the camera
+PASS B can help label real old stock to receive the used camera
+PASS Camera exchange hands over a real non-cash receipt
+PASS B help consumes 25 minutes and gives one expired-stock roll
+PASS Repeated help cannot repeat time or camera rewards
+PASS Shop help applies the first Standard price naturally
+PASS Standard pickup is actually scheduled for next morning
+PASS Processing and first-discount state survive reload
+V3_FILM PASS checks=81 failures=0

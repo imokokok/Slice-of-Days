@@ -1,0 +1,38 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 566.24 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 4050 Laptop GPU
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+PORTRAIT_INITIAL_MASK_MS 1171
+PASS Re-entering the shop reuses the prepared portrait
+PASS Portrait trims paper padding and keeps the full figure
+PASS Paper outside the portrait is transparent
+PASS White sneaker panels remain opaque rather than becoming holes
+PASS Home anchors use the supplied image coordinates
+PASS House has no rectangular white backdrop
+PASS Sky remains visible through the stair and balcony railing openings
+PASS Orange roof colors are unchanged in the source composite
+PASS Building contact line coincides with the shared ground line
+PASS A has one reachable home entry
+PASS A prompt aligns with the painted stairs/door
+PASS A can interact at the visible entrance
+PASS A E opens the shared mailbox landing
+PASS A keeps the existing private interior
+PASS A can return to the street
+PASS B has one reachable home entry
+PASS B prompt aligns with the painted stairs/door
+PASS B can interact at the visible entrance
+PASS B E opens the shared mailbox landing
+PASS B keeps the existing private interior
+PASS B can return to the street
+PASS Indoor owner is not cloned outside the store
+PASS Record store retains its real entrance
+PASS Exactly one Xanni occupies her existing scheduled shop position
+PASS Existing owner name is preserved
+PASS Owner can be addressed from a comfortable distance without touching sprites
+PASS W beside the supplied owner opens the existing conversation
+PASS Close conversation gently separates the player while keeping the owner fixed
+PASS The owner's dialogue text can be fully revealed
+PASS Closing dialogue restores the store
+PASS Re-entry preserves the same single owner and position
+SUPPLIED_HOME_AND_OWNER: 31 checks / 0 failures

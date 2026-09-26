@@ -64,21 +64,23 @@ func run() -> void:
 	check(shell.get_node("Pocket_notebook").visible and not shell.get_node("Pocket_recorder").visible,"B carries notebook, not recorder")
 	await capture("b-pocket")
 	key(shell,"open_recorder"); await process_frame
-	check(is_instance_valid(shell.tool),"B recorder hotkey opens the global recorder")
-	shell.tool.put_away(); await process_frame
+	check(not is_instance_valid(shell.tool) and not root.get_node("GlobalRecorder").pocket.visible,"B has no recorder view or global shortcut")
 	shell.open_tool("recorder"); await process_frame
-	check(is_instance_valid(shell.tool),"Direct request reuses global recording for B")
-	shell.tool.put_away(); await process_frame
+	check(not is_instance_valid(shell.tool) and not root.get_node("RecordingSession").start("game"),"Direct UI and recording-service calls both respect B ownership")
 	shell.open_paper("sound_library"); await process_frame
-	check(has_text(shell.overlay,"新录音"),"B sound collection offers the same recording action")
+	check(not has_text(shell.overlay,"新录音"),"B sound collection offers no personal recording action")
 	shell.overlay._home_action("recorder"); await process_frame
 	await process_frame
-	check(is_instance_valid(shell.tool),"Collection routes B to shared recording")
+	check(not is_instance_valid(shell.tool),"Collection cannot bypass B ownership")
 	if is_instance_valid(shell.tool): shell.tool.put_away(); await process_frame
 	await close_paper(shell)
 	gs.current_location="record_store"
 	var shop=load("res://scripts/town_sound/record_shop/RecordShop.gd").new(); current_scene.add_child(shop)
 	check(not has_text(shop,"随身录音 / 素材库"),"B record shop has no personal recorder entrance")
+	check(not has_text(shop,"录一段，收进口袋") and has_text(shop,"加入店内素材"),"B shop instructions match the available source-material workflow")
+	shop.stations.get_child(0).pressed.emit(); await process_frame
+	check(is_instance_valid(shop.modal) and shop.modal.page_scroll.visible and not has_text(shop.modal,"录下新的声音"),"B's visible collection station opens real library without a recorder")
+	shop.modal.queue_free(); await process_frame
 	shop.open_shelf(); await process_frame
 	check(is_instance_valid(shop.modal) and not shop.modal.page_scroll.visible,"B can listen to records without exposing recorder")
 	check(shop.modal.recorder==root.get_node("RecordingSession").recorder,"Shop wrapper uses the same global device")

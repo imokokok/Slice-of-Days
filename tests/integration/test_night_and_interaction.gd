@@ -47,8 +47,10 @@ func run() -> void:
 		check(street.nearest_interactable().kind=="transport",location+" end sign can be used")
 	gs.current_location="cafe"; router.town_day(); await settle()
 	var street=current_scene.street
+	check(not street.hotspots.any(func(h): return h.kind=="door" and h.id=="grocery"),"Grocery remains an outdoor counter without an invented interior")
+	gs.current_location="record_store"; router.town_day(); await settle(); street=current_scene.street
 	var doors: Array=street.hotspots.filter(func(h): return h.kind=="door")
-	check(not doors.is_empty(),"Grocery has a physical doorway")
+	check(not doors.is_empty(),"Record shop has a physical doorway")
 	if not doors.is_empty():
 		var door: Dictionary=doors[0]
 		street.hotspots.clear(); street.hotspots.append(door); street.hotspots.append({"kind":"person","id":"wu_wu","x":door.x+70})

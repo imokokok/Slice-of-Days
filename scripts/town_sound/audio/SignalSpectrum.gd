@@ -5,6 +5,26 @@ extends RefCounted
 const EDGES := [40.0,160.0,400.0,1000.0,2500.0,6000.0,12000.0]
 const MIN_DB := 60.0
 
+static func envelope(pcm:PackedByteArray,rate:int,seconds:float,stereo:=false,frame_limit:=-1) -> Array:
+	# One PCM window for live capture, collection and final mix. No double gain.
+	var result:=[0.0,0.0,0.0,0.0,0.0]
+	if rate<=0 or not is_finite(seconds): return result
+	var stride:=4 if stereo else 2
+	var frames:=pcm.size()/stride if frame_limit<0 else mini(frame_limit,pcm.size()/stride)
+	var end:=clampi(int(maxf(0,seconds)*rate),0,frames)
+	var start:=maxi(0,end-1024)
+	if end<=start: return result
+	var low:=0.0; var mid_low:=0.0
+	var a:=1-exp(-TAU*250.0/rate); var b:=1-exp(-TAU*2000.0/rate)
+	for i in range(start,end):
+		var value:=pcm.decode_s16(i*stride)/32768.0
+		if stereo: value=(value+pcm.decode_s16(i*stride+2)/32768.0)*.5
+		low+=a*(value-low); mid_low+=b*(value-mid_low)
+		result[0]+=value*value; result[1]=maxf(result[1],absf(value))
+		result[2]+=low*low; result[3]+=(mid_low-low)*(mid_low-low); result[4]+=(value-mid_low)*(value-mid_low)
+	for i in [0,2,3,4]: result[i]=sqrt(result[i]/(end-start))
+	return result
+
 static func read(instance: AudioEffectSpectrumAnalyzerInstance, gain := 1.0) -> PackedFloat32Array:
 	var data := PackedFloat32Array(); data.resize(6)
 	if instance==null: return data

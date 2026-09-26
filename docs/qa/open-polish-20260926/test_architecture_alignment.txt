@@ -1,0 +1,48 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 566.24 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 4050 Laptop GPU
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+PASS private room cannot be used as a teleport from another location
+PASS exactly twelve authored residents
+PASS B's ambition is music
+PASS A chooses among genuine interests
+PASS A has more fragmented time than B
+PASS long activity initially does not fit A's fragment
+PASS A can move a private arrangement through the actual schedule service
+PASS rearranging unlocks longer work without rewinding the clock
+PASS moving private time does not create extra free minutes
+PASS rearranged time survives save restoration
+PASS early planner has no dual protagonist spoiler
+PASS inactive daily movements are persisted once
+PASS background routines cannot earn money, recognition, works or private choices
+PASS domestic traces cannot complete a main task or reveal another person
+PASS both ordinary notices share one mailbox
+PASS wrong notice can be read and put back
+PASS mail interactions retain actual reader ownership
+PASS resident information sharing is locked before the meeting
+PASS residency requires twelve real confirmations
+PASS empty application cannot be submitted
+PASS complete independent application can actually be submitted
+PASS submission retains the twelve actual signer identities
+PASS both floors use the same physical address
+PASS B never inherits A's twelve recognitions
+PASS B cannot silently move a fixed work block
+PASS activity cannot overlap the fixed restaurant shift
+PASS restaurant shift cannot be completed at home
+PASS attendance opens actual cooking without instant pay
+PASS active kitchen cannot start another paid shift
+PASS ordinary shift attendance does not auto-complete cooking
+PASS meeting recovers the shared address
+PASS B brings existing musical ability to the exchange
+PASS identity reveal remains its own real acknowledgement
+PASS meeting cannot forge B's residency approval
+PASS Day 5 scheduled rest does not pay or cancel an unworked shift
+PASS switching perspective cannot backfill an inactive action into played time
+PASS A's chess motivation connects to making a choice
+PASS after meeting, a known resident's location can be exchanged
+PASS shared location fact records its real source
+PASS sharing information does not transfer private relationships
+PASS applications stay private after restoration
+PASS old separate-home save migrates without losing a submitted application
+ARCHITECTURE_AUDIT: PASS checks=42 failures=0

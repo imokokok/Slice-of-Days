@@ -1,0 +1,42 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 566.24 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 4050 Laptop GPU
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+PASS re-reading one object cannot prove another person
+PASS two source kinds confirm Day 3 inconsistency
+PASS Day 3 dialogue names an object the player actually read
+PASS A can correct Mossner's mistaken attribution
+PASS A's clarification is stored by role and NPC
+PASS identity response is idempotent and cannot be silently replaced
+PASS clarification is retained in A's private relationship state
+PASS Mossner retains the Day 3 identity stage
+PASS Day 4 requires two different retained works
+PASS B can wait for both people before explaining the mismatch
+PASS B's deferred response is stored separately
+PASS evidence-backed Day 4 conversation can arrange the meeting
+PASS Naonao records suspicion before the reveal
+PASS meeting has a resumable multi-beat structure
+PASS meeting pays off both roles' observed objects
+PASS final acknowledgement completes the reveal
+PASS reveal confirms every NPC who retained evidence
+PASS reveal also updates the Day 1 and Day 2 collaborators
+PASS Mossner's confirmed reaction echoes A's clarification
+PASS a staged identity reaction is not repeated after completion
+PASS Naonao's confirmed reaction echoes B's decision to wait
+PASS opposite-domain work records the acting perspective
+PASS repeating one activity cannot duplicate Day 5 practice
+PASS one optional opposite-domain experience satisfies the post-reveal suggestion
+PASS journey audit exposes optional practice without making it an ending gate
+PASS journey audit exposes the identity response without turning it into a gate
+PASS ending reflection includes all four main collaborators
+PASS ending reflection carries the player's correction choice
+PASS ending reflection carries optional cross-domain practice
+PASS dynamic meeting evidence uses the English template
+PASS paired evidence titles do not retain Chinese joiners in English
+PASS optional practice guidance is localized
+PASS ending renders the identity reflection section
+PASS new ending reflection renders without Chinese remnants in English
+PASS ending overflow has a usable vertical scroll range
+PASS ending can scroll to the NPC and cross-domain reflections
+FIVE_DAY_IDENTITY_MECHANICS: PASS checks=36 failures=0

@@ -562,7 +562,7 @@ func _stir(style: String) -> void:
 	if cooking_stirs.size()>=4:
 		status_label.text+=LocalizationSystem.text(" 已经拌得很充分了，趁现在尝一口。")
 	if is_instance_valid(illustrated_pot): illustrated_pot.stir(style)
-	else: WorldSound.play_kind("water",-20,.5)
+	else: WorldSound.play_world("pot")
 	_update_state()
 
 

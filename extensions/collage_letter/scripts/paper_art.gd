@@ -11,7 +11,11 @@ var photo_region:=Rect2()
 var paper_shape:=PackedVector2Array()
 var ink := Color("344c50")
 func _ready() -> void:
-	art=load(asset_root+sheet_data.asset)
+	var image_path: String=str(sheet_data.get("image_path",""))
+	if not image_path.is_empty() and FileAccess.file_exists(image_path):
+		var photo:=Image.load_from_file(image_path)
+		if photo!=null and not photo.is_empty(): art=ImageTexture.create_from_image(photo)
+	if art==null: art=load(asset_root+sheet_data.asset)
 	if sheet_data.kind=="photo":
 		photo_region=Rect2(art.get_image().get_used_rect())
 		if photo_region.size.x/photo_region.size.y>3:photo_region=Rect2(Vector2(photo_region.size.x*0.25,0),Vector2(photo_region.size.y*1.5,photo_region.size.y))

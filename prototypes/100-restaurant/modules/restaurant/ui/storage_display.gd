@@ -328,6 +328,8 @@ func _slot(parent: Control, item: Dictionary, location: Vector2, dimensions: Vec
 	if surface in ["fridge", "odd"]:
 		label.add_theme_color_override("font_outline_color", Color("f7eed8") if surface == "fridge" else Color("302820"))
 		label.add_theme_constant_override("outline_size", 2)
+	# Shelf art is drawn above the HUD; keep its caption readable in the slot.
+	# Recipe paper has a higher canvas Z and covers this caption when open.
 	if surface in ["fridge", "rack", "odd"]: label.z_index = 1
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	button.add_child(label)

@@ -41,7 +41,7 @@ func run() -> void:
 	game.world.audio.muted = true
 	var slot: Button = game.storage_display.find_child("Ingredient_tomato", true, false)
 	check(slot != null and slot.is_visible_in_tree(), "new tomato is visible on fridge page one")
-	check(game.modal.z_index > (slot.get_node("IngredientName") as Label).z_index, "open recipe paper covers fridge labels")
+	check((slot.get_node("IngredientName") as Label).z_index > 0 and game.modal.z_index > (slot.get_node("IngredientName") as Label).z_index, "fridge labels remain readable below open recipe paper")
 	await capture("kitchen")
 	game._take_ingredient(game._definition("tomato"))
 	var body: RigidBody2D = game.world._held
@@ -55,6 +55,12 @@ func run() -> void:
 	await capture("cut")
 	game._view_recipe(game.RecipeMethod.starter())
 	await capture("recipe")
+	var player_recipe := {"title":"今晚这一锅 · 番茄蛋蘑菇", "author":"主厨", "notes":"番茄切开，与鸡蛋、蘑菇一起入锅。", "dish":{"ingredients":[{"id":"tomato", "cut":true, "heat":6}, {"id":"egg", "heat":6}, {"id":"mushroom", "heat":6}]}}
+	check(game.repository.save_recipe(player_recipe), "saved player recipe can occupy the second page")
+	game._view_recipe(game.RecipeMethod.starter())
+	await game._turn_recipe(1)
+	check(game._recipe_page_index == 1 and game._recipe_pages.size() == 2, "turning the actual cookbook opens page two")
+	await capture("recipe-page2")
 	game.queue_free()
 	await process_frame
 	for failure in failures: push_error(failure)
